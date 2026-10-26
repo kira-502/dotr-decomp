@@ -53,6 +53,8 @@ You need your own copy of the game (a disc image of the US release).
    git clone https://github.com/kira-502/dotr-decomp ~/decomp/games/dotr
    cd ~/decomp/games/dotr
    ```
+   `dk accept` commits as you: set `git config user.name` and `git config user.email` here first (it stops if
+   either is missing).
 5. The game files, from **your own disc**: copy `SLUS_205.15` from the disc root into `assets/` (sha1
    `bee9fc13d12ab2818822d905d820320fc6427f23`), and tell the build where the disc image is (the modules are read
    from it): create `dk.local.json` (ignored by git) with `{"disc": "/path/to/your.iso"}`, or set `DK_DISC`.
@@ -131,6 +133,7 @@ Pick the next row of `docs/TODO-MODULES.md` (kind `work`, smallest first). Then:
 5. **Copies:** if the TODO row says the shape has copies in other modules (`also in ...`), spread it:
    `python3 tools/mod_spread.py <func> --consts`. It copies your C to every module with the same shape, renames the
    module's labels, swaps constants that differ, tries each copy and accepts the ones that match in one build.
+   It carries the function's `#pragma` lines (an `-O1`/`-O2`/`-O3` twin) and comments with it.
 6. Re-run `python3 tools/todo_modules.py` from time to time.
 
 Give one function a serious try (start small, change one thing at a time, keep the best version), then move on.

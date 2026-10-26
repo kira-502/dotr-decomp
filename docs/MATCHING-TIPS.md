@@ -153,4 +153,7 @@ there is a source form that gives the original.
   body. (b070:01E003A0)
 - **Spreading a `-O1`/`-O2`/`-O3` shape:** `tools/mod_spread.py` copies the typedefs and the definition but not the
   `#pragma optimization_level` lines around it, so its copies of such a shape do not match; carry the pragmas over
-  to each copy.
+  to each copy. (Fixed 26 Oct: the tool now carries the pragma lines, their resets and the comments above the
+  function.)
+- **Accepts carry your own name:** `dk accept` commits with your `git config user.name` / `user.email` (set both in
+  the repository; it stops if either is missing).
