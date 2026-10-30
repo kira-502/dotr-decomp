@@ -9,7 +9,7 @@ source that compiles to the exact bytes of the retail game.
 
 - The main executable is done: 3,463 of 3,463 functions are C.
 - The game also loads **762 code modules** from `DATA/BMODULE.MRG`, `CMODULE.MRG` and `MMODULE.MRG` (card effects,
-  battle animations, scene scripts). They hold 8,620 functions; about 6,600 are C, the rest are still assembly.
+  battle animations, scene scripts). They hold 8,620 functions; about 7,100 are C, the rest are still assembly.
 - **The open goal: every module function in C that compiles to the original bytes.** The list of what is left is
   `docs/TODO-MODULES.md`; the tricks that worked so far are `docs/MATCHING-TIPS.md`.
 

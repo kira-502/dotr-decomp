@@ -5,12 +5,12 @@ C source that compiles to the exact bytes of the retail executable and of the ga
 
 This repository contains no game data. You need your own copy of the game to build anything.
 
-## Status (26 October 2026)
+## Status (30 October 2026)
 
 | | Functions in C | Code in C |
 |---|---|---|
 | Main executable (`SLUS_205.15`) | 3,463 of 3,463 (100.0%) | 100.0% of 1.5 MB |
-| Code modules (`DATA/BMODULE.MRG`, `CMODULE.MRG`, `MMODULE.MRG`) | 6,615 of 8,620 (76.7%) | 48.6% of 11.6 MB |
+| Code modules (`DATA/BMODULE.MRG`, `CMODULE.MRG`, `MMODULE.MRG`) | 7,137 of 8,620 (82.8%) | 57.6% of 11.6 MB |
 
 - `make check` rebuilds the whole executable and all 762 module files and compares them byte for byte with the
   originals. A function counts as done only when its C is in that build and the check passes.
