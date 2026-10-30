@@ -763,7 +763,82 @@ static s32 func_01E02030_b121(s32 arg0, Fx_b121_01E02030 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b121", func_01E021E0_b121);
+/* shape b121:01E021E0 (B121_OBJ_MOVE_5_), 116 insns, 1 copy: a red/yellow trail (b108:01E02010's form, 20-point rows):
+   width 5; fills its trail row with its point, holds alpha 0x80 for 30 frames, then fades by 49 until it ends;
+   rebuilds the trail tail from its point each frame; flickers; its point drifts 4 a frame in z, the way the scene
+   flag (0x4028) says, and its angle turns to match */
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b121_01E021E0;
+
+typedef struct {
+    u8 pad0[0x28D0];
+    V4_b121_01E021E0 pts[8];
+    V4_b121_01E021E0 trail[10][20];
+    u8 pad35D0[0x4028 - 0x35D0];
+    s16 flag;
+} Game_b121_01E021E0;
+
+typedef struct {
+    u8 pad0[6];
+    s16 w;
+    u8 pad8[0xC];
+    s32 ang;
+    u8 pad18[0x10];
+    u8 c0[4];
+    u8 pad2C[4];
+    s16 row;
+    s16 t;
+    u8 pad34[2];
+    s16 state;
+    s16 h38;
+} Obj_b121_01E021E0;
+
+static s32 func_01E021E0_b121(Game_b121_01E021E0 *g, Obj_b121_01E021E0 *o) {
+    extern void b121_01E00080(void *, s32, s32, void *);
+    extern void func_001076F0(void *, s32, s32, s32);
+    s32 i;
+    V4_b121_01E021E0 *p;
+    V4_b121_01E021E0 *q;
+
+    if (o->state == 1) {
+        o->w = 5;
+        o->c0[3] = 0;
+        p = &g->pts[o->row];
+        q = g->trail[o->row];
+        for (i = 0; i < 0x13; i++) {
+            q->x = p->x;
+            q->y = p->y;
+            q->z = p->z;
+            q++;
+        }
+        o->h38 = 0x23;
+        o->state = 2;
+    }
+    if (o->t < 0x1E) {
+        o->c0[3] = 0x80;
+    } else if (o->c0[3] > 0x28) {
+        o->c0[3] -= 0x31;
+    } else {
+        o->state = 0;
+    }
+    if (o->t % 2 == 0) {
+        func_001076F0(o->c0, 0x60, 0x10, 0x10);
+    } else {
+        func_001076F0(o->c0, 0x60, 0x60, 0x10);
+    }
+    b121_01E00080(&g->trail[o->row][0x13], 0x14, 0, &g->pts[o->row]);
+    if (g->flag != 0) {
+        o->ang = -0x4000;
+        g->pts[o->row].z -= 4.0f;
+    } else {
+        o->ang = 0x4000;
+        g->pts[o->row].z += 4.0f;
+    }
+    o->t++;
+    return 0;
+}
 
 /* shape b121:01E023B0, 105 insns: on start 0x38 = 60, variant 0..6, colour (0x20, 0x20, 0x20), 0xA 0..7, 0xC keeps the old 0x30, 0x30
    0..19, speed 16..45 (0xE), 0x8 0..34, hold 3..7 (0x6), 0x3A 0..2; alpha 0x80 during the hold, then fades by 8 and

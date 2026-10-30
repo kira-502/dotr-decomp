@@ -746,7 +746,113 @@ static void func_01E01860_b235(Obj_b065_01E012B0 *o, Anim_b065_01E012B0 *an, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b235", func_01E01C70_b235);
+/* shape b235:01E01C70 (B235_W_S), 327 insns, 1 copy: B235_W_S, the effect scene step (b286:01E004D0 form): counts the
+   frame (0xB2BA); frame 1 spawns 0x1E03200, 0x1E03310, 0x1E02FE0 and four 0x1E02B70 (angles 0/90/45/135, sides
+   0/0/1/1); frames 0..11 spawn 0x1E02370 on side n++; frames 118..138 put the point 13 under the model, spawn three
+   0x1E02190, 0x1E026E0 on sides 0/1 (odd frames) and 2 (even) and 0x1E02560; frames 118..130 again point and
+   0x1E02560; frames 50/72 and 61/82 put the point 1.5 under joint 0xB248 and spawn thirteen 0x1E02E10 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xB248 - 0x260];
+    s16 joint;
+    u8 padB24A[0xB2A2 - 0xB24A];
+    s16 ang;
+    u8 padB2A4[2];
+    s16 n;
+    u8 padB2A8[0xB2B2 - 0xB2A8];
+    s16 side;
+    u8 padB2B4[0xB2BA - 0xB2B4];
+    s16 t;
+} Scene_b235_01E01C70;
+
+static void func_01E01C70_b235(Scene_b235_01E01C70 *g) {
+    extern void b235_01E02190(void);
+    extern void b235_01E02370(void);
+    extern void b235_01E02560(void);
+    extern void b235_01E026E0(void);
+    extern void b235_01E02B70(void);
+    extern void b235_01E02E10(void);
+    extern void b235_01E02FE0(void);
+    extern void b235_01E03200(void);
+    extern void b235_01E03310(void);
+    extern void b235_01E03DE0(Scene_b235_01E01C70 *, void (*)(void), s32);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    s16 i;
+
+    g->t++;
+    if (g->t == 1) {
+        b235_01E03DE0(g, b235_01E03200, 0);
+    }
+    if (g->t == 1) {
+        b235_01E03DE0(g, b235_01E03310, 0);
+    }
+    if (g->t == 1) {
+        b235_01E03DE0(g, b235_01E02FE0, 0);
+    }
+    if (g->t < 12) {
+        g->side = g->n;
+        b235_01E03DE0(g, b235_01E02370, 0);
+        g->n++;
+    }
+    if (g->t == 1) {
+        g->ang = 0;
+        g->side = 0;
+        b235_01E03DE0(g, b235_01E02B70, 0);
+        g->ang = 90;
+        g->side = 0;
+        b235_01E03DE0(g, b235_01E02B70, 0);
+        g->ang = 45;
+        g->side = 1;
+        b235_01E03DE0(g, b235_01E02B70, 0);
+        g->ang = 135;
+        g->side = 1;
+        b235_01E03DE0(g, b235_01E02B70, 0);
+    }
+    if (g->t >= 118 && g->t < 139) {
+        func_001F5F90(func_001F5380(), &g->pos);
+        g->pos.y -= 13.0f;
+        for (i = 1; i < 4; i++) {
+            b235_01E03DE0(g, b235_01E02190, 0);
+        }
+        g->side = 0;
+        if (g->t % 2 == 1) {
+            b235_01E03DE0(g, b235_01E026E0, 0);
+        }
+        g->side = 1;
+        if (g->t % 2 == 1) {
+            b235_01E03DE0(g, b235_01E026E0, 0);
+        }
+        g->side = 2;
+        if (g->t % 2 == 0) {
+            b235_01E03DE0(g, b235_01E026E0, 0);
+        }
+        b235_01E03DE0(g, b235_01E02560, 0);
+    }
+    if (g->t >= 118 && g->t < 131) {
+        func_001F5F90(func_001F5380(), &g->pos);
+        g->pos.y -= 13.0f;
+        b235_01E03DE0(g, b235_01E02560, 0);
+    }
+    if (g->t == 50 || g->t == 72) {
+        func_001F5620(func_001F53A0(), g->joint, &g->pos);
+        g->pos.y -= 1.5f;
+        for (i = 0; i < 13; i++) {
+            b235_01E03DE0(g, b235_01E02E10, 0);
+        }
+    }
+    if (g->t == 61 || g->t == 82) {
+        func_001F5620(func_001F53A0(), g->joint, &g->pos);
+        g->pos.y -= 1.5f;
+        for (i = 0; i < 13; i++) {
+            b235_01E03DE0(g, b235_01E02E10, 0);
+        }
+    }
+}
 
 typedef struct {
     f32 x, y, z, w;

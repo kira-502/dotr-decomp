@@ -312,7 +312,8 @@ typedef struct {
     s32 pad[2];
 } Rect_b152_01E014F0;
 
-static Rect_b152_01E014F0 func_01E00F60_b178(s32 unused, s16 n) {
+/* takes the third argument its callers pass (a3 = 0, unused) */
+static Rect_b152_01E014F0 func_01E00F60_b178(s32 unused, s16 n, s32 unused2) {
     Rect_b152_01E014F0 r;
 
     if (n < 2) {
@@ -923,7 +924,136 @@ static s32 func_01E037A0_b178(s32 arg0, Obj_b178_01E037A0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b178", func_01E03940_b178);
+/* shape b178:01E03940 (B178_OBJ_MOVE_10_), 390 insns, 1 copy (-O3,p): a jittery spark trail by slot (kind = slot %
+   6): set up once at the origin pushed out 8 (kinds 0-1) or 13 along the scene angle (ctx+0xDA5A by kind pair, +180
+   for odd kinds), size 0.3..4.2, speed 0.3..4.7, head turned 165..194, random pitch, life 3..17; frame up to 15
+   before tick 7 then down; alpha 0xC0 for its life, then down by 0x1D and ends; blinks white / grey; jitters -40..39
+   and moves in x/y; feeds its 20-point trail until tick 7 */
+
+typedef struct {
+    Vec4f p[0x14];
+} Track_b178_01E03940;
+
+typedef struct {
+    u8 pad0[0x7030];
+    Track_b178_01E03940 track[0x40];
+    u8 pad[0xD430 - 0x7030 - 0x40 * 0x140];
+    Vec4f pt[0x62];
+    u8 padA5A[0xDA5A - 0xD430 - 0x62 * 0x10];
+    s16 ang[3];
+    u8 padA60[0xDC70 - 0xDA60];
+    u8 trig[1];
+} World_b178_01E03940;
+
+typedef struct {
+    u8 pad0[6];
+    s16 frame;
+    s16 life;
+    u8 padA[0x26];
+    Vec4f v;
+    u8 pad40[8];
+    f32 size;
+    f32 speed;
+    s16 idx;
+    s16 kind;
+    s16 t;
+    u8 pad56[2];
+    s16 state;
+    s16 head;
+    s16 pitch;
+    u8 pad5E[2];
+    u8 c0[4];
+} Spark_b178_01E03940;
+
+#pragma optimization_level 3
+
+static s32 func_01E03940_b178(World_b178_01E03940 *w, Spark_b178_01E03940 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    f32 r;
+    s16 i;
+    Vec4f *dst;
+    Vec4f *src;
+
+    if (o->state == 1) {
+        o->frame = 1;
+        o->c0[3] = 0;
+        o->kind = o->idx % 6;
+        w->pt[o->idx].x = 0.0f;
+        w->pt[o->idx].y = 0.0f;
+        w->pt[o->idx].z = 0.0f;
+        if (o->kind < 2) {
+            r = 8.0f;
+        } else if (o->kind < 4) {
+            r = 13.0f;
+        } else if (o->kind < 6) {
+            r = 13.0f;
+        }
+        if (o->kind < 2) {
+            o->head = w->ang[0];
+        } else if (o->kind < 4) {
+            o->head = w->ang[1];
+        } else if (o->kind < 6) {
+            o->head = w->ang[2];
+        }
+        if (o->kind % 2 == 1) {
+            o->head += 180;
+        }
+        w->pt[o->idx].x += r * func_00108030(w->trig, o->head, 1);
+        w->pt[o->idx].y += r * func_00108030(w->trig, o->head, 0);
+        src = &w->pt[o->idx];
+        dst = w->track[o->idx].p;
+        for (i = 0; i < 0x14; i++) {
+            dst->x = src->x;
+            dst->y = src->y;
+            dst->z = src->z;
+            dst++;
+        }
+        o->size = func_0019A5C8() % 40 + 3;
+        o->size /= 10.0f;
+        o->speed = func_0019A5C8() % 45 + 3;
+        o->speed /= 10.0f;
+        o->head += (s16)(func_0019A5C8() % 30 + 165);
+        o->pitch = (func_0019A5C8() >> 4) % 360;
+        o->life = func_0019A5C8() % 15 + 3;
+        o->state = 2;
+    }
+    if (o->t < 7) {
+        if (o->frame < 0xF) {
+            o->frame++;
+        }
+    } else if (o->frame > 0) {
+        o->frame--;
+    }
+    if (o->t < o->life) {
+        o->c0[3] = 0xC0;
+    } else if (o->c0[3] > 0x1E) {
+        o->c0[3] -= 0x1D;
+    } else {
+        o->state = 0;
+    }
+    if (o->t % 2 == 0) {
+        func_001076F0(o->c0, 0xFF, 0xFF, 0xFF);
+    } else {
+        func_001076F0(o->c0, 0x80, 0x80, 0x80);
+    }
+    o->v.x = func_0019A5C8() % 80 - 40;
+    o->v.y = func_0019A5C8() % 80 - 40;
+    o->v.z = func_0019A5C8() % 80 - 40;
+    if (o->t != 0) {
+        w->pt[o->idx].x += o->speed * func_00108030(w->trig, o->head, 1);
+        w->pt[o->idx].y += o->speed * func_00108030(w->trig, o->head, 0);
+        w->pt[o->idx].x += o->v.x / 10.0f;
+        w->pt[o->idx].y += o->v.y / 10.0f;
+    }
+    if (o->t < 7) {
+        func_01E00080_b178(&w->track[o->idx].p[0x13], 0x14, 0, &w->pt[o->idx]);
+    }
+    o->t++;
+    return 0;
+}
+
+#pragma optimization_level reset
 
 /* shape b178:01E03F60, 85 insns: a grey-purple stretching flash: random turn on all three axes, size 20x20; f4C grows by 20 a
    frame with f48 10 past it; second alpha up by 0x50 to 0xA0 for 10 frames, then down by 12 until it ends */
@@ -1140,4 +1270,109 @@ static s32 func_01E04B80_b178(Ctx_b178_01E04B80 *ctx, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b178", func_01E04D20_b178);
+/* shape b178:01E04D20 (B178PAINT_RAIN20), 188 insns, 1 copy: b847:01E06FB0's one-quad draw, with the frame rect for
+   the scene table entry (g+0xDA08, 36 of them) picked by the object's 0x50; trig g+0xDC70, ordering table g+0xD9BC */
+
+typedef struct {
+    u8 pad0[0x20];
+    s32 rot[4];
+    u8 pad30[0x18];
+    f32 size;
+    f32 r;
+    s16 h50;
+    u8 pad52[6];
+    u8 pad58[2];
+    s16 h5A;
+    s16 h5C;
+    u8 pad5E[2];
+    u8 col[4];
+    u8 col2[4];
+} Obj_b178_01E04D20;
+
+typedef struct {
+    u8 pad0[0x88];
+    s32 tex;
+    u8 pad8C[8];
+    Rect_b152_01E014F0 rect;
+    u8 padA4[0x1A];
+    s16 frame;
+    u8 padC0[0xD9BC - 0xC0];
+    s32 ot;
+    u8 padD9C0[0xDA08 - 0xD9C0];
+    s16 tbl[36];
+    u8 padDA50[0xDC70 - 0xDA50];
+    u8 trig[1];
+} Game_b178_01E04D20;
+
+static void func_01E04D20_b178(Game_b178_01E04D20 *g, Obj_b178_01E04D20 *o, s32 mode, Vec4f *in) {
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00108CE0(void *, f32, f32);
+    extern void func_00109100(void *, void *, s32, void *);
+    extern void func_00107070(void *, s32, f32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 pos[4];
+    Vec4f q[4];
+    f32 v[4];
+    f32 m[16];
+    f32 depth[4];
+    s32 tw[4];
+    Rect_b152_01E014F0 rc;
+    struct {
+        u8 pk[0x70];
+        u8 tail[0x20];
+    } buf;
+    s32 k;
+    s16 i;
+    s16 s;
+    s16 a;
+    void *p = &buf;
+    f32 r;
+    f32 c;
+    f32 sn;
+
+    *(Vec4f *)pos = *in;
+    s = 0;
+    func_00109270(p, 0, 0);
+    func_00107790(p, o->col, 1);
+    func_00107790(p, o->col2, 2);
+    func_00108500(p, &g->rect, g->frame);
+    func_00208700(p, g->tex, 1);
+    k = mode >> 4;
+    if (k == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)k << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    v[0] = pos[0];
+    v[1] = pos[1];
+    v[2] = pos[2];
+    func_00108EF0(m, 0, o->rot, v);
+    q[0].y = 0.0f;
+    q[1].y = 0.0f;
+    q[2].y = 0.0f;
+    q[3].y = 0.0f;
+    r = o->r;
+    tw[2] = o->h5C;
+    rc = func_01E00F60_b178(0x14, g->tbl[o->h50 % 36], 0);
+    g->rect = rc;
+    func_00108500(p, &g->rect, g->frame);
+    for (i = 0; i < 1; i++) {
+        a = o->h5A + s - 200;
+        c = r * func_00108030(g->trig, a, 1);
+        sn = r * func_00108030(g->trig, a, 0);
+        func_00108CE0(q, o->size, o->size);
+        func_00109100(q, tw, 2, g->trig);
+        func_00107070(q, 0, c);
+        func_00107070(q, 1, sn);
+        if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+            func_002075F0(p, g->ot, (u32)depth[0]);
+        }
+        s += 10;
+    }
+}

@@ -86,7 +86,181 @@ static s32 func_01E00260_b136(Vec4f *dst, s32 n, s32 arg2, Vec4f *src) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b136", func_01E002E0_b136);
+/* shape b136:01E002E0 (B136_W_S), 373 insns, 1 copy: the scene step: colour 0x80,0,0,0, counts the frame
+   (0x365C), re-picks the joint on frames 94..184 step 10, then on frames 95..185 step 10 puts the point at the joint,
+   spawns 0x1E00CA0 on side n, fills trail row n with the point, spawns three 0x1E01670 and bumps n; frame 1 spawns
+   0x1E01950 */
+
+typedef struct {
+    u8 pad0[0x80];
+    Vec4f pos;
+    u8 pad90[0x2FC0 - 0x90];
+    Vec4f row[10][10];
+    u8 pad3600[4];
+    u8 col[4];
+    u8 pad3608[0x3648 - 0x3608];
+    s16 joint;
+    u8 pad364A[0x3658 - 0x364A];
+    s16 side;
+    u8 pad365A[2];
+    s16 t;
+    u8 pad365E[2];
+    s16 n;
+} Scene_b136_01E002E0;
+
+static void func_01E002E0_b136(Scene_b136_01E002E0 *g) {
+    extern void b136_01E00CA0(void);
+    extern void b136_01E01670(void);
+    extern void b136_01E01950(void);
+    extern void b136_01E01F00(Scene_b136_01E002E0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    f32 v[4];
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    func_001F5620(func_001F53A0(), g->joint, v);
+    if (g->t == 94) {
+        g->joint = func_001F5560(func_001F53A0(), 35, 1);
+    }
+    if (g->t == 104) {
+        g->joint = func_001F5560(func_001F53A0(), 11, 1);
+    }
+    if (g->t == 114) {
+        g->joint = func_001F5560(func_001F53A0(), 16, 1);
+    }
+    if (g->t == 124) {
+        g->joint = func_001F5560(func_001F53A0(), 21, 1);
+    }
+    if (g->t == 134) {
+        g->joint = func_001F5560(func_001F53A0(), 26, 1);
+    }
+    if (g->t == 144) {
+        g->joint = func_001F5560(func_001F53A0(), 35, 1);
+    }
+    if (g->t == 154) {
+        g->joint = func_001F5560(func_001F53A0(), 11, 1);
+    }
+    if (g->t == 164) {
+        g->joint = func_001F5560(func_001F53A0(), 16, 1);
+    }
+    if (g->t == 174) {
+        g->joint = func_001F5560(func_001F53A0(), 21, 1);
+    }
+    if (g->t == 184) {
+        g->joint = func_001F5560(func_001F53A0(), 26, 1);
+    }
+    func_001F5620(func_001F53A0(), g->joint, v);
+    if (g->t == 95 || g->t == 105 || g->t == 115 || g->t == 125 || g->t == 135 || g->t == 145 ||
+        g->t == 155 || g->t == 165 || g->t == 175 || g->t == 185) {
+        g->side = g->n;
+        g->pos.x = v[0];
+        g->pos.y = v[1];
+        g->pos.z = v[2];
+        b136_01E01F00(g, b136_01E00CA0, 0);
+        if (g->n == 0) {
+            s32 i;
+            Vec4f *p = g->row[0];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 1) {
+            s32 i;
+            Vec4f *p = g->row[1];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 2) {
+            s32 i;
+            Vec4f *p = g->row[2];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 3) {
+            s32 i;
+            Vec4f *p = g->row[3];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 4) {
+            s32 i;
+            Vec4f *p = g->row[4];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 5) {
+            s32 i;
+            Vec4f *p = g->row[5];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 6) {
+            s32 i;
+            Vec4f *p = g->row[6];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 7) {
+            s32 i;
+            Vec4f *p = g->row[7];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 8) {
+            s32 i;
+            Vec4f *p = g->row[8];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        if (g->n == 9) {
+            s32 i;
+            Vec4f *p = g->row[9];
+            for (i = 0; i < 10; i++, p++) {
+                p->x = v[0];
+                p->y = v[1];
+                p->z = v[2];
+            }
+        }
+        b136_01E01F00(g, b136_01E01670, 0);
+        b136_01E01F00(g, b136_01E01670, 0);
+        b136_01E01F00(g, b136_01E01670, 0);
+        g->n++;
+    }
+    if (g->t == 1) {
+        b136_01E01F00(g, b136_01E01950, 0);
+    }
+}
 
 /* shape b136:01E008C0, 134 insns: b019:01E01F60 with its sine table at ctx+0x3664 */
 

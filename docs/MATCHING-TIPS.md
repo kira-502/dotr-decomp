@@ -151,9 +151,139 @@ there is a source form that gives the original.
 - **Float temporaries one register off after the port, every declaration order tried by hand:** `dk perm
   <func> --minutes 15` found the order in one run; copy back only its declaration order, not its reformatted
   body. (b070:01E003A0)
+- **Two parameter copies (`paddub sN, aN`) in the other order, nothing else different, before a float-to-int
+  conversion:** the original called `func_001A22C0(...)` by name there (`extern s32 func_001A22C0(f32);`); the
+  `(s32)` cast gives the same call through the runtime name and the scheduler places the copies the other way.
+  (b007:01E00120)
+- **Ported twins of trails and particles (b108:01E02010 family, `*PAINT_RAIN*`):** the source is the same, but the
+  object and scene layouts move: row length (20/50/70 points), where the points sit, which joint comes first,
+  colours (often passed halved, `(u8)(c >> 1)`), fade steps. Read the differing offsets off `dk try`'s diff and give
+  the copy its own struct. (b116:01E03190, b121:01E021E0, c017:01E02790, b415:01E02A90, c022:01E00F10)
 - **Spreading a `-O1`/`-O2`/`-O3` shape:** `tools/mod_spread.py` copies the typedefs and the definition but not the
   `#pragma optimization_level` lines around it, so its copies of such a shape do not match; carry the pragmas over
   to each copy. (Fixed 26 Oct: the tool now carries the pragma lines, their resets and the comments above the
   function.)
 - **Accepts carry your own name:** `dk accept` commits with your `git config user.name` / `user.email` (set both in
   the repository; it stops if either is missing).
+- **A local packet buffer at a stack offset that is 8 mod 16, yours at 0 mod 16:** `u8 buf[0x90]
+  __attribute__((aligned(8)));` on the local. (b286:01E01520, b505:01E013F0)
+- **A `jal` to a static helper where the original has its body:** MWCC inlines only functions marked `inline`;
+  write the helper's body out at the call site. (b286:01E01520, b505:01E013F0)
+- **A `work/port.py` port scores far below what the donor's likeness suggests:** diff the port against the donor;
+  the constant swapping can rewrite an array index (`pts[1]` became `pts[0]`). (b509:01E03790)
+- **Scene manager, the draw counter `n` and the code registers swapped:** count the setup loops with `i`, keep
+  `n = 0;` at the top for the draw loop. (b636:01E01120)
+- **Two neighbouring stack vectors, the original takes `addiu tN, sp, &second` early and reads `.x` through
+  `0(tN)`:** declare them as one array, `Vec4f v[2]`. (b353:01E02660)
+- **Only scheduling differs before a loop (a float constant's `lui/ori/mtc1` late, the bounds set too early):**
+  put the loop-bound setup (`i = 0; last = n - 1;`) right before the loop; a small script that moves one statement
+  to every position, or tries every order of a few statements, finds it fast. (b353:01E02660, b734:01E03EC0)
+- **Two stores of a chain `a = b = x;` swapped:** the first store is the rightmost target; swap the targets.
+  (c017:01E01BF0)
+- **A port gives COMPILE ERROR "identifier expected" on its last lines in standalone `dk try`:** it uses types or
+  statics defined earlier in its module file; add `#include "mod/<mod>.c"` under `#include "common.h"` and use the
+  file's own type names (the accept drops `#include` lines). This is probably why `tools/mod_spread.py` fails on
+  such copies. (b481:01E05050, b516:01E03A10, b068:01E00920)
+- **One float constant passed several times to a call (`f(p, 0.15f, 0.15f, 0.15f)`) matches alone but not in its
+  file (loaded into $f13 and copied to $f12):** put it in a float local, `s = 0.15f; f(p, s, s, s);`.
+  (c024:01E00CD0)
+- **Two float constant arguments loaded in the other order (`$f13` before `$f12`), no call-site form fixes it:**
+  call through a `static inline` wrapper whose body does the pointer cast,
+  `func_001033D0((f32 *)g, target, step);`. About 30 still-asm functions make this `func_001033D0` call.
+  (c612:01E014B0)
+- **A pointer counter in a nested loop kept twice (spilled and in a register), the original keeps no integer
+  counter:** index with a counter that runs through both loops and is used anyway (`&g->obj[n]` on the draw
+  counter); a dedicated `k++` leaves a dead counter, `i * 24 + j` a multiply. (c024:01E015D0)
+- **A new function matches in `dk try` and `tools/mod_infile.sh`, but the accept is REJECTED and an already-matched
+  function further down now loads two float constants in the other order:** MWCC orders constant loads by when
+  each constant first appears in the file, and the new function uses one of them first (here `5.0f`). Splice by hand
+  (`work/splice.py`), build the module and diff it against the disc (`work/moddiff.py`), then change the later
+  function's call so both orders give the original: `f32 r = 5.0f;` as a block local and pass `r`. Commit it with the
+  new function. (b244:01E02B40 changed func_01E031E0_b244)
+- **Two float constant arguments where the first argument's address (`addiu a0`) comes before `mtc1 f12`:** a
+  `static inline` wrapper taking only `void *p` that does the cast and passes the constants. (b244:01E02B40)
+- **A call to a static sibling defined earlier passes one more argument than its definition, or its argument
+  registers are set in another order:** declare the sibling by its real name as a block-scope extern with no
+  prototype (`extern void func_01E00920_b098();`) and pass what the asm shows. (b098:01E01F30, b494:01E013C0)
+- **A sign-extended value meant for a saved register lands in a temp before a `div`:** assign it to its s16 local
+  first and divide in place, `step = s->col.a; step /= (s16)(n * 3);`. (b092:01E04290)
+- **A call matches in `dk try` but `tools/mod_infile.sh` says "undefined identifier":** the callee is a static
+  defined later in the file (`#include "mod/<mod>.c"` hides this); call it by its link name `<mod>_<VADDR>` through a
+  block-scope extern with no prototype. (b494:01E013C0)
+- **`work/port.py` drops a donor's `#pragma opt_propagation off` / `reset` pair:** `dk try` matches but the module comes out
+  bigger and later `jal` targets shift, since the pragma stays on for every later function. Copy both lines.
+  (b498:01E03710)
+- **`dk try` stuck at N-2/N, the only difference `%%hi/%%lo(D_X+4 label)` against `%%hi/%%lo(D_X)` on a field read of an
+  indexed module table:** the words are the same; splat just put an extra label inside the table. Do not declare
+  the label; check with `work/fulltry.sh`, then splice by hand (`work/splice.py`) and run the full check, since
+  `dk accept` refuses on the name difference. (b712:01E00FD0)
+- **The original keeps `i` and computes `addu v0, i, i; addiu v0, 1; sll`, yours counts a register up by 2:** write the
+  index as `out[i + i + 1]`, not `out[i * 2 + 1]`. (b773:01E017B0)
+- **A value read twice is loaded into a saved register in a `jal`'s delay slot and reused after the call
+  (`rand() % (2t) - t`):** write the field read straight into the expression, `func_0019A5C8() % (g->t * 2) - g->t`;
+  a named local or an inline helper moves the loop counters to other saved registers. (c603:01E00E10)
+- **`dk perm` says "no better version found" at once:** `base.c` has the `__builtin_offsetof` layout checks; delete
+  them from `nonmatchings/<func>/base.c` and run `permuter.py` yourself. (c603:01E00E10)
+- **A stack vector's address taken once before a loop (`addiu sN, sp, &p`), `.x` read through `sN`, `.y` straight from
+  `sp`:** make it the second element of an array with the stack vector below it, `Vec4f t[2]`, and use `t[1]`.
+  (b740:01E01F30, as b353:01E02660)
+- **Two argument addresses computed in the other order at a join:** a cast on the struct-address argument, even to
+  its own type (`(Emit_b000_01E01140 *)&g->emit`), restores the order. (b740:01E01F30)
+- **An extra `andi v0, 0xFF` before a u8-to-float conversion:** drop the `(u32)` and write `(f32)o->c86`; a u8 already
+  converts as unsigned. (c021:01E00E00; the reverse of c021:01E03390)
+- **A run of `if (g->n == k)` blocks, each with a short copy loop; only the first loop matches, or the base folds into
+  the store offsets:** give each block its own `{ s32 i; Vec4f *p = g->row[k]; for (...; i++, p++) ... }`. (b136:01E002E0)
+- **A float tested against zero with the zero and the value in each other's registers (`x != 0.0f` and `0.0f != x`
+  alike):** write the bare test, `if (v.x)`. (b191:01E01A70)
+- **A value read just before a call to a static sibling lands in `$a0` where the original has `$a1`:** drop the cast
+  on the struct-address argument (the reverse of the b740 tip). (b292:01E02580)
+- **`dk try` alone is one off (an argument address before a float `mtc1`) but `tools/mod_infile.sh` matches:** trust the
+  in-file result and leave the call alone (the float-local and inline-wrapper fixes broke it in the file); splice
+  by hand and run the full check, since `dk accept` refuses. (b489:01E00FA0)
+- **-O1 scene manager with the scene pointer in the lowest saved register where the original has it in the highest:**
+  take the scene as a typed parameter (`Scene *g`), not `s32 arg0` plus `g = (Scene *)arg0;`. (b181:01E03830)
+- **`lw`/`sw` where yours has `lwc1`/`swc1` copying one field into a vector local:** type the field and the local as
+  s32 (a struct of four s32), not a pointer cast at the store. (b773:01E038D0)
+- **A loop counter spilled to the stack and the frame 0x10 too big, with two neighbouring stack vectors each held by
+  address in a saved register:** declare them (and the vector before them) as one `Vec4f v[3]`. (b042:01E05C20)
+- **No twin by name, `shapes.py similar` and `port.py scan` find nothing:** rank the C functions by how close their
+  sequence of main-program calls is to the target's (`difflib` over `port.calls()`, `work/gus3/callsim.py`); the top
+  hits give donors for parts of the body. (b598:01E055C0)
+- **In a call to a static sibling, a later argument's address (`addiu a3`) set before `li a2`:** cast the first two
+  arguments `(void *)` and pass the late one bare; a cast on it brings the early `addiu` back. (b546:01E021E0; see the
+  b740 and b292 cast tips)
+- **Two calls passing the same two zero float arguments, the copy between `$f14` and `$f15` going the other way in
+  the second:** declare two float locals last, set them to 0.0f before the first call, pass literals to the first
+  call and the locals to the second. (c613:01E02540)
+- **A pointer-walk copy loop with no call inside, the counter and pointer in each other's temps (`$v1`/`$a0`):**
+  give the loop its own block counter declared before the pointer, `{ s16 k; Vec4f *p; ... }`. (b702:01E013E0;
+  see b136:01E002E0)
+- **A run of `x == 104 || x == 105 || ...` kept as one `beq` per value where yours becomes a range check (`addiu; sltiu`):**
+  the function is -O3. (b053:01E010F0)
+- **Scene manager with two counted draw loops, the second's counter and count in each other's saved registers:** run
+  the second loop on the first loop's count variable and count in its counter, `j = 0; for (n = 0; ...) if (used) j++;`.
+  (b053:01E010F0)
+- **Two calls each loading two float constants, the block-local `f32 r = K;` fix for the second flips the first (in the
+  file):** add a `(void *)` cast on the first call's pointer argument, or pass both its constants as locals. Small
+  unrelated changes (a parameter's u32/s32, `!= 0` or a bare test) can flip these orders too; judge in-file. Retried
+  hard rows b591:01E048E0 and b648:01E04F40 matched this way.
+- **Two constants in one expression (`15.0f + 5.0f * k`) loaded in the other order, no float-local or wrapper form
+  helps:** check a same-shape twin for `#pragma opt_propagation off`. (b065:01E01BA0, from b235:01E02370)
+- **A float constant passed to an earlier call in the same block, and the next call's constants load out of order:**
+  put it in one function-scope local and pass that local to both calls. (b037:01E05F30)
+- **`f(p, A, B, A)` with the original loading B first and copying A from `$f14` to `$f12`:** pass the middle constant
+  through a block local, `{ f32 r = B; f(p, A, r, A); }`. (b774:01E02F60, c059:01E031C0, c027:01E01930)
+- **Two calls `f(x, 1.5f, k, 1.5f)` in a row, the second copying `$f14` to `$f12`:** pass the second call's array as
+  `&sc[0]`, not `sc`. (c021:01E02350)
+- **`work/fulltry.sh` now prints FAILED on a splice or build error.** Before 2026-10-29 it could print a stale OK.
+- **Three calls `f(&sc[k], 1.0f, 0.2f)` in a row, only the last loading 0.2f first:** declare `f32 one;` at function
+  scope, set it just before the first call, pass it only in the last. (c532:01E01040)
+- **The divisor and the step's `cvt.s.w` hoisted above the table loads in the original:** fold the multiply into each
+  delta, `dx = (a.x - b.x) / 50.0f * o->step;`, with no step local. (b709:01E055C0)
+- **Scene manager draw loop, the function pointer and the slot pointer (or counter) in each other's saved registers:**
+  keep `draw = g->slot[i].draw;` but test the field again, `if (g->slot[i].draw != NULL)`; if the same variable serves
+  the handler loop, give that loop its own `fn` local. (c034:01E00350, c006:01E00B80)
+- **The c532 `one` trick goes on whichever call loads its second constant first in the original** (the second of
+  three in c531:01E01040).
+- **One counter for two loops, one with a call and one without, the later loop's counter swapped with a saved local:**
+  give the loop without a call its own counter. (c059:01E00340)

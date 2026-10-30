@@ -1825,7 +1825,139 @@ static s32 func_01E03D80_b734(Emit_b205_01E02BD0 *o, s32 a, s32 b) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b734", func_01E03EC0_b734);
+/* shape b734:01E03EC0 (B734KPOINT_RAIN_2), 289 insns, 1 copy: rain streaks: per segment, a ring of 18 angles x 4
+   offset quads drawn between consecutive points, lifted by 0.6 of the height */
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_b734_01E03EC0;
+
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 padC[0xCC];
+    u8 trig[4];
+} Own_b734_01E03EC0;
+
+typedef struct {
+    u8 pad0[6];
+    s16 n;
+    u8 pad8[0x20];
+    Col_b734_01E03EC0 col;
+} Fx_b734_01E03EC0;
+
+typedef struct {
+    u32 tag[2];
+    u8 pk[0x94];
+} Buf_b734_01E03EC0;
+
+static void func_01E03EC0_b734(Own_b734_01E03EC0 *g, Fx_b734_01E03EC0 *o, Vec4f *pts, Vec4f *base) {
+    extern void func_001092E0();
+    extern void func_001094F0();
+    extern void func_00107990();
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00107070(void *, s32, f32);
+    extern s32 func_00205630();
+    extern void func_00109380();
+    extern void func_002075F0();
+    extern s32 func_00207500(void);
+    f32 depth[4];
+    Vec4f q[4];
+    Vec4f v[2];
+    Buf_b734_01E03EC0 buf;
+    Col_b734_01E03EC0 col;
+    s16 n;
+    s32 j;
+    u8 *p;
+    s32 ot;
+    s32 i;
+    s32 k;
+    s32 last;
+    s32 cnt;
+    s16 a;
+    s32 ang;
+    f32 t;
+    f32 r;
+    f32 z;
+    f32 w;
+    f32 y;
+    f32 h;
+
+    ot = func_00207500();
+    n = o->n;
+    t = 0.0f;
+    p = buf.pk;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    cnt = n;
+    col = o->col;
+    v[0] = *pts;
+    v[1] = *base;
+    v[0].x -= v[1].x;
+    v[0].y -= v[1].y;
+    v[0].z -= v[1].z;
+    v[0].x = g->x;
+    v[0].y = -v[0].y;
+    v[0].z = g->z;
+    i = 0;
+    h = v[0].z;
+    y = v[0].y;
+    w = 0.6f * h;
+    last = cnt - 1;
+    goto test;
+loop:
+    {
+        a = 0;
+        func_00107990(p, &col, 1);
+        col.a -= o->col.a / cnt;
+        func_00107990(p, &col, 2);
+        for (k = 0, ang = -90; k < 18; k++, ang += 10) {
+            r = v[0].x * func_00108030(g->trig, ang, 0);
+            z = h * func_00108030(g->trig, ang, 1) - w;
+            for (j = 0; j < 4; j++) {
+                q[0].x = pts->x;
+                q[0].y = pts->y;
+                q[0].z = pts->z;
+                q[1].x = pts->x;
+                q[1].y = pts->y;
+                q[1].z = pts->z;
+                q[2].x = pts[1].x;
+                q[2].y = pts[1].y;
+                q[2].z = pts[1].z;
+                q[3].x = pts[1].x;
+                q[3].y = pts[1].y;
+                q[3].z = pts[1].z;
+                func_00107070(q, 0, r);
+                func_00107070(q, 2, z);
+                func_00107070(q, 1, y);
+                if (j == 0) {
+                    q[0].z += 0.2f;
+                    q[2].z += 0.2f;
+                } else if (j == 1) {
+                    q[0].z -= 0.2f;
+                    q[2].z -= 0.2f;
+                } else if (j == 2) {
+                    q[0].x += 0.2f;
+                    q[2].x += 0.2f;
+                } else if (j == 3) {
+                    q[0].x -= 0.2f;
+                    q[2].x -= 0.2f;
+                }
+                if (func_00205630(q, 0x70000000, 0, p, depth)) {
+                    func_00109380(p, 1);
+                    func_002075F0(p, ot, 0);
+                }
+                a += 30;
+            }
+        }
+        pts++;
+        t += 1.0f;
+        i++;
+    }
+test:
+    if (i < last) goto loop;
+}
 
 /* shape b734:01E04350, 73 insns: the module's draw pass (b016:01E03880 shape): opens a sprite packet on the stack, then
    runs every live slot (150 of 0x70 bytes) whose handler is shape b734:01E030C0 through it; queues the batch only if any

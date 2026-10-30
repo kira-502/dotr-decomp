@@ -744,7 +744,120 @@ static s32 func_01E03360_b710(void *arg0, s32 ot, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b710", func_01E03E40_b710);
+/* shape b710:01E03E40 (ShFx_Cfade), 336 insns, 1 copy (-O1,p): b532:01E025B0's colour fade quad at -O1, object
+   pointer as a local copy of the first argument */
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+} Hdr_b710_01E03E40;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_b710_01E03E40;
+
+typedef struct {
+    Hdr_b710_01E03E40 h;
+    Vtx_b710_01E03E40 v[4];
+    u8 tail[8];
+} Pkt_b710_01E03E40;
+
+typedef struct {
+    u8 cur;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[3];
+    u8 b, g, r;
+} Obj_b710_01E03E40;
+
+#pragma optimization_level 1
+
+static s32 func_01E03E40_b710(s32 arg0, s32 tex) {
+    Obj_b710_01E03E40 *o = (Obj_b710_01E03E40 *)arg0;
+    Pkt_b710_01E03E40 p __attribute__((aligned(8)));
+    u8 a;
+    s32 d;
+    f32 s;
+    f32 c;
+
+    if (func_00101AF0(o) == 0) {
+        return 0;
+    }
+    ((Hdr_b710_01E03E40 *)(s32)&p)->count = 0x14;
+    ((Hdr_b710_01E03E40 *)(s32)&p)->tag = 8;
+    ((Hdr_b710_01E03E40 *)(s32)&p)->regs = 0x41414141;
+    ((Hdr_b710_01E03E40 *)(s32)&p)->pad = 0;
+    switch (o->flags & 7) {
+    case 1:
+        a = func_001A23B0(128.0f / o->max * o->cur);
+        break;
+    case 2:
+        a = ((o->max - o->cur) << 7) / o->max;
+        break;
+    case 4:
+    default:
+        a = 0x80;
+        break;
+    }
+    if (o->cur == 1 && (o->flags & 0x80)) {
+        o->cur = o->max;
+        if (o->flags & 1) {
+            o->flags = 2;
+        } else {
+            o->flags = 1;
+        }
+    }
+    if (o->flags & 8) {
+        a >>= 1;
+    }
+    p.v[0].r = p.v[1].r = p.v[2].r = p.v[3].r = o->r;
+    p.v[0].g = p.v[1].g = p.v[2].g = p.v[3].g = o->g;
+    p.v[0].b = p.v[1].b = p.v[2].b = p.v[3].b = o->b;
+    p.v[0].q = p.v[1].q = p.v[2].q = p.v[3].q = 1.0f;
+    p.v[0].z = p.v[1].z = p.v[2].z = p.v[3].z = 0xFFFFFF;
+    func_002086D0(&p, 0x48);
+    if (o->flags & 0x10) {
+        s = 7168.0f / (o->max >> 1);
+        c = 32768.0f;
+        d = o->max - o->cur;
+        a = (0x80 / (o->max >> 1)) * (d >> 1);
+        if ((o->max >> 1) < d) {
+            p.v[0].a = p.v[1].a = a;
+            d = o->max >> 1;
+        } else {
+            p.v[0].a = p.v[1].a = 0;
+        }
+        p.v[2].a = p.v[3].a = 0x80;
+        p.v[0].x = p.v[2].x = 0x6C00;
+        p.v[1].x = p.v[3].x = 0x9400;
+        p.v[0].y = p.v[1].y = func_001A23B0(c - s * d);
+        p.v[2].y = p.v[3].y = func_001A23B0(c);
+        func_002075F0((s32)&p, tex, 0);
+        p.v[2].a = p.v[3].a = p.v[1].a;
+        p.v[1].a = p.v[0].a = 0x80;
+        p.v[0].y = p.v[1].y = func_001A23B0(c);
+        p.v[2].y = p.v[3].y = func_001A23B0(c + s * d);
+        func_002075F0((s32)&p, tex, 0);
+    } else {
+        p.v[0].a = p.v[1].a = p.v[2].a = p.v[3].a = a;
+        p.v[0].x = p.v[2].x = 0x6C00;
+        p.v[1].x = p.v[3].x = 0x9400;
+        p.v[0].y = p.v[1].y = 0x7200;
+        p.v[2].y = p.v[3].y = 0x8E00;
+        func_002075F0((s32)&p, tex, 0);
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b710", func_01E04380_b710);
 

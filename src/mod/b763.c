@@ -1173,7 +1173,155 @@ static s32 func_01E02800_b763(s32 arg0, Obj_b763_01E02800 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b763", func_01E02930_b763);
+/* shape b763:01E02930 (B763_OBJ_MOVE_10_), 374 insns, 1 copy: b432:01E02800 homing streak:
+   30-point trail at ctx+0x4470 on its point ctx+0x7CB0, 48-tick jittered step toward ctx+0x7E90, wobble on the sine
+   table ctx+0x8124; marks 0x7F1A and bursts b763:01E02600 + b763:01E02050 at the trail head until 50, b763:01E02800
+   at 48 */
+
+typedef struct {
+    Vec4f v[30];
+} Trail_b763_01E02930;
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x4470 - 0x260];
+    Trail_b763_01E02930 trail[16];
+    u8 pad6270[0x7CB0 - 0x6270];
+    Vec4f pts[16];
+    u8 pad7DB0[0x7E90 - 0x7DB0];
+    f32 tx, ty, tz;
+    u8 pad7E9C[0x7F1A - 0x7E9C];
+    s16 flag;
+    u8 pad7F1C[0x8124 - 0x7F1C];
+    u8 sin[4];
+} Ctx_b763_01E02930;
+
+typedef struct {
+    s16 turn;
+    u8 pad2[4];
+    s16 len;
+    s16 w;
+    s16 wob;
+    u8 padC[0x24];
+    f32 dx, dy, dz;
+    u8 pad3C[0xC];
+    f32 f48;
+    f32 r;
+    s16 idx;
+    u8 pad52[2];
+    s16 t;
+    s16 h56;
+    s16 state;
+    s16 ang;
+    s16 h5C;
+    u8 pad5E[2];
+    u8 col[4];
+    u8 col2[4];
+} Streak_b763_01E02930;
+
+static s32 func_01E02930_b763(Ctx_b763_01E02930 *g, Streak_b763_01E02930 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(s32, s32, s32);
+    extern void func_01E00080_b763();
+    extern void b763_01E03CB0();
+    extern s32 func_01E02050_b763();
+    extern s32 func_01E02600_b763();
+    extern s32 func_01E02800_b763();
+    Vec4f v;
+    Vec4f *p;
+    f32 tx;
+    f32 ty;
+    f32 tz;
+    s16 i;
+
+    v.x = g->pts[o->idx].x;
+    v.y = g->pts[o->idx].y;
+    v.z = g->pts[o->idx].z;
+    if (o->state == 1) {
+        func_001076F0(o->col2, 0xFF, 0xFF, 0xFF);
+        p = g->trail[o->idx].v;
+        for (i = 0; i < 30; i++) {
+            p[i].x = v.x;
+            p[i].y = v.y;
+            p[i].z = v.z;
+        }
+        tx = g->tx;
+        ty = g->ty;
+        tz = g->tz;
+        ty += func_0019A5C8() % 20 - 10;
+        tx += func_0019A5C8() % 20 - 10;
+        tz += func_0019A5C8() % 20 - 10;
+        o->dx = (tx - g->pts[o->idx].x) / 48.0f;
+        o->dy = (ty - g->pts[o->idx].y) / 48.0f;
+        o->dz = (tz - g->pts[o->idx].z) / 48.0f;
+        o->len = 20;
+        o->turn = (func_0019A5C8() >> 4) % 20 - 10;
+        o->col[3] = 0;
+        o->w = 0;
+        o->wob = func_0019A5C8() % 30;
+        o->h56 = 4;
+        o->ang = func_0019A5C8() % 360;
+        o->f48 = 10.0f;
+        o->state = 2;
+    }
+    if (o->t < 55) {
+        if (o->col[3] < 0x80) {
+            o->col[3] += 42;
+        }
+        if (o->col2[3] < 0x80) {
+            o->col2[3] += 42;
+        }
+    } else {
+        if (o->f48 >= 0.0f) {
+            o->f48 -= 1.5f;
+        } else {
+            o->state = 0;
+        }
+    }
+    if (o->t < 48) {
+        v.y += o->r * func_00108030((s32)g->sin, o->ang, 0);
+        v.x += o->r * func_00108030((s32)g->sin, o->ang, 1);
+        o->r = o->wob * func_00108030((s32)g->sin, o->h5C, 0);
+        func_01E00080_b763(&g->trail[o->idx].v[29], 30, 0, &v);
+        if (o->h5C < 180) {
+            o->h5C += 4;
+        }
+        o->ang += o->turn;
+    }
+    if (o->t < 80) {
+        if (o->t % 2 == 1) {
+            func_001076F0(o->col, 0xFF, 0xFF, 0xFF);
+        } else {
+            func_001076F0(o->col, 0xC0, 0xC0, 0xC0);
+        }
+    }
+    if (o->t != 0 && o->len < 22) {
+        o->len++;
+    }
+    if (o->t < 46) {
+        g->pts[o->idx].x += o->dx;
+        g->pts[o->idx].y += o->dy;
+        g->pts[o->idx].z += o->dz;
+    } else {
+        if (o->t < 51) {
+            g->flag = 1;
+            g->pos.x = g->trail[o->idx].v[0].x;
+            g->pos.y = g->trail[o->idx].v[0].y;
+            g->pos.z = g->trail[o->idx].v[0].z;
+            b763_01E03CB0(g, func_01E02600_b763, 0);
+            b763_01E03CB0(g, func_01E02050_b763, 0);
+        }
+        if (o->t == 48) {
+            g->pos.x = g->trail[o->idx].v[0].x;
+            g->pos.y = g->trail[o->idx].v[0].y;
+            g->pos.z = g->trail[o->idx].v[0].z;
+            b763_01E03CB0(g, func_01E02800_b763, 0);
+        }
+    }
+    o->t++;
+    return 0;
+}
 
 /* shape b763:01E02F10, 83 insns: a blue-grey spinning flash on the model joint (b432:01E026D0 shape): f4C 50 growing by 1 up
    to 150; second alpha up by 19 to 0xC0 for 200 frames, then down by 15 until it ends */

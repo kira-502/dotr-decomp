@@ -563,7 +563,138 @@ static s32 func_01E010E0_b585(s32 arg0, Obj_b585_01E010E0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b585", func_01E01210_b585);
+/* shape b585:01E01210 (B585_OBJ_MOVE_6_), 323 insns, 1 copy: sets up a rising puff of one of three kinds, then
+   grows and fades it */
+
+typedef struct {
+    u8 pad0[6];
+    s16 f6;
+    u8 pad8[0x18];
+    s32 f20;
+    s32 f24;
+    s32 f28;
+    u8 pad2C[4];
+    f32 f30;
+    f32 f34;
+    f32 f38;
+    u8 pad3C[0xC];
+    f32 f48;
+    f32 f4C;
+    s16 kind;
+    s16 f52;
+    s16 tick;
+    u8 pad56[2];
+    s16 mode;
+    s16 f5A;
+    s16 f5C;
+    u8 pad5E[2];
+    u8 col0[4];
+    u8 col1[4];
+} Fx_b585_01E01210;
+
+typedef struct {
+    u8 pad0[0xB2B8];
+    s16 flip;
+    u8 padB2BA[2];
+    s16 side;
+} Game_b585_01E01210;
+
+static s32 func_01E01210_b585(Game_b585_01E01210 *g, Fx_b585_01E01210 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+
+    if (o->mode == 1) {
+        o->f48 = 20.0f;
+        o->f4C = o->f48 - 58.0f;
+        if (o->kind == 0) {
+            if (g->side % 2 == 0) {
+                func_001076F0(o->col1, 0x80, 0xC0, 0x80);
+                func_001076F0(o->col0, 8, 8, 8);
+            }
+            if (g->side % 2 == 1) {
+                func_001076F0(o->col1, 0x80, 0xFF, 0x80);
+                func_001076F0(o->col0, 0x38, 0x38, 0x38);
+            }
+            o->f6 = 8;
+        }
+        if (o->kind == 1) {
+            if (g->side % 2 == 0) {
+                func_001076F0(o->col1, 0x60, 0x80, 0x60);
+                func_001076F0(o->col0, 8, 8, 8);
+            }
+            if (g->side % 2 == 1) {
+                func_001076F0(o->col1, 0x40, 0xFF, 0x40);
+                func_001076F0(o->col0, 0x38, 0x38, 0x38);
+            }
+            o->f34 = 10.0f;
+            o->f6 = 10;
+        }
+        if (o->kind == 2) {
+            if (g->side % 2 == 0) {
+                func_001076F0(o->col1, 0x50, 0x50, 0x50);
+                func_001076F0(o->col0, 0x28, 0x28, 0x28);
+            }
+            if (g->side % 2 == 1) {
+                func_001076F0(o->col1, 0x60, 0x60, 0x60);
+                func_001076F0(o->col0, 0x30, 0x30, 0x30);
+            }
+            o->f34 = 70.0f;
+            o->f6 = 10;
+        }
+        if (o->kind == 0) {
+            o->f5A = 15;
+            o->f5C = 15;
+            o->f52 = (func_0019A5C8() >> 4) % 2;
+        }
+        if (o->kind == 1) {
+            o->f5A = 10;
+            o->f5C = 3;
+        }
+        if (o->kind == 2) {
+            o->f5A = 60;
+            o->f5C = 60;
+        }
+        o->f38 = func_0019A5C8() % 100 + 350;
+        o->f38 = o->f38 / 10.0f;
+        o->f30 = 350.0f;
+        o->f30 = o->f30 / 10.0f;
+        o->mode = 2;
+        o->col1[3] = 0;
+        if (g->flip != 0) {
+            o->f20 = -0x4000;
+        } else {
+            o->f20 = 0x4000;
+        }
+        o->f28 = func_0019A5C8() % 0xFFFF;
+    }
+    if (o->tick < o->f6) {
+        o->col1[3] = 0x80;
+    } else if (o->col1[3] > 12) {
+        o->col1[3] -= 11;
+    } else {
+        o->mode = 0;
+    }
+    if (o->kind == 0) {
+        o->f48 += o->f38;
+        o->f4C = 0.2f * o->f48;
+        if (o->f52 == 0) {
+            o->f24 += 0x80;
+        } else {
+            o->f24 -= 0x80;
+        }
+    }
+    if (o->kind == 1) {
+        o->f48 += o->f38 / 4.0f;
+        o->f4C = 0.7f * o->f48;
+        o->f34 += o->f38;
+    }
+    if (o->kind == 2) {
+        o->f48 += o->f38 / 4.0f;
+        o->f4C = 0.3f * o->f48;
+        o->f34 += o->f38;
+    }
+    o->tick++;
+    return 0;
+}
 
 /* shape b354:01E020F0, 125 insns: b183:01E012F0 family: a swelling blue/white glow (one of two colour pairs), random spin, speed 10..14.9 added to its size each frame; full alpha for 8 frames, then out by 5 */
 

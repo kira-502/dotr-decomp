@@ -817,4 +817,228 @@ static s32 func_01E01DE0_b135(s32 ot, Trail_b039_01E03820 *o, Pt_b039_01E03820 *
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b135", func_01E027C0_b135);
+/* shape b135:01E027C0 (b135), 401 insns, 1 copy: b135 scene manager: setup (three joints, a 256-point belt, a
+   32-point sparkle emitter), then the belt grown behind a joint from frame 12 and drawn in flickering colours, the
+   negative-screen fade, and from frame 0x6F the sparkles drawn, grown and respawned */
+
+typedef struct {
+    void *tex;
+    u8 b, g, r, a;
+    s32 flags;
+    f32 base;
+    s16 rect[8];
+    Vec4f vel;
+    f32 sx;
+    f32 grow;
+    u8 padA8[2];
+    s16 kind;
+    s16 limit;
+    s16 max;
+    s16 n1;
+    s16 n2;
+    s16 hB4;
+    u8 padB6[0xA];
+} Belt_b135_01E027C0;
+
+typedef struct {
+    u8 crd[0x70];
+    Belt_b135_01E027C0 belt;
+    Pt_b039_01E036B0 bpts[0x100];
+    Vec4f scale;
+    u8 pad10D0[0x10];
+    Vec4f pos;
+    u8 pad10F0[0x40];
+    Vec4f cam;
+    u8 pad1140[0x10];
+    Vec4f joint;
+    u8 pad1160[0x40];
+    Emit_b000_01E01140 emit;
+    Pt_b000_01E01140 pts[32];
+    u8 pad1400[0x10];
+    s32 count;
+    s32 frame;
+    s32 id;
+    s32 w141C;
+    u8 neg[4];
+    s32 jA;
+    s32 jB;
+    s32 jC;
+} Scene_b135_01E027C0;
+
+static s32 func_01E027C0_b135(s32 arg0, s32 code) {
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern void func_001039A0(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F53C0(s32, s32, void *);
+    extern void func_00103290(void *, s32);
+    extern void func_00103260(void *, s32);
+    extern void func_00103660(void *, void *);
+    extern s32 func_001043F0(void *, f32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern s32 func_001032C0(u8 *, u8, s32);
+    extern s32 func_0019A5C8();
+    Scene_b135_01E027C0 *g = (Scene_b135_01E027C0 *)arg0;
+    s32 ot;
+    Vec4f v;
+    Vec4f t[2];
+    s32 tex[4];
+    s32 i;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x1430);
+        func_00103890(g);
+        func_00103890(&g->scale);
+        func_00103890(&g->cam);
+        g->jA = func_001F5560(func_001F53A0(), 0x12, 1);
+        g->jB = func_001F5560(func_001F53A0(), 1, 0);
+        g->jC = func_001F5560(func_001F53A0(), 0x42, 0);
+        g->count = 0xE6;
+        g->frame = 1;
+        g->id = code;
+        g->w141C = 0x10;
+        g->neg[2] = 0x60;
+        g->neg[1] = 0x10;
+        g->neg[0] = 0x80;
+        g->neg[3] = 0;
+        func_00103290(tex, 2);
+        g->belt.tex = (void *)tex[0];
+        g->belt.flags = 0x8003;
+        g->belt.r = 0x80;
+        g->belt.g = 0x80;
+        g->belt.b = 0x80;
+        g->belt.a = 0;
+        g->belt.rect[0] = 0;
+        g->belt.rect[1] = 0;
+        g->belt.rect[2] = 0x20;
+        g->belt.rect[3] = 0x40;
+        g->belt.rect[4] = 0;
+        g->belt.rect[5] = 0;
+        g->belt.rect[6] = 0x20;
+        g->belt.rect[7] = 0x40;
+        g->belt.base = 150.0f;
+        g->belt.grow = 10.0f;
+        g->belt.sx = 1.03f;
+        g->belt.kind = 8;
+        g->belt.limit = 0;
+        g->belt.max = 0x40;
+        g->belt.n1 = 0x100;
+        g->belt.n2 = 0;
+        g->belt.hB4 = 1;
+        func_00103260(tex, 1);
+        g->emit.texture = (void *)tex[0];
+        g->emit.flags = 0x48000003;
+        g->emit.color.r = 0x60;
+        g->emit.color.g = 0x10;
+        g->emit.color.b = 0x80;
+        g->emit.color.a = 0x40;
+        g->emit.size = 20.0f;
+        g->emit.rot.x = 0.0f;
+        g->emit.rot.y = 0.0f;
+        g->emit.rot.z = 0.0f;
+        g->emit.r.i.u = 0;
+        g->emit.r.i.v = 0;
+        g->emit.r.i.w = 0x18;
+        g->emit.r.i.h = 0x20;
+        g->emit.r.i.u0 = 0;
+        g->emit.r.i.v0 = 0;
+        g->emit.r.i.tw = 0x80;
+        g->emit.r.i.th = 0x40;
+        g->emit.pts = g->pts;
+        g->emit.rots = NULL;
+        *(s32 *)g->emit.pad48 = 0;
+        g->emit.radius = 15.0f;
+        g->emit.grow = 10.0f;
+        g->emit.count = 0x20;
+        g->emit.nframes = 8;
+        g->emit.rate = 0x10;
+        for (i = 0; i < g->emit.count; i++) {
+            func_001043F0(&v, 14.0f);
+            g->pts[i].x = v.x;
+            g->pts[i].y = v.y;
+            g->pts[i].z = v.z;
+            g->pts[i].t = -(func_0019A5C8() % 12);
+            g->pts[i].a = 0x40;
+            g->pts[i].frame = func_0019A5C8() % 8;
+        }
+        return 0;
+    }
+    func_001F53C0(1, func_001F53A0(), &t[0]);
+    func_001F53C0(1, func_001F5380(), &t[1]);
+    func_001F53C0(1, func_001F5380(), &g->joint);
+    func_001F53C0(1, func_001F5380(), &g->belt.vel);
+    func_00103660(&g->belt.vel, &t[0]);
+    g->belt.vel.x /= 80.0f;
+    g->belt.vel.y /= 80.0f;
+    g->belt.vel.z /= 80.0f;
+    if (g->frame >= 12) {
+        func_001F5620(func_001F53A0(), g->jC, &g->pos);
+        func_01E01C70_b135((void *)&g->belt, (void *)g->bpts, &g->pos.x);
+    }
+    func_001038D0(g);
+    func_001039A0(&g->scale);
+    func_001038D0(&g->cam);
+    if (g->frame >= 0xBE) {
+        func_00103470(&g->neg[3], 0, 8);
+    } else {
+        func_001032C0(&g->neg[3], 0x80, 8);
+    }
+    func_01E00120_b135(g->neg);
+    if (g->frame > 12) {
+        g->belt.r = func_0019A5C8() % 64 + 64;
+        g->belt.g = func_0019A5C8() % 64 + 64;
+        g->belt.b = func_0019A5C8() % 64 + 64;
+        func_01E01DE0_b135(ot, (Trail_b039_01E03820 *)&g->belt, (Pt_b039_01E03820 *)g->bpts,
+                           (Cam_b039_01E03820 *)g);
+        if (g->frame >= 0xAF) {
+            func_00103470(&g->belt.a, 0, 8);
+        } else {
+            func_001032C0(&g->belt.a, 0x80, 8);
+        }
+    }
+    if (g->frame >= 0x6F) {
+        func_01E00380_b135(ot, (Emit_b000_01E01140 *)&g->emit, (Cam_b000_01E01140 *)&g->cam);
+        if (g->frame >= 0xBE) {
+            func_00103470(&g->emit.color.a, 0, 2);
+        } else {
+            func_001032C0(&g->emit.color.a, 0x40, 1);
+        }
+        for (i = 0; i < g->emit.count; i++) {
+            if (g->pts[i].t >= 0) {
+                g->pts[i].x *= 1.03f;
+                g->pts[i].y *= 1.03f;
+                g->pts[i].z *= 1.03f;
+                func_00103470(&g->pts[i].a, 0, 4);
+            }
+            if (g->pts[i].t >= 0x10) {
+                func_001043F0(&v, 14.0f);
+                g->pts[i].x = v.x;
+                g->pts[i].y = v.y;
+                g->pts[i].z = v.z;
+                g->pts[i].t = 0;
+                g->pts[i].a = 0x40;
+            }
+        }
+    }
+    g->frame++;
+    g->count--;
+    if (g->frame == 0xBE) {
+        return 2;
+    }
+    if (g->frame == 0x65) {
+        return 1;
+    }
+    if (g->frame >= 0x6F && g->frame <= 0xBD) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}

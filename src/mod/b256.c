@@ -674,7 +674,119 @@ static void func_01E01980_b256(Obj_b020_01E00E70 *o, Fx_b020_01E00E70 *fx, s32 f
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b256", func_01E01CF0_b256);
+/* shape b256:01E01CF0 (B256_W_S), 379 insns, 1 copy: B256_W_S, the effect scene step: counts the frame (0xCBB8);
+   frames 151..351 take joint 0 into base, raise it 3.3 and copy it to pos; 123..134 / 145..155 spawn 0x1E022E0 and
+   four 0x1E02A40 at joints 3 / 5; frames 123/143 spawn 0x1E02FC0 on side 0/1, 124/146 0x1E03B50; 128/149 0x1E02D00
+   and two 0x1E028B0 (angles 45/135); 97/118/128 and 107/129 put pos 1.5 under joint 0 / 1 and spawn thirteen
+   0x1E02DF0; frame 23 spawns 0x1E03A60 and 0x1E03DC0 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xCAD0 - 0x260];
+    Vec4f base;
+    u8 padCAE0[0xCB44 - 0xCAE0];
+    s16 joint[6];
+    u8 padCB50[0xCBA2 - 0xCB50];
+    s16 ang;
+    u8 padCBA4[0xCBB0 - 0xCBA4];
+    s16 flag;
+    u8 padCBB2[0xCBB8 - 0xCBB2];
+    s16 t;
+} Scene_b256_01E01CF0;
+
+static void func_01E01CF0_b256(Scene_b256_01E01CF0 *g) {
+    extern void b256_01E022E0(void);
+    extern void b256_01E028B0(void);
+    extern void b256_01E02A40(void);
+    extern void b256_01E02D00(void);
+    extern void b256_01E02DF0(void);
+    extern void b256_01E02FC0(void);
+    extern void b256_01E03A60(void);
+    extern void b256_01E03B50(void);
+    extern void b256_01E03DC0(void);
+    extern void b256_01E04900(Scene_b256_01E01CF0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    s16 i;
+
+    g->t++;
+    if (g->t > 150 && g->t < 352) {
+        func_001F5620(func_001F53A0(), g->joint[0], &g->base);
+        g->base.y += 3.3f;
+        g->pos = g->base;
+    }
+    if (g->t >= 123 && g->t < 135) {
+        func_001F5620(func_001F53A0(), g->joint[3], &g->pos);
+        b256_01E04900(g, b256_01E022E0, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+    }
+    if (g->t >= 145 && g->t < 156) {
+        func_001F5620(func_001F53A0(), g->joint[5], &g->pos);
+        b256_01E04900(g, b256_01E022E0, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+        b256_01E04900(g, b256_01E02A40, 0);
+    }
+    if (g->t == 123) {
+        g->flag = 0;
+        b256_01E04900(g, b256_01E02FC0, 0);
+    }
+    if (g->t == 143) {
+        g->flag = 1;
+        b256_01E04900(g, b256_01E02FC0, 0);
+    }
+    if (g->t == 124) {
+        b256_01E04900(g, b256_01E03B50, 0);
+    }
+    if (g->t == 146) {
+        b256_01E04900(g, b256_01E03B50, 0);
+    }
+    if (g->t == 128) {
+        func_001F5620(func_001F53A0(), g->joint[3], &g->pos);
+        b256_01E04900(g, b256_01E02D00, 0);
+        g->ang = 45;
+        g->flag = 0;
+        b256_01E04900(g, b256_01E028B0, 0);
+        g->ang = 135;
+        g->flag = 1;
+        b256_01E04900(g, b256_01E028B0, 0);
+    }
+    if (g->t == 149) {
+        func_001F5620(func_001F53A0(), g->joint[5], &g->pos);
+        b256_01E04900(g, b256_01E02D00, 0);
+        g->ang = 135;
+        g->flag = 0;
+        b256_01E04900(g, b256_01E028B0, 0);
+        g->ang = 45;
+        g->flag = 1;
+        b256_01E04900(g, b256_01E028B0, 0);
+    }
+    if (g->t == 97 || g->t == 118 || g->t == 128) {
+        func_001F5620(func_001F53A0(), g->joint[0], &g->pos);
+        g->pos.y -= 1.5f;
+        for (i = 0; i < 13; i++) {
+            b256_01E04900(g, b256_01E02DF0, 0);
+        }
+    }
+    if (g->t == 107 || g->t == 129) {
+        func_001F5620(func_001F53A0(), g->joint[1], &g->pos);
+        g->pos.y -= 1.5f;
+        for (i = 0; i < 13; i++) {
+            b256_01E04900(g, b256_01E02DF0, 0);
+        }
+    }
+    if (g->t == 23) {
+        b256_01E04900(g, b256_01E03A60, 0);
+    }
+    if (g->t == 23) {
+        b256_01E04900(g, b256_01E03DC0, 0);
+    }
+}
 
 /* shape b256:01E022E0, 149 insns: constant variant of b418:01E020E0 (40->10, 70->10, 45->5) */
 

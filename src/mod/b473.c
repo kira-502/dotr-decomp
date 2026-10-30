@@ -1215,6 +1215,184 @@ static s32 func_01E04B60_b473(Emit_b042_01E038E0 *arg0, s32 arg1, s32 n) {
 
 INCLUDE_ASM("asm/nonmatchings/mod/b473", func_01E050B0_b473);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b473", func_01E05C20_b473);
+/* shape b042:01E05C20 (ShFx_BladeNdl), 353 insns, 4 copies (-O2,p): b097:01E03260 at -O2, the lerped
+   points and the copied point one Vec4f v[3]: spawners riding a ribbon emitter spawn a 0x74-byte particle per segment
+   between the lerped trail points */
+
+typedef struct {
+    u8 kind;
+    u8 pad1[3];
+    f32 x, y, z;
+} Pool_b042_01E05C20;
+
+typedef struct {
+    s32 n;
+    f32 x[8];
+    f32 y[8];
+    f32 z[8];
+    Vec4f out[28];
+} Spl_b042_01E05C20;
+
+typedef struct {
+    u8 kind;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 b6;
+    u8 pad7;
+    Pool_b042_01E05C20 *pool;
+    s16 idx[2][9];
+    u8 slot;
+    u8 count;
+    u8 selA;
+    u8 selB;
+    u8 type;
+    u8 pad35;
+    s16 vset;
+    f32 t1;
+    f32 t2;
+    f32 width;
+    u8 b1, g1, r1, a1;
+    u8 b2, g2, r2, a2;
+    u8 b3, g3, r3, a3;
+    f32 dx;
+    f32 dy;
+    u8 pad58[8];
+} Rib_b042_01E05C20;
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_b042_01E05C20;
+
+typedef struct {
+    u8 pad0[4];
+    u8 flags;
+    u8 b5;
+    u8 pad6[2];
+    u8 b8;
+    u8 b9;
+    u8 padA[2];
+    s32 wC;
+    f32 len;
+    f32 f14;
+    f32 f18;
+    Col_b042_01E05C20 c0;
+    Col_b042_01E05C20 c1;
+    Vec4f a;
+    Vec4f b;
+    u8 pad44[0x10];
+    u8 x54[0x20];
+} Part_b042_01E05C20;
+
+typedef struct {
+    u8 pad0[4];
+    u8 flags;
+    u8 pad5[3];
+    Rib_b042_01E05C20 *rib;
+    Part_b042_01E05C20 *pool;
+    s32 w10;
+    u8 slot;
+    u8 sub;
+    u8 b16;
+    u8 count;
+    f32 scale;
+    f32 f1C;
+    f32 f20;
+    Col_b042_01E05C20 c0;
+    Col_b042_01E05C20 c1;
+} Spawn_b042_01E05C20;
+
+#pragma optimization_level 2
+
+static s32 func_01E05C20_b473(Spawn_b042_01E05C20 *arg0, s32 unused, s32 n) {
+    extern s32 func_00101C30(void *, s32, s32);
+    extern void func_00101AD0(void *, s32, s32, s32);
+    extern s32 func_00102550(void *);
+    extern f32 func_0020D0E0(void *);
+    extern void func_0020D070(void *);
+    extern void func_00101940(void *, void *);
+    extern s32 func_0019A5C8(void);
+    Spawn_b042_01E05C20 *e = arg0;
+    s32 i;
+    Rib_b042_01E05C20 *rib;
+    s32 k;
+    s32 idx;
+    Pool_b042_01E05C20 *pool;
+    Pool_b042_01E05C20 *pt;
+    s32 j;
+    Spl_b042_01E05C20 spl[2];
+    Vec4f d;
+    Vec4f v[3];
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0 || e->rib == NULL) {
+            continue;
+        }
+        rib = e->rib;
+        pool = rib->pool;
+        for (j = 0; j < 2; j++) {
+            spl[j].n = 0;
+            for (k = 0; k < rib->count; k++) {
+                if (rib->idx[j][k] >= 0) {
+                    pt = &pool[rib->idx[j][k]];
+                    spl[j].x[spl[j].n] = pt->x;
+                    spl[j].y[spl[j].n] = pt->y;
+                    spl[j].z[spl[j].n] = pt->z;
+                    spl[j].n++;
+                }
+            }
+        }
+        if (spl[0].n != spl[1].n || func_00102550(&spl[0]) == 0 || func_00102550(&spl[1]) == 0) {
+            continue;
+        }
+        for (k = 0; k < e->count; k++) {
+            v[0].x = spl[1].out[k].x + rib->t1 * (spl[0].out[k].x - spl[1].out[k].x);
+            v[0].y = spl[1].out[k].y + rib->t1 * (spl[0].out[k].y - spl[1].out[k].y);
+            v[0].z = spl[1].out[k].z + rib->t1 * (spl[0].out[k].z - spl[1].out[k].z);
+            v[1].x = spl[1].out[k + 1].x + rib->t1 * (spl[0].out[k + 1].x - spl[1].out[k + 1].x);
+            v[1].y = spl[1].out[k + 1].y + rib->t1 * (spl[0].out[k + 1].y - spl[1].out[k + 1].y);
+            v[1].z = spl[1].out[k + 1].z + rib->t1 * (spl[0].out[k + 1].z - spl[1].out[k + 1].z);
+            v[2] = spl[1].out[k];
+            idx = func_00101C30(e->pool, 0x74, e->slot);
+            if (idx < 0) {
+                continue;
+            }
+            func_00101AD0(&e->pool[idx], (u8)(e->sub - ((e->flags & 1) ? k : 0)), 0, 0xFF);
+            if (e->flags & 2) {
+                d.x = v[1].x - v[0].x;
+                d.y = v[1].y - v[0].y;
+                d.z = v[1].z - v[0].z;
+            } else {
+                d.x = v[0].x - v[2].x;
+                d.y = v[0].y - v[2].y;
+                d.z = v[0].z - v[2].z;
+            }
+            if (!(func_0020D0E0(&d) <= 1.0f)) {
+                func_0020D070(&d);
+            }
+            e->pool[idx].len = func_0020D0E0(&d);
+            if (e->scale) {
+                e->pool[idx].len *= e->scale;
+            }
+            e->pool[idx].f14 = e->f1C;
+            e->pool[idx].flags = 2;
+            e->pool[idx].b5 = 0;
+            e->pool[idx].b8 = e->b16;
+            e->pool[idx].f18 = e->f20;
+            e->pool[idx].b9 = func_0019A5C8() >> 4;
+            e->pool[idx].wC = e->w10;
+            e->pool[idx].c0 = e->c0;
+            e->pool[idx].c1 = e->c1;
+            e->pool[idx].a = v[0];
+            e->pool[idx].b = v[1];
+            func_00101940(&d, e->pool[idx].x54);
+        }
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b473", func_01E061B0_b473);

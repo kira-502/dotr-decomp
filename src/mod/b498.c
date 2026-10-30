@@ -1082,7 +1082,96 @@ static void func_01E03570_b498(u8 *ctx, Obj_b120_01E03990 *o, void *pkt, s32 mod
     func_00108F90(quad, pkt, m, ot);
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b498", func_01E03710_b498);
+/* shape b498:01E03710 (B498PAINT_RAIN5), 174 insns, 2 copies: b120:01E03B30's source: mode 0 sets up the drawing
+   state (a 0x8D matrix from the anim's angle at 0x34, colour, the game's texture at 0x358); otherwise draws a ring of
+   18 quads 20 apart around the anim's point, the inner edge at radius 0 (still multiplied out), into the game's
+   target with its depth */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b498_01E03710;
+
+typedef struct {
+    s16 x, y, z;
+    s16 w;
+    u8 pad08[8];
+    u8 rot[0x18];
+    u8 col[0xC];
+    s16 h34;
+    u8 pad36[2];
+    s16 radius;
+    s16 start;
+} Anim_b498_01E03710;
+
+typedef struct {
+    u8 pad00[0x358];
+    s32 texture;
+    u8 pad35C[0xAC7C - 0x35C];
+    s32 target;
+    u8 padAC80[0xC];
+    f32 depth;
+    u8 padAC90[0xADC0 - 0xAC90];
+    u8 trig[1];
+} Game_b498_01E03710;
+
+#pragma opt_propagation off
+
+static void func_01E03710_b498(Game_b498_01E03710 *g, Anim_b498_01E03710 *an, void *p, s32 mode) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec_b498_01E03710 quad[4];
+    Vec_b498_01E03710 pos;
+    f32 m[16];
+    f32 rm[4];
+    f32 inner;
+    s32 k;
+    s16 j;
+    s16 a;
+
+    j = 0;
+    if (mode == 0) {
+        func_00106080(rm, 0x8D, an->h34, rm);
+        func_00109270(p, 0, 0);
+        func_00107790(p, an->col, 0);
+        func_00108500(p, rm, 1);
+        func_00208700(p, g->texture, 1);
+    } else {
+        pos.x = an->x;
+        pos.y = an->y;
+        pos.z = an->z;
+        func_00108EF0(m, 0, an->rot, &pos);
+        quad[0].y = 0.0f;
+        quad[1].y = 0.0f;
+        quad[2].y = 0.0f;
+        quad[3].y = 0.0f;
+        inner = 0.0f;
+        k = 0;
+        do {
+            a = an->start + j;
+            quad[2].x = an->radius * func_00108030(g->trig, a, 1);
+            quad[2].z = an->radius * func_00108030(g->trig, a, 0);
+            quad[0].x = inner * func_00108030(g->trig, a, 1);
+            quad[0].z = inner * func_00108030(g->trig, a, 0);
+            a = an->start + 20 + j;
+            quad[3].x = an->radius * func_00108030(g->trig, a, 1);
+            quad[3].z = an->radius * func_00108030(g->trig, a, 0);
+            quad[1].x = inner * func_00108030(g->trig, a, 1);
+            quad[1].z = inner * func_00108030(g->trig, a, 0);
+            if (func_00205630(quad, 0x70000000, m, p, &g->depth) != 0) {
+                func_002075F0(p, g->target, (u32)g->depth);
+            }
+            j += 20;
+        } while (++k < 18);
+    }
+}
+#pragma opt_propagation reset
 
 /* shape b120:01E03DF0, 170 insns: mode 0 sets up the packet (a 0x9C matrix, the anim's colour on all four corners,
    the game's texture at 0x35C); otherwise builds the game's matrix (0x290) from the anim's two positions and two

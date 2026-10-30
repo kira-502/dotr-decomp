@@ -869,7 +869,201 @@ static s32 func_01E02150_b503(Game_b503_01E02150 *g, Glow_b503_01E02150 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b503", func_01E02440_b503);
+/* shape b503:01E02440 (b503), 376 insns, 1 copy: B503 scene manager (b505:01E013F0 form): set up models, textures and
+   the shake table, then step and draw 190 glows of four kinds and return the phase by timer */
+
+typedef struct Fx_b503_01E02440 {
+    s16 x, y, z;
+    u8 pad6[0x1E];
+    void *fn;
+    u8 pad28[0xA];
+    s16 h32;
+    s16 h34;
+    s16 used;
+    u8 pad38[8];
+} Fx_b503_01E02440;
+
+typedef struct Q_b503_01E02440 {
+    f32 a, b, c, d;
+} Q_b503_01E02440;
+
+typedef struct Scene_b503_01E02440 {
+    u8 pad0[0x20];
+    f32 px, py, pz;
+    u8 pad2C[0x80 - 0x2C];
+    s32 ot;
+    u8 pad84[4];
+    s32 texture;
+    u8 pad8C[8];
+    Q_b503_01E02440 rect;
+    u8 padA4[0x14];
+    s16 count;
+    u8 padBA[4];
+    s16 mode;
+    u8 padC0[0x18];
+    u8 camD8[0x2A0 - 0xD8];
+    Fx_b503_01E02440 fx[190];
+    u8 pad3220[0x3250 - 0x3220];
+    s32 tex2[2];
+    u8 pad3258[0x3270 - 0x3258];
+    s32 state;
+    u8 pad3274[8];
+    s32 ot2;
+    u8 pad3280[0x329C - 0x3280];
+    s16 model0;
+    u8 pad329E[0x32AA - 0x329E];
+    s16 model5;
+    u8 pad32AC[6];
+    s16 flag;
+    s16 id;
+    s16 timer;
+    s8 rnd[256];
+    u8 cam[0x3530 - 0x33B8];
+} Scene_b503_01E02440;
+
+static s32 func_01E02440_b503(s32 arg0, s32 id) {
+    Scene_b503_01E02440 *g = (Scene_b503_01E02440 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern void func_01E01240_b503();
+    extern s32 func_01E01740_b503();
+    extern s32 func_01E01AB0_b503();
+    extern s32 func_01E01E00_b503();
+    extern s32 func_01E02150_b503();
+    extern void func_01E00920_b503();
+    extern void func_01E00CE0_b503();
+    s32 n;
+    Vec4f v;
+    Q_b503_01E02440 r0;
+    Q_b503_01E02440 r1;
+    Q_b503_01E02440 r2;
+    Q_b503_01E02440 r3;
+    s32 info[4];
+    s32 i;
+
+    n = 0;
+    g->ot = (s32)func_00207500();
+    g->ot2 = (s32)func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x3530);
+        func_00107C10(g->cam);
+        func_00107C10(g->camD8);
+        g->id = id;
+        g->state = 0x134;
+        g->model0 = func_001F5560(func_001F53A0(), 0xB, 1);
+        g->model5 = func_001F5560(func_001F5380(), 1, 1);
+        for (i = 0; i < 2; i++) {
+            g->tex2[i] = func_00202BF0(5, i);
+        }
+        func_001F6160(func_001F53A0(), info);
+        g->flag = (s32)(info[1] / 180.0f);
+        for (i = 0; i < 256; i++) {
+            g->rnd[i] = func_0019A5C8() % 30 - 15;
+        }
+        return 0;
+    }
+    func_01E01240_b503(g, 0);
+    for (i = 0; i < 190; i++) {
+        if (g->fx[i].used != 0) {
+            if (g->fx[i].fn == func_01E01740_b503) {
+                func_01E01740_b503(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01AB0_b503) {
+                func_01E01AB0_b503(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01E00_b503) {
+                func_01E01E00_b503(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E02150_b503) {
+                func_01E02150_b503(g, &g->fx[i]);
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &v);
+    for (i = 0; i < 190; i++) {
+        if (g->fx[i].used != 0) {
+            n++;
+            if (g->fx[i].fn == func_01E01740_b503) {
+                g->texture = g->tex2[0];
+                func_00106080(&r0, 0x14, g->fx[i].h34, 0);
+                g->rect = r0;
+                v.x = g->fx[i].x;
+                v.y = g->fx[i].y;
+                v.z = g->fx[i].z;
+                g->count = 5;
+                g->mode = 0;
+                func_01E00920_b503(g, &g->fx[i], g->rnd, v);
+                g->count = 0;
+            }
+            if (g->fx[i].fn == func_01E01AB0_b503) {
+                g->texture = g->tex2[1];
+                func_00106080(&r1, 0x14, g->fx[i].h34, 0);
+                g->rect = r1;
+                if (g->fx[i].h32 > 3) {
+                    g->count = 3;
+                    g->mode = func_0019A5C8() % 4;
+                    g->px = g->fx[i].x;
+                    g->py = g->fx[i].y;
+                    g->pz = g->fx[i].z;
+                    func_01E00CE0_b503(g, &g->fx[i], 0x20, g->rnd);
+                    g->count = 0;
+                }
+            }
+            if (g->fx[i].fn == func_01E01E00_b503) {
+                g->texture = g->tex2[0];
+                func_00106080(&r2, 0x14, g->fx[i].h34, 0);
+                g->rect = r2;
+                v.x = g->fx[i].x;
+                v.y = g->fx[i].y;
+                v.z = g->fx[i].z;
+                g->count = 5;
+                g->mode = 0;
+                func_01E00920_b503(g, &g->fx[i], g->rnd, v);
+                g->count = 0;
+            }
+            if (g->fx[i].fn == func_01E02150_b503) {
+                g->texture = g->tex2[1];
+                func_00106080(&r3, 0x14, g->fx[i].h34, 0);
+                g->rect = r3;
+                if (g->fx[i].h32 > 3) {
+                    g->count = 3;
+                    g->mode = func_0019A5C8() % 4;
+                    g->px = g->fx[i].x;
+                    g->py = g->fx[i].y;
+                    g->pz = g->fx[i].z;
+                    func_01E00CE0_b503(g, &g->fx[i], 0x20, g->rnd);
+                    g->count = 0;
+                }
+            }
+        }
+    }
+    if (g->state != 0) {
+        g->state--;
+    }
+    if (g->timer == 0x3A) {
+        return 1;
+    }
+    if (g->timer == 300) {
+        return 4;
+    }
+    if (g->timer == 290) {
+        return 2;
+    }
+    if (g->timer > 0x44 && g->timer < 0x11D) {
+        return 6;
+    }
+    if (g->state <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b503:01E02A20, 72 insns: twin of b046:01E03E20: take the first free slot of the 190-slot pool, clear it, give
    it the scene's colour twice, the scene matrix, the scene's value 0x32B0 and the two arguments; returns 1 if a

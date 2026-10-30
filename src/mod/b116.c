@@ -1125,7 +1125,85 @@ static s32 func_01E02E90_b116(Scene_b116_01E02E90 *g, Light_b116_01E02E90 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b116", func_01E03190_b116);
+/* shape b116:01E03190, 115 insns, 1 copy: a red/yellow trail (b108:01E02010's form, 70-point rows): width 8 growing
+   by 2 to 48 once the scene timer (0x4A62) reaches 367; fills its trail row with its point, holds alpha 0xC0 until the
+   timer reaches 447, then fades by 5 until it ends; rebuilds the trail tail from its point each frame; flickers */
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b116_01E03190;
+
+typedef struct {
+    u8 pad0[0x2D80];
+    V4_b116_01E03190 pts[10];
+    u8 pad2E20[0x50];
+    V4_b116_01E03190 trail[5][70];
+    u8 pad4450[0x4A62 - 0x4450];
+    s16 timer;
+} Game_b116_01E03190;
+
+typedef struct {
+    u8 pad0[6];
+    s16 w;
+    u8 pad8[0x20];
+    u8 c0[4];
+    u8 pad2C[4];
+    s16 row;
+    s16 t;
+    u8 pad34[2];
+    s16 state;
+    s16 h38;
+} Obj_b116_01E03190;
+
+static s32 func_01E03190_b116(Game_b116_01E03190 *g, Obj_b116_01E03190 *o) {
+    extern void b116_01E00080(void *, s32, s32, void *);
+    extern void func_001076F0(void *, s32, s32, s32);
+    s32 i;
+    V4_b116_01E03190 *p;
+    V4_b116_01E03190 *q;
+
+    if (o->state == 1) {
+        o->w = 8;
+        o->c0[3] = 0;
+        p = &g->pts[o->row];
+        q = g->trail[o->row];
+        for (i = 0; i < 0x31; i++) {
+            q->x = p->x;
+            q->y = p->y;
+            q->z = p->z;
+            q++;
+        }
+        o->h38 = 10;
+        o->state = 2;
+    }
+    if (g->timer >= 367) {
+        if (o->w < 0x30) {
+            o->w += 2;
+        }
+    }
+    if (g->timer < 447) {
+        o->c0[3] = 0xC0;
+    } else {
+        if (o->c0[3] > 6) {
+            o->c0[3] -= 5;
+        } else {
+            o->state = 0;
+        }
+        if (o->h38 > 0) {
+            o->h38--;
+        }
+    }
+    if (o->t % 2 == 0) {
+        func_001076F0(o->c0, 0xF0, 0x40, 0x40);
+    } else {
+        func_001076F0(o->c0, 0xF0, 0xF0, 0x40);
+    }
+    b116_01E00080(&g->trail[o->row][0x31], 0x32, 0, &g->pts[o->row]);
+    if (g->timer >= 367) {
+        o->t++;
+    }
+    return 0;
+}
 
 /* shape b116:01E03360, 214 insns: one of five scene markers (0x30 = its slot): size 32 (slot 0) or 13, grey 0x80,
    fades in by 10 for 12 ticks, out by 7 once the scene timer passes 455; flickers 0x80 / 0x60 on odd / even ticks

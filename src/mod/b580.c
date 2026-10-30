@@ -337,7 +337,143 @@ static void func_01E00790_b580(Obj_b111_01E00D70 *obj, Data_b111_01E00D70 *data,
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b580", func_01E00CE0_b580);
+/* shape b580:01E00CE0 (B580_W_S), 359 insns, 1 copy: B580_W_S, the effect scene step: colour 0x80,0,0,0, counts the
+   frame (0x80F6); frame 110 lays out ten ring points (heights -30 step 17, radii 0 then 3, random angles), colour
+   0x20 and takes one ring (b580:01E01280); frame 1 puts the target 25 under the camera and the per-frame rise; frames
+   170..220 raise it; every frame spins the ten points 4 degrees on the sine table and turns the angle; frames 64..320
+   spawn four b580:01E01640 and one b580:01E01990 at the target */
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b580_01E00CE0;
+
+typedef struct {
+    u8 pad0[0x250];
+    f32 px, py, pz;
+    u8 pad25C[0x7F80 - 0x25C];
+    V4_b580_01E00CE0 pts[10];
+    f32 tx, ty, tz;
+    u8 pad802C[4];
+    V4_b580_01E00CE0 cam;
+    u8 pad8040[8];
+    f32 dz;
+    u8 pad804C[0x28];
+    u8 col[4];
+    u8 pad8078[0xC];
+    f32 rad[10];
+    u8 pad80AC[4];
+    s32 b0;
+    u8 pad80B4[0x10];
+    s16 ang[10];
+    u8 pad80D8[2];
+    s16 joint;
+    u8 pad80DC[0xC];
+    s16 rot;
+    u8 pad80EA[2];
+    s16 eC;
+    s16 eE;
+    u8 pad80F0[2];
+    s16 f2;
+    u8 pad80F4[2];
+    s16 frame;
+    u8 pad80F8[0x81F8 - 0x80F8];
+    u8 sin[4];
+} Ctx_b580_01E00CE0;
+
+static void func_01E00CE0_b580(Ctx_b580_01E00CE0 *g, s32 arg) {
+    extern s32 func_0019A5C8(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_001A22C0(f32);
+    extern s32 func_01E01280_b580();
+    extern s32 func_01E01640_b580();
+    extern s32 func_01E01990_b580();
+    extern s32 b580_01E02070();
+    extern s32 b580_01E02210();
+    V4_b580_01E00CE0 j;
+    V4_b580_01E00CE0 a;
+    V4_b580_01E00CE0 b;
+    s32 r[4];
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->frame++;
+    if (g->frame == 110) {
+        for (i = 0; i < 10; i++) {
+            g->pts[i].y = i * 17 - 30;
+        }
+        g->rad[0] = 0.0f;
+        for (i = 1; i < 10; i++) {
+            g->rad[i] = 3.0f;
+        }
+        for (i = 0; i < 10; i++) {
+            g->ang[i] = func_0019A5C8() % 360;
+        }
+        g->col[0] = 0x20;
+        g->col[1] = 0x20;
+        g->col[2] = 0x20;
+        g->px = 0.0f;
+        g->py = 30.0f;
+        g->pz = 0.0f;
+        for (i = 0; i < 1; i++) {
+            g->eE = 1;
+            g->b0 = 0;
+            g->f2 = 1;
+            g->eC = 0;
+            b580_01E02070(g, func_01E01280_b580, 0);
+        }
+    }
+    if (g->frame == 1) {
+        func_001F5F90(func_001F53A0(), &g->cam);
+        g->tx = g->cam.x;
+        g->ty = g->cam.y - 25.0f;
+        g->tz = g->cam.z;
+        func_001F5F90(func_001F53A0(), &a);
+        func_001F5F90(func_001F5380(), &b);
+        g->dz = (b.z - a.z) / 50.0f;
+    }
+    if (g->frame >= 170 && g->frame <= 220) {
+        g->tz += g->dz;
+    }
+    func_001F5620(func_001F5380(), g->joint, &j);
+    for (i = 0; i < 10; i++) {
+        if (i != 0) {
+            g->pts[i].x = g->rad[i] * func_00108030(g->sin, g->ang[i], 1);
+            g->pts[i].z = g->rad[i] * func_00108030(g->sin, g->ang[i], 0);
+        } else {
+            g->pts[i].x = g->rad[i] * func_00108030(g->sin, g->ang[i], 1);
+            g->pts[i].z = g->rad[i] * func_00108030(g->sin, g->ang[i], 0);
+        }
+        g->ang[i] += 4;
+        if (g->ang[i] >= 360) {
+            g->ang[i] %= 360;
+        }
+    }
+    func_001F6160(func_001F53A0(), r);
+    g->rot = func_001A22C0(r[1] / 180.0f);
+    g->rot -= 180;
+    if (g->frame >= 64 && g->frame <= 320) {
+        g->px = g->tx;
+        g->py = g->ty;
+        g->pz = g->tz;
+        b580_01E02210(g, func_01E01640_b580, 0);
+        b580_01E02210(g, func_01E01640_b580, 0);
+        b580_01E02210(g, func_01E01640_b580, 0);
+        b580_01E02210(g, func_01E01640_b580, 0);
+        g->px = g->tx;
+        g->py = g->ty;
+        g->pz = g->tz;
+        b580_01E02210(g, func_01E01990_b580, 0);
+    }
+}
+
 
 /* shape b580:01E01280, 223 insns: b521:01E010C0 in grey 0xA0 with the scene block 0x2BC0 further on; a rising pair (lead 0x4, tail 0x14): fades in by 10 below 50, out by
    14 above; finds the first scene path point (ctx+0x53C0, 8 of them) above the lead and fits two frames to that
@@ -685,7 +821,7 @@ typedef struct {
 
 static void func_01E004D0_b580();
 static void func_01E00790_b580();
-static s32 func_01E00CE0_b580();
+static void func_01E00CE0_b580();
 static s32 func_01E01280_b580();
 static s32 func_01E01640_b580();
 static s32 func_01E01990_b580();

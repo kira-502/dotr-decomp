@@ -979,7 +979,85 @@ static s32 func_01E022D0_b406(World_b406_01E022D0 *w, Spiral_b406_01E022D0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b406", func_01E02630_b406);
+/* shape b406:01E02630 (B406_OBJ_MOVE_10_), 111 insns, 1 copy (-O3,p): the spiral trail of b084:01E01FA0 in red
+   (colours 0x80,0x10,0x10 and 0xFF,0x10,0x10), with this module's own sizes and timings; the source of shape
+   b084:01E022E0, built here at -O3 */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b406_01E02630;
+
+typedef struct {
+    u8 pad0000[0x18B0];
+    Vec_b406_01E02630 trail[69];
+    u8 b1D00[0x74A0 - 0x1D00];
+    f32 pos[3];
+    u8 pad74AC[0x768A - 0x74AC];
+    s16 h768A;
+} Mgr_b406_01E02630;
+
+typedef struct {
+    u8 pad00[6];
+    s16 h6;
+    u8 pad08[0x40];
+    f32 f48;
+    u8 pad4C[8];
+    s16 h54;
+    u8 pad56[2];
+    s16 h58;
+    u8 pad5A[6];
+    u8 c60[4];
+    u8 c64[4];
+} Obj_b406_01E02630;
+
+#pragma optimization_level 3
+
+static s32 func_01E02630_b406(Mgr_b406_01E02630 *m, Obj_b406_01E02630 *o) {
+    extern void b406_01E00080(void *, s32, s32, void *);
+    extern void func_001076F0(void *, s32, s32, s32);
+    s16 i;
+    Vec_b406_01E02630 *p;
+
+    if (o->h58 == 1) {
+        o->h6 = 8;
+        o->c60[3] = 0;
+        for (i = 0, p = m->trail; i < 69; i++, p++) {
+            p->x = m->pos[0];
+            p->y = m->pos[1];
+            p->z = m->pos[2];
+        }
+        func_001076F0(o->c64, 0x80, 0x10, 0x10);
+        o->f48 = 100.0f;
+        o->h58 = 2;
+    }
+    if (o->h6 < 68) {
+        o->h6++;
+    }
+    if (m->h768A < 185) {
+        o->c60[3] = 0xC0;
+    } else {
+        if (o->c60[3] > 8) {
+            o->c60[3] -= 7;
+        } else {
+            o->h58 = 0;
+        }
+        if (o->f48 > 0.0f) {
+            o->f48 -= 1.0f;
+        }
+    }
+    if (o->h54 % 2 == 0) {
+        func_001076F0(o->c60, 0xFF, 0x10, 0x10);
+    } else {
+        func_001076F0(o->c60, 0x80, 0x10, 0x10);
+    }
+    if (o->h54 < 50) {
+        b406_01E00080(m->b1D00, 70, 0, m->pos);
+    }
+    o->h54++;
+    return 0;
+}
+
+#pragma optimization_level reset
 
 /* shape b406:01E027F0, 99 insns: a grey-red flicker flash: size 200, random angle; alpha up by 14 to 0xC0 until frame 140, then
    down by 8 until it ends; second colour flickers red; shrinks by 10 to 100 once the scene timer reaches 173; spins */

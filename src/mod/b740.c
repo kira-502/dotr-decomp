@@ -599,4 +599,207 @@ static s32 func_01E01A10_b740(s32 obj __attribute__((aligned(8))), Obj_b055_01E0
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b740", func_01E01F30_b740);
+/* shape b740:01E01F30 (b740), 366 insns, 1 copy: b740 scene manager: setup (two joints, a 64-point sparkle emitter,
+   eight yarn strands), then the strands drawn around the falling centre point between frames 0x2C and 0xA7 and the
+   sparkles grown and respawned */
+
+typedef struct {
+    void *tex;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 width;
+    s16 h10;
+    s16 h12;
+    s16 h14;
+    s16 h16;
+    u8 pad18[8];
+    s32 w20;
+    s32 w24;
+    s16 max;
+    s16 jitter;
+    s16 progress;
+    u8 pad2E[0x12];
+} Yarn_b740_01E01F30;
+
+typedef struct {
+    u8 crd[0x70];
+    Yarn_b740_01E01F30 yarn[8];
+    Vec4f scale;
+    u8 pad280[0x10];
+    Vec4f joint;
+    u8 pad2A0[0x40];
+    Emit_b000_01E01140 emit;
+    Pt_b000_01E01140 pts[64];
+    Vec4f pos;
+    s32 count;
+    s32 frame;
+    s32 id;
+    s32 w75C;
+    s32 w760;
+    s32 jA;
+    s32 jB;
+    u8 pad76C[4];
+} Scene_b740_01E01F30;
+
+static s32 func_01E01F30_b740(s32 arg0, s32 code) {
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F53C0(s32, s32, void *);
+    extern void func_00103290(void *, s32);
+    extern s32 func_001043F0(void *, f32);
+    extern void func_00104490(void *, void *, s32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern s32 func_0019A5C8();
+    Scene_b740_01E01F30 *g = (Scene_b740_01E01F30 *)arg0;
+    s32 ot;
+    Vec4f v;
+    Vec4f t[2];
+    s32 tex[4];
+    s32 i;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x770);
+        func_00103890(g);
+        func_00103890(&g->scale);
+        g->jA = func_001F5560(func_001F53A0(), 0x13, 1);
+        g->jB = func_001F5560(func_001F53A0(), 0x14, 0);
+        g->count = 0x114;
+        g->frame = 1;
+        g->id = code;
+        g->w75C = 0;
+        g->w760 = 30;
+        func_00103290(tex, 0);
+        g->emit.texture = (void *)tex[0];
+        g->emit.flags = 0x48080003;
+        g->emit.color.r = 0x80;
+        g->emit.color.g = 0x80;
+        g->emit.color.b = 0x80;
+        g->emit.color.a = 0x40;
+        g->emit.size = 20.0f;
+        g->emit.rot.x = 0.0f;
+        g->emit.rot.y = 0.0f;
+        g->emit.rot.z = 0.0f;
+        g->emit.r.i.u = 0;
+        g->emit.r.i.v = 0;
+        g->emit.r.i.w = 0x20;
+        g->emit.r.i.h = 0x20;
+        g->emit.r.i.u0 = 0;
+        g->emit.r.i.v0 = 0;
+        g->emit.r.i.tw = 0x80;
+        g->emit.r.i.th = 0x40;
+        g->emit.pts = g->pts;
+        g->emit.rots = NULL;
+        *(s32 *)g->emit.pad48 = 0;
+        g->emit.radius = 15.0f;
+        g->emit.grow = 10.0f;
+        g->emit.count = 0x40;
+        g->emit.nframes = 8;
+        g->emit.rate = 0x10;
+        for (i = 0; i < g->emit.count; i++) {
+            func_001043F0(&v, 14.0f);
+            g->pts[i].x = v.x;
+            g->pts[i].y = v.y;
+            g->pts[i].z = v.z;
+            g->pts[i].t = -(func_0019A5C8() % 12);
+            g->pts[i].a = 0x80;
+            g->pts[i].frame = func_0019A5C8() % 8;
+        }
+        for (i = 0; i < 8; i++) {
+            g->yarn[i].tex = (void *)tex[0];
+            g->yarn[i].flags = 0;
+            g->yarn[i].width = 5.0f;
+            g->yarn[i].h10 = 0x5A;
+            g->yarn[i].h12 = 0;
+            g->yarn[i].h14 = 6;
+            g->yarn[i].h16 = 0x20;
+            g->yarn[i].r = 0x80;
+            g->yarn[i].g = 0x80;
+            g->yarn[i].b = 0x80;
+            g->yarn[i].a = 0x80;
+            g->yarn[i].max = 0x1C;
+            g->yarn[i].progress = -i;
+            g->yarn[i].jitter = 0x28;
+            g->yarn[i].w20 = 0;
+            g->yarn[i].w24 = 0;
+        }
+        g->scale.x = g->scale.z = g->scale.y = 0.5f;
+        return 0;
+    }
+    func_001F5620(func_001F53A0(), g->jA, &v);
+    func_001F5F90(func_001F5380(), &t[0]);
+    func_001F53C0(1, func_001F5380(), tex);
+    if (g->frame <= 0x56) {
+        func_001F5620(func_001F53A0(), g->jA, &g->joint);
+    } else {
+        g->scale.x = g->scale.z = 1.0f;
+        g->scale.y = 1.5f;
+        g->emit.color.a = 0x80;
+        func_001F53C0(1, func_001F5380(), &g->joint);
+    }
+    if (g->frame <= 0x66) {
+        g->pos.x = 0.0f;
+        g->pos.z = 0.0f;
+        g->pos.y = 100.0f;
+    }
+    if (g->frame >= 0x66) {
+        func_00104490(&g->pos, &t[0], g->w760);
+        if (g->w760 != 0) {
+            g->w760--;
+        }
+    }
+    func_001038D0(g);
+    func_001038D0(&g->scale);
+    if (g->frame >= 0x2C && g->frame <= 0xA7) {
+        for (i = 0; i < 8; i++) {
+            t[1] = g->pos;
+            t[1].x += 20.0f * func_0020B480(i * 0x2000);
+            t[1].y += 20.0f * func_0020B550(i * 0x2000);
+            func_01E01A10_b740(ot, (Obj_b055_01E02930 *)&g->yarn[i], (Cam_b055_01E02930 *)g, (Vec_b055_01E02930 *)&v, (Vec_b055_01E02930 *)&t[1]);
+        }
+    }
+    func_01E00120_b740(ot, (Emit_b000_01E01140 *)&g->emit, (Cam_b000_01E01140 *)&g->scale);
+    if (g->frame >= 0x104) {
+        func_00103470(&g->emit.color.a, 0, 8);
+    }
+    for (i = 0; i < g->emit.count; i++) {
+        if (g->pts[i].t >= 0) {
+            g->pts[i].x *= 1.03f;
+            g->pts[i].y *= 1.03f;
+            g->pts[i].z *= 1.03f;
+            func_00103470(&g->pts[i].a, 0, 8);
+        }
+        if (g->pts[i].t >= 0x10) {
+            func_001043F0(&v, 14.0f);
+            g->pts[i].x = v.x;
+            g->pts[i].y = v.y;
+            g->pts[i].z = v.z;
+            g->pts[i].t = 0;
+            g->pts[i].a = 0x80;
+        }
+    }
+    g->frame++;
+    g->count--;
+    if (g->frame == 0x104) {
+        return 2;
+    }
+    if (g->frame == 0x4E) {
+        return 1;
+    }
+    if (g->frame >= 0x58 && g->frame <= 0x103) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}

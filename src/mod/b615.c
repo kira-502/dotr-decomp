@@ -868,7 +868,201 @@ static s32 func_01E021C0_b615(void *arg0, Obj_b547_01E02400 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b615", func_01E022D0_b615);
+/* shape b615:01E022D0 (b615), 399 insns, 1 copy: the module scene manager (b547:01E02510 form): with a scene id it
+   clears the scene, sets the 240-frame countdown, reads four model ids, textures 4:14..15 and 5:0, the camera turn,
+   scale 0.1 and the jitter tables; otherwise it runs the scene script b615:01E01880, every effect handler, draws the
+   four effect kinds, counts down and returns the next step by frame (100, 230, 215, 111..209) or 8 when the countdown
+   runs out */
+
+typedef struct {
+    u8 pad0[0xA];
+    s16 hA;
+    u8 padC[4];
+    Vec4f pos;
+    u8 pad20[0x14];
+    f32 f34;
+    u8 pad38[0xC];
+    s32 (*fn)();
+    u8 pad48[0xE];
+    s16 h56;
+    s16 used;
+    u8 pad5A[0x16];
+} Fx_b615_01E022D0;
+
+typedef struct {
+    u8 pad0[0x10];
+    f32 sx;
+    f32 sy;
+    f32 sz;
+    u8 pad1C[4];
+    f32 px;
+    f32 py;
+    f32 pz;
+    u8 pad2C[0x54];
+    s32 ot80;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    s32 rm[4];
+    u8 padA4[0xC];
+    s16 hB0;
+    u8 padB2[6];
+    s16 hB8;
+    u8 padBA[6];
+    s16 hC0;
+    u8 padC2[0x16];
+    u8 crdD8[0x188];
+    s32 tex[16];
+    Fx_b615_01E022D0 fx[150];
+    u8 pad4440[0xBC70 - 0x4440];
+    s32 tex2[1];
+    u8 padBC74[0x1C];
+    s32 count;
+    u8 padBC94[8];
+    s32 ot;
+    u8 padBCA0[0x1C];
+    s16 jA;
+    s16 jB;
+    s16 jC;
+    u8 padBCC2[8];
+    s16 cam;
+    u8 padBCCC[0x22];
+    s16 turn;
+    s16 id;
+    s16 frame;
+    s8 jit[0x100];
+    s8 jit2[0x100];
+    u8 crd[0x16C];
+} Scene_b615_01E022D0;
+
+static s32 func_01E022D0_b615(s32 arg0, s32 id) {
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_01E01880_b615();
+    extern void func_01E012D0_b615();
+    Scene_b615_01E022D0 *g = (Scene_b615_01E022D0 *)arg0;
+    s32 k;
+    s32 n;
+    Vec4f v;
+    s32 rm[4];
+    s32 rm2[4];
+    s32 rm3[4];
+    s32 ang[4];
+    s16 i;
+
+    n = 0;
+    g->ot = func_00207500();
+    g->ot80 = func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0xC060);
+        func_00107C10(g->crd);
+        func_00107C10(g->crdD8);
+        g->id = id;
+        g->count = 240;
+        g->jA = func_001F5560(func_001F53A0(), 3, 1);
+        g->jB = func_001F5560(func_001F53A0(), 0x1C, 0);
+        g->jC = func_001F5560(func_001F53A0(), 0xD, 0);
+        g->cam = func_001F5560(func_001F5380(), 1, 1);
+        for (k = 14; k < 16; k++) {
+            g->tex[k] = func_00202BF0(4, k);
+        }
+        for (k = 0; k < 1; k++) {
+            g->tex2[k] = func_00202BF0(5, k);
+        }
+        func_001F6160(func_001F53A0(), ang);
+        g->turn = ang[1] / 180.0f;
+        g->sx = 0.1f;
+        g->sy = 0.1f;
+        g->sz = 0.1f;
+        for (i = 0; i < 0x100; i++) {
+            g->jit[i] = func_0019A5C8() % 30 - 15;
+        }
+        for (i = 100; i < 180; i++) {
+            g->jit[i] = func_0019A5C8() % 4;
+        }
+        for (i = 0; i < 0x100; i++) {
+            g->jit2[i] = func_0019A5C8() % 40 - 20;
+        }
+        return 0;
+    }
+    func_01E01880_b615(g, 0);
+    for (i = 0; i < 150; i++) {
+        if (g->fx[i].used != 0) {
+            if (g->fx[i].fn != NULL) {
+                g->fx[i].fn(g, &g->fx[i]);
+            }
+        }
+    }
+    for (i = 0; i < 150; i++) {
+        if (g->fx[i].used != 0) {
+            n = (s16)(n + 1);
+            if (g->fx[i].fn == func_01E019F0_b615) {
+                func_00106080(rm, 0x14, g->fx[i].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm;
+                g->tex88 = g->tex2[0];
+                g->hB8 = 6;
+                g->hC0 = g->fx[i].hA;
+                g->px = g->fx[i].pos.x;
+                g->py = g->fx[i].pos.y + g->fx[i].f34;
+                g->pz = g->fx[i].pos.z;
+                func_01E00D80_b615((void *)g, (void *)&g->fx[i], 0x20, g->jit);
+                g->hB8 = 0;
+            }
+            if (g->fx[i].fn == func_01E01E30_b615) {
+                func_00106080(rm2, 0x14, g->fx[i].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm2;
+                g->tex88 = g->tex2[0];
+                g->hB8 = 6;
+                g->hC0 = g->fx[i].hA;
+                g->px = g->fx[i].pos.x;
+                g->py = g->fx[i].pos.y;
+                g->pz = g->fx[i].pos.z;
+                func_01E00D80_b615((void *)g, (void *)&g->fx[i], 0x20, g->jit);
+                g->hB8 = 0;
+            }
+            if (g->fx[i].fn == func_01E01FC0_b615) {
+                g->tex88 = g->tex[15];
+                func_00106080(rm3, 0x9B, g->fx[i].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm3;
+                g->hB8 = 10;
+                g->hB0 = 1;
+                func_01E012D0_b615(g, &g->fx[i], 0x20, g->jit2);
+                g->hB8 = 0;
+                g->hB0 = 0;
+            }
+            if (g->fx[i].fn == func_01E021C0_b615) {
+                v = g->fx[i].pos;
+                func_01E00920_b615((void *)g, (void *)&g->fx[i], 0x21, v);
+            }
+        }
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->frame == 100) {
+        return 1;
+    }
+    if (g->frame == 230) {
+        return 4;
+    }
+    if (g->frame == 215) {
+        return 2;
+    }
+    if (g->frame > 110 && g->frame < 210) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b149:01E02BA0, 98 insns, 3 copies (b236:01E02330's code, generated by chatG/ovl/gen236.py): take a free effect slot (0x96 of 0x70 bytes), clear it, colour it from the
    owner's colour, place it at the owner's position; returns 1, or 0 if every slot is in use */

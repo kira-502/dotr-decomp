@@ -228,7 +228,153 @@ static void func_01E00920_b056(Obj_b056_01E00920 *o, Spr_b056_01E00920 *s, s8 *t
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b056", func_01E00CE0_b056);
+/* shape b056:01E00CE0 (B056_W_S), 383 insns, 1 copy: B056_W_S, the effect scene step (b580:01E00CE0 form): colour
+   0x80,0,0,0, counts the frame (0x3996); frame 205 lays out ten ring points (heights -30 step 17, radii 0 then 3,
+   random angles), colour 0x20, takes one b056:01E012E0 and starts b056:01E01E30; every frame spins the points 4
+   degrees, turns the angle and copies joint 0x3978 into the ten trail points; frames 131..279 every fifth start
+   b056:01E01AF0; frames 130..143 five b056:01E02600 puffs at each of two joints; frames 305..384 one b056:01E02890
+   near the camera */
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b056_01E00CE0;
+
+typedef struct {
+    u8 pad0[0x250];
+    f32 px, py, pz;
+    u8 pad25C[0x3760 - 0x25C];
+    V4_b056_01E00CE0 trail[10];
+    u8 pad3800[0x3840 - 0x3800];
+    V4_b056_01E00CE0 pts[10];
+    u8 pad38E0[0x3914 - 0x38E0];
+    u8 col[4];
+    u8 pad3918[0xC];
+    f32 rad[10];
+    u8 pad394C[4];
+    s32 b0;
+    u8 pad3954[0x10];
+    s16 ang[10];
+    s16 jtrail;
+    s16 joint;
+    s16 ja;
+    s16 jb;
+    u8 pad3980[8];
+    s16 rot;
+    u8 pad398A[2];
+    s16 eC;
+    s16 eE;
+    u8 pad3990[2];
+    s16 f2;
+    u8 pad3994[2];
+    s16 frame;
+    u8 pad3998[0x3A98 - 0x3998];
+    u8 sin[4];
+} Ctx_b056_01E00CE0;
+
+static void func_01E00CE0_b056(Ctx_b056_01E00CE0 *g, s32 arg) {
+    extern s32 func_0019A5C8(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_001A22C0(f32);
+    extern s32 b056_01E012E0();
+    extern s32 b056_01E01AF0();
+    extern s32 b056_01E01E30();
+    extern s32 b056_01E02600();
+    extern s32 b056_01E02890();
+    extern s32 b056_01E038A0();
+    extern s32 b056_01E03A10();
+    V4_b056_01E00CE0 t;
+    s32 r[4];
+    V4_b056_01E00CE0 k;
+    s32 i;
+    V4_b056_01E00CE0 *p;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->frame++;
+    if (g->frame == 205) {
+        for (i = 0; i < 10; i++) {
+            g->pts[i].y = i * 17 - 30;
+        }
+        g->rad[0] = 0.0f;
+        for (i = 1; i < 10; i++) {
+            g->rad[i] = 3.0f;
+        }
+        for (i = 0; i < 10; i++) {
+            g->ang[i] = func_0019A5C8() % 360;
+        }
+        g->col[0] = 0x20;
+        g->col[1] = 0x20;
+        g->col[2] = 0x20;
+        g->px = 0.0f;
+        g->py = 30.0f;
+        g->pz = 0.0f;
+        for (i = 0; i < 1; i++) {
+            g->eE = 1;
+            g->b0 = 0;
+            g->f2 = 1;
+            g->eC = 0;
+            b056_01E038A0(g, b056_01E012E0, 0);
+        }
+        b056_01E03A10(g, b056_01E01E30, 0);
+    }
+    func_001F5620(func_001F5380(), g->joint, &t);
+    for (i = 0; i < 10; i++) {
+        if (i != 0) {
+            g->pts[i].x = g->rad[i] * func_00108030(g->sin, g->ang[i], 1);
+            g->pts[i].z = g->rad[i] * func_00108030(g->sin, g->ang[i], 0);
+        } else {
+            g->pts[i].x = g->rad[i] * func_00108030(g->sin, g->ang[i], 1);
+            g->pts[i].z = g->rad[i] * func_00108030(g->sin, g->ang[i], 0);
+        }
+        g->ang[i] += 4;
+        if (g->ang[i] >= 360) {
+            g->ang[i] %= 360;
+        }
+    }
+    func_001F6160(func_001F53A0(), r);
+    g->rot = func_001A22C0(r[1] / 180.0f);
+    g->rot -= 180;
+    p = g->trail;
+    func_001F5620(func_001F53A0(), g->jtrail, &k);
+    for (i = 0; i < 10; i++, p++) {
+        p->x = k.x;
+        p->y = k.y;
+        p->z = k.z;
+    }
+    if (g->frame > 130 && g->frame % 5 == 1 && g->frame < 280) {
+        b056_01E03A10(g, b056_01E01AF0, 0);
+    }
+    if (g->frame >= 130 && g->frame < 144) {
+        for (i = 0; i < 5; i++) {
+            func_001F5620(func_001F53A0(), g->ja, &t);
+            g->px = t.x + func_0019A5C8() % 20 - 10.0f;
+            g->py = t.y + func_0019A5C8() % 20 - 10.0f;
+            g->pz = t.z + func_0019A5C8() % 20 - 10.0f;
+            b056_01E03A10(g, b056_01E02600, 0);
+        }
+        for (i = 0; i < 5; i++) {
+            func_001F5620(func_001F53A0(), g->jb, &t);
+            g->px = t.x + func_0019A5C8() % 20 - 10.0f;
+            g->py = t.y - func_0019A5C8() % 10;
+            g->pz = t.z + func_0019A5C8() % 20 - 10.0f;
+            b056_01E03A10(g, b056_01E02600, 0);
+        }
+    }
+    if (g->frame >= 305 && g->frame < 385) {
+        func_001F5F90(func_001F5380(), &t);
+        g->px = t.x + func_0019A5C8() % 20 - 10.0f;
+        g->py = t.y + func_0019A5C8() % 20 - 10.0f;
+        g->pz = t.z + func_0019A5C8() % 20 - 10.0f;
+        b056_01E03A10(g, b056_01E02890, 0);
+    }
+}
 
 /* shape b056:01E012E0, 223 insns: b053:01E00620-style rising column on the scene's 8-point spine (g+0x3840): both
    colours 0x28, no spin; alpha in by 10 to 0x50 below height 50, else out by 14; the first spine point above its top

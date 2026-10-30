@@ -925,7 +925,166 @@ static void func_01E02020_b476(Obj_b046_01E01A60 *obj, Def_b046_01E01A60 *def, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b476", func_01E02490_b476);
+/* shape b476:01E02490 (B476_W_S), 378 insns, 1 copy: B476_W_S, the effect scene step: sets the colour, counts the
+   frame (0x2E3A); frame 51 takes joint 1 into base, 52..64 copy base to pos; frames 190/210 spawn 0x1E02FD0 with flag
+   0/1; 57..165 spawn 0x1E02DF0 at joints 0 and 1; 198/218 spawn 0x1E02EF0, five 0x1E02A80+0x1E03370 and 0x1E034D0;
+   193..199/213..219 spawn five 0x1E03090+0x1E03220 with a random angle */
+
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+} Pos_b476_01E02490;
+
+typedef struct {
+    u8 pad0[0x250];
+    Pos_b476_01E02490 pos;
+    u8 pad25C[0x28B0 - 0x25C];
+    Vec4f base;
+    u8 pad28C0[0x2DF4 - 0x28C0];
+    u8 col[4];
+    u8 pad2DF8[0x2E1C - 0x2DF8];
+    s16 joint[6];
+    u8 pad2E28[0x2E2E - 0x2E28];
+    s16 angle;
+    u8 pad2E30[0x2E36 - 0x2E30];
+    s16 flag;
+    u8 pad2E38[0x2E3A - 0x2E38];
+    s16 t;
+} Scene_b476_01E02490;
+
+static void func_01E02490_b476(Scene_b476_01E02490 *g) {
+    extern void b476_01E02A80(void);
+    extern void b476_01E02DF0(void);
+    extern void b476_01E02EF0(void);
+    extern void b476_01E02FD0(void);
+    extern void b476_01E03090(void);
+    extern void b476_01E03220(void);
+    extern void b476_01E03370(void);
+    extern void b476_01E034D0(void);
+    extern void b476_01E041C0(Scene_b476_01E02490 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F6160(s32, void *);
+    Vec4f v;
+    s32 r[4];
+    s32 r2[4];
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    if (g->t == 51) {
+        func_001F5620(func_001F53A0(), g->joint[1], &g->base);
+    }
+    if (g->t > 51 && g->t <= 64) {
+        func_001F5620(func_001F53A0(), g->joint[1], &v);
+        for (i = 0; i < 6; i++) {
+            g->pos.x = g->base.x;
+            g->pos.y = g->base.y;
+            g->pos.z = g->base.z;
+        }
+    }
+    if (g->t == 190) {
+        g->flag = 0;
+        b476_01E041C0(g, b476_01E02FD0, 0);
+    }
+    if (g->t == 210) {
+        g->flag = 1;
+        b476_01E041C0(g, b476_01E02FD0, 0);
+    }
+    if (g->t >= 57 && g->t <= 165) {
+        func_001F5620(func_001F53A0(), g->joint[0], &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        b476_01E041C0(g, b476_01E02DF0, 0);
+        func_001F5620(func_001F53A0(), g->joint[1], &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        b476_01E041C0(g, b476_01E02DF0, 0);
+    }
+    if (g->t <= 106 && g->t >= 23) {
+        func_001F5620(func_001F53A0(), g->joint[2], &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->flag = 0;
+        func_001F5620(func_001F53A0(), g->joint[3], &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->flag = 1;
+    }
+    if (g->t == 198) {
+        func_001F5620(func_001F53A0(), g->joint[2], &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        b476_01E041C0(g, b476_01E02EF0, 0);
+        for (i = 0; i < 5; i++) {
+            b476_01E041C0(g, b476_01E02A80, 0);
+            b476_01E041C0(g, b476_01E03370, 0);
+        }
+        b476_01E041C0(g, b476_01E034D0, 0);
+    }
+    if (g->t >= 193 && g->t <= 199) {
+        func_001F5620(func_001F53A0(), g->joint[3], &v);
+        for (i = 0; i < 5; i++) {
+            g->angle = func_0019A5C8() % 360;
+            func_001F6160(func_001F53A0(), r);
+            if ((s32)(r[1] / 180.0f)) {
+                g->flag = 0;
+            } else {
+                g->flag = 1;
+            }
+            g->pos.x = v.x;
+            g->pos.y = v.y;
+            g->pos.z = v.z;
+            b476_01E041C0(g, b476_01E03090, 0);
+            b476_01E041C0(g, b476_01E03220, 0);
+        }
+    }
+    if (g->t == 218) {
+        func_001F5620(func_001F53A0(), g->joint[4], &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        b476_01E041C0(g, b476_01E02EF0, 0);
+        for (i = 0; i < 5; i++) {
+            b476_01E041C0(g, b476_01E02A80, 0);
+            b476_01E041C0(g, b476_01E03370, 0);
+        }
+        b476_01E041C0(g, b476_01E034D0, 0);
+    }
+    if (g->t >= 213 && g->t <= 219) {
+        func_001F5620(func_001F53A0(), g->joint[5], &v);
+        for (i = 0; i < 5; i++) {
+            g->angle = func_0019A5C8() % 360;
+            func_001F6160(func_001F53A0(), r2);
+            if ((s32)(r2[1] / 180.0f)) {
+                g->flag = 1;
+            } else {
+                g->flag = 0;
+            }
+            g->pos.x = v.x;
+            g->pos.y = v.y;
+            g->pos.z = v.z;
+            b476_01E041C0(g, b476_01E03090, 0);
+            b476_01E041C0(g, b476_01E03220, 0);
+        }
+    }
+    if (g->t == 68) {
+        func_001F5620(func_001F53A0(), g->joint[4], &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->flag = 1;
+    }
+}
 
 /* shape b476:01E02A80, 85 insns: b573:01E02590 family: a white spark (size 15, random frame 0..7, angle, size 0..39) spinning a random 10..49 a tick: alpha 0x80 for a random 2..10 ticks, then out by 15 and ends */
 

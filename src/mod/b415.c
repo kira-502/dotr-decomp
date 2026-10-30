@@ -1091,7 +1091,93 @@ static s32 func_01E02900_b415(s32 arg0, Obj_b415_01E02900 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b415", func_01E02A90_b415);
+/* shape b415:01E02A90 (B415_OBJ_MOVE_10_), 141 insns, 1 copy (-O3,p): the two joint trails of b292:01E020B0 at -O3,
+   in blue: on start both 20-point trails are filled with their joint points (the second joint first); fades in by
+   0x3C to 0xF0 until scene frame 143, then out by 13; until then each frame both trails take their joint point */
+
+typedef struct {
+    f32 x, y, z, w;
+} Pt_b415_01E02A90;
+
+typedef struct {
+    u8 pad0[0xB1D0];
+    Pt_b415_01E02A90 a[20];
+    Pt_b415_01E02A90 b[20];
+    u8 padB450[0x16F8];
+    s16 ja;
+    s16 jb;
+    u8 padCB4C[0x70];
+    s16 frame;
+} Scene_b415_01E02A90;
+
+typedef struct {
+    u8 pad0[6];
+    s16 h6;
+    u8 pad8[6];
+    s16 hE;
+    u8 pad10[0x38];
+    f32 f48;
+    u8 pad4C[8];
+    s16 t;
+    u8 pad56[2];
+    s16 mode;
+    u8 pad5A[6];
+    u8 col[4];
+} Fx_b415_01E02A90;
+
+#pragma optimization_level 3
+
+static s32 func_01E02A90_b415(Scene_b415_01E02A90 *g, Fx_b415_01E02A90 *o) {
+    extern void b415_01E00080(Pt_b415_01E02A90 *, s32, s32, f32 *);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    f32 p[4];
+    s16 i;
+    s16 j;
+    Pt_b415_01E02A90 *q;
+
+    func_001076F0(o->col, 0x20, 0x20, 0xC0);
+    if (o->mode == 1) {
+        o->f48 = 5.0f;
+        o->hE = 30;
+        func_001F5620(func_001F53A0(), g->jb, p);
+        q = g->a;
+        for (i = 0; i < 19; i++) {
+            q[i].x = p[0];
+            q[i].y = p[1];
+            q[i].z = p[2];
+        }
+        func_001F5620(func_001F53A0(), g->ja, p);
+        q = g->b;
+        for (j = 0; j < 19; j++) {
+            q[j].x = p[0];
+            q[j].y = p[1];
+            q[j].z = p[2];
+        }
+        o->mode = 2;
+    }
+    if (g->frame < 0x8f) {
+        if (o->col[3] < 0xF0) {
+            o->col[3] += 0x3C;
+        }
+    } else if (o->col[3] > 14) {
+        o->col[3] -= 13;
+    } else {
+        o->mode = 0;
+    }
+    if (g->frame < 0x8f) {
+        func_001F5620(func_001F53A0(), g->jb, p);
+        b415_01E00080(&g->a[19], 20, 0, p);
+        func_001F5620(func_001F53A0(), g->ja, p);
+        b415_01E00080(&g->b[19], 20, 0, p);
+    }
+    o->h6 = 15;
+    o->t++;
+    return 0;
+}
+
+#pragma optimization_level reset
 
 /* shape b415:01E02CD0, 172 insns: b292:01E022F0's zooming veil in red (kind 0) or blue (kind 1), blend 0x48, alpha up
    by 0x20 to 0x60 for 6 ticks */

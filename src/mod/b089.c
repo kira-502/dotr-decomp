@@ -1645,7 +1645,71 @@ static void func_01E04330_b089(Ctx_b089_01E04330 *g, Fx_b089_01E04330 *o, void *
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b089", func_01E045A0_b089);
+/* shape b089:01E045A0 (B089PAINT_RAIN10), 115 insns, 1 copy (-O3,p): the rain object's draw (b027:01E03F70's source
+   at -O3): in the setup pass it sets the light, colour and the scene texture; in the draw pass, for b089:01E024F0's
+   objects it first switches to blend 0x42, then draws a size x size quad at the position plus a tenth of the velocity
+   */
+
+typedef struct {
+    s16 x, y, z;
+    u8 pad6[2];
+    s16 dx, dy, dz;
+    u8 padE[0x16];
+    void *handler;
+    u8 col[0xC];
+    s16 h34;
+    u8 pad36[2];
+    s16 size;
+} Fx_b089_01E045A0;
+
+typedef struct {
+    u8 pad0[0x70];
+    s32 tex;
+} Scene_b089_01E045A0;
+
+static s32 func_01E024F0_b089();
+
+#pragma optimization_level 3
+
+static void func_01E045A0_b089(Scene_b089_01E045A0 *g, Fx_b089_01E045A0 *o, void *p, s32 lit) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00108CE0(void *, f32, f32);
+    extern void func_00108F90(void *, void *, void *, s32);
+    extern void func_002086D0(void *, u64);
+    Vec4f quad[4];
+    Vec4f pos;
+    f32 rm[4];
+    f32 m[16];
+    s32 rot[4];
+    s32 v;
+
+    v = (s32)func_00207500();
+    if (lit == 0) {
+        func_00106080(rm, 0x14, o->h34, rm);
+        func_00109270(p, 0, 0);
+        func_00107790(p, o->col, 0);
+        func_00108500(p, rm, 0);
+        func_00208700(p, g->tex, 1);
+        return;
+    }
+    if (o->handler == func_01E024F0_b089) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    }
+    func_00205C40((s32)rot);
+    pos.x = o->x + o->dx / 10;
+    pos.y = o->y + o->dy / 10;
+    pos.z = o->z + o->dz / 10;
+    func_00108EF0(m, 0, rot, &pos);
+    func_00108CE0(quad, o->size, o->size);
+    func_00108F90(quad, p, m, v);
+}
+
+#pragma optimization_level reset
 
 /* shape b089:01E04770, 92 insns, 1 copy: draws a thin rain strip: mode 0 builds the packet (texture page 10 frame from
    the object, its colour, the scene texture); other modes turn it at random, place it at the object's point lifted by a

@@ -719,7 +719,202 @@ static s32 func_01E02470_b504(Scene_b504_01E02470 *g, Flash_b504_01E02470 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b504", func_01E02810_b504);
+/* shape b504:01E02810 (b504), 379 insns, 1 copy: the module's main (b490:01E020F0 family): on start clears the 0xBA90
+   context, two cameras, 240 ticks, three joints, texture 5:0, the facing, the jitter tables; each tick runs the 410
+   slots' five movers, counting the two kinds that need the extra pass, then draws the two drawn kinds; ends 1 at step
+   60, 4 at 230, 2 at 210, 6 in 71..204, 8 when the timer runs out */
+
+typedef struct {
+    u8 pad00[0xA];
+    s16 fA;
+    u8 pad0C[4];
+    f32 x, y, z;
+    u8 pad1C[0x18];
+    f32 dy;
+    u8 pad38[0xC];
+    void *fn;
+    u8 pad48[0xE];
+    s16 rot;
+    s16 used;
+    u8 pad5A[0x16];
+} Slot_b504_01E02810;
+
+typedef struct {
+    u8 pad0000[0x20];
+    f32 px, py, pz;
+    u8 pad002C[0x54];
+    s32 ot2;
+    u8 pad0084[4];
+    s32 tex88;
+    u8 pad008C[8];
+    Vec4f m94;
+    u8 pad00A4[0x14];
+    s16 mode;
+    u8 pad00BA[6];
+    s16 fC0;
+    u8 pad00C2[0x16];
+    u8 camD8[0x208];
+    Slot_b504_01E02810 slot[410];
+    u8 padB640[0x60];
+    s32 tex5[8];
+    s32 timer;
+    u8 padB6C4[8];
+    s32 ot;
+    u8 padB6D0[0x28];
+    s16 joint[3];
+    u8 padB6FE[0x14];
+    s16 face;
+    s16 code;
+    s16 step;
+    s8 jit[256];
+    s8 jit2[256];
+    u8 padB918[1];
+} Ctx_b504_01E02810;
+
+static s32 func_01E02810_b504(s32 arg0, s32 code) {
+    Ctx_b504_01E02810 *g = (Ctx_b504_01E02810 *)arg0;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern void func_01E00920_b504();
+    extern void func_01E00E70_b504();
+    extern s32 func_01E01210_b504();
+    extern s32 func_01E013F0_b504();
+    extern s32 func_01E015B0_b504();
+    extern s32 func_01E017A0_b504();
+    extern s32 func_01E01880_b504();
+    extern s32 b504_01E01980();
+    extern s32 func_01E02470_b504();
+    extern void b504_01E02F90();
+    extern void b504_01E03180();
+    Vec4f v;
+    Vec4f m;
+    Vec4f m2;
+    s32 r1[4];
+    s32 r2[4];
+    s32 n;
+    s32 c;
+    s32 i;
+    s32 face;
+
+    n = 0;
+    c = 0;
+    g->ot2 = func_00207500();
+    g->ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0xBA90);
+        func_00107C10(g->padB918);
+        func_00107C10(g->camD8);
+        g->code = code;
+        g->timer = 240;
+        g->joint[0] = func_001F5560(func_001F53A0(), 1, 1);
+        g->joint[1] = func_001F5560(func_001F53A0(), 1, 0);
+        g->joint[2] = func_001F5560(func_001F53A0(), 1, 0);
+        for (i = 0; i < 1; i++) {
+            g->tex5[i] = func_00202BF0(5, i);
+        }
+        func_001F6160(func_001F53A0(), r1);
+        g->face = r1[1] / 180.0f;
+        for (i = 0; i < 256; i++) {
+            g->jit[i] = func_0019A5C8() % 30 - 15;
+        }
+        for (i = 0; i < 100; i++) {
+            g->jit2[i] = 0;
+        }
+        for (i = 100; i < 180; i++) {
+            g->jit2[i] = func_0019A5C8() % 5;
+        }
+        func_001F6160(func_001F53A0(), r2);
+        face = r2[1] / 180.0f;
+        for (i = 180; i < 256; i++) {
+            if (face != 0) {
+                g->jit2[i] = func_0019A5C8() % 4;
+            } else {
+                g->jit2[i] = -(func_0019A5C8() % 4);
+            }
+        }
+        return 0;
+    }
+    func_01E00E70_b504(g, 0);
+    for (i = 0; i < 410; i++) {
+        if (g->slot[i].used != 0) {
+            if (g->slot[i].fn == func_01E01210_b504) {
+                func_01E01210_b504(g, &g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E013F0_b504) {
+                func_01E013F0_b504(g, &g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E015B0_b504) {
+                func_01E015B0_b504(g, &g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E017A0_b504) {
+                func_01E017A0_b504(g, &g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E01880_b504) {
+                func_01E01880_b504(g, &g->slot[i]);
+            }
+            if (g->slot[i].fn == b504_01E01980) {
+                n = (s16)(n + 1);
+            }
+            if (g->slot[i].fn == func_01E02470_b504) {
+                n = (s16)(n + 1);
+            }
+        }
+    }
+    for (i = 0; i < 410; i++) {
+        if (g->slot[i].used != 0) {
+            c++;
+            if (g->slot[i].fn == func_01E01210_b504) {
+                g->tex88 = g->tex5[0];
+                func_00106080(&m, 0x14, g->slot[i].rot, 0);
+                g->m94 = m;
+                v.x = g->slot[i].x;
+                v.y = g->slot[i].y;
+                v.z = g->slot[i].z;
+                b504_01E02F90(g, &g->slot[i], 0, v);
+            }
+            if (g->slot[i].fn == func_01E013F0_b504) {
+                func_00106080(&m2, 0x14, g->slot[i].rot, 0);
+                g->m94 = m2;
+                g->tex88 = g->tex5[0];
+                g->mode = 6;
+                g->fC0 = g->slot[i].fA;
+                g->px = g->slot[i].x;
+                g->py = g->slot[i].y + g->slot[i].dy;
+                g->pz = g->slot[i].z;
+                func_01E00920_b504(g, &g->slot[i], 0x20, g->jit);
+                g->mode = 0;
+            }
+        }
+    }
+    if (n != 0) {
+        b504_01E03180(g);
+    }
+    if (g->timer != 0) {
+        g->timer--;
+    }
+    if (g->step == 60) {
+        return 1;
+    }
+    if (g->step == 230) {
+        return 4;
+    }
+    if (g->step == 210) {
+        return 2;
+    }
+    if (g->step > 70 && g->step < 205) {
+        return 6;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b504:01E02E00, 98 insns, 1 copies (b236:01E02330's code, generated by chatG/ovl/gen236.py): take a free effect slot (0x19a of 0x70 bytes), clear it, colour it from the
    owner's colour, place it at the owner's position; returns 1, or 0 if every slot is in use */

@@ -642,7 +642,58 @@ static void func_01E017D0_b259(s32 arg0, u8 *obj, s32 mode, f32 level) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b259", func_01E019A0_b259);
+/* shape b259:01E019A0 (B259_W_S), 122 insns, 1 copy: the scene script: counts the scene frame (0x86C6); on frame 1
+   it spawns b259:01E02970 and (slot 1) b259:01E028B0; on frame 56 b259:01E02150 and b259:01E02250; from frame 91 to 239
+   one b259:01E01B90 at each of the two joints a frame, and from frame 11 to 159 one b259:01E02590 at each */
+
+typedef struct {
+    u8 pad0[0x250];
+    f32 px, py, pz;
+    u8 pad25C[0x8690 - 0x25C];
+    s16 joint0;
+    s16 joint1;
+    u8 pad8694[0x86BE - 0x8694];
+    s16 idx;
+    u8 pad86C0[0x86C6 - 0x86C0];
+    s16 t;
+} Scene_b259_01E019A0;
+
+static s32 func_01E01B90_b259();
+static s32 func_01E02150_b259();
+static s32 func_01E02250_b259();
+static s32 func_01E02590_b259();
+static s32 func_01E028B0_b259();
+static s32 func_01E02970_b259();
+static s32 func_01E033C0_b259();
+
+static void func_01E019A0_b259(Scene_b259_01E019A0 *s) {
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+
+    s->t++;
+    if (s->t == 1) {
+        func_01E033C0_b259(s, func_01E02970_b259, 0);
+        s->idx = 0; /* both stores are in the original */
+        s->idx = 1;
+        func_01E033C0_b259(s, func_01E028B0_b259, 0);
+    }
+    if (s->t == 56) {
+        func_01E033C0_b259(s, func_01E02150_b259, 0);
+        func_01E033C0_b259(s, func_01E02250_b259, 0);
+    }
+    if (s->t > 90 && s->t < 240) {
+        func_001F5620(func_001F53A0(), s->joint0, &s->px);
+        func_01E033C0_b259(s, func_01E01B90_b259, 0);
+        func_001F5620(func_001F53A0(), s->joint1, &s->px);
+        func_01E033C0_b259(s, func_01E01B90_b259, 0);
+    }
+    if (s->t > 10 && s->t < 160) {
+        func_001F5620(func_001F53A0(), s->joint0, &s->px);
+        func_01E033C0_b259(s, func_01E02590_b259, 0);
+        func_001F5620(func_001F53A0(), s->joint1, &s->px);
+        func_01E033C0_b259(s, func_01E02590_b259, 0);
+    }
+}
 
 /* shape b259:01E01B90, 269 insns: b428:01E014F0's grey puff, 10 square growing to 25, drift /400, sliding along z
    by the scene flag (ctx+0x86C2) at a speed growing from 2.2 by 0.1 to 4.5, sinking 0.4; on tick 44 it copies its

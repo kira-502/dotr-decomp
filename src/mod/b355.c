@@ -1745,7 +1745,77 @@ static void func_01E03F20_b355(u8 *ctx, Obj_b064_01E03F20 *o, void *pkt, s32 mod
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b355", func_01E042A0_b355);
+typedef struct {
+    s16 x, y, z;
+    u8 pad6[2];
+    s16 vx, vy, vz;
+    u8 padE[2];
+    s32 rot[4];
+    u8 pad20[8];
+    u8 col[4];
+    u8 pad2C[0xC];
+    s16 size;
+    s16 ang;
+} Obj_b064_01E042A0;
+
+typedef struct {
+    u8 c[4];
+} Col_b064_01E042A0;
+
+static void func_01E042A0_b355(u8 *ctx, Obj_b064_01E042A0 *o, void *pkt, s32 mode) {
+    extern Col_b064_01E042A0 D_01E04880_b355;
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630(s32, s32, s32, s32, f32 *);
+    extern void func_002075F0(s32, s32, s32);
+    Vec4f q[4];
+    Vec4f pos;
+    f32 m[16];
+    u8 td[0x10];
+    Col_b064_01E042A0 col;
+    s32 i;
+    s16 a;
+    s16 k;
+
+    a = 0;
+    col = D_01E04880_b355;
+    if (mode == 0) {
+        func_00106080(td, 0x9B, 3, td);
+        func_00109270(pkt, 0, 0);
+        col.c[3] = o->col[3];
+        func_00107790(pkt, &col, 0);
+        func_00108500(pkt, td, 0);
+        func_00208700(pkt, *(void **)(ctx + 0x29C), 1);
+        return;
+    }
+    pos.x = o->x + o->vx / 10;
+    pos.y = o->y + o->vy / 10;
+    pos.z = o->z + o->vz / 10;
+    func_00108EF0(m, NULL, o->rot, &pos);
+    q[0].y = 40.0f;
+    q[1].y = 40.0f;
+    q[2].y = 0.0f;
+    q[3].y = 0.0f;
+    for (i = 0; i < 9; i++) {
+        k = o->ang + a;
+        q[2].x = (o->size - 5) * func_00108030(ctx + 0x5344, k, 1);
+        q[2].z = (o->size - 5) * func_00108030(ctx + 0x5344, k, 0);
+        q[0].x = (o->size - 12.0f - 5.0f) * func_00108030(ctx + 0x5344, k, 1);
+        q[0].z = (o->size - 12.0f - 5.0f) * func_00108030(ctx + 0x5344, k, 0);
+        k = o->ang + 40 + a;
+        q[3].x = (o->size - 5) * func_00108030(ctx + 0x5344, k, 1);
+        q[3].z = (o->size - 5) * func_00108030(ctx + 0x5344, k, 0);
+        q[1].x = (o->size - 12.0f - 5.0f) * func_00108030(ctx + 0x5344, k, 1);
+        q[1].z = (o->size - 12.0f - 5.0f) * func_00108030(ctx + 0x5344, k, 0);
+        if (func_00205630((s32)q, 0x70000000, (s32)m, (s32)pkt, (f32 *)(ctx + 0x51EC)) != 0) {
+            func_002075F0((s32)pkt, *(s32 *)(ctx + 0x51CC), (u32)*(f32 *)(ctx + 0x51EC));
+        }
+        a += 40;
+    }
+}
 
 /* shape b064:01E04650, 109 insns, 2 copies: one textured strip of an object (b053:01E022F0 family: turned a quarter, ten
    times wider than tall); mode 0 only sets up the packet's texture, otherwise position = pos + vel / 10, drawn

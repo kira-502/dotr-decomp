@@ -516,7 +516,135 @@ static void func_01E012D0_b771(Obj_b016_01E01190 *obj, Data_b016_01E01190 *data,
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b771", func_01E01630_b771);
+/* shape b771:01E01630 (B771_W_S), 388 insns, 1 copy: B771_W_S, the effect scene step: counts the frame (0xA92E);
+   before 155 takes joint 0xA8F8 into 0xA870, at 155 sets a 32-step slide toward joint 0xA908 run until 186; spawns on
+   frames 118, 38..70, 118..475 (every other frame 0x1E01C40), ten 0x1E02C10 at 186, a 40-side ring of 0x1E026F0 on
+   odd frames 200..475, the growth 0xA8E4 from 400, setup at 1 and 0x1E031B0 at 42 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xA870 - 0x260];
+    Vec4f from;
+    u8 padA880[0x10];
+    Vec4f step;
+    u8 padA8A0[0xA8E4 - 0xA8A0];
+    f32 grow;
+    u8 padA8E8[0xA8F8 - 0xA8E8];
+    s16 joint0;
+    u8 padA8FA[0xA908 - 0xA8FA];
+    s16 joint1;
+    u8 padA90A[0xA926 - 0xA90A];
+    s16 side;
+    s16 ring;
+    u8 padA92A[0xA92E - 0xA92A];
+    s16 t;
+} Scene_b771_01E01630;
+
+static void func_01E01630_b771(Scene_b771_01E01630 *g) {
+    extern void b771_01E01C40(void);
+    extern void b771_01E01D90(void);
+    extern void b771_01E01FB0(void);
+    extern void b771_01E02130(void);
+    extern void b771_01E022D0(void);
+    extern void b771_01E02460(void);
+    extern void b771_01E026F0(void);
+    extern void b771_01E02C10(void);
+    extern void b771_01E02FD0(void);
+    extern void b771_01E031B0(void);
+    extern void b771_01E03230(void);
+    extern void b771_01E03E00(Scene_b771_01E01630 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    Vec4f v[2];
+    s16 i;
+
+    g->t++;
+    if (g->t < 155) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->from);
+    } else {
+        if (g->t == 155) {
+            func_001F5620(func_001F5380(), g->joint1, v);
+            g->step.z = (v[0].z - g->from.z) / 32.0f;
+            g->step.y = (v[0].y - g->from.y) / 32.0f;
+        }
+        if (g->t < 186) {
+            g->from.z += g->step.z;
+            g->from.y += g->step.y;
+        }
+    }
+    if (g->t == 118) {
+        b771_01E03E00(g, b771_01E02130, 0);
+    }
+    if (g->t >= 38 && g->t < 71) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pos);
+        g->side = 1;
+        b771_01E03E00(g, b771_01E02460, 0);
+    }
+    if (g->t >= 118 && g->t < 476) {
+        if (g->t < 281) {
+            g->side = 0;
+            b771_01E03E00(g, b771_01E02C10, 0);
+            g->side = 1;
+            b771_01E03E00(g, b771_01E02C10, 0);
+            b771_01E03E00(g, b771_01E022D0, 0);
+        }
+        func_001F5620(func_001F53A0(), g->joint0, &g->pos);
+        g->side = 0;
+        b771_01E03E00(g, b771_01E02460, 0);
+        if (g->t >= 280) {
+            b771_01E03E00(g, b771_01E02460, 0);
+        }
+        if (g->t % 2 == 0) {
+            b771_01E03E00(g, b771_01E01C40, 0);
+        }
+    }
+    if (g->t == 186) {
+        g->pos = g->from;
+        g->side = 0;
+        for (i = 0; i < 10; i++) {
+            b771_01E03E00(g, b771_01E02C10, 0);
+        }
+    }
+    if (g->t >= 200 && g->t < 476) {
+        if (g->t % 2 == 1) {
+            g->side = g->ring;
+            b771_01E03E00(g, b771_01E026F0, 0);
+            g->ring++;
+            if (g->ring >= 40) {
+                g->ring = 0;
+            }
+            g->side = g->ring;
+            b771_01E03E00(g, b771_01E026F0, 0);
+            g->ring++;
+            if (g->ring >= 40) {
+                g->ring = 0;
+            }
+        }
+    }
+    if (g->t < 400) {
+        g->grow = 5.0f;
+    } else {
+        g->grow += 0.26f;
+        func_001F5F90(func_001F5380(), &g->pos);
+        g->pos.y = 37.0f;
+        if (g->t < 476) {
+            b771_01E03E00(g, b771_01E01D90, 0);
+        }
+    }
+    if (g->t == 1) {
+        func_001F5F90(func_001F5380(), &g->pos);
+        g->pos.y = 37.0f;
+        b771_01E03E00(g, b771_01E01FB0, 0);
+        b771_01E03E00(g, b771_01E02FD0, 0);
+        b771_01E03E00(g, b771_01E03230, 0);
+    }
+    if (g->t == 42) {
+        b771_01E03E00(g, b771_01E031B0, 0);
+    }
+}
 
 /* shape b771:01E01C40, 84 insns: a grey beam growing 25 a tick from 10 (tail 15 behind), its second colour blinking green: in by 64 up to 0xC0 for 4 ticks, then out by 11 and ends */
 

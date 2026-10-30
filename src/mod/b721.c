@@ -904,7 +904,117 @@ static s32 func_01E025B0_b721(Game_b721_01E025B0 *g, Obj_b721_01E025B0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b721", func_01E02720_b721);
+/* shape b721:01E02720 (B721_OBJ_MOVE_10_), 386 insns, 1 copy (-O3,p): b363:01E04090 jittery spark trail with 20-point
+   tracks: 80 tracks at 0x2E90, points at 0x9290, sine table at 0x9A6C */
+
+typedef struct {
+    Vec4f p[0x14];
+} Track_b721_01E02720;
+
+typedef struct {
+    u8 pad0[0x2E90];
+    Track_b721_01E02720 track[0x50];
+    Vec4f pt[0x7D];
+    u8 pad_9A60[0xC];
+    u8 trig[1];
+} World_b721_01E02720;
+
+typedef struct {
+    u8 pad0[6];
+    s16 frame;
+    s16 life;
+    u8 padA[0x26];
+    Vec4f v;
+    u8 pad40[8];
+    f32 size;
+    f32 speed;
+    s16 idx;
+    u8 pad52[2];
+    s16 t;
+    u8 pad56[2];
+    s16 state;
+    s16 head;
+    s16 pitch;
+    u8 pad5E[2];
+    u8 c0[4];
+} Spark_b721_01E02720;
+
+#pragma optimization_level 3
+
+static s32 func_01E02720_b721(World_b721_01E02720 *w, Spark_b721_01E02720 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    s16 i;
+    Vec4f *dst;
+    Vec4f *src;
+
+    if (o->state == 1) {
+        o->frame = 1;
+        o->c0[3] = 0;
+        w->pt[o->idx].x = 0.0f;
+        w->pt[o->idx].y = 0.0f;
+        w->pt[o->idx].z = 0.0f;
+        o->v.x = func_0019A5C8() % 30 - 15;
+        o->v.y = func_0019A5C8() % 30 - 15;
+        o->v.z = func_0019A5C8() % 30 - 15;
+        w->pt[o->idx].x += o->v.x / 10.0f;
+        w->pt[o->idx].y += o->v.y / 10.0f;
+        w->pt[o->idx].z += o->v.z / 10.0f;
+        src = &w->pt[o->idx];
+        dst = w->track[o->idx].p;
+        for (i = 0; i < 0x14; i++) {
+            dst->x = src->x;
+            dst->y = src->y;
+            dst->z = src->z;
+            dst++;
+        }
+        o->size = func_0019A5C8() % 50 + 5;
+        o->size /= 10.0f;
+        o->speed = func_0019A5C8() % 85 + 3;
+        o->speed /= 10.0f;
+        o->head = func_0019A5C8() % 360;
+        o->pitch = func_0019A5C8() % 360;
+        o->life = func_0019A5C8() % 15 + 3;
+        o->state = 2;
+    }
+    if (o->t < 7) {
+        if (o->frame < 0xF) {
+            o->frame++;
+        }
+    } else if (o->frame > 0) {
+        o->frame--;
+    }
+    if (o->t < o->life) {
+        o->c0[3] = 0xC0;
+    } else if (o->c0[3] > 0x1E) {
+        o->c0[3] -= 0x1D;
+    } else {
+        o->state = 0;
+    }
+    if (o->t % 2 == 0) {
+        func_001076F0(o->c0, 0x40, 0x40, 0x40);
+    } else {
+        func_001076F0(o->c0, 0x20, 0x20, 0x20);
+    }
+    o->v.x = func_0019A5C8() % 40 - 20;
+    o->v.y = func_0019A5C8() % 40 - 20;
+    o->v.z = func_0019A5C8() % 40 - 20;
+    if (o->t != 0) {
+        w->pt[o->idx].z += o->speed * func_00108030(w->trig, o->head, 0);
+        w->pt[o->idx].x += o->speed * func_00108030(w->trig, o->head, 1);
+        w->pt[o->idx].y += o->speed * func_00108030(w->trig, o->pitch, 1);
+        w->pt[o->idx].x += o->v.x / 10.0f;
+        w->pt[o->idx].y += o->v.y / 10.0f;
+        w->pt[o->idx].z += o->v.z / 10.0f;
+    }
+    if (o->t < 7) {
+        func_01E00080_b721(&w->track[o->idx].p[0x13], 0x14, 0, &w->pt[o->idx]);
+    }
+    o->t++;
+    return 0;
+}
+
+#pragma optimization_level reset
 
 /* shape b721:01E02D30, 156 insns: c063:01E031E0 in blue/grey or cyan/black for kind 2, size 20, growing by the scene scale (ctx+0x97D8) / 20 per tick */
 

@@ -625,7 +625,57 @@ static void func_01E014F0_b641(Obj_b016_01E014F0 *o, Cam_b016_01E014F0 *cam, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b641", func_01E018F0_b641);
+/* shape b641:01E018F0 (B641_W_S), 118 insns, 1 copy: the scene script: counts the scene frame (0xB2B8); on frame 1
+   it spawns b641:01E023F0; from frame 168 to 254 one b641:01E01AD0 a frame at the target joint, 2 lower; on frame 237,
+   at the point func_001F5F90 gives, 30 b641:01E01E40, 15 b641:01E01C90, 16 b641:01E020B0 and one b641:01E02300 */
+
+typedef struct {
+    u8 pad0[0x250];
+    f32 px, py, pz;
+    u8 pad25C[0xB244 - 0x25C];
+    s16 joint;
+    u8 padB246[0xB2B8 - 0xB246];
+    s16 t;
+} Scene_b641_01E018F0;
+
+static s32 func_01E01AD0_b641();
+static s32 func_01E01C90_b641();
+static s32 func_01E01E40_b641();
+static s32 func_01E020B0_b641();
+static s32 func_01E02300_b641();
+static s32 func_01E023F0_b641();
+static s32 func_01E02C00_b641();
+
+static void func_01E018F0_b641(Scene_b641_01E018F0 *s) {
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    s16 i;
+
+    s->t++;
+    if (s->t > 167 && s->t < 255) {
+        func_001F5620(func_001F53A0(), s->joint, &s->px);
+        s->py -= 2.0f;
+        func_01E02C00_b641(s, func_01E01AD0_b641, 0);
+    }
+    if (s->t == 237) {
+        func_001F5F90(func_001F5380(), &s->px);
+        for (i = 0; i < 30; i++) {
+            func_01E02C00_b641(s, func_01E01E40_b641, 0);
+        }
+        for (i = 0; i < 15; i++) {
+            func_01E02C00_b641(s, func_01E01C90_b641, 0);
+        }
+        for (i = 0; i < 16; i++) {
+            func_01E02C00_b641(s, func_01E020B0_b641, 0);
+        }
+        func_01E02C00_b641(s, func_01E02300_b641, 0);
+    }
+    if (s->t == 1) {
+        func_01E02C00_b641(s, func_01E023F0_b641, 0);
+    }
+}
 
 /* shape b422:01E01790, 111 insns, 2 copies: a white drifter: set up once (size 150, random frame 2..4 and heading); fades in
    over 6 frames, then out; drifts 0.6 a frame along its heading (world trig table) and 2 up or down by the

@@ -841,7 +841,143 @@ static s32 func_01E027A0_b034(void *arg0, Obj_b034_01E027A0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b034", func_01E02970_b034);
+/* shape b034:01E02970, 378 insns, 1 copy: a red double trail band: on start 0xA = scene count + 5..54, radii from the
+   scene (0xA920, +0xA924 / +0xA930), grey 0x70, both trails (0x280-byte slots at 0x4470, 20 points) filled with the
+   start point, the second row 30 degrees back and 0xA/10 up; fades in by 0x15 while tick < 10, else out by 9; each
+   tick the heading turns 12 and both trails take a new point at height 0x8, colour blinks red, band count to 18 */
+
+typedef struct {
+    Vec4f a[20];
+    Vec4f b[20];
+} Trail_b034_01E02970;
+
+typedef struct {
+    u8 pad0[0x4470];
+    Trail_b034_01E02970 slot[1];
+    u8 pad46F0[0xA920 - 0x46F0];
+    f32 ra;
+    f32 rb;
+    u8 padA928[8];
+    f32 rc;
+    u8 padA934[0xAA06 - 0xA934];
+    s16 count;
+    u8 padAA08[0xAD14 - 0xAA08];
+    u8 sin[4];
+} Game_b034_01E02970;
+
+typedef struct {
+    u8 pad0[6];
+    s16 n;
+    s16 h8;
+    s16 hA;
+    u8 padC[0x48 - 0xC];
+    f32 r;
+    f32 r2;
+    s16 idx;
+    s16 h52;
+    s16 t;
+    s16 h56;
+    s16 mode;
+    s16 ang;
+    u8 pad5C[4];
+    u8 col[4];
+    u8 col2[4];
+} Obj_b034_01E02970;
+
+static s32 func_01E02970_b034(Game_b034_01E02970 *g, Obj_b034_01E02970 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    Vec4f v;
+    f32 f;
+    f32 r;
+    Vec4f *p;
+    s16 i;
+
+    if (o->mode == 1) {
+        f = o->hA = g->count + (func_0019A5C8() % 50 + 5);
+        o->h8 = func_0019A5C8() % 2;
+        f /= 10.0f;
+        func_001076F0(o->col2, 0x70, 0x70, 0x70);
+        v.y = 0.0f;
+        o->ang = func_0019A5C8() % 360;
+        if (v.x) {
+            r = g->ra;
+        } else {
+            r = g->ra + g->rb;
+        }
+        v.z = r * func_00108030(g->sin, o->ang, 0);
+        v.x = r * func_00108030(g->sin, o->ang, 1);
+        for (i = 0, p = g->slot[o->idx].a; i < 19; i++, p++) {
+            p->x = v.x;
+            p->y = v.y;
+            p->z = v.z;
+        }
+        if (v.x) {
+            r = g->ra + g->rc;
+        } else {
+            r = g->rc + (g->ra + g->rb);
+        }
+        v.z = r * func_00108030(g->sin, o->ang - 30, 0);
+        v.x = r * func_00108030(g->sin, o->ang - 30, 1);
+        v.y = f;
+        for (i = 0, p = g->slot[o->idx].b; i < 19; i++, p++) {
+            p->x = v.x;
+            p->y = v.y;
+            p->z = v.z;
+        }
+        o->n = 2;
+        o->col[3] = 0;
+        o->h8 = 0;
+        o->h56 = 0;
+        o->r = 5.0f;
+        o->mode = 2;
+    }
+    if (o->t < 10) {
+        if (o->col[3] < 0x80) {
+            o->col[3] += 0x15;
+        }
+    } else if (o->col[3] > 10) {
+        o->col[3] -= 9;
+    } else {
+        o->mode = 0;
+    }
+    f = o->hA;
+    f /= 10.0f;
+    o->ang += 12;
+    if (o->ang >= 360) {
+        o->ang %= 360;
+    }
+    v.y = o->h8;
+    if (v.x) {
+        r = g->ra;
+    } else {
+        r = g->ra + g->rb;
+    }
+    v.z = r * func_00108030(g->sin, o->ang, 0);
+    v.x = r * func_00108030(g->sin, o->ang, 1);
+    func_01E00080_b034(&g->slot[o->idx].a[19], 20, 0, &v);
+    v.y = f + o->h8;
+    if (v.x) {
+        r = g->ra + g->rc;
+    } else {
+        r = g->rc + (g->ra + g->rb);
+    }
+    v.z = r * func_00108030(g->sin, o->ang - 30, 0);
+    v.x = r * func_00108030(g->sin, o->ang - 30, 1);
+    func_01E00080_b034(&g->slot[o->idx].b[19], 20, 0, &v);
+    if (o->t % 2 == 1) {
+        func_001076F0(o->col, 0x50, 0x10, 0x20);
+    } else {
+        func_001076F0(o->col, 0x40, 8, 0x10);
+    }
+    if (o->t != 0) {
+        if (o->n < 18) {
+            o->n++;
+        }
+    }
+    o->t++;
+    return 0;
+}
 
 /* shape b034:01E02F60, 185 insns: a fire glow, kind 0 (size 4, inner 0.4, holds 10 ticks) or 1 (size 20, holds 26):
    white with an orange rim (0x80/0x40/0x10), three random angle words; alpha up by 0x40 to 0xC0 for the hold, then

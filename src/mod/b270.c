@@ -574,7 +574,8 @@ typedef struct {
     s32 pad[2];
 } Rect_b152_01E014F0;
 
-static Rect_b152_01E014F0 func_01E01810_b270(s32 unused, s16 n) {
+/* takes the third argument its callers pass (a3 = 0, unused) */
+static Rect_b152_01E014F0 func_01E01810_b270(s32 unused, s16 n, s32 unused2) {
     Rect_b152_01E014F0 r;
 
     if (n < 2) {
@@ -1800,6 +1801,113 @@ static s32 func_01E05090_b270(Scene_b270_01E05090 *s, s32 fn, s32 arg) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b270", func_01E05240_b270);
+/* shape b270:01E05240 (B270PAINT_RAIN20), 200 insns, 1 copy: b529:01E03F40's one-segment ring draw with this module's
+   scene layout: ordering table g+0xD99C, frame table g+0xD9E4, trig g+0xDC98 */
+
+typedef struct {
+    u8 pad0[0x20];
+    s32 rot[4];
+    u8 pad30[0x18];
+    f32 r1;
+    f32 r0;
+    s16 h50;
+    u8 pad52[8];
+    s16 h5A;
+    u8 pad5C[4];
+    u8 col[4];
+    u8 col2[4];
+} Obj_b270_01E05240;
+
+typedef struct {
+    u8 pad0[0x88];
+    s32 tex;
+    u8 pad8C[8];
+    Rect_b152_01E014F0 rect;
+    u8 padA4[0x1A];
+    s16 frame;
+    u8 padC0[0xD99C - 0xC0];
+    s32 ot;
+    u8 padD9A0[0xD9E4 - 0xD9A0];
+    s16 tbl[36];
+    u8 padDA2C[0xDC98 - 0xDA2C];
+    u8 trig[1];
+} Game_b270_01E05240;
+
+static void func_01E05240_b270(Game_b270_01E05240 *g, Obj_b270_01E05240 *o, s32 mode, Vec4f *in) {
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 pos[4];
+    Vec4f q[4];
+    f32 v[4];
+    f32 m[16];
+    f32 depth[4];
+    Rect_b152_01E014F0 rc;
+    struct {
+        u8 pk[0x70];
+        u8 tail[0x20];
+    } buf;
+    s32 k;
+    s16 i;
+    s16 s;
+    s16 a;
+    void *p = &buf;
+    f32 r1;
+    f32 r0;
+    f32 c;
+    f32 sn;
+
+    *(Vec4f *)pos = *in;
+    s = 0;
+    func_00109270(p, 0, 0);
+    func_00107790(p, o->col, 1);
+    func_00107790(p, o->col2, 2);
+    func_00108500(p, &g->rect, g->frame);
+    func_00208700(p, g->tex, 1);
+    k = mode >> 4;
+    if (k == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)k << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    v[0] = pos[0];
+    v[1] = pos[1];
+    v[2] = pos[2];
+    func_00108EF0(m, 0, o->rot, v);
+    q[0].y = 0.0f;
+    q[1].y = 0.0f;
+    q[2].y = 0.0f;
+    q[3].y = 0.0f;
+    r1 = o->r1;
+    r0 = o->r0;
+    rc = func_01E01810_b270(0x14, g->tbl[o->h50 % 36], 0);
+    g->rect = rc;
+    func_00108500(p, &g->rect, g->frame);
+    for (i = 0; i < 1; i++) {
+        a = o->h5A + s - 200;
+        c = func_00108030(g->trig, a, 1);
+        sn = func_00108030(g->trig, a, 0);
+        q[2].x = c * r1;
+        q[2].z = sn * r1;
+        q[0].x = c * r0;
+        q[0].z = sn * r0;
+        a = s + (s16)(o->h5A + 10) - 200; /* the (s16) keeps the +10 apart: needed for the match */
+        c = func_00108030(g->trig, a, 1);
+        sn = func_00108030(g->trig, a, 0);
+        q[3].x = c * r1;
+        q[3].z = sn * r1;
+        q[1].x = c * r0;
+        q[1].z = sn * r0;
+        if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+            func_002075F0(p, g->ot, (u32)depth[0]);
+        }
+        s += 10;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/b270", func_01E05560_b270);

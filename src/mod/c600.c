@@ -1538,4 +1538,101 @@ static s32 func_01E03860_c600(s32 obj, Obj_b000_01E05110 *o, Cam_b000_01E05110 *
 
 INCLUDE_ASM("asm/nonmatchings/mod/c600", func_01E03DC0_c600);
 
-INCLUDE_ASM("asm/nonmatchings/mod/c600", func_01E05240_c600);
+/* shape c600:01E05240 (c600_Flash), 194 insns, 1 copy: c600 scene step (c543:01E04870 form): runs the 60-spark layer
+   and spins its points, eases its scale to 10 (clearing its colour when done), then runs the layers; before step 100
+   eases the scene scale, after that draws the 1.3-scaled overlay, eases its scale, grows the scene by 0.005 and
+   clears four colour blocks; spins the 64 particles, runs both rain blocks, flashes each block and restarts it every
+   11 frames */
+
+typedef struct {
+    f32 f[3];
+    u8 pad00C[0x64];
+    u8 b70[0xA0];
+    u8 b110[0x60];
+    u8 b170[0x400];
+    u8 b570[0x400];
+    u8 b970[0x70];
+    u8 b9E0[0x60];
+    s32 arr[64][4];
+    u8 bE40[0x2F0];
+    u8 b1130[0x70];
+    u8 blk[2][0x410];
+    s32 cnt[2];
+    u8 pad19C8[0x594];
+    s32 step;
+    u8 pad1F60[0x30];
+    u8 b1F90[0x70];
+    u8 b2000[0x30];
+    s32 arr2[60][4];
+    u8 pad23F0[0x2D0];
+    u8 b26C0[1];
+} Scene_c600_01E05240;
+
+static inline s32 Step_c600_01E05240(void *p, f32 target, f32 step) {
+    return func_001033D0((f32 *)p, target, step);
+}
+
+static inline void Seed_c600_01E05240(void *p) {
+    func_01E03610_c600((Obj_b000_01E04EC0 *)p, 0x40, 80.0f);
+}
+
+static void func_01E05240_c600(Scene_c600_01E05240 *g, s32 ot) {
+    extern void func_00103470(void *, s32, s32);
+    extern void func_001032C0(void *, s32, s32);
+    f32 sc[4];
+    s32 i;
+
+    func_01E02720_c600(ot, (void *)g->b2000, (void *)g->b1F90, (s32)g->b26C0);
+    for (i = 0; i < 60; i++) {
+        g->arr2[i][0] += 0x1000;
+        g->arr2[i][1] += 0x1000;
+        g->arr2[i][2] += 0x1000;
+    }
+    if (Step_c600_01E05240(g->b1F90, 10.0f, 0.5f) == 0) {
+        func_00103470(&g->b2000[0xB], 0, 4);
+    }
+    func_01E02070_c600(ot, (void *)g->b170, (void *)g);
+    func_01E02070_c600(ot, (void *)g->b570, (void *)g);
+    func_01E011D0_c600(ot, (void *)g->b110, (void *)g->b70, (void *)g);
+    func_01E03000_c600(ot, (void *)g->b9E0, (void *)g->b970);
+    if (g->step < 100) {
+        func_001033D0(g, 1.0f, 0.02f);
+    } else {
+        sc[0] = sc[1] = sc[2] = 1.3f;
+        func_01E008B0_c600(ot, (void *)g->bE40, (void *)g->b970, (s32)sc);
+        func_001033D0(g->b970, 1.0f, 0.3f);
+        g->f[0] += 0.005f;
+        g->f[1] += 0.005f;
+        g->f[2] += 0.005f;
+        func_00103470(&g->b9E0[0xB], 0, 4);
+        func_00103470(&g->b170[0xB], 0, 2);
+        func_00103470(&g->b570[0xB], 0, 2);
+        func_00103470(&g->b110[0x37], 0, 3);
+    }
+    for (i = 0; i < 64; i++) {
+        g->arr[i][0] += 0x80;
+        g->arr[i][1] += 0x80;
+        g->arr[i][2] += 0x80;
+    }
+    {
+        f32 r = 20.0f;
+        func_01E03860_c600(ot, (void *)g->blk[0], (void *)g->b1130, r);
+        func_01E03860_c600(ot, (void *)g->blk[1], (void *)g->b1130, r);
+    }
+    for (i = 0; i < 2; i++) {
+        if (g->step < 100) {
+            if (g->cnt[i] < 5) {
+                func_001032C0(&g->blk[i][7], 0xFF, 0x40);
+            } else {
+                func_00103470(&g->blk[i][7], 0, 0x20);
+            }
+        }
+        if (g->cnt[i] > 10) {
+            g->cnt[i] = 0;
+            g->blk[i][7] = 0;
+            Seed_c600_01E05240(g->blk[i]);
+        }
+    }
+    g->cnt[0]++;
+    g->cnt[1]++;
+}

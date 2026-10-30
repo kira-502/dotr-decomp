@@ -562,7 +562,127 @@ static void func_01E01350_b377(Obj_b020_01E00E70 *o, Fx_b020_01E00E70 *fx, s32 f
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b377", func_01E016C0_b377);
+/* shape b377:01E016C0 (B377_W_S), 376 insns, 1 copy: B377_W_S, the effect scene step (b235:01E01C70 form): counts the
+   frame (0xB2BC); frames 28..224 spawn 0x1E01CA0 on sides 0,6,12.. for each of n (n grows every 5th frame up to 11);
+   frames 0..11 spawn 0x1E01F60 on side m++; frame 195 takes joint 0xB244 point, 193 the camera point; frames 193..234
+   put the point 20 under it and spawn 0x1E02320 on sides 0/1 (odd) and 2 (even); frame 1 spawns four 0x1E027B0
+   (angles 0/90/45/135), 0x1E02C80 and 0x1E02A50; frames 118/191 and 141/191 spawn ten 0x1E02150 around joints
+   0xB248/0xB24A */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xB1D0 - 0x260];
+    Vec4f pt;
+    u8 padB1E0[0xB244 - 0xB1E0];
+    s16 joint0;
+    u8 padB246[2];
+    s16 joint1;
+    s16 joint2;
+    u8 padB24C[0xB2A2 - 0xB24C];
+    s16 ang;
+    u8 padB2A4[0xB2AE - 0xB2A4];
+    s16 m;
+    s16 n;
+    u8 padB2B2[2];
+    s16 side;
+    u8 padB2B6[2];
+    s16 flag;
+    u8 padB2BA[2];
+    s16 t;
+} Scene_b377_01E016C0;
+
+static void func_01E016C0_b377(Scene_b377_01E016C0 *g) {
+    extern void b377_01E01CA0(void);
+    extern void b377_01E01F60(void);
+    extern void b377_01E02150(void);
+    extern void b377_01E02320(void);
+    extern void b377_01E027B0(void);
+    extern void b377_01E02A50(void);
+    extern void b377_01E02C80(void);
+    extern void b377_01E036F0(Scene_b377_01E016C0 *, void (*)(void), s32);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    s16 i;
+    s16 j;
+
+    g->t++;
+    if (g->t > 27 && g->t < 225) {
+        for (i = 0, j = 0; i < g->n; j += 6, i++) {
+            g->side = j;
+            b377_01E036F0(g, b377_01E01CA0, 0);
+        }
+        if (g->t % 5 == 0 && g->n < 11) {
+            g->n++;
+        }
+    }
+    if (g->t < 12) {
+        g->side = g->m;
+        b377_01E036F0(g, b377_01E01F60, 0);
+        g->m++;
+    }
+    if (g->t == 195) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pt);
+    }
+    if (g->t == 193) {
+        func_001F5F90(func_001F5380(), &g->pt);
+    }
+    if (g->t >= 193 && g->t < 235) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pos);
+        g->pos.y = 40.0f;
+        if (g->flag) {
+            g->pos.z -= 4.0f;
+        } else {
+            g->pos.z += 4.0f;
+        }
+        g->pos = g->pt;
+        g->pos.y -= 20.0f;
+        g->side = 0;
+        if (g->t % 2 == 1) {
+            b377_01E036F0(g, b377_01E02320, 0);
+        }
+        g->side = 1;
+        if (g->t % 2 == 1) {
+            b377_01E036F0(g, b377_01E02320, 0);
+        }
+        g->side = 2;
+        if (g->t % 2 == 0) {
+            b377_01E036F0(g, b377_01E02320, 0);
+        }
+    }
+    if (g->t == 1) {
+        g->ang = 0;
+        g->side = 0;
+        b377_01E036F0(g, b377_01E027B0, 0);
+        g->ang = 90;
+        g->side = 0;
+        b377_01E036F0(g, b377_01E027B0, 0);
+        g->ang = 45;
+        g->side = 1;
+        b377_01E036F0(g, b377_01E027B0, 0);
+        g->ang = 135;
+        g->side = 1;
+        b377_01E036F0(g, b377_01E027B0, 0);
+        b377_01E036F0(g, b377_01E02C80, 0);
+        b377_01E036F0(g, b377_01E02A50, 0);
+    }
+    if (g->t == 118 || g->t == 191) {
+        func_001F5620(func_001F53A0(), g->joint1, &g->pos);
+        for (j = 0, i = 0; j < 10; i += 36, j++) {
+            g->ang = i;
+            b377_01E036F0(g, b377_01E02150, 0);
+        }
+    }
+    if (g->t == 141 || g->t == 191) {
+        func_001F5620(func_001F53A0(), g->joint2, &g->pos);
+        for (j = 0, i = 0; j < 10; i += 36, j++) {
+            g->ang = i;
+            b377_01E036F0(g, b377_01E02150, 0);
+        }
+    }
+}
 
 /* shape b377:01E01CA0, 174 insns: b411:01E015C0's spark in dark blue (0x20/0x20/0x80), size 8..27, hold 1..2; each tick
    it sits at joint 0xB244 moved k fiftieths (0x52) of the way to joint 0xB246, and the size grows by 2 */
@@ -639,7 +759,83 @@ static s32 func_01E01CA0_b377(Scene_b377_01E01CA0 *g, Fx_b377_01E01CA0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b377", func_01E01F60_b377);
+/* shape b377:01E01F60 (B377_OBJ_MOVE_3_), 124 insns, 1 copy: b235:01E02370's joint-to-joint glow: on start size 30 +
+   6 * n, grey 0x40 and purple 0x30/0x10/0x60 colours; alpha up by 19 to 0xC0 for 140 frames, then down by 9 until it
+   ends; sits on joint 0 moved n tenths of the way to joint 1, spins by 0x4000 */
+
+typedef struct {
+    u8 pad0[0xB244];
+    s16 j0;
+    s16 j1;
+} Game_b377_01E01F60;
+
+typedef struct {
+    u8 pad0[0x10];
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad1C[4];
+    s32 rot;
+    u8 pad24[0x28];
+    f32 size;
+    s16 kind;
+    s16 f52;
+    s16 t;
+    u8 pad56[2];
+    s16 state;
+    s16 w;
+    s16 h;
+    u8 pad5E[2];
+    u8 c0[4];
+    u8 c1[4];
+} Obj_b377_01E01F60;
+
+#pragma opt_propagation off
+
+static s32 func_01E01F60_b377(Game_b377_01E01F60 *g, Obj_b377_01E01F60 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_00205C40(void *);
+    f32 d[3];
+    f32 k;
+
+    if (o->state == 1) {
+        k = o->kind;
+        o->size = 30.0f + 6.0f * k;
+        func_001076F0(o->c0, 0x40, 0x40, 0x40);
+        func_001076F0(o->c1, 0x30, 0x10, 0x60);
+        o->f52 = 0;
+        o->w = 0xA;
+        o->h = 0xA;
+        o->state = 2;
+        o->c1[3] = 0;
+    }
+    if (o->t < 0x8C) {
+        if (o->c1[3] < 0xC0) {
+            o->c1[3] += 0x13;
+        }
+    } else if (o->c1[3] > 0xA) {
+        o->c1[3] -= 9;
+    } else {
+        o->state = 0;
+    }
+    func_001F5620(func_001F53A0(), g->j0, &o->x);
+    func_001F5620(func_001F53A0(), g->j1, d);
+    d[0] = (d[0] - o->x) / 10.0f;
+    d[1] = (d[1] - o->y) / 10.0f;
+    d[2] = (d[2] - o->z) / 10.0f;
+    k = o->kind;
+    o->x += d[0] * k;
+    o->y += d[1] * k;
+    o->z += d[2] * k;
+    func_00205C40(&o->rot);
+    o->rot += 0x4000;
+    o->t++;
+    return 0;
+}
+#pragma opt_propagation reset
+
 
 typedef struct {
     u8 pad0000[0xB4C0];
@@ -1167,4 +1363,185 @@ static s32 func_01E036F0_b377(Scene_b377_01E036F0 *s, s32 fn, s32 arg) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b377", func_01E038A0_b377);
+/* shape b377:01E038A0 (IW377_MagicGas1), 364 insns, 1 copy: b363:01E00BB0 (IWMagicGas1) with the view x scale doubled
+   in mode 0 (cam->f48 * 2); texture corners by the module helper func_01E00080_b377 */
+
+
+typedef struct Cam_b377_01E038A0 {
+    u8 pad0[8];
+    s16 h8;
+    u8 padA[6];
+    f32 f10, f14, f18;
+    u8 pad1C[4];
+    Vec4f pos;
+    u8 pad30[0x18];
+    f32 f48;
+    u8 pad4C[4];
+    s16 f50;
+    u8 pad52[8];
+    s16 f5A;
+    u8 pad5C[4];
+    Vec4f at;
+} Cam_b377_01E038A0;
+
+typedef struct Obj_b377_01E038A0 {
+    u8 pad0[0x10];
+    Vec4f f10;
+    u8 pad20[0x60];
+    s32 f80;
+    u8 pad84[4];
+    s32 f88;
+    u8 pad8C[8];
+    Rect_b003_01E00080 rect;
+    u8 pad9C[0x14];
+    s16 fB0;
+    u8 padB2[6];
+    s16 fB8;
+    u8 padBA[6];
+    s16 fC0[12];
+    u8 fD8[0x10];
+} Obj_b377_01E038A0;
+
+typedef struct Uv_b377_01E038A0 {
+    f32 u, v;
+} Uv_b377_01E038A0;
+
+typedef struct Xyz_b377_01E038A0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+    u64 reg;
+} Xyz_b377_01E038A0;
+
+typedef struct Pk_b377_01E038A0 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    Uv_b377_01E038A0 uv;
+    u64 pad18;
+    Xyz_b377_01E038A0 v[4];
+    u64 pad60[6];
+} Pk_b377_01E038A0;
+
+typedef struct Buf_b377_01E038A0 {
+    u64 tag;
+    Pk_b377_01E038A0 pk;
+} Buf_b377_01E038A0;
+
+static void func_01E038A0_b377(Obj_b377_01E038A0 *obj, Cam_b377_01E038A0 *cam, s32 flags, s8 *table) {
+    f32 u;
+    extern void func_00108EF0();
+    extern void func_00205C40();
+    extern void func_00108950();
+    extern void func_00109100();
+    s16 off;
+    f32 v;
+    Pk_b377_01E038A0 *p;
+    s16 j;
+    s16 i;
+    s32 sel;
+
+    f32 view[4][4];
+    Vec4f pos;
+    f32 out[4];
+    f32 out2[4];
+    f32 m[4][4];
+    s32 rot[4];
+    s32 x[4];
+    Buf_b377_01E038A0 buf;
+    Uv_b377_01E038A0 uv;
+
+    p = &buf.pk;
+    p->flags = 0x24;
+    p->size = 9;
+    p->regs = ((u64)4 << 32) | 0x24242421;
+    p->pad4 = 0;
+    p->flags |= 0x800;
+    sel = flags >> 4;
+    if (sel == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)sel << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    func_00107740(&uv, &cam->at);
+    p->uv = uv;
+    func_01E00080_b377((Pk_b003_01E00080 *)p, &obj->rect, 0);
+    func_00208700(p, (void *)obj->f88, 1);
+    func_00205C40(rot);
+    rot[1] /= 180;
+    rot[1] = -rot[1];
+    rot[0] /= 180;
+    rot[0] = -rot[0];
+    pos.x = cam->f10;
+    pos.y = cam->f14;
+    pos.z = cam->f18;
+    if (obj->fB0 == 0) {
+        func_00108EF0(m, &obj->f10, NULL, &pos);
+    } else if (obj->fB0 == 1) {
+        func_00108EF0(m, &obj->f10, &cam->pos, &pos);
+    }
+    x[1] = cam->f5A;
+    for (i = 0; i < obj->fB8; i++) {
+        if (obj->fB0 == 0) {
+            func_01E00080_b377((Pk_b003_01E00080 *)p, &obj->rect, obj->fC0[i]);
+            func_00108CE0(view, cam->f48, 2.0f * cam->f48);
+            func_00109100(view, rot, 1, obj->fD8);
+            func_00109100(view, rot, 0, obj->fD8);
+        } else if (obj->fB0 == 1) {
+            func_00108CE0(view, cam->f48, cam->f48);
+        }
+        for (j = 0; j < 3; j++) {
+            if (j == 0) {
+                off = 0;
+            }
+            if (j == 1) {
+                off = 100;
+            }
+            if (j == 2) {
+                off = 180;
+            }
+            v = (table + i)[cam->h8 + off];
+            v /= 20.0f;
+            u = v * (f32)(cam->f50 + (i >> 1));
+            if (j == 0) {
+                out[0] = u;
+            }
+            if (j == 1) {
+                out[1] = u;
+            }
+            if (j == 2) {
+                out[2] = u;
+            }
+        }
+        if (obj->fB0 == 0) {
+            func_00108950(out, x, 0, obj->fD8);
+        }
+        func_00107070(view, 0, out[0]);
+        func_00107070(view, 1, out[1]);
+        func_00107070(view, 2, out[2]);
+        if (obj->fB0 == 1) {
+            view[0][1] = 0.0f;
+            view[1][1] = 0.0f;
+            view[0][0] = cam->f48;
+            view[1][0] = -cam->f48;
+            view[0][2] = 0.0f;
+            view[1][2] = 0.0f;
+        }
+        if ((flags & 0xF) == 0) {
+            if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, out2) != 0) {
+                func_002075F0((s32)p, obj->f80, func_001A23B0(out2[0]));
+            }
+        } else if ((flags & 0xF) == 1) {
+            if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, out2) != 0) {
+                p->v[0].z = p->v[1].z = p->v[2].z = p->v[3].z = 0xFFFFFF;
+                func_002075F0((s32)p, obj->f80, 0);
+            }
+        } else if ((flags & 0xF) == 2) {
+            if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, out2) != 0) {
+                func_002075F0((s32)p, obj->f80, -1);
+            }
+        }
+    }
+}

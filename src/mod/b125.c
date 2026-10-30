@@ -966,7 +966,180 @@ static s32 func_01E036A0_b125(Obj_b035_01E00410 *obj, s32 tex, s32 n) {
 
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b125", func_01E04220_b125);
+/* shape b125:01E04220 (ShFx_RiseCore), 430 insns, 1 copy (-O2,p): draws n rising-core streaks (0x3C-byte emitters):
+   re-seeds the x/z jitter each cycle, projects a low and a high end (rise/rise2 times the masked age), each end sized
+   by its depth, alpha from flag 0x40, flag 0x80 pins it to the far plane */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b125_01E04220;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+} Hdr_b125_01E04220;
+
+typedef struct {
+    u64 st;
+    Xyz_b125_01E04220 xyz;
+} Vtx_b125_01E04220;
+
+typedef struct {
+    Hdr_b125_01E04220 h;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx_b125_01E04220 v[4];
+    u8 tail[0x20];
+} Pkt_b125_01E04220;
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b125_01E04220;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 b5;
+    u8 pad06[2];
+    s32 w[4];
+} Tex_b125_01E04220;
+
+typedef struct {
+    u8 cur;
+    u8 pad1;
+    u8 max;
+    u8 mask;
+    u8 flags;
+    u8 b5;
+    u8 pad6[2];
+    u8 tex;
+    u8 b9;
+    u8 bA;
+    u8 bB;
+    s32 range;
+    s32 drange;
+    f32 size;
+    f32 rise;
+    f32 rise2;
+    u8 c20, c21, c22, c23;
+    f32 x, y, z;
+    f32 dx;
+    s32 w34;
+    f32 dz;
+} Obj_b125_01E04220;
+
+#pragma optimization_level 2
+
+static s32 func_01E04220_b125(Obj_b125_01E04220 *obj, s32 ot, s32 n) {
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101BA0(void *, void *);
+    extern s32 func_0019A5C8(void);
+    extern void func_0020EB40(void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern f32 func_001018E0(f32, f32);
+    extern void func_001020B0();
+    extern void func_00101D20(void *, void *, s32);
+    extern void func_002075F0(void *, s32, s32);
+    Obj_b125_01E04220 *o;
+    s32 i;
+    s32 h;
+    s32 k;
+    s32 d;
+    f32 m[16];
+    V4_b125_01E04220 v[2];
+    V4_b125_01E04220 pos;
+    Xyz_b125_01E04220 scr[2];
+    Tex_b125_01E04220 t;
+    Pkt_b125_01E04220 p;
+    f32 depth[2];
+    f32 q;
+    f32 s0;
+    f32 s1;
+
+    o = obj;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        h = func_00202BF0(5, o->tex);
+        o->range += o->drange;
+        k = o->mask & (o->max - o->cur);
+        if (k == 0 || o->max - 1 == o->cur) {
+            if (o->b5) {
+                func_00101BA0(o, &pos);
+                o->x = pos.x;
+                o->y = pos.y;
+                o->z = pos.z;
+            }
+            o->dx = (f32)((func_0019A5C8() >> 4) % o->range - (o->range >> 1)) / 100.0f;
+            o->w34 = 0;
+            o->dz = (f32)((func_0019A5C8() >> 4) % o->range - (o->range >> 1)) / 100.0f;
+        }
+        v[0].x = v[1].x = o->x + o->dx;
+        v[0].z = v[1].z = o->z + o->dz;
+        v[0].y = o->y + (f32)k * o->rise;
+        v[1].y = o->y + (f32)k * o->rise2;
+        func_0020EB40(m);
+        ((Hdr_b125_01E04220 *)(s32)&p)->count = 0x24;
+        ((Hdr_b125_01E04220 *)(s32)&p)->tag = 9;
+        ((Hdr_b125_01E04220 *)(s32)&p)->regs = ((u64)4 << 32) | 0x24242421;
+        ((Hdr_b125_01E04220 *)(s32)&p)->pad = 0;
+        p.r = o->c22;
+        p.g = o->c21;
+        p.b = o->c20;
+        p.q = 1.0f;
+        t.b5 = o->bA;
+        func_001020B0(&t, o->b9, 0);
+        func_00101D20(&p, &t, h);
+        p.a = o->c23;
+        if (!(o->flags & 0x40)) {
+            if (o->cur < 8) {
+                p.a = (o->c23 >> 3) * o->cur;
+            } else {
+                d = o->mask - k;
+                if (d < 8) {
+                    p.a = (o->c23 >> 3) * d;
+                }
+            }
+        }
+        if (func_00205440(&v[0], m, &scr[0], &depth[0]) == 0 || func_00101600(&scr[0]) == 0) {
+            continue;
+        }
+        if (func_00205440(&v[1], m, &scr[1], &depth[1]) == 0 || func_00101600(&scr[1]) == 0) {
+            continue;
+        }
+        s0 = func_001018E0(o->size, depth[0]);
+        s1 = func_001018E0(o->size, depth[1]);
+        if (o->flags & 0x80) {
+            p.v[0].xyz.z = p.v[1].xyz.z = p.v[2].xyz.z = p.v[3].xyz.z = 0xFFFFFE;
+            q = 0.0f;
+        } else {
+            p.v[0].xyz.z = p.v[1].xyz.z = scr[1].z;
+            p.v[2].xyz.z = p.v[3].xyz.z = scr[0].z;
+            q = (depth[0] + depth[1]) / 2.0f;
+        }
+        p.v[0].xyz.x = (u32)(scr[1].x - s1);
+        p.v[1].xyz.x = (u32)(scr[1].x + s1);
+        p.v[2].xyz.x = (u32)(scr[0].x - s0);
+        p.v[3].xyz.x = (u32)(scr[0].x + s0);
+        p.v[0].xyz.y = p.v[1].xyz.y = scr[1].y;
+        p.v[2].xyz.y = p.v[3].xyz.y = scr[0].y;
+        func_002075F0(&p, ot, (u32)q);
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b125", func_01E048E0_b125);
 

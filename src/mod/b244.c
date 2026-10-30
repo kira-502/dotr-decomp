@@ -574,7 +574,291 @@ static s32 func_01E020C0_b244(Trail_b025_01E01EF0 *o, Pt_b025_01E01EF0 *pts, Vec
 
 INCLUDE_ASM("asm/nonmatchings/mod/b244", func_01E021A0_b244);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b244", func_01E02B40_b244);
+/* shape b244:01E02B40 (b244), 344 insns, 1 copy: b244 scene manager: with a code it clears the scene (0x47D0), resets
+   its 19 matrices, keeps joint 0x2F, a 202-tick timer, the code, colour (0x70,0xB0,0xE0,0xFF), six groups starting
+   30+25i and fading 60+25i, their points, bands, spots and line particles (LkPrim_SetLineParticle, 12, 4.0);
+   otherwise it moves the six actors, runs the auto-blur from tick 30 to 184 and the flash after, steps every group,
+   and returns 2 / 1 at ticks 185 / 50, 6 from 60 to 184, 8 when the timer ends */
+
+typedef struct {
+    s32 tex;
+    u8 c[4];
+    s32 flags;
+    f32 size;
+    s16 uv[8];
+    u8 pad20[0x10];
+    f32 rate;
+    s16 a;
+    s16 b;
+    s16 c34;
+    s16 d;
+    s16 e;
+    u8 pad3E[2];
+} Spot_b244_01E02B40;
+
+typedef struct {
+    s32 zero;
+    u8 c[4];
+    f32 scale;
+    s16 n;
+    s16 k;
+} Pt_b244_01E02B40;
+
+typedef struct {
+    s16 uv[8];
+    u8 pad10[0x20];
+    f32 scale;
+    u8 c[4];
+    s32 mode;
+    u8 pad3C[0xC];
+    s16 s[6];
+    u8 pad54[0xC];
+} Band_b244_01E02B40;
+
+typedef struct {
+    s32 tex;
+    u8 pad4[4];
+    f32 scale;
+    u8 c[4];
+    f32 x, y, z;
+    u8 pad1C[4];
+} Aux_b244_01E02B40;
+
+typedef struct {
+    u8 pad0[0x20];
+    u8 m[0x50];
+} Mat_b244_01E02B40;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    u8 c[4];
+    u8 *parts;
+    s16 uv[8];
+    f32 f20;
+    f32 f24;
+    f32 radius;
+    s16 count;
+    u8 life;
+    u8 f2F;
+} Grp_b244_01E02B40;
+
+typedef struct {
+    u8 m0[0x70];
+    Spot_b244_01E02B40 spot[6];
+    u8 *list[6];
+    u8 pad208[8];
+    u8 buf[6][0x180];
+    Mat_b244_01E02B40 ma[6];
+    Pt_b244_01E02B40 pt[6];
+    Band_b244_01E02B40 band[6];
+    Aux_b244_01E02B40 aux[6];
+    Mat_b244_01E02B40 mb[6];
+    Mat_b244_01E02B40 mc[6];
+    Grp_b244_01E02B40 grp[6];
+    u8 parts[6][0x800];
+    s32 flag[6];
+    s32 start[6];
+    s32 fade[6];
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 joint;
+    u8 c[4];
+} Scene_b244_01E02B40;
+
+/* scatters one group's line particles (inline: written as a direct call the group address loads before 4.0f) */
+static inline void Set_b244_01E02B40(void *p) {
+    func_01E011A0_b244((Obj_b015_01E01620 *)p, 12, 4.0f);
+}
+
+static s32 func_01E02B40_b244(s32 arg0, s32 code) {
+    Scene_b244_01E02B40 *g = (Scene_b244_01E02B40 *)arg0;
+    extern void b244_01E030A0(Scene_b244_01E02B40 *, s32, s32);
+    extern void b244_01E031E0(Scene_b244_01E02B40 *, s32, s32);
+    extern void b244_01E03300(Scene_b244_01E02B40 *, s32, s32);
+    extern void b244_01E035B0(Scene_b244_01E02B40 *, s32, s32);
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern void func_001039A0(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00103290(s32 *, s32);
+    extern void func_00103470(u8 *, s32, s32);
+    s32 tx[4];
+    s32 t;
+    s32 ot;
+    s32 i;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x47D0);
+        func_00103890(g);
+        for (i = 0; i < 6; i++) {
+            func_00103890(&g->ma[i]);
+            func_00103890(&g->mb[i]);
+            func_00103890(&g->mc[i]);
+        }
+        g->joint = func_001F5560(func_001F53A0(), 0x2F, 1);
+        g->timer = 202;
+        g->t = 1;
+        g->code = code;
+        g->c[2] = 0xE0;
+        g->c[1] = 0xB0;
+        g->c[0] = 0x70;
+        g->c[3] = 0xFF;
+        for (i = 0; i < 6; i++) {
+            g->flag[i] = 30;
+            g->start[i] = i * 25 + 30;
+            g->fade[i] = i * 25 + 60;
+        }
+        for (i = 0; i < 6; i++) {
+            g->pt[i].zero = 0;
+            g->pt[i].c[2] = 0xE0;
+            g->pt[i].c[1] = 0xB0;
+            g->pt[i].c[0] = 0x70;
+            g->pt[i].c[3] = 0xFF;
+            g->pt[i].scale = 4.0f;
+            g->pt[i].n = 0x24;
+            g->pt[i].k = 0;
+        }
+        func_00103290(tx, 0);
+        for (i = 0; i < 6; i++) {
+            g->band[i].mode = 3;
+            g->band[i].uv[0] = 0;
+            g->band[i].uv[1] = 0;
+            g->band[i].uv[2] = 0x40;
+            g->band[i].uv[3] = 0x40;
+            g->band[i].uv[4] = 0;
+            g->band[i].uv[5] = 0;
+            g->band[i].uv[6] = 0x80;
+            g->band[i].uv[7] = 0x80;
+            g->band[i].scale = 1.0f;
+            g->band[i].c[2] = 0x80;
+            g->band[i].c[1] = 0x80;
+            g->band[i].c[0] = 0x80;
+            g->band[i].c[3] = 0x80;
+            g->band[i].s[0] = 0;
+            g->band[i].s[1] = 2;
+            g->band[i].s[2] = 3;
+            g->band[i].s[3] = 4;
+            g->band[i].s[4] = 0;
+            g->band[i].s[5] = 999;
+            t = tx[0];
+            g->aux[i].z = 0.0f;
+            g->aux[i].y = 0.0f;
+            g->aux[i].x = 0.0f;
+            g->aux[i].scale = 3.0f;
+            g->aux[i].tex = t;
+            g->aux[i].c[2] = 0x80;
+            g->aux[i].c[1] = 0x80;
+            g->aux[i].c[0] = 0x80;
+            g->aux[i].c[3] = 0x80;
+        }
+        func_00103290(tx, 1);
+        g->list[0] = g->buf[0];
+        g->list[1] = g->buf[1];
+        g->list[2] = g->buf[2];
+        g->list[3] = g->buf[3];
+        g->list[4] = g->buf[4];
+        g->list[5] = g->buf[5];
+        for (i = 0; i < 6; i++) {
+            g->spot[i].tex = tx[0];
+            g->spot[i].c[2] = 0x80;
+            g->spot[i].c[1] = 0x80;
+            g->spot[i].c[0] = 0x80;
+            g->spot[i].c[3] = 0x80;
+            g->spot[i].flags = 0x8003;
+            g->spot[i].size = 20.0f;
+            g->spot[i].uv[0] = 0x60;
+            g->spot[i].uv[1] = 0;
+            g->spot[i].uv[2] = 0x20;
+            g->spot[i].uv[3] = 0x20;
+            g->spot[i].uv[4] = 0x60;
+            g->spot[i].uv[5] = 0;
+            g->spot[i].uv[6] = 0x80;
+            g->spot[i].uv[7] = 0x40;
+            g->spot[i].rate = 0.05f;
+            g->spot[i].a = 0;
+            g->spot[i].b = 0x10;
+            g->spot[i].c34 = 0x18;
+            g->spot[i].d = 0;
+            g->spot[i].e = 1;
+        }
+        g->grp[0].parts = g->parts[0];
+        g->grp[1].parts = g->parts[1];
+        g->grp[2].parts = g->parts[2];
+        g->grp[3].parts = g->parts[3];
+        g->grp[4].parts = g->parts[4];
+        g->grp[5].parts = g->parts[5];
+        for (i = 0; i < 6; i++) {
+            g->grp[i].tex = tx[0];
+            g->grp[i].flags = 0x20000003;
+            g->grp[i].c[2] = 0x80;
+            g->grp[i].c[1] = 0x80;
+            g->grp[i].c[0] = 0x80;
+            g->grp[i].c[3] = 0x80;
+            g->grp[i].f20 = 0.3f;
+            g->grp[i].f24 = 10.0f;
+            g->grp[i].uv[0] = 0;
+            g->grp[i].uv[1] = 0;
+            g->grp[i].uv[2] = 0x20;
+            g->grp[i].uv[3] = 0x20;
+            g->grp[i].uv[4] = 0;
+            g->grp[i].uv[5] = 0;
+            g->grp[i].uv[6] = 0x80;
+            g->grp[i].uv[7] = 0x40;
+            g->grp[i].radius = 5.0f;
+            g->grp[i].count = 0x80;
+            g->grp[i].life = 8;
+            g->grp[i].f2F = 0;
+            Set_b244_01E02B40(&g->grp[i]);
+        }
+        return 0;
+    }
+    for (i = 0; i < 6; i++) {
+        func_001F5F90(func_001F5380(), g->mb[i].m);
+        b244_01E030A0(g, ot, i);
+    }
+    func_001038D0(g);
+    for (i = 0; i < 6; i++) {
+        func_001039A0(&g->ma[i]);
+        func_001039A0(&g->mb[i]);
+        func_001038D0(&g->mc[i]);
+    }
+    if (g->t >= 30 && g->t < 185) {
+        func_01E00120_b244();
+    }
+    if (g->t >= 185) {
+        func_01E00250_b244(ot, (Src_b000_01E00400 *)g->c);
+        func_00103470(&g->c[3], 0, 0x10);
+    }
+    for (i = 0; i < 6; i++) {
+        b244_01E031E0(g, ot, i);
+        b244_01E03300(g, ot, i);
+        b244_01E035B0(g, ot, i);
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 185) {
+        return 2;
+    }
+    if (g->t == 50) {
+        return 1;
+    }
+    if (g->t >= 60 && g->t < 185) {
+        return 6;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
+
 
 /* shape b244:01E030A0, 78 insns: move one of the scene's actors: before its start time it sits on the scene joint, after it it steps along its path (func_00104490 with a countdown) and runs shape b244:01E020C0; then copies its position and applies the camera (func_00103DB0) */
 
@@ -688,7 +972,9 @@ static void func_01E031E0_b244(Scene_b244_01E031E0 *s, s32 arg1, s32 i) {
         b244_01E003B0(arg1, &s->pt[i], s->m[i]);
         b244_01E00910(arg1, &s->band[i], s->aux[i], s->m[i]);
         if (s->t >= s->fade[i]) {
-            func_001033D0(s->m[i], 5.0f, 0.2f);
+            f32 r = 5.0f;
+
+            func_001033D0(s->m[i], r, 0.2f);
             func_00103470(&s->pt[i].a, 0, 0x10);
             func_00103470(&s->band[i].a, 0, 8);
         }

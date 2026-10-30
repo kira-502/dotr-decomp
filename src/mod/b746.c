@@ -853,7 +853,131 @@ static void func_01E020D0_b746(Obj_b065_01E012B0 *o, Anim_b065_01E012B0 *an, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b746", func_01E024E0_b746);
+/* shape b746:01E024E0 (B746_W_S), 382 insns, 1 copy: B746_W_S, the effect scene step: counts the frame (0xCBCC);
+   frame 1 spawns 0x1E042C0, 0x1E04080, 0x1E03F70 and four 0x1E036B0 (angles 0/90/45/135, sides 0/0/1/1); 74/95 spawn
+   0x1E03D90 on sides 0,1 / 2; each frame vel is an eighth of joint 0xCB58 minus joint 0xCB5C; 70 spawns 0x1E03990; 79
+   takes joint 0xCB58 into pt; frames 79..89 copy pt to pos and spawn 0x1E03210, three 0x1E03010 and ten 0x1E02E40;
+   from 79 pt.z moves 1 by flag; 40/74 and 48/74 spawn ten 0x1E02AE0 around joints 0xCB5E/0xCB60 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xCAD0 - 0x260];
+    Vec4f pt;
+    u8 padCAE0[0xCAF0 - 0xCAE0];
+    f32 vel[3];
+    u8 padCAFC[0xCB58 - 0xCAFC];
+    s16 joint0;
+    u8 padCB5A[2];
+    s16 joint1;
+    s16 joint2;
+    s16 joint3;
+    u8 padCB62[0xCBB6 - 0xCB62];
+    s16 ang;
+    u8 padCBB8[0xCBC4 - 0xCBB8];
+    s16 side;
+    u8 padCBC6[2];
+    s16 flag;
+    u8 padCBCA[2];
+    s16 t;
+} Scene_b746_01E024E0;
+
+static void func_01E024E0_b746(Scene_b746_01E024E0 *g) {
+    extern void b746_01E02AE0(void);
+    extern void b746_01E02E40(void);
+    extern void b746_01E03010(void);
+    extern void b746_01E03210(void);
+    extern void b746_01E036B0(void);
+    extern void b746_01E03990(void);
+    extern void b746_01E03D90(void);
+    extern void b746_01E03F70(void);
+    extern void b746_01E04080(void);
+    extern void b746_01E042C0(void);
+    extern void b746_01E05080(Scene_b746_01E024E0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    Vec4f v[2];
+    s16 i;
+    s16 j;
+
+    g->t++;
+    if (g->t == 1) {
+        b746_01E05080(g, b746_01E042C0, 0);
+    }
+    if (g->t == 1) {
+        b746_01E05080(g, b746_01E04080, 0);
+    }
+    if (g->t == 74) {
+        g->side = 0;
+        b746_01E05080(g, b746_01E03D90, 0);
+        g->side = 1;
+        b746_01E05080(g, b746_01E03D90, 0);
+    }
+    if (g->t == 95) {
+        g->side = 2;
+        b746_01E05080(g, b746_01E03D90, 0);
+    }
+    func_001F5620(func_001F53A0(), g->joint0, &v[0]);
+    func_001F5620(func_001F53A0(), g->joint1, &v[1]);
+    g->vel[0] = (v[0].x - v[1].x) / 8.0f;
+    g->vel[1] = (v[0].y - v[1].y) / 8.0f;
+    g->vel[2] = (v[0].z - v[1].z) / 8.0f;
+    if (g->t == 1) {
+        b746_01E05080(g, b746_01E03F70, 0);
+    }
+    if (g->t == 70) {
+        b746_01E05080(g, b746_01E03990, 0);
+    }
+    if (g->t == 79) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pt);
+    }
+    if (g->t >= 79 && g->t < 90) {
+        g->pos = g->pt;
+        g->side = 0;
+        b746_01E05080(g, b746_01E03210, 0);
+        for (i = 0; i < 3; i++) {
+            b746_01E05080(g, b746_01E03010, 0);
+        }
+        for (i = 0; i < 10; i++) {
+            b746_01E05080(g, b746_01E02E40, 0);
+        }
+    }
+    if (g->t >= 79) {
+        if (g->flag) {
+            g->pt.z -= 1.0f;
+        } else {
+            g->pt.z += 1.0f;
+        }
+    }
+    if (g->t == 1) {
+        g->ang = 0;
+        g->side = 0;
+        b746_01E05080(g, b746_01E036B0, 0);
+        g->ang = 90;
+        g->side = 0;
+        b746_01E05080(g, b746_01E036B0, 0);
+        g->ang = 45;
+        g->side = 1;
+        b746_01E05080(g, b746_01E036B0, 0);
+        g->ang = 135;
+        g->side = 1;
+        b746_01E05080(g, b746_01E036B0, 0);
+    }
+    if (g->t == 40 || g->t == 74) {
+        func_001F5620(func_001F53A0(), g->joint2, &g->pos);
+        for (i = 0, j = 0; i < 10; j += 36, i++) {
+            g->ang = j;
+            b746_01E05080(g, b746_01E02AE0, 0);
+        }
+    }
+    if (g->t == 48 || g->t == 74) {
+        func_001F5620(func_001F53A0(), g->joint3, &g->pos);
+        for (j = 0, i = 0; j < 10; i += 36, j++) {
+            g->ang = i;
+            b746_01E05080(g, b746_01E02AE0, 0);
+        }
+    }
+}
 
 /* shape b746:01E02AE0, 113 insns: a white drifting spark (b092:01E02420 shape): size 40, sub-frame 2..4, frame 0..3; pushed 2
    along its angle at the start, then drifting 0.5 a frame; alpha up by 0x60 for 6 frames, then down by 19 until it ends; turns */
@@ -1832,7 +1956,134 @@ static s32 func_01E05080_b746(Scene_b746_01E05080 *s, s32 fn, s32 arg) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b746", func_01E05230_b746);
+/* shape b746:01E05230 (B746KPOINT_RAIN_3), 347 insns, 9 copies: the B092KPOINT_RAIN_3 ribbon (b092:01E04290): two
+   point trails drawn as 4 spline quads per segment, the far edge fading by alpha / (3n) */
+
+typedef struct Rgbaq_b746_01E05230 {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b746_01E05230;
+
+typedef struct {
+    Rgbaq_b746_01E05230 c;
+    u64 xyz;
+} Vtx_b746_01E05230;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b746_01E05230 v[4];
+    u8 tail[0x40];
+} Pkt_b746_01E05230;
+
+typedef struct {
+    u8 r, g, b, a;
+} C4_b746_01E05230;
+
+typedef struct {
+    u8 pad00[6];
+    s16 n;
+    u8 pad08[0x58];
+    C4_b746_01E05230 col;
+} Rib_b746_01E05230;
+
+static inline u8 b746_01E05230_fade(s32 x, s16 step) {
+    s16 r = x;
+
+    r -= step;
+    if (r < 0) {
+        r = 0;
+    }
+    return r;
+}
+
+static void func_01E05230_b746(void *o, Rib_b746_01E05230 *s, Vec_b018_01E00EE0 *pa __attribute__((aligned(16))), Vec_b018_01E00EE0 *pb __attribute__((aligned(16)))) {
+    extern Rgbaq_b746_01E05230 func_00107740(void *);
+    extern void func_001092E0(void *, s32);
+    extern void func_001094F0(void *);
+    extern void func_00109A70(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 depth[4];
+    Vec_b018_01E00EE0 quad[4];
+    Vec_b018_01E00EE0 A[2];
+    Vec_b018_01E00EE0 B[2];
+    Vec_b018_01E00EE0 a4[4];
+    Vec_b018_01E00EE0 b4[4];
+    Pkt_b746_01E05230 pkt __attribute__((aligned(8)));
+    C4_b746_01E05230 c0;
+    C4_b746_01E05230 c1;
+    s32 k;
+    s32 j;
+    s16 n;
+    s16 al;
+    s16 step;
+    s32 ot;
+    Pkt_b746_01E05230 *p;
+    Vec_b018_01E00EE0 *pp;
+    Vec_b018_01E00EE0 *pq;
+    f32 t;
+
+    ot = (s32)func_00207500();
+    n = s->n;
+    p = (Pkt_b746_01E05230 *)(s32)&pkt;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    c0 = s->col;
+    c1 = s->col;
+    c0.a = 0;
+    a4[0] = pa[0];
+    a4[1] = pa[0];
+    a4[2] = pa[1];
+    a4[3] = pa[2];
+    b4[0] = pb[0];
+    b4[1] = pb[0];
+    b4[2] = pb[1];
+    b4[3] = pb[2];
+    pkt.v[0].c = func_00107740(&c0);
+    pkt.v[1].c = func_00107740(&c0);
+    pkt.v[2].c = func_00107740(&c1);
+    pkt.v[3].c = func_00107740(&c1);
+    step = s->col.a;
+    step /= (s16)(n * 3);
+    for (k = 0; k < n - 1; k++) {
+        t = 0.0f;
+        pp = pa + (k - 1);
+        pq = pb + (k - 1);
+        for (j = 0; j < 4; j++) {
+            p->v[2].c = func_00107740(&c1);
+            al = c1.a;
+            if (al - step > 0) {
+                c1.a = b746_01E05230_fade(al, step);
+            } else {
+                c1.a = 0;
+            }
+            p->v[3].c = func_00107740(&c1);
+            if (k != 0) {
+                A[0] = func_01E01340_b746(pp, 0, t);
+                B[0] = func_01E01340_b746(pq, 0, t);
+                t += 0.25f;
+                A[1] = func_01E01340_b746(pp, 0, t);
+                B[1] = func_01E01340_b746(pq, 0, t);
+            } else {
+                A[0] = func_01E01340_b746(a4, 0, t);
+                B[0] = func_01E01340_b746(b4, 0, t);
+                t += 0.25f;
+                A[1] = func_01E01340_b746(a4, 0, t);
+                B[1] = func_01E01340_b746(b4, 0, t);
+            }
+            func_00109A70(&quad[0], &A[0]);
+            func_00109A70(&quad[1], &A[1]);
+            func_00109A70(&quad[2], &B[0]);
+            func_00109A70(&quad[3], &B[1]);
+            if (func_00205630(quad, 0x70000000, NULL, p, depth) != 0) {
+                func_002075F0(p, ot, 0);
+            }
+        }
+    }
+}
 
 /* shape b746:01E057A0, 89 insns: draw pass for the effect pool: open a sprite packet on the stack (kept at 0xCB38, ot at
    0xCB34), texture from func_001F53A0, then every used slot (0x190 of 0x70 bytes at 0x2A0) whose

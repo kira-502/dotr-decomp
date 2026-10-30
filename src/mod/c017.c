@@ -1062,9 +1062,261 @@ static void func_01E01B00_c017(Ctx_c017_01E01B00 *ctx, s32 arg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c017", func_01E01BF0_c017);
+/* shape c017:01E01BF0 (C017PAINT_RAIN2), 330 insns, 1 copy: mode 0 sets the drawing state (a 0x97
+   matrix, packet header, top colours from the previous segment 0x54 or own 0x50, bottom from own 0x54, scene texture
+   0x21C); otherwise a 12-step ring band 30 degrees apart: inner edge from the previous segment (radius 0x62, height
+   0x14) or its own (radius 0x60, height 0x04), outer edge at radius 0x62 and height 0x14, a 0x9C matrix, the scene
+   quad 0x1A0 sent twice with texture 0x38E8 when on screen */
 
-INCLUDE_ASM("asm/nonmatchings/mod/c017", func_01E02120_c017);
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_c017_01E01BF0;
+
+typedef struct {
+    Rgbaq_c017_01E01BF0 c;
+    u64 st;
+    u64 xyz;
+} Vtx_c017_01E01BF0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_c017_01E01BF0 v[4];
+} Pkt_c017_01E01BF0;
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_c017_01E01BF0;
+
+typedef struct Ent_c017_01E01BF0 {
+    f32 x0;
+    f32 y0;
+    f32 z0;
+    u8 padC[4];
+    f32 x1;
+    f32 y1;
+    f32 z1;
+    u8 pad1C[0x10];
+    f32 f2C;
+    Vec4f v;
+    struct Ent_c017_01E01BF0 *prev;
+    struct Ent_c017_01E01BF0 *next;
+    void (*cb)(void);
+    s32 arg;
+    Col_c017_01E01BF0 col0;
+    Col_c017_01E01BF0 col1;
+    s16 used;
+    s16 f5A;
+    s16 f5C;
+    s16 f5E;
+    s16 f60;
+    s16 f62;
+    s16 f64;
+    s16 f66;
+    s16 f68;
+    s16 f6A;
+} Ent_c017_01E01BF0;
+
+typedef struct {
+    u8 pad0[0x140];
+    f32 m[16];
+    u8 pad180[0x20];
+    Vec4f quad[4];
+    u8 pad1E0[0x3C];
+    s32 tex;
+    u8 pad220[0x38E8 - 0x220];
+    s32 tex2;
+    u8 pad38EC[0x3934 - 0x38EC];
+    f32 depth;
+    u8 pad3938[0x39A4 - 0x3938];
+    u8 trig[1];
+} Scene_c017_01E01BF0;
+
+static void func_01E01BF0_c017(Scene_c017_01E01BF0 *g, Ent_c017_01E01BF0 *o, Pkt_c017_01E01BF0 *p, s32 mode) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern Rgbaq_c017_01E01BF0 func_00107740(void *);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_0020EB40(void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, void *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Ent_c017_01E01BF0 *prev = o->prev;
+    f32 rm[4];
+    f32 m[16];
+    s16 a = 0;
+    s32 i;
+
+    if (mode == 0) {
+        func_00106080(rm, 0x97, 0, rm);
+        p->count = 0x34;
+        p->tag = 0xC;
+        p->regs = ((u64)0x4214 << 32) | 0x21421421;
+        p->pad = 0;
+        p->count |= 0x800;
+        func_002086D0(p, ((u64)0xB0 << 32) | 0x48);
+        if (prev != NULL) {
+            p->v[0].c = func_00107740(&prev->col1);
+            p->v[1].c = func_00107740(&prev->col1);
+        } else {
+            p->v[0].c = func_00107740(&o->col0);
+            p->v[1].c = func_00107740(&o->col0);
+        }
+        p->v[2].c = func_00107740(&o->col1);
+        p->v[3].c = func_00107740(&o->col1);
+        func_00108500(p, rm, 1);
+        func_00208700(p, g->tex, 1);
+    } else {
+        func_0020EB40(m);
+        for (i = 0; i < 12; i++) {
+            if (prev != NULL) {
+                g->quad[0].x = prev->f62 * func_00108030(g->trig, a + prev->f5A, 1);
+                g->quad[0].z = prev->f62 * func_00108030(g->trig, a + prev->f5A, 0);
+                g->quad[1].x = prev->f62 * func_00108030(g->trig, a + prev->f5A + 30, 1);
+                g->quad[1].z = prev->f62 * func_00108030(g->trig, a + prev->f5A + 30, 0);
+                g->quad[1].y = g->quad[0].y = prev->y1;
+            } else {
+                g->quad[0].x = o->f60 * func_00108030(g->trig, a + o->f5A, 1);
+                g->quad[0].z = o->f60 * func_00108030(g->trig, a + o->f5A, 0);
+                g->quad[1].x = o->f60 * func_00108030(g->trig, a + o->f5A + 30, 1);
+                g->quad[1].z = o->f60 * func_00108030(g->trig, a + o->f5A + 30, 0);
+                g->quad[1].y = g->quad[0].y = o->y0;
+            }
+            g->quad[2].x = o->f62 * func_00108030(g->trig, a + o->f5A, 1);
+            g->quad[2].z = o->f62 * func_00108030(g->trig, a + o->f5A, 0);
+            g->quad[3].x = o->f62 * func_00108030(g->trig, a + o->f5A + 30, 1);
+            g->quad[3].z = o->f62 * func_00108030(g->trig, a + o->f5A + 30, 0);
+            g->quad[3].y = g->quad[2].y = o->y1;
+            func_00106080(rm, 0x9C, 0, rm);
+            func_00108500(p, rm, 0);
+            if (func_00205630(g->quad, 0x70000000, g->m, p, &g->depth) != 0) {
+                func_002075F0(p, g->tex2, func_001A23B0(g->depth));
+                func_002075F0(p, g->tex2, func_001A23B0(g->depth));
+            }
+            a += 30;
+        }
+    }
+}
+
+/* shape c017:01E02120 (C017PAINT_RAIN3), 289 insns, 1 copy: mode 0 sets the drawing state (a 0x97 matrix, colour 1
+   from the previous segment 0x54 or own 0x50, colour 2 from 0x54 with its alpha cleared when 0x6A is 0, the scene
+   texture 0x21C); otherwise three passes of a 15-step band: the inner edge from the previous segment (radius 0x62,
+   angle 0x5A, height 0x14) or its own (radius 0x60, height 0x04), the outer edge at radius 0x62 and height 0x14, the
+   scene quad 0x1A0 sent with texture 0x38E8 when on screen, the next start angle from the scene table 0x3968 row
+   (s16)0x2C */
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_c017_01E02120;
+
+typedef struct Ent_c017_01E02120 {
+    f32 x0;
+    f32 y0;
+    f32 z0;
+    u8 padC[4];
+    f32 x1;
+    f32 y1;
+    f32 z1;
+    u8 pad1C[0x10];
+    f32 f2C;
+    Vec4f v;
+    struct Ent_c017_01E02120 *prev;
+    struct Ent_c017_01E02120 *next;
+    void (*cb)(void);
+    s32 arg;
+    Col_c017_01E02120 col0;
+    Col_c017_01E02120 col1;
+    s16 used;
+    s16 f5A;
+    s16 f5C;
+    s16 f5E;
+    s16 f60;
+    s16 f62;
+    s16 f64;
+    s16 f66;
+    s16 f68;
+    s16 f6A;
+} Ent_c017_01E02120;
+
+typedef struct {
+    u8 pad0[0x140];
+    f32 m[16];
+    u8 pad180[0x20];
+    Vec4f quad[4];
+    u8 pad1E0[0x3C];
+    s32 tex;
+    u8 pad220[0x38E8 - 0x220];
+    s32 tex2;
+    u8 pad38EC[0x3934 - 0x38EC];
+    f32 depth;
+    u8 pad3938[0x3968 - 0x3938];
+    s16 tab[6][5];
+    u8 trig[1];
+} Scene_c017_01E02120;
+
+static void func_01E02120_c017(Scene_c017_01E02120 *g, Ent_c017_01E02120 *o, void *p, s32 mode) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, void *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Ent_c017_01E02120 *prev = o->prev;
+    f32 rm[4];
+    s16 a;
+    s32 i;
+
+    if (mode == 0) {
+        func_00106080(rm, 0x97, 0, rm);
+        func_00109270(p, 0, 0);
+        if (prev != NULL) {
+            func_00107790(p, &prev->col1, 1);
+        } else {
+            func_00107790(p, &o->col0, 1);
+        }
+        if (o->f6A != 0) {
+            func_00107790(p, &o->col1, 2);
+        } else {
+            o->col1.a = 0;
+            func_00107790(p, &o->col1, 2);
+        }
+        func_00108500(p, rm, 1);
+        func_00208700(p, g->tex, 1);
+    } else {
+        a = o->f5C;
+        for (i = 0; i < 3; i++) {
+            if (prev != NULL) {
+                g->quad[0].x = o->x0 = prev->f62 * func_00108030(g->trig, a + prev->f5A, 1);
+                g->quad[0].z = o->z0 = prev->f62 * func_00108030(g->trig, a + prev->f5A, 0);
+                g->quad[1].x = prev->f62 * func_00108030(g->trig, a + prev->f5A + 15, 1);
+                g->quad[1].z = prev->f62 * func_00108030(g->trig, a + prev->f5A + 15, 0);
+                g->quad[1].y = g->quad[0].y = o->y0 = prev->y1;
+            } else {
+                g->quad[0].x = o->x0 = o->f60 * func_00108030(g->trig, a + o->f5A, 1);
+                g->quad[0].z = o->z0 = o->f60 * func_00108030(g->trig, a + o->f5A, 0);
+                g->quad[1].x = o->f60 * func_00108030(g->trig, a + o->f5A + 15, 1);
+                g->quad[1].z = o->f60 * func_00108030(g->trig, a + o->f5A + 15, 0);
+                g->quad[1].y = g->quad[0].y = o->y0;
+            }
+            g->quad[2].x = o->x1 = o->f62 * func_00108030(g->trig, a + o->f5A, 1);
+            g->quad[2].z = o->z1 = o->f62 * func_00108030(g->trig, a + o->f5A, 0);
+            g->quad[3].x = o->f62 * func_00108030(g->trig, a + o->f5A + 15, 1);
+            g->quad[3].z = o->f62 * func_00108030(g->trig, a + o->f5A + 15, 0);
+            g->quad[2].y = g->quad[3].y = o->y1;
+            if (func_00205630(g->quad, 0x70000000, g->m, p, &g->depth) != 0) {
+                func_002075F0(p, g->tex2, func_001A23B0(g->depth));
+            }
+            a = g->tab[(s16)(s32)o->f2C][i];
+        }
+    }
+}
 
 /* shape c017:01E025B0, 118 insns: mode 0 sets the drawing state (a 0x9B matrix from the angle 0x5A, colours 0x48/0x4C,
    the scene texture 0x21C); otherwise sizes the scene quad 0x1A0 to 0x56, puts all four corners at height 0x14,
@@ -1150,7 +1402,93 @@ static void func_01E025B0_c017(Scene_c017_01E025B0 *g, Fx_c017_01E025B0 *o, void
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c017", func_01E02790_c017);
+/* shape c017:01E02790 (C017PAINT_RAIN5), 119 insns, 1 copy (-O3,p): mode 0 sets the drawing state (a 0x9B matrix from
+   the angle 0x5A, colour 0x48 for both slots, the scene texture 0x21C); otherwise sizes the scene quad 0x1A0 to 0x5C,
+   puts all four corners at height 0x14, pushes them 0x56 along the heading 0x52 (game table 0x39A4), builds the
+   rotation matrix 0x140 from 0x20 and, when the quad is on screen, sends it with the scene texture 0x38E8; the source
+   of shape c017:01E025B0, built here at -O3 */
+
+typedef struct {
+    u8 pad0[0x14];
+    f32 y;
+    u8 pad18[8];
+    s32 rot[4];
+    u8 pad30[0x18];
+    u8 col[4];
+    u8 col2[4];
+    u8 pad50[2];
+    s16 heading;
+    u8 pad54[2];
+    s16 dist;
+    u8 pad58[2];
+    s16 angle;
+    s16 size;
+} Fx_c017_01E02790;
+
+typedef struct {
+    u8 pad0[0x140];
+    f32 m[16];
+    u8 pad180[0x20];
+    Vec4f quad[4];
+    u8 pad1E0[0x3C];
+    s32 tex;
+    u8 pad220[0x38E8 - 0x220];
+    s32 tex2;
+    u8 pad38EC[0x3934 - 0x38EC];
+    f32 depth;
+    u8 pad3938[0x39A4 - 0x3938];
+    u8 trig[1];
+} Scene_c017_01E02790;
+
+#pragma optimization_level 3
+
+static void func_01E02790_c017(Scene_c017_01E02790 *g, Fx_c017_01E02790 *o, void *p, s32 mode) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00108D20(void *, f32, f32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_0020C940(void *, s32, void *, s32);
+    extern void func_0020BC00(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, void *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    f32 rm[4];
+    f32 m[16];
+    f32 a;
+    f32 b;
+
+    if (mode == 0) {
+        func_00106080(rm, 0x9B, o->angle, rm);
+        func_00109270(p, 0, 0);
+        func_00107790(p, o->col, 1);
+        func_00107790(p, o->col, 2);
+        func_00108500(p, rm, 0);
+        func_00208700(p, g->tex, 1);
+    } else {
+        func_00108D20(g->quad, o->size, o->size);
+        g->quad[0].y = g->quad[1].y = g->quad[2].y = g->quad[3].y = o->y;
+        a = o->dist * func_00108030(g->trig, o->heading, 1);
+        b = o->dist * func_00108030(g->trig, o->heading, 0);
+        g->quad[0].x += a;
+        g->quad[0].z += b;
+        g->quad[1].x += a;
+        g->quad[1].z += b;
+        g->quad[2].x += a;
+        g->quad[2].z += b;
+        g->quad[3].x += a;
+        g->quad[3].z += b;
+        func_0020C940(m, 0, o->rot, 0);
+        func_0020BC00(g->m, m);
+        if (func_00205630(g->quad, 0x70000000, g->m, p, &g->depth) != 0) {
+            func_002075F0(p, g->tex2, func_001A23B0(g->depth));
+        }
+    }
+}
+
+#pragma optimization_level reset
 
 /* shape c017:01E02970, 71 insns: draws a slot effect (c035:01E01290 shape with the effect colours at 0x50): mode 0 builds the
    gouraud packet with q 0, other modes queue it */

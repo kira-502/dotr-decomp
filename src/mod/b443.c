@@ -456,7 +456,173 @@ INCLUDE_ASM("asm/nonmatchings/mod/b443", func_01E01B00_b443);
 
 INCLUDE_ASM("asm/nonmatchings/mod/b443", func_01E01EA0_b443);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b443", func_01E02330_b443);
+/* shape b443:01E02330 (B443_W_S), 387 insns, 1 copy (-O3,p): advances the effect timer, places emitters on model
+   joints, and spawns the ring and trail layers at their scene frames */
+
+typedef struct Scene_b443_01E02330 {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x290 - 0x260];
+    Vec4f a;
+    Vec4f b;
+    u8 pad2B0[0x28D0 - 0x2B0];
+    Vec4f saved;
+    u8 pad28E0[0x2DF4 - 0x28E0];
+    u8 col[4];
+    u8 pad2DF8[0x2E24 - 0x2DF8];
+    s16 ja, jb, jc, jd;
+    u8 pad2E2C[0x2E3E - 0x2E2C];
+    s16 side;
+    s16 unused;
+    s16 t;
+} Scene_b443_01E02330;
+
+#pragma optimization_level 3
+
+static void func_01E02330_b443(Scene_b443_01E02330 *g) {
+    extern void b443_01E04CD0();
+    extern void b443_01E037A0(), b443_01E040B0(), b443_01E03C80(), b443_01E02C40();
+    extern void b443_01E03DA0(), b443_01E02EA0(), b443_01E030C0(), b443_01E033B0();
+    extern void b443_01E04150();
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    Vec4f v;
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    if (g->t == 0x7E) {
+        b443_01E04CD0(g, b443_01E037A0, 0);
+    }
+    if (g->t == 1) {
+        b443_01E04CD0(g, b443_01E040B0, 0);
+    }
+    if (g->t == 0x4C) {
+        i = 0;
+        do {
+            g->side = i;
+            b443_01E04CD0(g, b443_01E03C80, 0);
+            i += 1;
+        } while (i < 6);
+    }
+    if ((g->t >= 0x4C) && (g->t < 0x50)) {
+        func_001F5620(func_001F53A0(), g->ja, &v);
+        i = 0;
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        do {
+            b443_01E04CD0(g, b443_01E02C40, 0);
+            i += 1;
+        } while (i < 0xC);
+    }
+    if (g->t == 0x89) {
+        func_001F5620(func_001F53A0(), g->ja, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        b443_01E04CD0(g, b443_01E03DA0, 0);
+        i = 0;
+        do {
+            b443_01E04CD0(g, b443_01E02EA0, 0);
+            i += 1;
+        } while (i < 0xC);
+        i = 0;
+        do {
+            b443_01E04CD0(g, b443_01E030C0, 0);
+            i += 1;
+        } while (i < 0xC);
+        i = 0;
+        do {
+            b443_01E04CD0(g, b443_01E033B0, 0);
+            i += 1;
+        } while (i < 0xA);
+    }
+    if ((g->t > 93) && (g->t < 0x82)) {
+        func_001F5620(func_001F53A0(), g->ja, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+    }
+    if (g->t == 0x33) {
+        func_001F5620(func_001F53A0(), g->jb, (&g->saved));
+    }
+    if ((g->t > 51) && (g->t < 0x41)) {
+        func_001F5620(func_001F53A0(), g->jb, &v);
+        i = 0;
+        do {
+            i += 1;
+            g->pos.x = g->saved.x;
+            g->pos.y = g->saved.y;
+            g->pos.z = g->saved.z;
+        } while (i < 6);
+    }
+    if (g->t == 1) {
+        func_001F5F90(func_001F53A0(), &g->a);
+        func_001F5F90(func_001F53A0(), &g->b);
+    }
+    if ((g->t > 111) && (g->t < 0xC3)) {
+        g->a.z = (g->a.z - 2.4f);
+        g->pos.x = g->a.x;
+        g->pos.y = (g->a.y - 10.0f);
+        g->pos.z = (40.0f + g->a.z);
+        g->side = 0;
+    }
+    if (g->t == 0x50) {
+        func_001F5620(func_001F53A0(), g->jc, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->side = 0;
+        func_001F5620(func_001F53A0(), g->jd, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->side = 0;
+    }
+    if ((g->t > 170) && (g->t < 0xE1)) {
+        g->b.z = (g->b.z - 3.8f);
+        g->pos.x = g->b.x;
+        g->pos.y = (g->b.y - 10.0f);
+        g->pos.z = (40.0f + g->b.z);
+        g->side = 1;
+    }
+    if ((g->t >= 0x70) && (g->t < 0xBF)) {
+        g->pos.x = g->a.x;
+        g->pos.y = (g->a.y - 10.0f);
+        g->pos.z = (40.0f + g->a.z);
+        g->side = 0;
+    }
+    if ((g->t >= 0xA9) && (g->t < 0xDD)) {
+        g->pos.x = g->b.x;
+        g->pos.y = (g->b.y - 10.0f);
+        g->pos.z = (40.0f + g->b.z);
+        g->side = 1;
+    }
+    if (g->t == 1) {
+        b443_01E04CD0(g, b443_01E04150, 0);
+    }
+    if ((g->t == 0x30) || (g->t == 0x31) || (g->t == 0x32) || (g->t == 0x33)) {
+        func_001F5620(func_001F53A0(), g->ja, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->side = 0;
+    }
+    if ((g->t == 0x33) || (g->t == 0x34) || (g->t == 0x35) || (g->t == 0x36)) {
+        func_001F5620(func_001F53A0(), g->jb, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->side = 1;
+    }
+}
+
+#pragma optimization_level reset
 
 /* shape b443:01E02940, 134 insns: b019:01E01F60 with its sine table at ctx+0x2F44 */
 

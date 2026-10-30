@@ -476,7 +476,122 @@ static void func_01E00FD0_b702(Obj_b065_01E012B0 *o, Anim_b065_01E012B0 *an, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b702", func_01E013E0_b702);
+/* shape b702:01E013E0 (B702_W_S), 390 insns, 1 copy: B702_W_S, the effect scene step: counts the frame (0xB3F8);
+   spawns 0x1E01A00 on frames 2..249 at joint 0xB384, four more stepping back toward the trail head on 182..189; at 1
+   fills the 20-point trail 0xB1D0 and spawns 0x1E029C0, 0x1E02790; shifts the trail on 1..250; from 185 to 250 the
+   0x1E01FD0 sides by frame parity and 0x1E01BD0, at 185 0x1E02670, 0x1E02AD0 and ten 0x1E01DE0; 13 0x1E024A0 at joint
+   0xB386 on 39/78/122 and 0xB388 on 26/61/100/125 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xB1D0 - 0x260];
+    Vec4f hist[20];
+    u8 padB310[0xB384 - 0xB310];
+    s16 j0;
+    s16 j1;
+    s16 j2;
+    u8 padB38A[0xB3F0 - 0xB38A];
+    s16 side;
+    u8 padB3F2[0xB3F8 - 0xB3F2];
+    s16 t;
+} Scene_b702_01E013E0;
+
+static void func_01E013E0_b702(Scene_b702_01E013E0 *g) {
+    extern void b702_01E01A00(void);
+    extern void b702_01E01BD0(void);
+    extern void b702_01E01DE0(void);
+    extern void b702_01E01FD0(void);
+    extern void b702_01E024A0(void);
+    extern void b702_01E02670(void);
+    extern void b702_01E02790(void);
+    extern void b702_01E029C0(void);
+    extern void b702_01E02AD0(void);
+    extern void b702_01E03770(Scene_b702_01E013E0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    f32 dx, dy, dz;
+    s16 i;
+
+    g->t++;
+    if (g->t > 1 && g->t < 250) {
+        func_001F5620(func_001F53A0(), g->j0, &g->pos);
+        b702_01E03770(g, b702_01E01A00, 0);
+    }
+    if (g->t > 181 && g->t < 190) {
+        func_001F5620(func_001F53A0(), g->j0, &g->pos);
+        dx = (g->pos.x - g->hist[0].x) / 4.0f;
+        dy = (g->pos.y - g->hist[0].y) / 4.0f;
+        dz = (g->pos.z - g->hist[0].z) / 4.0f;
+        for (i = 0; i < 4; i++) {
+            g->pos.x -= dx;
+            g->pos.y -= dy;
+            g->pos.z -= dz;
+            b702_01E03770(g, b702_01E01A00, 0);
+        }
+    }
+    if (g->t == 1) {
+        s16 k;
+        Vec4f *p;
+        func_001F5620(func_001F53A0(), g->j0, &g->pos);
+        p = g->hist;
+        for (k = 0; k < 19; k++, p++) {
+            p->x = g->pos.x;
+            p->y = g->pos.y;
+            p->z = g->pos.z;
+        }
+        b702_01E03770(g, b702_01E029C0, 0);
+        b702_01E03770(g, b702_01E02790, 0);
+    }
+    if (g->t > 0 && g->t < 251) {
+        func_001F5620(func_001F53A0(), g->j0, &g->pos);
+        func_01E00080_b702(&g->hist[19], 20, 0, &g->pos);
+    }
+    if (g->t >= 185 && g->t < 251) {
+        func_001F5F90(func_001F5380(), &g->pos);
+        g->pos.y -= 20.0f;
+        g->side = 0;
+        if (g->t % 2 == 1) {
+            b702_01E03770(g, b702_01E01FD0, 0);
+        }
+        g->side = 1;
+        if (g->t % 2 == 1) {
+            b702_01E03770(g, b702_01E01FD0, 0);
+        }
+        g->side = 2;
+        if (g->t % 2 == 0) {
+            b702_01E03770(g, b702_01E01FD0, 0);
+        }
+        b702_01E03770(g, b702_01E01BD0, 0);
+        if (g->t == 185) {
+            b702_01E03770(g, b702_01E02670, 0);
+        }
+        if (g->t == 185) {
+            b702_01E03770(g, b702_01E02AD0, 0);
+        }
+        if (g->t == 185) {
+            for (i = 0; i < 10; i++) {
+                b702_01E03770(g, b702_01E01DE0, 0);
+            }
+        }
+    }
+    if (g->t == 39 || g->t == 78 || g->t == 122) {
+        func_001F5620(func_001F53A0(), g->j1, &g->pos);
+        g->pos.y -= 1.5f;
+        for (i = 0; i < 13; i++) {
+            b702_01E03770(g, b702_01E024A0, 0);
+        }
+    }
+    if (g->t == 26 || g->t == 61 || g->t == 100 || g->t == 125) {
+        func_001F5620(func_001F53A0(), g->j2, &g->pos);
+        g->pos.y -= 1.5f;
+        for (i = 0; i < 13; i++) {
+            b702_01E03770(g, b702_01E024A0, 0);
+        }
+    }
+}
 
 /* shape b702:01E01A00, 114 insns: b282:01E01C20 family dark smoke puff (random size 100..159 growing 1, frame 0..2, angle 5..14, spin 2..6, size 0..34), held 9..16 ticks: in by 64 up to 0xC0, then out by 19 and ends */
 

@@ -914,7 +914,197 @@ static s32 func_01E01F90_b546(Game_b546_01E01F90 *g, Fx_b546_01E01F90 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b546", func_01E021E0_b546);
+/* shape b546:01E021E0 (b546), 386 insns, 1 copy: the module scene manager (b236:01E01D80 form): with a scene id it
+   clears the scene, sets the 270-frame countdown, reads six joints, textures 4:15 and 5:0..1, the camera turn, scale
+   0.1 and two jitter tables; otherwise it runs b546:01E01510, every handler but b546:01E01F90 (counting those), draws
+   the three effect kinds, calls b546:01E02980 if any were counted, counts down and returns the next step by frame
+   (124, 260, 250, 135..244) or 8 when the countdown runs out */
+
+typedef struct {
+    u8 pad0[0x10];
+    Vec4f pos;
+    u8 pad20[0x24];
+    s32 (*fn)();
+    u8 pad48[0xE];
+    s16 h56;
+    s16 used;
+    u8 pad5A[0x16];
+} Fx_b546_01E021E0;
+
+typedef struct {
+    u8 pad0[0x10];
+    f32 sx;
+    f32 sy;
+    f32 sz;
+    u8 pad1C[0x64];
+    s32 ot80;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    s32 rm[4];
+    u8 padA4[0xC];
+    s16 hB0;
+    u8 padB2[6];
+    s16 hB8;
+    u8 padBA[4];
+    s16 hBE;
+    u8 padC0[0x18];
+    u8 crdD8[0x188];
+    s32 tex260[16];
+    Fx_b546_01E021E0 fx[450];
+    u8 padC780[0x50];
+    s32 tex[2];
+    u8 padC7D8[0x18];
+    s32 count;
+    u8 padC7F4[8];
+    s32 ot;
+    u8 padC800[4];
+    s32 cam1;
+    s32 cam2;
+    u8 padC80C[0x24];
+    s16 jA;
+    s16 jB;
+    s16 jC;
+    s16 jD;
+    s16 jE;
+    s16 jF;
+    u8 padC83C[4];
+    s16 cam;
+    u8 padC842[0x20];
+    s16 turn;
+    s16 id;
+    s16 frame;
+    s8 jit[0x100];
+    s8 jit2[0x100];
+    u8 crd[0x178];
+} Scene_b546_01E021E0;
+
+static s32 func_01E021E0_b546(s32 arg0, s32 id) {
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F9AD0(s32);
+    extern s32 func_001F9D30(s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_01E01510_b546();
+    extern void b546_01E02980();
+    Scene_b546_01E021E0 *g = (Scene_b546_01E021E0 *)arg0;
+    s16 m;
+    s16 n;
+    s32 rm[4];
+    s32 rm2[4];
+    s32 ang[4];
+    s32 i;
+    s16 k;
+
+    m = 0;
+    n = 0;
+    g->cam1 = func_001F9AD0(0);
+    g->cam2 = func_001F9D30(0);
+    g->ot = func_00207500();
+    g->ot80 = func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0xCBE0);
+        func_00107C10(g->crd);
+        func_00107C10(g->crdD8);
+        g->id = id;
+        g->count = 270;
+        g->jA = func_001F5560(func_001F53A0(), 0x10, 1);
+        g->jB = func_001F5560(func_001F53A0(), 0x1E, 0);
+        g->jC = func_001F5560(func_001F53A0(), 0x01, 0);
+        g->jD = func_001F5560(func_001F53A0(), 0x30, 0);
+        g->jE = func_001F5560(func_001F53A0(), 0x2F, 0);
+        g->jF = func_001F5560(func_001F53A0(), 0x2C, 0);
+        g->cam = func_001F5560(func_001F5380(), 1, 1);
+        for (i = 15; i < 16; i++) {
+            g->tex260[i] = func_00202BF0(4, i);
+        }
+        for (i = 0; i < 2; i++) {
+            g->tex[i] = func_00202BF0(5, i);
+        }
+        func_001F6160(func_001F53A0(), ang);
+        g->turn = ang[1] / 180.0f;
+        g->sx = 0.1f;
+        g->sy = 0.1f;
+        g->sz = 0.1f;
+        for (k = 0; k < 0x100; k++) {
+            g->jit[k] = func_0019A5C8() % 40 - 20;
+        }
+        for (k = 0; k < 0x100; k++) {
+            g->jit2[k] = func_0019A5C8() % 40 - 20;
+        }
+        for (k = 100; k < 180; k++) {
+            g->jit2[k] = 0;
+        }
+        return 0;
+    }
+    func_01E01510_b546(g, 0);
+    for (k = 0; k < 450; k++) {
+        if (g->fx[k].used != 0) {
+            if (g->fx[k].fn != NULL) {
+                if (g->fx[k].fn != (s32 (*)())func_01E01F90_b546) {
+                    g->fx[k].fn(g, &g->fx[k]);
+                } else {
+                    m++;
+                }
+            }
+        }
+    }
+    for (k = 0; k < 450; k++) {
+        if (g->fx[k].used != 0) {
+            n++;
+            if (g->fx[k].fn == (s32 (*)())func_01E01730_b546) {
+                g->tex88 = g->tex[0];
+                func_00106080(rm, 0x14, g->fx[k].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm;
+                g->hBE = 0;
+                func_01E00ED0_b546((Obj_b041_01E00CF0 *)g, (Cam_b041_01E00CF0 *)&g->fx[k], 0x20, g->fx[k].pos);
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E01B90_b546) {
+                g->tex88 = g->tex[1];
+                func_00106080(rm2, 0x14, g->fx[k].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm2;
+                g->hB8 = 3;
+                g->hB0 = 0;
+                func_01E00920_b546((Obj_b016_01E00920 *)g, (Cam_b016_01E00920 *)&g->fx[k], 0x20, g->jit);
+                g->hB8 = 0;
+                g->hB0 = 0;
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E01D80_b546) {
+                g->hB8 = 0x12;
+                func_01E011B0_b546((void *)g, (void *)&g->fx[k], 0x21, &g->fx[k].pos);
+                g->hB8 = 0;
+            }
+        }
+    }
+    if (m) {
+        b546_01E02980(g);
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->frame == 124) {
+        return 1;
+    }
+    if (g->frame == 260) {
+        return 4;
+    }
+    if (g->frame == 250) {
+        return 2;
+    }
+    if (g->frame > 134 && g->frame < 245) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b546:01E027F0, 98 insns, 1 copies (b236:01E02330's code, generated by chatG/ovl/gen236.py): take a free effect slot (0x1c2 of 0x70 bytes), clear it, colour it from the
    owner's colour, place it at the owner's position; returns 1, or 0 if every slot is in use */

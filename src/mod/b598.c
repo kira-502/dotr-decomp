@@ -1314,7 +1314,189 @@ INCLUDE_ASM("asm/nonmatchings/mod/b598", func_01E03FA0_b598);
 
 INCLUDE_ASM("asm/nonmatchings/mod/b598", func_01E047B0_b598);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b598", func_01E055C0_b598);
+/* shape b598:01E055C0 (ShFx_Gus3), 383 insns, 1 copy (-O3,p): n growing quads (0x48-byte emitters): moved by their
+   velocity (or snapped to their follow target), width and height grow; turned and placed by the emitter, perspective
+   STQ over the texture cell, frame from age with flag 1, alpha fading at the end unless flag 0x40, far z with flag
+   0x80; b605:01E053E0's quad at -O3 */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b598_01E055C0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    f32 s, t;
+    Xyz_b598_01E055C0 xyz;
+} Vtx_b598_01E055C0;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b598_01E055C0 v[4];
+    u8 tail[0x20];
+} Pkt_b598_01E055C0;
+
+typedef struct {
+    s32 id;
+    u8 sub;
+    u8 page;
+    u8 pad6[2];
+    s32 u, w, v, h;
+} Tex_b598_01E055C0;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 follow;
+    u8 pad6[2];
+    u8 texid;
+    u8 frame;
+    u8 bA;
+    u8 bB;
+    u8 b, g, r, a;
+    f32 w;
+    f32 h;
+    f32 dw;
+    f32 dh;
+    s32 rot[4];
+    struct { f32 x, y, z; } pos;
+    struct { f32 x, y, z; } vel;
+} Emit_b598_01E055C0;
+
+#pragma optimization_level 3
+
+static s32 func_01E055C0_b598(void *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00101AF0(void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern s32 func_001022D0(s32, s32);
+    extern void func_001020B0(void *, s32, s32);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00102210(s32, f32 *, f32 *);
+    extern void func_00208CB0(void *, u64);
+    extern void func_00101C80(void *, void *);
+    extern void func_002086D0(void *, u64);
+    extern void func_00208700(void *, void *, s32);
+    extern void func_002075F0(void *, s32, s32);
+    f32 mat[16];
+    f32 mat2[16];
+    Vec4f quad[4];
+    Vec4f p;
+    f32 depth[4];
+    Tex_b598_01E055C0 td;
+    Pkt_b598_01E055C0 pkt __attribute__((aligned(8)));
+    f32 sw;
+    f32 sh;
+    u8 bl[4];
+    Emit_b598_01E055C0 *e;
+    s32 i;
+    void *tex;
+    s32 frame;
+    s32 span;
+    f32 z;
+
+    e = arg0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e = (Emit_b598_01E055C0 *)((u8 *)e + 0x48);
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = (void *)func_00202BF0(5, e->texid);
+        e->pos.x += e->vel.x;
+        e->pos.y += e->vel.y;
+        e->pos.z += e->vel.z;
+        e->w += e->dw;
+        e->h += e->dh;
+        if (e->follow) {
+            func_00101BA0(e, &p);
+            e->pos.x = p.x;
+            e->pos.y = p.y;
+            e->pos.z = p.z;
+        }
+        quad[0].x = quad[2].x = -e->w;
+        quad[1].x = quad[3].x = e->w;
+        quad[0].z = quad[1].z = -e->h;
+        quad[2].z = quad[3].z = e->h;
+        quad[0].y = quad[1].y = quad[2].y = quad[3].y = 0.0f;
+        func_0020EB40(mat);
+        p.x = e->pos.x;
+        p.y = e->pos.y;
+        p.z = e->pos.z;
+        func_0020C940(mat2, NULL, e->rot, &p);
+        func_0020BC00(mat, mat2);
+        ((Pkt_b598_01E055C0 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b598_01E055C0 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b598_01E055C0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b598_01E055C0 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->r;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->g;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->b;
+        span = e->max - e->life;
+        frame = e->frame;
+        if (e->flags & 1) {
+            frame = (u8)func_001022D0(e->bA, span);
+        }
+        func_001020B0(&td, frame, e->bA);
+        pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = e->a;
+        if (!(e->flags & 0x40) && e->life < 8) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = (e->a >> 3) * e->life;
+        }
+        if (func_00205440(&quad[0], mat, &pkt.v[0].xyz, &depth[0]) == 0) {
+            continue;
+        }
+        if (func_00205440(&quad[1], mat, &pkt.v[1].xyz, &depth[1]) == 0) {
+            continue;
+        }
+        if (func_00205440(&quad[2], mat, &pkt.v[2].xyz, &depth[2]) == 0) {
+            continue;
+        }
+        if (func_00205440(&quad[3], mat, &pkt.v[3].xyz, &depth[3]) == 0) {
+            continue;
+        }
+        func_00102210(e->bA, &sw, &sh);
+        func_00208CB0(&pkt, 0xA | ((u64)td.u << 4) | ((u64)(td.w - 1) << 14) | ((u64)td.v << 24) |
+                                ((u64)(td.h - 1) << 34));
+        pkt.v[0].q = 1.0f / depth[0];
+        pkt.v[1].q = 1.0f / depth[1];
+        pkt.v[2].q = 1.0f / depth[2];
+        pkt.v[3].q = 1.0f / depth[3];
+        pkt.v[0].s = td.u / sw / depth[0];
+        pkt.v[0].t = td.v / sh / depth[0];
+        pkt.v[1].s = td.w / sw / depth[1];
+        pkt.v[1].t = td.v / sh / depth[1];
+        pkt.v[2].s = td.u / sw / depth[2];
+        pkt.v[2].t = td.h / sh / depth[2];
+        pkt.v[3].s = td.w / sw / depth[3];
+        pkt.v[3].t = td.h / sh / depth[3];
+        td.page = e->bB;
+        func_00101C80(&td, bl);
+        func_002086D0(&pkt, (u64)bl[0] | ((u64)bl[1] << 2) | ((u64)bl[2] << 4) | ((u64)bl[3] << 6));
+        func_00208700(&pkt, tex, 1);
+        if (e->flags & 0x80) {
+            pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFE;
+            z = 0.0f;
+        } else {
+            z = (depth[3] + (depth[2] + (depth[0] + depth[1]))) / 4.0f;
+        }
+        func_002075F0(&pkt, ot, (u32)z);
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 /* shape b598:01E05BC0, 167 insns: n line emitters (0x28 bytes each): each live one projects its two ends straight into a two-vertex line packet (colours from 0x8 and 0xC, alpha scaled by life/8 in its last 8 ticks unless flag 0x40), far z with flag 0x80, drawn at the mean depth */
 

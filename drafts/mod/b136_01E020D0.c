@@ -1,8 +1,8 @@
 #include "common.h"
 
-/* shape b136:01E020D0, 204 insns: b159:01E01B30 cousin: the ring scaled (0.8, 1, 0.8) at the object's position, 9
-   sectors of 40 between radius o->size and o->size - 10 with the outer edge jittered -5..4 in height each frame;
-   mode 0 sets up the packet's texture (0x97, page o->page) */
+/* shape b136:01E020D0 (B136PAINT_RAIN3), 204 insns, 1 copy: b159:01E01B30 cousin: the ring scaled (0.8, 1, 0.8) at
+   the object's position, 9 sectors of 40 between radius o->size and o->size - 10 with the outer edge jittered -5..4
+   in height each frame; mode 0 sets up the packet's texture (0x97, page o->page) */
 
 typedef struct {
     s16 x, y, z;
@@ -49,8 +49,7 @@ static void func_01E020D0_b136(u8 *ctx, Obj_b136_01E020D0 *o, void *pkt, s32 mod
     pos.x = o->x;
     pos.y = o->y;
     pos.z = o->z;
-    sz = sx = 0.8f;
-    func_00106DD0(&sc, sx, 1.0f, sz);
+    { f32 r = 0.8f; func_00106DD0(&sc, r, 1.0f, r); }
     func_00108EF0(m, &sc, o->rot, &pos);
     q[0].y = 0.0f;
     q[1].y = 0.0f;

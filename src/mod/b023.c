@@ -1,8 +1,9 @@
 #include "common.h"
 
-/* shape b023:01E00080 (ShFx_Gus), 580 insns, 1 copy (-O2,p): b010:01E00080 (move an emitter, set its level from the
-   blend mode) built at -O1,p: every field read again, nothing CSEd; the source of shape b002:01E00080, built here at
-   -O2 */
+/* shape b023:01E00080 (ShFx_Gus), 580 insns, 1 copy (-O2,p): n gust puffs (0x44-byte emitters): each moves with its
+   acceleration and gravity, stops at its floor and grows; its animation frame comes from its age with flag 8; it
+   fades over its last 16 frames and draws as a textured screen-space square of its projected width, flipped by flags
+   & 0x30; the source of b097:01E059B0, built here at -O2 */
 
 typedef struct {
     f32 x, y, z, w;

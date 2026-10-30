@@ -588,7 +588,120 @@ static void func_01E01490_b283(Obj_b016_01E014F0 *o, Cam_b016_01E014F0 *cam, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b283", func_01E01890_b283);
+/* shape b283:01E01890 (B283_W_S), 386 insns, 1 copy: B283_W_S, the effect scene step: counts the frame (0xA2CA);
+   before frame 199 takes joint 0xA298 into a local and joints 0xA294/0xA296 into the four points, frames 199..239
+   move each point z by 0.08 (down when flag 0xA2C6 is set); frame 34 spawns 0x1E03120 on sides 0/1; frame 250 spawns
+   seven 0x1E03260, 0x1E036C0 on sides 0/1 and 0x1E03400; frames 251..300 spawn 0x1E03500; frame 199 spawns 0x1E029A0
+   and 0x1E024B0 on sides 0..3; frame 196 spawns 0x1E026F0 on sides 0/1; frame 210 clears the side */
+
+typedef struct {
+    u8 pad0[0xA060];
+    Vec4f pt[4];
+    u8 padA0A0[0xA294 - 0xA0A0];
+    s16 joint0;
+    s16 joint1;
+    s16 joint2;
+    u8 padA29A[0xA2C2 - 0xA29A];
+    s16 side;
+    u8 padA2C4[2];
+    s16 flag;
+    u8 padA2C8[2];
+    s16 t;
+} Scene_b283_01E01890;
+
+static void func_01E01890_b283(Scene_b283_01E01890 *g) {
+    extern void b283_01E024B0(void);
+    extern void b283_01E026F0(void);
+    extern void b283_01E029A0(void);
+    extern void b283_01E03120(void);
+    extern void b283_01E03260(void);
+    extern void b283_01E03400(void);
+    extern void b283_01E03500(void);
+    extern void b283_01E036C0(void);
+    extern void b283_01E04320(Scene_b283_01E01890 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    Vec4f v[3];
+
+    g->t++;
+    if (g->t < 199) {
+        func_001F5620(func_001F53A0(), g->joint2, v);
+        func_001F5620(func_001F53A0(), g->joint0, &g->pt[0]);
+        func_001F5620(func_001F53A0(), g->joint1, &g->pt[1]);
+        func_001F5620(func_001F53A0(), g->joint0, &g->pt[2]);
+        func_001F5620(func_001F53A0(), g->joint1, &g->pt[3]);
+    } else if (g->t < 240) {
+        if (g->flag) {
+            g->pt[0].z -= 0.08f;
+        } else {
+            g->pt[0].z += 0.08f;
+        }
+        if (g->flag) {
+            g->pt[1].z -= 0.08f;
+        } else {
+            g->pt[1].z += 0.08f;
+        }
+        if (g->flag) {
+            g->pt[2].z -= 0.08f;
+        } else {
+            g->pt[2].z += 0.08f;
+        }
+        if (g->flag) {
+            g->pt[3].z -= 0.08f;
+        } else {
+            g->pt[3].z += 0.08f;
+        }
+    }
+    if (g->t == 34) {
+        g->side = 0;
+        b283_01E04320(g, b283_01E03120, 0);
+        g->side = 1;
+        b283_01E04320(g, b283_01E03120, 0);
+    }
+    if (g->t == 250) {
+        b283_01E04320(g, b283_01E03260, 0);
+        b283_01E04320(g, b283_01E03260, 0);
+        b283_01E04320(g, b283_01E03260, 0);
+        b283_01E04320(g, b283_01E03260, 0);
+        b283_01E04320(g, b283_01E03260, 0);
+        b283_01E04320(g, b283_01E03260, 0);
+        b283_01E04320(g, b283_01E03260, 0);
+        g->side = 0;
+        b283_01E04320(g, b283_01E036C0, 0);
+        g->side = 1;
+        b283_01E04320(g, b283_01E036C0, 0);
+        b283_01E04320(g, b283_01E03400, 0);
+    }
+    if (g->t >= 251 && g->t <= 300) {
+        b283_01E04320(g, b283_01E03500, 0);
+    }
+    if (g->t == 199) {
+        g->side = 0;
+        b283_01E04320(g, b283_01E029A0, 0);
+        b283_01E04320(g, b283_01E024B0, 0);
+        g->side = 1;
+        b283_01E04320(g, b283_01E029A0, 0);
+        b283_01E04320(g, b283_01E024B0, 0);
+        g->side = 2;
+        b283_01E04320(g, b283_01E029A0, 0);
+        b283_01E04320(g, b283_01E024B0, 0);
+        g->side = 3;
+        b283_01E04320(g, b283_01E029A0, 0);
+        b283_01E04320(g, b283_01E024B0, 0);
+    }
+    if (g->t == 196) {
+        g->side = 0;
+        b283_01E04320(g, b283_01E026F0, 0);
+        g->side = 1;
+        b283_01E04320(g, b283_01E026F0, 0);
+        g->side = 3;
+        g->side = 4;
+        g->side = 5;
+    }
+    if (g->t == 210) {
+        g->side = 0;
+    }
+}
 
 /* shape b283:01E01EA0, 134 insns: b703:01E02370's grey rising mote placed on start at the scene part picked by its 0x50 (0x460-byte parts at +0x48D0) */
 

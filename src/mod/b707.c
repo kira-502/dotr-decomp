@@ -298,7 +298,180 @@ static void func_01E00910_b707(Obj_b094_01E00920 *obj, Data_b094_01E00920 *data,
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b707", func_01E00C70_b707);
+/* shape b707:01E00C70 (IWMagicGas5), 362 insns, 2 copies: c062:01E01BD0's source (b445:01E00D10 twin, kind 0 also
+   turned): draws a row of small sprites (one per entry) at a position: kind 0 camera-facing quads turned by the
+   emitter rotation, kind 1 flat bars; each shaken by a per-entry table offset that grows along the row; blend from
+   flags >> 4, depth mode flags & 0xF (projected, far, front); texture corners by the module helper func_01E00080_b707
+   */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b707_01E00C70;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Rgbaq_b707_01E00C70 c;
+    struct {
+        u64 tc;
+        u64 x : 16, y : 16, z : 24, f : 8;
+    } v[4];
+    u8 tail[0x38];
+} Pkt_b707_01E00C70;
+
+typedef struct {
+    u8 pad00[0x10];
+    Vec4f scale;
+    u8 pad20[0x60];
+    s32 ot;
+    u8 pad84[4];
+    void *texture;
+    u8 pad8C[8];
+    Rect_b034_01E00110 rect;
+    u8 pad9C[0x14];
+    s16 kind;
+    u8 padB2[6];
+    s16 count;
+    u8 padBA[6];
+    s16 ids[12];
+    u8 xD8[1];
+} Obj_b707_01E00C70;
+
+typedef struct {
+    u8 pad00[8];
+    s16 off;
+    u8 pad0A[6];
+    Vec4f pos;
+    Vec4f rot;
+    u8 pad30[0x18];
+    f32 size;
+    u8 pad4C[4];
+    s16 w50;
+    u8 pad52[8];
+    s16 axis;
+    u8 pad5C[4];
+    u8 col[4];
+} Spr_b707_01E00C70;
+
+static void func_01E00C70_b707(Obj_b707_01E00C70 *o, Spr_b707_01E00C70 *s, s32 flags, s8 *tbl) {
+    extern Rgbaq_b707_01E00C70 func_00107740(void *);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00108CE0(void *, f32, f32);
+    extern s32 func_00109100(void *, void *, s32, void *);
+    extern void func_00108950(void *, void *, s32, void *);
+    extern void func_00107070(void *, s32, f32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f quad[4];
+    Vec4f p2;
+    Vec4f e;
+    f32 depth[4];
+    f32 m[16];
+    s32 rot[4];
+    s32 ax[4];
+    Pkt_b707_01E00C70 pkt __attribute__((aligned(8)));
+    f32 f;
+    f32 u;
+    s16 off;
+    s16 c;
+    s16 i;
+    Pkt_b707_01E00C70 *p;
+    u8 mode;
+
+    p = (Pkt_b707_01E00C70 *)(s32)&pkt;
+    p->count = 0x24;
+    p->tag = 9;
+    p->regs = ((u64)4 << 32) | 0x24242421;
+    p->pad = 0;
+    p->count |= 0x800;
+    if ((flags >> 4) == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((u64)(flags >> 4) << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    p->c = func_00107740(s->col);
+    func_01E00080_b707((Pk_b034_01E00110 *)p, &o->rect, 0);
+    func_00208700(p, o->texture, 1);
+    func_00205C40((s32)rot);
+    rot[1] = rot[1] / 180;
+    rot[1] = -rot[1];
+    rot[0] = rot[0] / 180;
+    rot[0] = -rot[0];
+    p2.x = s->pos.x;
+    p2.y = s->pos.y;
+    p2.z = s->pos.z;
+    if (o->kind == 0) {
+        func_00108EF0(m, &o->scale, &s->rot, &p2);
+    } else if (o->kind == 1) {
+        func_00108EF0(m, &o->scale, &s->rot, &p2);
+    }
+    ax[1] = s->axis;
+    mode = flags & 0xF;
+    for (i = 0; i < o->count; i++) {
+        if (o->kind == 0) {
+            func_01E00080_b707((Pk_b034_01E00110 *)p, &o->rect, o->ids[i]);
+            func_00108CE0(quad, s->size, s->size);
+            func_00109100(quad, rot, 1, o->xD8);
+            func_00109100(quad, rot, 0, o->xD8);
+        } else if (o->kind == 1) {
+            func_00108CE0(quad, s->size, s->size);
+        }
+        for (c = 0; c < 3; c++) {
+            if (c == 0) {
+                off = 0;
+            }
+            if (c == 1) {
+                off = 100;
+            }
+            if (c == 2) {
+                off = 180;
+            }
+            f = (tbl + i)[s->off + off];
+            f /= 20.0f;
+            u = f * (f32)(s->w50 + (i >> 1));
+            if (c == 0) {
+                e.x = u;
+            }
+            if (c == 1) {
+                e.y = u;
+            }
+            if (c == 2) {
+                e.z = u;
+            }
+        }
+        if (o->kind == 0) {
+            func_00108950(&e, ax, 0, o->xD8);
+        }
+        func_00107070(quad, 0, e.x);
+        func_00107070(quad, 1, e.y);
+        func_00107070(quad, 2, e.z);
+        if (o->kind == 1) {
+            quad[0].y = 0.0f;
+            quad[1].y = 0.0f;
+            quad[0].x = s->size;
+            quad[1].x = -s->size;
+            quad[0].z = 0.0f;
+            quad[1].z = 0.0f;
+        }
+        if (mode == 0) {
+            if (func_00205630(quad, 0x70000000, m, p, depth) != 0) {
+                func_002075F0(p, o->ot, (u32)depth[0]);
+            }
+        } else if (mode == 1) {
+            if (func_00205630(quad, 0x70000000, m, p, depth) != 0) {
+                p->v[0].z = p->v[1].z = p->v[2].z = p->v[3].z = 0xFFFFFF;
+                func_002075F0(p, o->ot, 0);
+            }
+        } else if (mode == 2) {
+            if (func_00205630(quad, 0x70000000, m, p, depth) != 0) {
+                func_002075F0(p, o->ot, -1);
+            }
+        }
+    }
+}
 
 typedef struct Rect_b003_01E00080 {
     s16 x, y, w, h;
@@ -417,7 +590,127 @@ static void func_01E01220_b707(Obj_b016_01E00ED0 *obj, Cam_b016_01E00ED0 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b707", func_01E014E0_b707);
+/* shape b707:01E014E0 (B707_W_S), 400 insns, 1 copy: B707_W_S, the effect scene step: counts the frame (0x8776);
+   before 160 takes joint 0x8740 twice and 0x8742 into the trail point 0x86C0 led by 0x8724, then slides it by 6.8
+   (side flag 0x8772) to 183 and turns 0x8720 by 32 to 187 and by 5 to 229; setup at 1, two 0x1E02B00 at 185, on
+   93..294 0x1E01B20 and two 0x1E02240, every third frame 0x1E01D30 to 180 and 0x1E01ED0 on 216..280, 0x1E02070 at
+   190; from 54 turns 0x8720 by 1.5 to 109 and by 3 to 149 and grows 0x8724 by 0.02 up to 1 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x86C0 - 0x260];
+    Vec4f a;
+    u8 pad86D0[0x8720 - 0x86D0];
+    f32 ang;
+    f32 k;
+    u8 pad8728[0x8740 - 0x8728];
+    s16 j0;
+    s16 j1;
+    u8 pad8744[0x876E - 0x8744];
+    s16 side;
+    u8 pad8770[2];
+    s16 flag;
+    u8 pad8774[2];
+    s16 t;
+} Scene_b707_01E014E0;
+
+static void func_01E014E0_b707(Scene_b707_01E014E0 *g) {
+    extern void b707_01E01B20(void);
+    extern void b707_01E01D30(void);
+    extern void b707_01E01ED0(void);
+    extern void b707_01E02070(void);
+    extern void b707_01E02240(void);
+    extern void b707_01E02580(void);
+    extern void b707_01E02810(void);
+    extern void b707_01E02B00(void);
+    extern void b707_01E02C90(void);
+    extern void b707_01E02D80(void);
+    extern void b707_01E03C40(Scene_b707_01E014E0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    Vec4f v;
+
+    g->t++;
+    if (g->t < 160) {
+        func_001F5620(func_001F53A0(), g->j0, &g->a);
+        func_001F5620(func_001F53A0(), g->j0, &v);
+        func_001F5620(func_001F53A0(), g->j1, &g->pos);
+        g->a.y = g->pos.y;
+        g->a.z = g->pos.z;
+        g->a.y += g->k * (g->a.y - v.y);
+        g->a.z += g->k * (g->a.z - v.z);
+    } else if (g->t < 184) {
+        if (g->flag) {
+            g->a.z -= 6.8f;
+        } else {
+            g->a.z += 6.8f;
+        }
+        g->a.y -= 0.2f;
+    } else if (g->t < 188) {
+        g->ang += 32.0f;
+    } else if (g->t < 230) {
+        g->ang += 5.0f;
+    }
+    if (g->t == 1) {
+        b707_01E03C40(g, b707_01E02D80, 0);
+    }
+    if (g->t == 1) {
+        b707_01E03C40(g, b707_01E02C90, 0);
+    }
+    if (g->t == 1) {
+        b707_01E03C40(g, b707_01E02580, 0);
+    }
+    if (g->t == 1) {
+        b707_01E03C40(g, b707_01E02C90, 0);
+        g->side = 0;
+        b707_01E03C40(g, b707_01E02810, 0);
+        g->side = 1;
+    }
+    if (g->t == 185) {
+        g->side = 0;
+        b707_01E03C40(g, b707_01E02B00, 0);
+        g->side = 1;
+        b707_01E03C40(g, b707_01E02B00, 0);
+        g->side = 2;
+    }
+    if (g->t >= 53 && g->t < 301) {
+        g->side = 0;
+        g->side = 1;
+        if (g->t >= 93 && g->t < 295) {
+            b707_01E03C40(g, b707_01E01B20, 0);
+        }
+        if (g->t >= 93) {
+            g->side = 0;
+            if (g->t < 295) {
+                b707_01E03C40(g, b707_01E02240, 0);
+            }
+            g->side = 1;
+            if (g->t < 295) {
+                b707_01E03C40(g, b707_01E02240, 0);
+            }
+            if (g->t % 3 == 1 && g->t < 181) {
+                b707_01E03C40(g, b707_01E01D30, 0);
+            }
+            if (g->t >= 216 && g->t % 3 == 1 && g->t < 281) {
+                b707_01E03C40(g, b707_01E01ED0, 0);
+            }
+        }
+    }
+    if (g->t == 190) {
+        b707_01E03C40(g, b707_01E02070, 0);
+    }
+    if (g->t > 53) {
+        if (g->t < 110) {
+            g->ang += 1.5f;
+        } else if (g->t < 150) {
+            g->ang += 3.0f;
+        }
+        if (g->k < 1.0f) {
+            g->k += 0.02f;
+        }
+    }
+}
 
 /* shape b707:01E01B20, 131 insns: white spark (size 10, frame 0..3, f50 10.. + random below twice the scene scale at ctx+0x8720, angle 0..359, f8 0..34): alpha up by 64 to 0xC0 for 3..5 ticks, then down by 14; after scene count 240 f50 grows 15..34 per tick; between 161 and 209 rot[2] turns -0x300 */
 

@@ -610,7 +610,154 @@ static void func_01E01580_b191(Ctx_b191_01E01580 *g) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b191", func_01E01A70_b191);
+/* shape b191:01E01A70 (B191_OBJ_MOVE_2_), 373 insns, 1 copy: a blue double trail band: on start radius 18..67 and 18
+   (the second row 30 degrees back, 50 up), grey 0x58, both trails (0x280-byte slots at 0x4470, 20
+   points) filled with the start point; fades in by 0x15 while tick < 7 and the scene count >= 0xBF, else out by 5;
+   each tick the heading turns 12 and both trails take a new point, the second -5..39 (every 10th tick) or -5..-1 up,
+   colour blinks blue, band count to 14; from scene count 0x123 the tick is held at 7 */
+
+typedef struct {
+    Vec4f a[20];
+    Vec4f b[20];
+} Trail_b191_01E01A70;
+
+typedef struct {
+    u8 pad0[0x4470];
+    Trail_b191_01E01A70 slot[1];
+    u8 pad46F0[0xA8F2 - 0x46F0];
+    s16 count;
+    u8 padA8F4[0xAAF4 - 0xA8F4];
+    u8 sin[4];
+} Game_b191_01E01A70;
+
+typedef struct {
+    u8 pad0[6];
+    s16 n;
+    s16 h8;
+    u8 padA[0x2A];
+    f32 y;
+    u8 pad38[0x10];
+    f32 r;
+    f32 r2;
+    s16 idx;
+    s16 h52;
+    s16 t;
+    s16 h56;
+    s16 mode;
+    s16 ang;
+    u8 pad5C[4];
+    u8 col[4];
+    u8 col2[4];
+} Obj_b191_01E01A70;
+
+static s32 func_01E01A70_b191(Game_b191_01E01A70 *g, Obj_b191_01E01A70 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5F90(s32, f32 *);
+    Vec4f v;
+    Vec4f cam;
+    f32 f;
+    f32 r;
+    Vec4f *p;
+    s16 i;
+
+    func_001F5F90(func_001F53A0(), &cam.x);
+    cam.x = cam.x;
+    cam.z = cam.z;
+    if (o->mode == 1) {
+        o->y = 50.0f;
+        f = o->y;
+        o->h8 = func_0019A5C8() % 2;
+        o->r = func_0019A5C8() % 50 + 18;
+        o->r2 = 18.0f;
+        func_001076F0(o->col2, 0x58, 0x58, 0x58);
+        v.y = 0.0f;
+        o->ang = func_0019A5C8() % 360;
+        if (v.x) {
+            r = o->r;
+        } else {
+            r = o->r;
+        }
+        v.z = r * func_00108030(g->sin, o->ang, 0);
+        v.x = r * func_00108030(g->sin, o->ang, 1);
+        for (i = 0, p = g->slot[o->idx].a; i < 19; i++, p++) {
+            p->x = v.x;
+            p->y = v.y;
+            p->z = v.z;
+        }
+        if (v.x) {
+            r = o->r2;
+        } else {
+            r = o->r2;
+        }
+        v.z = r * func_00108030(g->sin, o->ang - 30, 0);
+        v.x = r * func_00108030(g->sin, o->ang - 30, 1);
+        v.y = f;
+        for (i = 0, p = g->slot[o->idx].b; i < 19; i++, p++) {
+            p->x = v.x;
+            p->y = v.y;
+            p->z = v.z;
+        }
+        o->n = 2;
+        o->col[3] = 0;
+        o->h8 = 0;
+        o->h56 = 0;
+        o->r = 5.0f;
+        o->mode = 2;
+    }
+    if (o->t < 7 && g->count >= 0xBF) {
+        if (o->col[3] < 0x80) {
+            o->col[3] += 0x15;
+        }
+    } else if (o->col[3] > 6) {
+        o->col[3] -= 5;
+    } else {
+        o->mode = 0;
+    }
+    if (o->t % 10 == 1) {
+        f = func_0019A5C8() % 45 - 5;
+    } else {
+        f = func_0019A5C8() % 5 - 5;
+    }
+    o->ang += 12;
+    if (o->ang >= 360) {
+        o->ang %= 360;
+    }
+    v.y = 0.0f;
+    if (v.x) {
+        r = o->r;
+    } else {
+        r = o->r;
+    }
+    v.z = r * func_00108030(g->sin, o->ang, 0);
+    v.x = r * func_00108030(g->sin, o->ang, 1);
+    func_01E00080_b191(&g->slot[o->idx].a[19], 20, 0, &v);
+    v.y = 5.0f + f;
+    if (v.x) {
+        r = o->r2;
+    } else {
+        r = o->r2;
+    }
+    v.z = r * func_00108030(g->sin, o->ang - 30, 0);
+    v.x = r * func_00108030(g->sin, o->ang - 30, 1);
+    func_01E00080_b191(&g->slot[o->idx].b[19], 20, 0, &v);
+    if (o->t % 2 == 1) {
+        func_001076F0(o->col, 0x10, 0x10, 0x50);
+    } else {
+        func_001076F0(o->col, 8, 8, 0x40);
+    }
+    if (o->t != 0) {
+        if (o->n < 14) {
+            o->n++;
+        }
+    }
+    o->t++;
+    if (g->count > 0x122) {
+        o->t = 7;
+    }
+    return 0;
+}
 
 /* shape b191:01E02050, 93 insns: a grey-blue flickering flash on the model joint: f4C 165, size 10x10; second alpha up by 24 to 0xC0 until the game
    timer reaches 0x122, then down by 12 until it ends; second colour flickers by the timer's parity; random turn */

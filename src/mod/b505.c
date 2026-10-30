@@ -510,7 +510,201 @@ static s32 func_01E013A0_b505(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b505", func_01E013F0_b505);
+/* shape b505:01E013F0 (b505), 329 insns, 1 copy: scene manager: init models/textures, step and draw 150 effects,
+   return phase by timer */
+
+typedef struct Fx_b505_01E013F0 {
+    s16 x, y, z;
+    u8 pad6[0x1E];
+    void *fn;
+    u8 col[4];
+    u8 pad2C[4];
+    s16 phase;
+    u8 pad32[2];
+    s16 h34;
+    s16 used;
+    u8 pad38[8];
+} Fx_b505_01E013F0;
+
+typedef struct Q_b505_01E013F0 {
+    f32 a, b, c, d;
+} Q_b505_01E013F0;
+
+typedef struct Scene_b505_01E013F0 {
+    u8 pad0[0x80];
+    s32 ot;
+    u8 pad84[4];
+    s32 texture;
+    u8 pad8C[8];
+    Q_b505_01E013F0 rect;
+    u8 padA4[0x14];
+    s16 count;
+    u8 padBA[4];
+    s16 mode;
+    u8 padC0[0x18];
+    u8 camD8[0x2C0 - 0xD8];
+    s32 tex[16];
+    Fx_b505_01E013F0 fx[150];
+    u8 pad2880[0x2B60 - 0x2880];
+    s32 tex2[8];
+    s32 state;
+    u8 pad2B84[8];
+    s32 ot2;
+    u8 pad2B90[0x1C];
+    s16 model[5];
+    u8 pad2BB6[4];
+    s16 model5;
+    u8 pad2BBC[0xA];
+    s16 flag;
+    s16 id;
+    s16 timer;
+    s8 rnd[256];
+    u8 cam[0x174];
+} Scene_b505_01E013F0;
+
+static s32 func_01E013F0_b505(s32 arg0, s32 id) {
+    Scene_b505_01E013F0 *g = (Scene_b505_01E013F0 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern void func_00107990(void *, void *, s32);
+    extern void func_001092E0(void *, s32);
+    extern void func_001094F0(void *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern void func_01E00CE0_b505();
+    extern s32 func_01E00E00_b505();
+    extern s32 func_01E010C0_b505();
+    extern s32 func_01E01160_b505();
+    extern s32 func_01E012E0_b505();
+    extern s32 func_01E013A0_b505();
+    extern void func_01E00920_b505();
+    s32 n;
+    Vec4f v;
+    Q_b505_01E013F0 r;
+    s32 info[4];
+    u8 m[0x90] __attribute__((aligned(8)));
+    s32 ot;
+    s32 i;
+
+    n = 0;
+    g->ot = (s32)func_00207500();
+    g->ot2 = (s32)func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x2E40);
+        func_00107C10(g->cam);
+        func_00107C10(g->camD8);
+        g->id = id;
+        g->state = 255;
+        g->model[0] = func_001F5560(func_001F53A0(), 0x11, 1);
+        g->model[1] = func_001F5560(func_001F53A0(), 0x15, 0);
+        g->model[2] = func_001F5560(func_001F53A0(), 0x1C, 0);
+        g->model[3] = func_001F5560(func_001F53A0(), 0x30, 0);
+        g->model[4] = func_001F5560(func_001F53A0(), 0x39, 0);
+        g->model5 = func_001F5560(func_001F5380(), 1, 0);
+        for (i = 11; i < 16; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        for (i = 0; i < 1; i++) {
+            g->tex2[i] = func_00202BF0(5, i);
+        }
+        func_001F6160(func_001F53A0(), info);
+        g->flag = (s32)(info[1] / 180.0f);
+        for (i = 0; i < 256; i++) {
+            g->rnd[i] = func_0019A5C8() % 30 - 15;
+        }
+        return 0;
+    }
+    func_01E00CE0_b505(g, 0);
+    for (i = 0; i < 150; i++) {
+        if (g->fx[i].used != 0) {
+            if (g->fx[i].fn == func_01E00E00_b505) {
+                func_01E00E00_b505(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E010C0_b505) {
+                if (g->fx[i].phase == 0) {
+                    if (g->fx[i].col[3] < 0xA0) {
+                        g->fx[i].col[3] += 10;
+                    } else {
+                        g->fx[i].phase = 1;
+                    }
+                } else if (g->fx[i].col[3] > 0xB) {
+                    g->fx[i].col[3] -= 10;
+                } else {
+                    if (g->timer > 0xD2) {
+                        g->fx[i].used = 0;
+                    }
+                    g->fx[i].phase = 0;
+                }
+                func_001076F0(g->fx[i].col, 0x5F, 0x3F, 0x3F);
+            }
+            if (g->fx[i].fn == func_01E01160_b505) {
+                func_01E01160_b505(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E012E0_b505) {
+                func_01E012E0_b505(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E013A0_b505) {
+                f32 b;
+                f32 a;
+
+                *(f32 *)(u32)&a = *(f32 *)(u32)&D_01E01A80_b505;
+                *(f32 *)(u32)&b = *(f32 *)(u32)&D_01E01A88_b505;
+                func_001F7170(2, 0, (s32)&a, (s32)&b, 0);
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &v);
+    for (i = 0; i < 150; i++) {
+        if (g->fx[i].used != 0) {
+            n++;
+            if (g->fx[i].fn == func_01E00E00_b505) {
+                g->texture = g->tex2[0];
+                func_00106080(&r, 0x14, g->fx[i].h34, 0);
+                g->rect = r;
+                v.x = g->fx[i].x;
+                v.y = g->fx[i].y;
+                v.z = g->fx[i].z;
+                g->count = 3;
+                g->mode = 0;
+                func_01E00920_b505(g, &g->fx[i], g->rnd, v);
+                g->count = 0;
+            }
+            if (g->fx[i].fn == func_01E010C0_b505) {
+                ot = g->ot2;
+                func_00107990(m, g->fx[i].col, 0);
+                func_001092E0(m, 0);
+                func_001094F0(m);
+                func_002075F0(m, ot, 0);
+            }
+        }
+    }
+    if (g->state != 0) {
+        g->state--;
+    }
+    if (g->timer == 90) {
+        return 1;
+    }
+    if (g->timer == 230) {
+        return 4;
+    }
+    if (g->timer == 220) {
+        return 2;
+    }
+    if (g->timer > 100 && g->timer < 215) {
+        return 6;
+    }
+    if (g->state <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b505:01E01920, 72 insns: twin of b046:01E03E20: take the first free slot of the 150-slot pool, clear it, give
    it the scene's colour twice, the scene matrix, the scene's value 0x2BC4 and the two arguments; returns 1 if a

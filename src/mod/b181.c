@@ -865,4 +865,228 @@ static s32 func_01E032C0_b181(Obj_b061_01E03440 *arg0, s32 tex) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b181", func_01E03830_b181);
+/* shape b181:01E03830 (b181), 380 insns, 1 copy (-O1,p): b181 scene manager: setup clears the scene, takes both
+   units, a model and texture pages, fills the 256-entry table; then a frame timer arms the trail at frame 39 and the
+   glow, fade, ray and emitter at frame 51, steps all six effects, plays the first camera cue whose frame range holds
+   the timer, and returns 8 / 6 / 1 / 2 at frames 105 / 51..71 / 41 / 72 */
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b181_01E03830;
+
+typedef struct {
+    u16 start;
+    u16 end;
+    u8 motion;
+    u8 flags;
+    u8 rate;
+    u8 pad7;
+    s32 w8;
+    u8 c0[4];
+    u8 c1[4];
+} Cue_b181_01E03830;
+
+typedef struct {
+    u8 pad0[4];
+    u8 on;
+    u8 b5;
+    u8 pad6[0xE];
+    f32 f14;
+    f32 f18;
+    f32 f1C;
+    Vec4f pos;
+    f32 f30;
+    f32 f34;
+    u8 pad38[0x18];
+    f32 f50;
+    u8 pad54[0xC];
+} Emit_b181_01E03830;
+
+typedef struct {
+    u8 pad0[4];
+    u8 b4;
+    u8 b5;
+    u8 pad6;
+    u8 b7;
+    u8 b8;
+    u8 b9;
+    u8 bA;
+    u8 padB;
+    u8 c[4];
+    f32 f10;
+    f32 f14;
+    f32 f18;
+    V4_b181_01E03830 pos;
+    u8 pad2C[0x10];
+    s32 w3C;
+    s32 w40;
+    s32 w44;
+    u8 pad48[4];
+} Glow_b181_01E03830;
+
+typedef struct {
+    u16 t;
+    u8 pad2[2];
+    s32 unitA;
+    s32 unitB;
+    s32 model;
+    u8 pad10[0x1C];
+    u8 cam[0x14];
+    Emit_b181_01E03830 emit;
+    Glow_b181_01E03830 glow;
+    Obj_b061_01E03440 fade;
+    Ray_b011_01E04380 ray;
+    Trail_b181_01E02D50 trail;
+    Rib_b059_01E00E10 rib[100];
+    s8 tbl[0x100];
+    u8 pad2538[8];
+} Scene_b181_01E03830;
+
+#pragma optimization_level 1
+
+static s32 func_01E03830_b181(Scene_b181_01E03830 *g, s32 code) {
+    extern s32 func_00207500(void);
+    extern void func_00198948(void *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_00102330(void *, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00101AD0(void *, s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern s32 func_0019A5C8(void);
+    extern void func_001F71A0(s32, s32, s32, void *, void *, s32);
+    extern void func_01E01170_b181();
+    extern Cue_b181_01E03830 D_01E03F20_b181[];
+    s32 ot;
+    V4_b181_01E03830 v;
+    s32 i;
+    Cue_b181_01E03830 *e;
+    u16 t;
+    s32 unit;
+
+    ot = func_00207500();
+    if (code == -3 || code == -2) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00198948(g, 0, 0x2540);
+        g->unitA = func_001F53A0();
+        g->unitB = func_001F5380();
+        func_001F6160(g->unitA, g->cam);
+        func_00202BF0(4, 0xF);
+        for (i = 0; i < 1; i++) {
+            func_00202BF0(5, i);
+        }
+        g->model = func_001F5560(g->unitA, 0x40, 1);
+        func_00102330(g->tbl, 0x100);
+        return 0;
+    }
+    g->t++;
+    func_001F5F90(g->unitB, &v);
+    switch (g->t) {
+    case 0x27:
+        func_00101AD0(&g->trail, 0x1F, 0, 0xFF);
+        g->trail.flags = 0;
+        g->trail.follow = 1;
+        g->trail.pad6[0] = g->model;
+        g->trail.list = (Part_b181_01E02D50 *)g->rib;
+        g->trail.b10 = 100;
+        g->trail.b12 = 4;
+        g->trail.b11 = 0x12;
+        g->trail.b13 = 0;
+        g->trail.b16 = 2;
+        g->trail.b14 = 4;
+        g->trail.f18 = 0.4f;
+        g->trail.f1C = 0.5f;
+        g->trail.f20 = 45.0f;
+        g->trail.f24 = -1.5f;
+        g->trail.w0C = (s32)g->tbl;
+        g->trail.col.b = g->trail.col.g = g->trail.col.r = g->trail.col.a = 0x80;
+        func_001F5620(g->unitA, g->model, &g->trail.prev);
+        g->trail.prev2 = g->trail.prev;
+        break;
+    case 0x33:
+        func_00101AD0(&g->fade, 4, 0, 0xFF);
+        g->fade.flags = 1;
+        func_00101AD0(&g->glow, 0x1C, 0, 0xFF);
+        g->glow.b5 = 0;
+        g->glow.b4 = 0x81;
+        g->glow.b7 = 9;
+        g->glow.f10 = 600.0f;
+        g->glow.f14 = 20.0f;
+        g->glow.c[2] = g->glow.c[1] = g->glow.c[0] = g->glow.c[3] = 0xC0;
+        g->glow.bA = 0x20;
+        g->glow.b9 = 0x20;
+        g->glow.b8 = 0x80;
+        g->glow.w3C = g->glow.w40 = g->glow.w44 = 0;
+        g->glow.pos = v;
+        g->glow.f18 = 20.0f;
+        func_00101AD0(&g->ray, 0x18, 0, 0xFF);
+        g->ray.flags = 5;
+        g->ray.size = 2.8f;
+        g->ray.width = 40.0f;
+        g->ray.pad05[0] = 0;
+        g->ray.texkind = 0;
+        g->ray.texpage = 2;
+        g->ray.texmode = 3;
+        g->ray.segments = 0xA0;
+        g->ray.index = func_0019A5C8() >> 4;
+        g->ray.table = (u8 *)g->tbl;
+        g->ray.radius = 1.0f;
+        g->ray.r0 = g->ray.g0 = g->ray.b0 = g->ray.r1 = g->ray.g1 = g->ray.b1 = 0x80;
+        g->ray.a0 = 0x20;
+        g->ray.a1 = 0x80;
+        g->ray.pos = *(Vec_b011_01E04380 *)&v;
+        g->ray.spin[0] = 0x40;
+        g->ray.spin[1] = 0x80;
+        g->ray.spin[2] = 0x100;
+        func_00101AD0(&g->emit, 0x18, 0, 0xFF);
+        g->emit.b5 = 0;
+        g->emit.on = 1;
+        g->emit.f14 = 1.8f;
+        g->emit.f18 = 1.0f;
+        g->emit.f1C = 2.0f;
+        g->emit.f30 = 0.0f;
+        g->emit.f34 = 60.0f;
+        g->emit.f50 = 6.0f;
+        func_001F5F90(g->unitB, &g->emit.pos);
+        break;
+    case 0x69:
+        return 8;
+    }
+    func_01E00080_b181((Obj_b002_01E00080 *)&g->emit);
+    func_01E02D50_b181(&g->trail, ot, 1);
+    func_01E01E90_b181(g->rib, ot, 100);
+    func_01E01170_b181(&g->glow, ot, 1);
+    func_01E032C0_b181(&g->fade, ot);
+    func_01E00440_b181(&g->ray, ot, 1);
+    t = g->t;
+    for (e = D_01E03F20_b181; e->start != 0; e++) {
+        if (t >= e->start && t <= e->end) {
+            if (e->flags & 0x80) {
+                unit = func_001F5380();
+            } else {
+                unit = func_001F53A0();
+            }
+            if (e->flags & 0x40) {
+                e->c0[3] = e->c1[3] = (t - *(u8 *)&e->start) * e->rate;
+            }
+            func_001F71A0(unit, e->motion, e->flags & 3, e->c0, e->c1, e->w8);
+            break;
+        }
+    }
+    if (g->t >= 0x33 && g->t <= 0x47) {
+        return 6;
+    }
+    switch (g->t) {
+    case 0x29:
+        return 1;
+    case 0x48:
+        return 2;
+    }
+    return 0;
+}
+#pragma optimization_level reset

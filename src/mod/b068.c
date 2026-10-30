@@ -101,7 +101,146 @@ static void func_01E00080_b068(Pk_b003_01E00080 *p, Rect_b003_01E00080 *r, s32 m
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b068", func_01E00920_b068);
+/* shape b068:01E00920 (IWGas3), 355 insns, 2 copies: b069:01E004D0 (b008:01E004D0 with func_00205C40 called twice and
+   separate x/y sizes): draws a row of small camera-facing sprites, each shaken by a per-entry table offset that grows
+   along the row; depth mode 0 (projected), 1 (far) or 2 (front); texture corners via the module UV helper (shape
+   b003:01E00080) */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b068_01E00920;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Rgbaq_b068_01E00920 c;
+    struct {
+        u64 tc;
+        u64 x : 16;
+        u64 y : 16;
+        u64 z : 24;
+        u64 f : 8;
+    } v[4];
+    u8 tail[0x38];
+} Pkt_b068_01E00920;
+
+typedef struct {
+    u8 pad00[0x80];
+    s32 ot;
+    u8 pad84[4];
+    void *texture;
+    u8 pad8C[8];
+    Rect_b003_01E00080 rect;
+    u8 pad9C[0x1C];
+    s16 count;
+    u8 padBA[6];
+    s16 ids[12];
+    u8 xD8[1];
+} Obj_b068_01E00920;
+
+typedef struct {
+    s16 x, y, z;
+    u8 pad6[2];
+    s16 off;
+    s16 sy;
+    s16 sx;
+    u8 padE[0x1A];
+    u8 col[4];
+    u8 pad2C[4];
+    s16 w30;
+    u8 pad32[6];
+    s16 size;
+} Spr_b068_01E00920;
+
+static void func_01E00920_b068(Obj_b068_01E00920 *o, Spr_b068_01E00920 *s, s32 mode, s8 *tbl) {
+    extern Rgbaq_b068_01E00920 func_00107740(void *);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00108CE0(void *, f32, f32);
+    extern s32 func_00109100(void *, void *, s32, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f quad[4];
+    Vec4f pos;
+    Vec4f scale;
+    f32 depth[4];
+    f32 m[16];
+    s32 rot[4];
+    Pkt_b068_01E00920 pkt __attribute__((aligned(8)));
+    s16 i;
+    f32 size;
+    Pkt_b068_01E00920 *p;
+    f32 d;
+    s32 h;
+    f32 f;
+    s8 *j;
+
+    func_00207500();
+    p = (Pkt_b068_01E00920 *)(s32)&pkt;
+    p->count = 0x24;
+    p->tag = 9;
+    p->regs = ((u64)4 << 32) | 0x24242421;
+    p->pad = 0;
+    p->count |= 0x800;
+    func_002086D0(p, ((u64)0x80 << 32) | 0x44);
+    pkt.c = func_00107740(s->col);
+    func_00208700(p, o->texture, 1);
+    scale.x = 0.1f;
+    scale.y = 0.1f;
+    scale.z = 0.1f;
+    func_00205C40((s32)rot);
+    func_00205C40((s32)rot);
+    rot[1] = rot[1] / 180;
+    rot[1] = -rot[1];
+    rot[0] = rot[0] / 180;
+    rot[0] = -rot[0];
+    pos.x = s->x;
+    pos.y = s->y;
+    pos.z = s->z;
+    func_00108EF0(m, &scale, NULL, &pos);
+    for (i = 0; i < o->count; i++) {
+        func_01E00080_b068((Pk_b003_01E00080 *)p, &o->rect, o->ids[i]);
+        func_00108CE0(quad, s->sx, s->sy);
+        func_00109100(quad, rot, 1, o->xD8);
+        func_00109100(quad, rot, 0, o->xD8);
+        j = tbl + i;
+        h = i >> 1;
+        f = j[s->off] / 20.0f;
+        d = f * (s->w30 + h);
+        quad[0].x += d;
+        quad[1].x += d;
+        quad[2].x += f * (s->w30 + h);
+        quad[3].x += f * (s->w30 + h);
+        f = j[s->off + 100] / 20.0f;
+        d = f * (s->w30 + h);
+        quad[0].y += d;
+        quad[1].y += d;
+        quad[2].y += f * (s->w30 + h);
+        quad[3].y += f * (s->w30 + h);
+        f = j[s->off + 180] / 20.0f;
+        d = f * (s->w30 + h);
+        quad[0].z += d;
+        quad[1].z += d;
+        quad[2].z += f * (s->w30 + h);
+        quad[3].z += f * (s->w30 + h);
+        if (mode == 0) {
+            if (func_00205630(quad, 0x70000000, m, p, depth) != 0) {
+                func_002075F0(p, o->ot, (u32)depth[0]);
+            }
+        } else if (mode == 1) {
+            if (func_00205630(quad, 0x70000000, m, p, depth) != 0) {
+                p->v[0].z = p->v[1].z = p->v[2].z = p->v[3].z = 0xFFFFFF;
+                func_002075F0(p, o->ot, 0);
+            }
+        } else if (mode == 2) {
+            if (func_00205630(quad, 0x70000000, m, p, depth) != 0) {
+                func_002075F0(p, o->ot, -1);
+            }
+        }
+    }
+}
 
 typedef struct Rect_b008_01E00080 {
     s16 x, y, w, h;

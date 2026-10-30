@@ -64,7 +64,182 @@ static void func_01E00080_b267(s32 ot, Obj_b058_01E00080 *o, Spr_b058_01E00080 *
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b267", func_01E00260_b267);
+/* shape b267:01E00260 (B267_W_S), 383 insns, 1 copy: B267_W_S, the scene script: colour 0x80,0,0,0, counts the frame
+   (0x3E2E); on frames 28/51/73/95/120 places a column beside the camera (x +-3/+-2/0 flipped by the camera angle
+   sign, y +2/+2/-2/-2/+4), saves it in one of five slots and starts two b267:01E00E50 columns (angles 0, 90) and one
+   b267:01E01610; frame 125 a b267:01E01740 flash; frame 150 saves the joint (0x3E1A) and starts b267:01E00BF0 and
+   b267:01E00A80 there; frames 151..494 smoke wisps (b267:01E00F90 at the joint, b267:01E01260 at the saved point),
+   from 251 white sparks (b267:01E01500) near the camera; frame 355 the veil b267:01E01930 */
+
+typedef struct {
+    u8 pad0[0x2D0];
+    Vec4f pos;
+    u8 pad2E0[0x3C10 - 0x2E0];
+    Vec4f slot[5];
+    u8 pad3C60[0x3DC0 - 0x3C60];
+    Vec4f top;
+    u8 pad3DD0[4];
+    u8 col[4];
+    u8 pad3DD8[0x3E1A - 0x3DD8];
+    s16 joint;
+    u8 pad3E1C[0x3E22 - 0x3E1C];
+    s16 ang;
+    u8 pad3E24[0x3E2E - 0x3E24];
+    s16 t;
+} Scene_b267_01E00260;
+
+static void func_01E00260_b267(Scene_b267_01E00260 *g) {
+    extern s32 func_0019A5C8(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F9D30(s32);
+    extern s32 func_001A22C0(f32);
+    extern s32 b267_01E02530();
+    extern s32 b267_01E00A80();
+    extern s32 b267_01E00BF0();
+    extern s32 b267_01E00E50();
+    extern s32 b267_01E00F90();
+    extern s32 b267_01E01260();
+    extern s32 b267_01E01500();
+    extern s32 b267_01E01610();
+    extern s32 b267_01E01740();
+    extern s32 b267_01E01930();
+    Vec4f p;
+    s32 r[4];
+    s32 q[4];
+    f32 off;
+    s16 rot;
+    s32 i;
+
+    func_001F6160(func_001F53A0(), r);
+    rot = func_001A22C0(r[1] / 180.0f);
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    func_001F5F90(func_001F53A0(), &p);
+    if (g->t == 28 || g->t == 51 || g->t == 73 || g->t == 95 || g->t == 120) {
+        if (rot) {
+            if (g->t == 28) {
+                g->pos.x = -3.0f;
+            }
+            if (g->t == 51) {
+                g->pos.x = 3.0f;
+            }
+            if (g->t == 73) {
+                g->pos.x = -2.0f;
+            }
+            if (g->t == 95) {
+                g->pos.x = 2.0f;
+            }
+            if (g->t == 120) {
+                g->pos.x = 0.0f;
+            }
+        } else {
+            if (g->t == 28) {
+                g->pos.x = 3.0f;
+            }
+            if (g->t == 51) {
+                g->pos.x = -3.0f;
+            }
+            if (g->t == 73) {
+                g->pos.x = 2.0f;
+            }
+            if (g->t == 95) {
+                g->pos.x = -2.0f;
+            }
+            if (g->t == 120) {
+                g->pos.x = 0.0f;
+            }
+        }
+        if (g->t == 28) {
+            off = 2.0f;
+        }
+        if (g->t == 51) {
+            off = 2.0f;
+        }
+        if (g->t == 73) {
+            off = -2.0f;
+        }
+        if (g->t == 95) {
+            off = -2.0f;
+        }
+        if (g->t == 120) {
+            off = 4.0f;
+        }
+        g->pos.y = p.y + off;
+        g->pos.z = p.z;
+        if (g->t == 28) {
+            g->slot[0] = g->pos;
+        }
+        if (g->t == 51) {
+            g->slot[1] = g->pos;
+        }
+        if (g->t == 73) {
+            g->slot[2] = g->pos;
+        }
+        if (g->t == 95) {
+            g->slot[3] = g->pos;
+        }
+        if (g->t == 120) {
+            g->slot[4] = g->pos;
+        }
+        g->ang = 0;
+        b267_01E02530(g, b267_01E00E50, 0);
+        g->ang = 90;
+        b267_01E02530(g, b267_01E00E50, 0);
+        b267_01E02530(g, b267_01E01610, 0);
+    }
+    if (g->t == 125) {
+        b267_01E02530(g, b267_01E01740, 0);
+    }
+    func_001F5620(func_001F53A0(), g->joint, &p);
+    if (g->t == 150) {
+        func_001F5620(func_001F53A0(), g->joint, &g->top);
+    }
+    if (g->t == 150) {
+        func_001F6160(func_001F53A0(), q);
+        for (i = 0; i < 1; i++) {
+            g->pos.x = p.x;
+            g->pos.y = p.y;
+            g->pos.z = p.z;
+            b267_01E02530(g, b267_01E00BF0, 0);
+        }
+    }
+    if (g->t == 150) {
+        g->pos.x = p.x;
+        g->pos.y = p.y;
+        g->pos.z = p.z;
+        b267_01E02530(g, b267_01E00A80, 0);
+    }
+    func_001F9D30(0);
+    if (g->t > 150 && g->t < 495) {
+        g->pos.x = p.x;
+        g->pos.y = p.y;
+        g->pos.z = p.z;
+        b267_01E02530(g, b267_01E00F90, 0);
+    }
+    if (g->t > 150 && g->t < 495) {
+        g->pos.x = g->top.x;
+        g->pos.y = g->top.y;
+        g->pos.z = g->top.z;
+        b267_01E02530(g, b267_01E01260, 0);
+    }
+    if (g->t > 250 && g->t < 495) {
+        func_001F5F90(func_001F5380(), &p);
+        g->pos.x = p.x + func_0019A5C8() % 30 - 15.0f;
+        g->pos.y = p.y + func_0019A5C8() % 30 - 15.0f;
+        g->pos.z = p.z;
+        b267_01E02530(g, b267_01E01500, 0);
+    }
+    if (g->t == 355) {
+        b267_01E02530(g, b267_01E01930, 0);
+    }
+}
 
 /* shape b194:01E00C60, 134 insns, 2 copies: a violet wisp (b018:01E01F60 twin): set up once (random heading, tilt -15..14); fades in to 0x60
    over 10 frames, then out; its size grows every other frame up to 18, its frame every third up to 7; x and z drift 10 along its heading, y 4 by

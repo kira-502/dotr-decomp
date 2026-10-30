@@ -352,9 +352,227 @@ static void func_01E00740_b041(Obj_b016_01E00920 *obj, Cam_b016_01E00920 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b041", func_01E00CF0_b041);
+/* shape b041:01E00CF0 (IWMagicSmoke4), 182 insns, 5 copies: b631:01E01190's source: b016:01E00ED0 plus
+   func_00109100(view, {.., .., cam 0x5A}, 2, obj 0xD8) after the view setup; one sprite quad (GS packet of 9 qwords)
+   at an object's position; mode (flags & 0xF) 0 = depth from the projection, 1 = far z, else -1. Texture corners by
+   the module helper func_01E00080_b041 (static, defined above: the original reuses a0 across the call) */
 
-INCLUDE_ASM("asm/nonmatchings/mod/b041", func_01E00FD0_b041);
+typedef struct Cam_b041_01E00CF0 {
+    u8 pad0[8];
+    s16 w;
+    s16 h;
+    u8 padC[0x14];
+    Vec4f pos;
+    u8 pad30[0x2A];
+    s16 f5A;
+    u8 pad5C[4];
+    Vec4f at;
+} Cam_b041_01E00CF0;
+
+typedef struct Obj_b041_01E00CF0 {
+    u8 pad0[0x80];
+    s32 f80;
+    u8 pad84[4];
+    s32 f88;
+    u8 pad8C[8];
+    u8 f94[0x2A];
+    s16 fBE;
+    u8 padC0[0x18];
+    u8 fD8[4];
+} Obj_b041_01E00CF0;
+
+typedef struct Xyz_b041_01E00CF0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+    u64 reg;
+} Xyz_b041_01E00CF0;
+
+typedef struct Uv_b041_01E00CF0 {
+    f32 u, v;
+} Uv_b041_01E00CF0;
+
+typedef struct Pk_b041_01E00CF0 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    Uv_b041_01E00CF0 uv;
+    u64 pad18;
+    Xyz_b041_01E00CF0 v[4];
+    u64 pad60[6];
+} Pk_b041_01E00CF0;
+
+typedef struct Buf_b041_01E00CF0 {
+    u64 tag;
+    Pk_b041_01E00CF0 pk;
+} Buf_b041_01E00CF0;
+
+static void func_01E00CF0_b041(Obj_b041_01E00CF0 *obj, Cam_b041_01E00CF0 *cam, s32 flags, Vec4f c) {
+    extern void func_00108EF0();
+    extern void func_00109100();
+    f32 view[4][4];
+    Vec4f a;
+    Vec4f s;
+    f32 out[4];
+    f32 m[4][4];
+    s32 arg[4];
+    Buf_b041_01E00CF0 buf;
+    Uv_b041_01E00CF0 uv;
+    s32 sel;
+    s32 mode;
+    Pk_b041_01E00CF0 *p = &buf.pk;
+
+    sel = (flags >> 4) & 0xF;
+    p->flags = 0x24;
+    p->size = 9;
+    p->regs = ((u64)4 << 32) | 0x24242421;
+    p->pad4 = 0;
+    p->flags |= 0x800;
+    if (sel == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)sel << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    func_00107740(&uv, &cam->at);
+    p->uv = uv;
+    func_01E00080_b041((Pk_b034_01E00110 *)p, (Rect_b034_01E00110 *)obj->f94, obj->fBE);
+    func_00208700(p, (void *)obj->f88, 1);
+    s.x = 0.1f;
+    a.x = c.x;
+    s.y = 0.1f;
+    a.y = c.y;
+    s.z = 0.1f;
+    a.z = c.z;
+    func_00108EF0(m, &s, &cam->pos, &a);
+    func_00108CE0(view, cam->w, cam->h);
+    arg[2] = cam->f5A;
+    func_00109100(view, arg, 2, obj->fD8);
+    if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, out) != 0) {
+        mode = flags & 0xF;
+        if (mode == 0) {
+            func_002075F0((s32)p, obj->f80, func_001A23B0(out[0]));
+        } else if (mode == 1) {
+            p->v[0].z = p->v[1].z = p->v[2].z = p->v[3].z = 0xFFFFFF;
+            func_002075F0((s32)p, obj->f80, 0);
+        } else {
+            func_002075F0((s32)p, obj->f80, -1);
+        }
+    }
+}
+
+/* shape b041:01E00FD0 (IWMagicSmoke5), 177 insns, 2 copies: b400:01E00ED0's source: b041:01E00CF0 with the view size
+   from the camera's floats 0x30/0x34; one sprite quad (GS packet of 9 qwords) at an object's position; mode (flags &
+   0xF) 0 = depth from the projection, 1 = far z, else -1. Texture corners by the module helper func_01E00080_b041
+   (static, defined above: the original reuses a0 across the call) */
+
+typedef struct Cam_b041_01E00FD0 {
+    u8 pad0[8];
+    s16 w;
+    s16 h;
+    u8 padC[0x14];
+    Vec4f pos;
+    f32 fw;
+    f32 fh;
+    u8 pad38[0x22];
+    s16 f5A;
+    u8 pad5C[4];
+    Vec4f at;
+} Cam_b041_01E00FD0;
+
+typedef struct Obj_b041_01E00FD0 {
+    u8 pad0[0x80];
+    s32 f80;
+    u8 pad84[4];
+    s32 f88;
+    u8 pad8C[8];
+    u8 f94[0x2A];
+    s16 fBE;
+    u8 padC0[0x18];
+    u8 fD8[4];
+} Obj_b041_01E00FD0;
+
+typedef struct Xyz_b041_01E00FD0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+    u64 reg;
+} Xyz_b041_01E00FD0;
+
+typedef struct Uv_b041_01E00FD0 {
+    f32 u, v;
+} Uv_b041_01E00FD0;
+
+typedef struct Pk_b041_01E00FD0 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    Uv_b041_01E00FD0 uv;
+    u64 pad18;
+    Xyz_b041_01E00FD0 v[4];
+    u64 pad60[6];
+} Pk_b041_01E00FD0;
+
+typedef struct Buf_b041_01E00FD0 {
+    u64 tag;
+    Pk_b041_01E00FD0 pk;
+} Buf_b041_01E00FD0;
+
+static void func_01E00FD0_b041(Obj_b041_01E00FD0 *obj, Cam_b041_01E00FD0 *cam, s32 flags, Vec4f c) {
+    extern void func_00108EF0();
+    extern void func_00109100();
+    f32 view[4][4];
+    Vec4f a;
+    Vec4f s;
+    f32 out[4];
+    f32 m[4][4];
+    s32 arg[4];
+    Buf_b041_01E00FD0 buf;
+    Uv_b041_01E00FD0 uv;
+    s32 sel;
+    s32 mode;
+    Pk_b041_01E00FD0 *p = &buf.pk;
+
+    sel = (flags >> 4) & 0xF;
+    p->flags = 0x24;
+    p->size = 9;
+    p->regs = ((u64)4 << 32) | 0x24242421;
+    p->pad4 = 0;
+    p->flags |= 0x800;
+    if (sel == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)sel << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    func_00107740(&uv, &cam->at);
+    p->uv = uv;
+    func_01E00080_b041((Pk_b034_01E00110 *)p, (Rect_b034_01E00110 *)obj->f94, obj->fBE);
+    func_00208700(p, (void *)obj->f88, 1);
+    s.x = 0.1f;
+    a.x = c.x;
+    s.y = 0.1f;
+    a.y = c.y;
+    s.z = 0.1f;
+    a.z = c.z;
+    func_00108EF0(m, &s, &cam->pos, &a);
+    func_00108CE0(view, cam->fw, cam->fh);
+    arg[2] = cam->f5A;
+    func_00109100(view, arg, 2, obj->fD8);
+    if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, out) != 0) {
+        mode = flags & 0xF;
+        if (mode == 0) {
+            func_002075F0((s32)p, obj->f80, func_001A23B0(out[0]));
+        } else if (mode == 1) {
+            p->v[0].z = p->v[1].z = p->v[2].z = p->v[3].z = 0xFFFFFF;
+            func_002075F0((s32)p, obj->f80, 0);
+        } else {
+            func_002075F0((s32)p, obj->f80, -1);
+        }
+    }
+}
 
 /* shape b041:01E012A0 (B041_W_S), 238 insns: the scene script of b041: tick 1 spawns 0x1E01FC0 twice and 0x1E01DF0
    with the flag at g+0x876E cleared then set, plus 0x1E01820; every third tick 93..170 spawns 0x1E01940 and

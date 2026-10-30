@@ -327,7 +327,103 @@ static void func_01E00D10_b411(Obj_b016_01E00ED0 *obj, Cam_b016_01E00ED0 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b411", func_01E00FD0_b411);
+/* shape b411:01E00FD0 (B411_W_S), 378 insns, 1 copy: B411_W_S, the effect scene step: counts the frame (0x9D28);
+   frame 1 spawns 0x1E02470, 59 three 0x1E02170 (sel 0..2); frames 108/130/140 take joint 0x9CB6/0x9CB8/0x9CB4 into
+   pos and pts[sel], spawn 0x1E01D30, 0x1E022F0 and twenty 0x1E01960 on sides 0,18,..; frames
+   108..198/130..220/140..230 copy pts[0/1/2] to pos and spawn 0x1E015C0 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x9BF0 - 0x260];
+    Vec4f pts[3];
+    u8 pad9C20[0x9CB4 - 0x9C20];
+    s16 joint2;
+    s16 joint0;
+    s16 joint1;
+    u8 pad9CBA[0x9D12 - 0x9CBA];
+    s16 side;
+    u8 pad9D14[0x9D20 - 0x9D14];
+    s16 sel;
+    u8 pad9D22[0x9D28 - 0x9D22];
+    s16 t;
+} Scene_b411_01E00FD0;
+
+static void func_01E00FD0_b411(Scene_b411_01E00FD0 *g) {
+    extern void b411_01E015C0(void);
+    extern void b411_01E01960(void);
+    extern void b411_01E01D30(void);
+    extern void b411_01E02170(void);
+    extern void b411_01E022F0(void);
+    extern void b411_01E02470(void);
+    extern void b411_01E02F60(Scene_b411_01E00FD0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    s16 i;
+    s16 j;
+
+    g->t++;
+    if (g->t == 1) {
+        b411_01E02F60(g, b411_01E02470, 0);
+    }
+    if (g->t == 59) {
+        g->sel = 0;
+        b411_01E02F60(g, b411_01E02170, 0);
+        g->sel = 1;
+        b411_01E02F60(g, b411_01E02170, 0);
+        g->sel = 2;
+        b411_01E02F60(g, b411_01E02170, 0);
+    }
+    if (g->t == 108) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pos);
+        g->sel = 0;
+        func_001F5620(func_001F53A0(), g->joint0, &g->pts[g->sel]);
+        b411_01E02F60(g, b411_01E01D30, 0);
+        b411_01E02F60(g, b411_01E022F0, 0);
+        g->pos = g->pts[g->sel];
+        for (i = 0, j = 0; i < 20; j += 18, i++) {
+            g->side = j;
+            b411_01E02F60(g, b411_01E01960, 0);
+        }
+    }
+    if (g->t >= 108 && g->t < 199) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pos);
+        g->pos = g->pts[0];
+        b411_01E02F60(g, b411_01E015C0, 0);
+    }
+    if (g->t == 130) {
+        func_001F5620(func_001F53A0(), g->joint1, &g->pos);
+        g->sel = 1;
+        func_001F5620(func_001F53A0(), g->joint1, &g->pts[g->sel]);
+        b411_01E02F60(g, b411_01E01D30, 0);
+        b411_01E02F60(g, b411_01E022F0, 0);
+        g->pos = g->pts[g->sel];
+        for (j = 0, i = 0; j < 20; i += 18, j++) {
+            g->side = i;
+            b411_01E02F60(g, b411_01E01960, 0);
+        }
+    }
+    if (g->t >= 130 && g->t < 221) {
+        g->pos = g->pts[1];
+        b411_01E02F60(g, b411_01E015C0, 0);
+    }
+    if (g->t == 140) {
+        func_001F5620(func_001F53A0(), g->joint2, &g->pos);
+        g->sel = 2;
+        func_001F5620(func_001F53A0(), g->joint2, &g->pts[g->sel]);
+        b411_01E02F60(g, b411_01E01D30, 0);
+        b411_01E02F60(g, b411_01E022F0, 0);
+        g->pos = g->pts[g->sel];
+        for (j = 0, i = 0; j < 20; i += 18, j++) {
+            g->side = i;
+            b411_01E02F60(g, b411_01E01960, 0);
+        }
+    }
+    if (g->t >= 140 && g->t < 231) {
+        g->pos = g->pts[2];
+        b411_01E02F60(g, b411_01E015C0, 0);
+    }
+}
 
 /* shape b411:01E015C0, 114 insns: on start f48 30..36, variant 0..2, colour (0x20, 0x20, 0xFF), 0x50 5..14, random 0x5A, speed 2..6
    (0xE), 0x8 0..34, hold 2..16 (0x6); alpha grows by 0x40 (below 0xC0) during the hold, then fades by 19 and stops;
