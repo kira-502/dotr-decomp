@@ -120,7 +120,7 @@ static s32 func_01E009E0_c017(Ctx_c017_01E009E0 *g, Ent_c017_01E009E0 *o) {
         g->f3908 = o->f24;
         g->f3910 = o->f2C;
         func_001076F0(g->rgb, o->col0.r, o->col0.g, o->col0.b);
-        func_00106DD0(g->v, 0.0f, 0.0f, 0.0f);
+        func_00106DD0((void *)g->v, 0.0f, 0.0f, 0.0f);
         g->f3952 = o->f5A + 15;
         if (o->f6A != 0) {
             c017_01E01610(g, func_01E009E0_c017);

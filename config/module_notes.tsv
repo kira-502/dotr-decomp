@@ -96,7 +96,6 @@ b179:01E00F20	40%	an earlier try got this far
 b179:01E03940		hard: ShFx_ReqBlur family: b029:01E05AA0 (84%) and b099:01E04C30 are hard for the same packet/UV temps; do together with them (best draft: drafts/mod/b179_01E03940.c)
 b181:01E01170	40%	an earlier try got this far
 b183:01E01480	98% (318/324)	hard: OBJ_MOVE_3; opening gap math: orig loads b.x (through the &b register) into f0 before a.x, ours into f1; plain &b worse (96%) (best draft: drafts/mod/b183_01E01480.c)
-b192:01E03920	98% (174/177)	hard: in-file; `paddub s4,a1` (o copy) scheduled before `lh a2,0x34(a1)`, ours after; sibling call fixed to func_01E00330_b192 (best draft: drafts/mod/b192_01E03920.c)
 b193:01E01D70	92% (299/325)	hard: chatB's old blocker stands: the original divides the constant UVs (0.0, 64.0 by 256.0) at runtime; pragmas opt_propagation/global_optimizer/opt_common_subs/opt_constant_propagation/opt_strength_reduction off all no help or worse (best draft: drafts/mod/b193_01E01D70.c)
 b196:01E014A0	40%	an earlier try got this far
 b197:01E01A10	98% (377/383, same length)	hard: only the 8 colour-byte stores before func_001F71A0: orig computes t0=&c2 first and stores c2[0] through it; tried 6 store orders + struct colours (best draft: drafts/mod/b197_01E01A10.c)
@@ -221,7 +220,7 @@ b767:01E003A0	99.2%	an earlier try got this far
 b768:01E01D90	75%	hard: GS packet bitfields: frame 0xC0 vs 0xB0, uv halfword ops through addiu temps (best draft: drafts/mod/b768_01E01D90.c)
 b774:01E00080	99.7% (593/595)	hard: W_S; first drift line (p.y += (a.y - r.y) / 200.0f): orig quotient in f2 (dividend), ours f1 (divisor); tried temp, *1/200, reorder (best draft: drafts/mod/b774_01E00080.c)
 b774:01E04530	96% (172/179)	hard: in-file; a stack zero stored through `addiu v0,sp,0x74` (address temp) where ours stores direct, plus one branch shorter (best draft: drafts/mod/b774_01E04530.c)
-c017:01E009E0	99% (218/220)	hard: c017:01E006B0's source at -O3 with a speed turn and a hand-over to the scene; only the scene floor's load (lh 0x399A) takes $a0 where the original has $a2; its position, float or integer locals, the per-function pragmas and the in-file compile do not move it (best draft: drafts/mod/c017_01E009E0.c)
+c017:01E009E0	99% (218/220)	hard: c017:01E006B0's source at -O3; only the scene floor's load (lh 0x399A) takes $a0 where the original has $a2; a (void *) cast on g->v fixed the in-file func_00106DD0 float order; floor position, locals, declaration orders, prototypes, typed vs s32 parameter and the permuter do not move it (best draft: drafts/mod/c017_01E009E0.c)
 c020:01E003C0	83% (169/203)	hard: saved-register colouring only (loop counters/pointer temps); chatF tried 120 orders (best draft: drafts/mod/c020_01E003C0.c)
 c021:01E016C0	98% (347/355)	hard: left: andi 0xFF after the float->u8 radius shrink (x2) and the 0.0f arg built in f14 first for func_00106DD0 (best draft: drafts/mod/c021_01E016C0.c)
 c022:01E00C70	58% (98/168)	hard: structure right, all register names: g wants s0/id s2/i s1 (params copied a1-first, as m000:01E00080); same open question as m000 (best draft: drafts/mod/c022_01E00C70.c)
