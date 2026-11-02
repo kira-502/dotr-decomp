@@ -81,7 +81,6 @@ b136:01E019D0	66% (217/330), same length	hard: scene manager; b136:01E01950's bo
 b136:01E020D0	99% (202/204)	hard: block-local f32 r = 0.8f fixes the 0.8f schedule but r gets f12 (mov to f14) where orig has f14 (mov to f12); every form with the right regs schedules the load early; permuter nothing (best draft: drafts/mod/b136_01E020D0.c)
 b137:01E01340	94.5%	an earlier try got this far
 b149:01E02D30	72%	an earlier try got this far
-b151:01E027D0	134/143	hard: frame 0x10 short (two 8-byte gaps at sp+0x50 and 0x90 in orig) + s1/s2 swap (best draft: drafts/mod/b151_01E027D0.c)
 b158:01E02630	40%	an earlier try got this far
 b159:01E00CE0	85% (297/351), same length	hard: scene manager (s32 arg0 + local g, n counter, trail pointer p, b159:01E00A90 written inline): left only an s1/s2 rotation (id/p/n/loop pointers); declaration order has no effect (best draft: drafts/mod/b159_01E00CE0.c)
 b159:01E016C0	57% (161/282)	hard: fresh C (b397:01E02D10's family): ours hoists r+0.8f into f21 and pre-tests the k loop; spills like b397 (best draft: drafts/mod/b159_01E016C0.c)
