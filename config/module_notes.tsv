@@ -243,7 +243,6 @@ c514:01E01040	98%	an earlier try got this far
 c534:01E027F0	86% (345/399, ours 395)	hard: logic decoded (LkSortRing idioms); left: UV writes go through pointers to the vertex uv words (orig a0/a1/a2/v1 = &pkt.v[k].uv) and the obj arg spill slot (0xA8 vs 0xAC) (best draft: drafts/mod/c534_01E027F0.c)
 c536:01E00120	84% (110/131)	hard: float sub order: orig does t34-c34 before t30-c30 and z before y in pos; temps, orders, loops tried (best draft: drafts/mod/c536_01E00120.c)
 c541:01E02C40	84%	an earlier try got this far
-c544:01E01F60	330/331	hard: `g->tex = tex` (0x570): original loads tex (into a2) before the at/size stores but stores it after them; writing it first gets the load right and the store too early, writing it after gets both late (best draft: drafts/mod/c544_01E01F60.c)
 c603:01E00920	91% (286/314)	hard: stack only: orig pkt at sp+0x1A8 (ours 0x1A0, 8-byte gap after p[4]) and cam spill at 0x140 (ours 0x14C); code otherwise right (best draft: drafts/mod/c603_01E00920.c)
 c604:01E03200	366/369	hard: one temp register: count (best draft: drafts/mod/c604_01E03200.c)
 c605:01E028C0	96% (337/343 vs 352)	hard: left: a dead 24-byte copy of o+0x60..0x77 into three stack u64 (sp+0x178/180/188, stored via addiu pointers) before the flag tests that MWCC drops from our C (best draft: drafts/mod/c605_01E028C0.c)
