@@ -324,3 +324,9 @@ there is a source form that gives the original.
 - **A stack zero stored through an address temp (`addiu v0,sp,X; sw zero,0(v0)`) where yours stores directly:** copy the
   field from its neighbour, `q[1].y = q[0].y;`; it can also move nops near calls, so judge in-file. (b774:01E04530,
   b115:01E02A10)
+- **Before retrying a hard row, grep its real name:** its shape may already be C under a sibling id (c604:01E03200 was
+  c611:01E00A80's source as is).
+- **A field store scheduled after unrelated stores although its value loads before them, the local's address taken:**
+  copy it to a spare local before those stores and store the copy after them. (c544:01E01F60)
+- **Frame 0x10 short with 8-byte gaps around a packet:** out buffers `s32 [2]` / `s32 [3]` and an 8-byte packet tail;
+  a draw context swapped with a CSE pointer goes back in the parameter (`ctx = ...`). (b151:01E027D0)
