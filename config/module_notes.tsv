@@ -236,7 +236,6 @@ c061:01E01100	70% (174/249)	hard: s-register colouring only; probe search: no si
 c061:01E03D80	76%	an earlier try got this far
 c062:01E039E0	91% (116/127)	hard: 2nd loop: id/ent-pointer/i get s1/s2/s3 rotated; decl order and shared k/j vars don't move it (best draft: drafts/mod/c062_01E039E0.c)
 c404:01E00080		hard: not tried past reading: whole-module draw (64 slots x 8 quads, GS packet header + 14-bit UV bitfields kept in s5/fp/s6, spills); needs a long session
-c500:01E02310	99% (305/307)	hard: only the spilled `ot` param slot: orig 0xA8, ours 0xAC (looks like a second 4-byte spill slot above it in the original) (best draft: drafts/mod/c500_01E02310.c)
 c501:01E00910	96%	hard: g must take s0 over ot: local copy + opt_propagation off fixes it but then the quad loop gets a top test and dst as addiu base (index loop wants propagation on) (best draft: drafts/mod/c501_01E00910.c)
 c507:01E01540	99.7% (306/307)	hard: one store order: `g->texE0 = tex[0]` must load early (after h14C) but store after fE8; every statement position tried (best draft: drafts/mod/c507_01E01540.c)
 c508:01E015C0	95%	an earlier try got this far
