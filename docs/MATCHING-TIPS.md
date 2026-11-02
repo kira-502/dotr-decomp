@@ -319,3 +319,8 @@ there is a source form that gives the original.
   `(flags & 0xF)` in each `if`. (b582:01E04B10)
 - **An all-zero float call `f(g->v, 0.0f, 0.0f, 0.0f)` with its `mov.s` order wrong in the file:** a `(void *)` cast on
   the pointer argument. (c017:01E009E0)
+- **An array address `addu v0,v0(idx<<4),sN` where yours has `addu v0,sN,v0`, read through a cast parameter:** use a
+  typed local copy of the parameter, declared last, and read through it. (b120:01E044A0)
+- **A stack zero stored through an address temp (`addiu v0,sp,X; sw zero,0(v0)`) where yours stores directly:** copy the
+  field from its neighbour, `q[1].y = q[0].y;`; it can also move nops near calls, so judge in-file. (b774:01E04530,
+  b115:01E02A10)
