@@ -313,3 +313,9 @@ there is a source form that gives the original.
   three in c531:01E01040).
 - **One counter for two loops, one with a call and one without, the later loop's counter swapped with a saved local:**
   give the loop without a call its own counter. (c059:01E00340)
+- **A parameter copy (`paddub sN, aX`) scheduled after the field load that uses it, where the original has it before:**
+  declare the callee's matching argument with its real narrow type (`s16`) in the block-scope prototype. (b192:01E03920)
+- **A loop-invariant mode in a saved register, swapped with the loop's pointer register:** drop the mode local and test
+  `(flags & 0xF)` in each `if`. (b582:01E04B10)
+- **An all-zero float call `f(g->v, 0.0f, 0.0f, 0.0f)` with its `mov.s` order wrong in the file:** a `(void *)` cast on
+  the pointer argument. (c017:01E009E0)
