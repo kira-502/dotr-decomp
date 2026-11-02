@@ -1025,6 +1025,143 @@ static s32 func_01E02BF0_c604(s32 obj, Spr_b000_01E03420 *spr, Cam_b000_01E03420
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c604", func_01E03200_c604);
+/* shape c604:01E03200 (LkSortSlash), 369 insns, 2 copies: c611:01E00A80's source (b000:01E03420's sprite quad for a
+   slash): blend by flags 11/10, colour into the four vertices, UVs from the integer or float rectangle; the two lower
+   corners slide in y toward -10 x the slash's scale at 4 x the scale a frame; one matrix from the slash's rotation,
+   each corner projected (flags 20..23 when on screen); flag 19 draws it at the far z, else all four on screen draw at
+   their mean depth */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    union {
+        struct {
+            f32 s, t;
+        } st;
+        struct {
+            u64 u : 14;
+            u64 pad0 : 2;
+            u64 v : 14;
+            u64 pad1 : 34;
+        } uv;
+    } tc;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_c604_01E03200;
+
+typedef struct {
+    u64 u : 14;
+    u64 pad0 : 2;
+    u64 v : 14;
+    u64 pad1 : 34;
+} UV_c604_01E03200;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_c604_01E03200 v[4];
+    u8 tail[0x20];
+} Pkt_c604_01E03200;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_b000_01E00100 color;
+    f32 scale;
+    union {
+        struct {
+            s16 u, v, w, h;
+        } i;
+        struct {
+            f32 s, t, w, h;
+        } f;
+    } rect;
+    Vec4f p[4];
+    Vec4f rot[1];
+} Slash_c604_01E03200;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[1];
+} Cam_c604_01E03200;
+
+static s32 func_01E03200_c604(s32 obj, Slash_c604_01E03200 *spr, Cam_c604_01E03200 *cam) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern s32 func_00103540(void *, f32, f32);
+    Vec4f out;
+    f32 m[16];
+    f32 depth[4];
+    f32 step;
+    Pkt_c604_01E03200 pkt;
+
+    ((Pkt_c604_01E03200 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_c604_01E03200 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_c604_01E03200 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_c604_01E03200 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(spr->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(spr->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    func_01E00080_c604((Vtx_b000_01E00100 *)&pkt, &spr->color);
+    if (func_00104520(spr->flags, 0) != 0) {
+        ((Pkt_c604_01E03200 *)(s32)&pkt)->count |= 0x800;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[0].tc)->u = spr->rect.i.u * 16;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[0].tc)->v = spr->rect.i.v * 16;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[1].tc)->u = (spr->rect.i.u + spr->rect.i.w - 1) * 16;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[1].tc)->v = spr->rect.i.v * 16;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[2].tc)->u = spr->rect.i.u * 16;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[2].tc)->v = (spr->rect.i.v + spr->rect.i.h - 1) * 16;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[3].tc)->u = (spr->rect.i.u + spr->rect.i.w - 1) * 16;
+        ((UV_c604_01E03200 *)(s32)&pkt.v[3].tc)->v = (spr->rect.i.v + spr->rect.i.h - 1) * 16;
+    } else {
+        pkt.v[0].tc.st.s = spr->rect.f.s;
+        pkt.v[0].tc.st.t = spr->rect.f.t;
+        pkt.v[1].tc.st.s = spr->rect.f.s + spr->rect.f.w;
+        pkt.v[1].tc.st.t = spr->rect.f.t;
+        pkt.v[2].tc.st.s = spr->rect.f.s;
+        pkt.v[2].tc.st.t = spr->rect.f.t + spr->rect.f.h;
+        pkt.v[3].tc.st.s = spr->rect.f.s + spr->rect.f.w;
+        pkt.v[3].tc.st.t = spr->rect.f.t + spr->rect.f.h;
+    }
+    func_00103540(&spr->p[2].y, -10.0f * spr->scale, 4.0f * spr->scale);
+    step = 4.0f * spr->scale;
+    func_00103540(&spr->p[3].y, -10.0f * spr->scale, step);
+    func_0020C630(m, spr->rot);
+    func_0020CDD0(&out, m, &spr->p[0]);
+    if (func_00205440(&out, cam->view, &pkt.v[0].tc + 1, &depth[0]) != 0) {
+        spr->flags |= 0x100000;
+    }
+    func_0020CDD0(&out, m, &spr->p[1]);
+    if (func_00205440(&out, cam->view, &pkt.v[1].tc + 1, &depth[1]) != 0) {
+        spr->flags |= 0x200000;
+    }
+    func_0020CDD0(&out, m, &spr->p[2]);
+    if (func_00205440(&out, cam->view, &pkt.v[2].tc + 1, &depth[2]) != 0) {
+        spr->flags |= 0x400000;
+    }
+    func_0020CDD0(&out, m, &spr->p[3]);
+    if (func_00205440(&out, cam->view, &pkt.v[3].tc + 1, &depth[3]) != 0) {
+        spr->flags |= 0x800000;
+    }
+    func_00208700(&pkt, spr->texture, 0);
+    if (func_00104520(spr->flags, 0x13) != 0) {
+        pkt.v[0].z = pkt.v[1].z = pkt.v[2].z = pkt.v[3].z = 0xFFFFFF;
+        func_002075F0(&pkt, obj, 0);
+    } else if (func_00104520(spr->flags, 0x14) != 0 && func_00104520(spr->flags, 0x15) != 0 &&
+               func_00104520(spr->flags, 0x16) != 0 && func_00104520(spr->flags, 0x17) != 0) {
+        func_002075F0(&pkt, obj, func_001A23B0((depth[3] + (depth[2] + (depth[0] + depth[1]))) / 4.0f));
+    }
+    spr->flags &= 0xFF0FFFFF;
+    return 0;
+}
+
 
 INCLUDE_ASM("asm/nonmatchings/mod/c604", func_01E037D0_c604);
