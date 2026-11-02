@@ -187,7 +187,6 @@ b564:01E03250	52% (150/287)	hard: first draft only (structure from m2c): spills 
 b567:01E03800	(twin)	hard: constant twin of b205:01E02D10 (m from 4, angle -50, nudge 0.2): close that one and modfam --consts spreads it (best draft: drafts/mod/b567_01E03800.c)
 b572:01E01400	92%	an earlier try got this far
 b576:01E02460	77%	an earlier try got this far
-b582:01E04B10	97% (205/212)	hard: only two registers swap: the depth mode (flags & 0xF) takes $s4 and the loop's offset-table pointer (strength-reduced o->dx[i]) $s5, the original the other way; declaration orders, where the mode is computed, an explicit s16 *d stepping through the table and 10 minutes of dk perm do not move it (best draft: drafts/mod/b582_01E04B10.c)
 b582:01E04E60	90%	an earlier try got this far
 b583:01E011B0	99.2%	an earlier try got this far
 b589:01E03470		hard: not started in bulk: 293 insns, heavy spills, m2c fails, no matched KPOINT_RAIN_2 sibling (9 copies elsewhere, all asm)
