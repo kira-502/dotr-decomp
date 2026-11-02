@@ -122,7 +122,7 @@ static void func_01E02A10_b115(Obj_b115_01E02A10 *o, Spr_b115_01E02A10 *s, Vec4f
             w = 5.5f;
         }
         quad[0].y = 0.0f;
-        quad[1].y = 0.0f;
+        quad[1].y = quad[0].y;
         quad[0].x = w;
         quad[1].x = -w;
         quad[0].z = 0.0f;

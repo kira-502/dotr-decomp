@@ -61,7 +61,7 @@ b105:01E02190	77%	an earlier try got this far
 b112:01E04480	97% (231/237)	hard: (a) s64 quotient of func_001A0660: orig stores sext(q) then -q from the raw low word (paddub a0,v0; negu; dsll32/dsra32); (b) func_00208700 call keeps pk in a0 from the static helper call (best draft: drafts/mod/b112_01E04480.c)
 b114:01E01690	99.7%	an earlier try got this far
 b114:01E02AD0	40%	an earlier try got this far
-b115:01E02A10	98% (262/267)	hard: (a) func_00208700 after the static helper call keeps pk in a0 (no paddub a0) - same as b112:01E04480; (b) one nop in the clock<107 ?: block (best draft: drafts/mod/b115_01E02A10.c)
+b115:01E02A10	99% (263/267)	hard: in-file; quad[1].y = quad[0].y (as b774:01E04530) restores the nop after the second func_002075F0 and drops the paddub a0; left: orig stores quad[0].y as sw 0x94(sp) with a nop after the else-arm mtc1, ours keeps addiu v0,sp,0x94 + sw 0(v0) (best draft: drafts/mod/b115_01E02A10.c)
 b117:01E00CB0	68%	hard: t==48/49/50 chain compiles as a range check; g in s3 not s0; in-file compile (module file + this) silently crashes mwcc (best draft: drafts/mod/b117_01E00CB0.c)
 b120:01E021D0		hard: not tried: stopped by owner order mid-item (m2c draft ready; two 19-point trails at ctx+0x2C30/0x2D70 per slot) (best draft: drafts/mod/b120_01E021D0.c)
 b120:01E03B30	97%	an earlier try got this far
