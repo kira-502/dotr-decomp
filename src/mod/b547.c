@@ -604,7 +604,162 @@ static void func_01E01880_b547(Scene_b547_01E01880 *g) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b547", func_01E019E0_b547);
+/* shape b547:01E019E0 (B547_OBJ_MOVE_2_), 419 insns, 1 copy: b384:01E01B60 form: random drift and split frames; at
+   tick 215 two jittered b547:01E02070 sparks */
+
+typedef struct {
+    u8 pad0000[0x250];
+    Vec4f pos;
+    u8 pad260[0x44EE - 0x260];
+    s16 side;
+    u8 pad44F0[2];
+    s16 count;
+    u8 pad44F4[0x46F4 - 0x44F4];
+    u8 table[1];
+} Mgr_b547_01E019E0;
+
+typedef struct {
+    u8 pad00[6];
+    s16 h6;
+    s16 h8;
+    s16 hA;
+    s16 hC;
+    s16 hE;
+    Vec4f pos;
+    u8 pad20[0x10];
+    f32 f30;
+    f32 f34;
+    f32 f38;
+    u8 pad3C[0xC];
+    f32 f48;
+    u8 pad4C[4];
+    s16 h50;
+    s16 h52;
+    s16 h54;
+    s16 h56;
+    s16 h58;
+    s16 h5A;
+    s16 h5C;
+    u8 pad5E[2];
+    u8 c60[4];
+} Obj_b547_01E019E0;
+
+static s32 func_01E019E0_b547(Mgr_b547_01E019E0 *m, Obj_b547_01E019E0 *o) {
+    extern void b547_01E02070();
+    extern void b547_01E02B00(void *, void *, s32);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern f32 func_00108030(void *, s32, s32);
+    f32 v[4];
+
+    if (o->h58 == 1) {
+        o->f48 = 10.0f;
+        o->h56 = func_0019A5C8() % 2;
+        func_001076F0(o->c60, 0x80, 0x80, 0x80);
+        o->h5A = func_0019A5C8() % 360;
+        o->h5C = func_0019A5C8() % 360;
+        if (func_0019A5C8() % 2) {
+            o->hA = 2;
+        } else {
+            o->hA = 0;
+        }
+        o->hC = o->h50;
+        o->h50 = 0;
+        o->h52 = func_0019A5C8() % 350 + 100;
+        o->hE = func_0019A5C8() % 20 + 10;
+        o->h8 = func_0019A5C8() % 35;
+        o->h6 = func_0019A5C8() % 5 + 3;
+        o->f30 = func_0019A5C8() % 40 - 20;
+        o->f34 = func_0019A5C8() % 40 - 20;
+        o->f38 = func_0019A5C8() % 40 - 20;
+        o->f30 /= 18.0f;
+        o->f34 /= 18.0f;
+        o->f38 /= 18.0f;
+        o->h58 = 2;
+    }
+    if (m->count < 320) {
+        if (o->c60[3] < 0x80) {
+            o->c60[3] += 0x20;
+        }
+        if (o->h52 > o->h50) {
+            o->h50 += 15;
+        }
+    } else if (o->c60[3] > 9) {
+        o->c60[3] -= 8;
+    } else {
+        o->h58 = 0;
+    }
+    if (o->h54 > 20 && o->h54 < 30) {
+        o->pos.x += o->f30;
+        o->pos.z += o->f38;
+        if (m->side != 0) {
+            o->pos.z -= 1.0f;
+        } else {
+            o->pos.z += 1.3f;
+        }
+    }
+    if (o->h54 == 215) {
+        m->pos = o->pos;
+        m->pos.x += func_0019A5C8() % 30 - 15;
+        m->pos.y += func_0019A5C8() % 30 - 15;
+        m->pos.z += func_0019A5C8() % 30 - 15;
+        b547_01E02B00(m, b547_01E02070, 0);
+        m->pos.x += func_0019A5C8() % 30 - 15;
+        m->pos.y += func_0019A5C8() % 30 - 15;
+        m->pos.z += func_0019A5C8() % 30 - 15;
+        b547_01E02B00(m, b547_01E02070, 0);
+    }
+    if (m->count < 151) {
+        if (o->h56 != 0) {
+            o->h56 = 0;
+        } else {
+            o->h56 = 1;
+        }
+    } else if (o->h54 > 145 && o->h54 < 157) {
+        if (o->h56 == 4) {
+            o->h56 = 5;
+        } else {
+            o->h56 = 4;
+        }
+    } else if (o->h54 > 145 && o->h54 < 181) {
+        if (o->h56 == 2) {
+            o->h56 = 3;
+        } else {
+            o->h56 = 2;
+        }
+    } else if (o->h54 > 182) {
+        if (o->h56 != 0) {
+            o->h56 = 0;
+        } else {
+            o->h56 = 1;
+        }
+    } else {
+        if (o->h56 != 0) {
+            o->h56 = 0;
+        } else {
+            o->h56 = 1;
+        }
+    }
+    func_001F5F90(func_001F5380(), v);
+    o->f34 = 3.0f * func_00108030(m->table, o->h5C, 1);
+    if (o->h54 > 145 && o->h54 < 181) {
+        if (m->side != 0) {
+            o->pos.z -= 5.0f;
+        } else {
+            o->pos.z += 5.0f;
+        }
+        if (v[1] - 10.0f < o->pos.y) {
+            o->pos.y -= 1.0f;
+        }
+    }
+    if (o->h54 > 182) {
+        o->pos.y += 0.4f;
+    }
+    o->h5C += 6;
+    o->h54++;
+    return 0;
+}
 
 /* shape b082:01E01EC0, 100 insns, 2 copies: a grey spark: set up once (size 20, random frame, keeps its old angle, new angle
    10..59, speed 16..45, life 3..7); full for its life, then fades out; turns by its speed (b225:01E026A0 family, 0x58-state layout) */
