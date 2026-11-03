@@ -141,7 +141,6 @@ b379:01E046B0	89% (327/369, ours 371)	hard: packet sits 8 low (orig 0x328, ours 
 b380:01E00440	40%	an earlier try got this far
 b381:01E01A80	99.2%	an earlier try got this far
 b390:01E015E0	67% (212/316)	hard: in-file; s-register colouring + 8 insns short (best draft: drafts/mod/b390_01E015E0.c)
-b397:01E02D10	71% (193/273)	hard: fresh C from m2c; spill-heavy (g/o/k/j/n/last on stack), pk 8 bytes low (0x170 vs 0x178), d/b copies through t-reg pointers (best draft: drafts/mod/b397_01E02D10.c)
 b404:01E01A80	99.2%	an earlier try got this far
 b405:01E008B0	99.2%	an earlier try got this far
 b405:01E03430	99%	an earlier try got this far
