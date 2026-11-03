@@ -332,3 +332,6 @@ there is a source form that gives the original.
   a draw context swapped with a CSE pointer goes back in the parameter (`ctx = ...`). (b151:01E027D0)
 - **Frame 0x20 short in a 4-vertex textured packet (out buffer `u8 [4]` at the frame top):** give the packet a
   `u8 tail[0x20]`, as b029:01E04780's packet has. (b029:01E05AA0)
+- **A by-value vector argument to a static sibling with `addiu a3, sp, &v` set too early:** declare the local with the
+  callee's own parameter type, not `Vec4f` cast at the call; cast the other way only where the other type is taken.
+  (b219:01E02920)
