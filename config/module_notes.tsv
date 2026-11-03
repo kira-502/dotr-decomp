@@ -123,7 +123,6 @@ b351:01E02E00	99.2%	an earlier try got this far
 b351:01E05A80	40%	an earlier try got this far
 b351:01E068F0	84% (157/187)	hard: float + loop-counter colouring: orig i=s1/k=s0, dy,dz,dx div order, r/base in f26/f27 and per-i offsets f23-25; ours shifted by 2 (best draft: drafts/mod/b351_01E068F0.c)
 b355:01E030D0	71%	an earlier try got this far
-b357:01E02180	78% (203/260)	hard: whole saved-register map shifted: orig params s3/s2/s1/s0, ids pointer s5, i s6; ours params s5..s2. Cousin b045:01E011B0 (C) is the model (best draft: drafts/mod/b357_01E02180.c)
 b357:01E03420	88% (234/267)	hard: three random angles: orig sext at rand, copies sext again into s32 loop angles after the size line, i=s2 / slot offset s3; ours sext twice early and loop regs s5/s6 (best draft: drafts/mod/b357_01E03420.c)
 b361:01E01CA0	70% (227/323)	hard: scene manager (b388/b538 form): the top `s1 = 0` var is both the tex loop counter (no sign-extend, do-while) and the s16 flash count in the run path; my s16 n adds sext + a pre-test (try first: `s32 n` + `n = (s16)(n + 1)`, see PLAYBOOK-MODULES b278) (best draft: drafts/mod/b361_01E01CA0.c)
 b369:01E003A0	99.2%	an earlier try got this far
@@ -197,11 +196,9 @@ b774:01E00080	99.7% (593/595)	hard: W_S; first drift line (p.y += (a.y - r.y) / 
 c017:01E009E0	99% (218/220)	hard: c017:01E006B0's source at -O3; only the scene floor's load (lh 0x399A) takes $a0 where the original has $a2; a (void *) cast on g->v fixed the in-file func_00106DD0 float order; floor position, locals, declaration orders, prototypes, typed vs s32 parameter and the permuter do not move it (best draft: drafts/mod/c017_01E009E0.c)
 c020:01E003C0	83% (169/203)	hard: saved-register colouring only (loop counters/pointer temps); chatF tried 120 orders (best draft: drafts/mod/c020_01E003C0.c)
 c021:01E016C0	98% (347/355)	hard: left: andi 0xFF after the float->u8 radius shrink (x2) and the 0.0f arg built in f14 first for func_00106DD0 (best draft: drafts/mod/c021_01E016C0.c)
-c022:01E00C70	58% (98/168)	hard: structure right, all register names: g wants s0/id s2/i s1 (params copied a1-first, as m000:01E00080); same open question as m000 (best draft: drafts/mod/c022_01E00C70.c)
 c027:01E00660	67%	an earlier try got this far
 c030:01E01510	69% (161/233)	hard: colouring fixed with `T *g = (T *)arg0;` + a separate init counter k; left: 12 unfilled delay-slot nops the original keeps (cmov/jump-threading "give up"?), slot loops want counter s3/pointer s2, pragmas no help (best draft: drafts/mod/c030_01E01510.c)
 c031:01E006E0	67%	an earlier try got this far
-c051:01E00590	65% (100/155)	hard: in-file; s-register colouring of params (orig s2=a1, s0=a0, s1=counter) all swapped (best draft: drafts/mod/c051_01E00590.c)
 c056:01E00360	dk try 100%	hard: REJECTED by the full build
 c056:01E04CF0	97%	an earlier try got this far
 c059:01E03610	273/313	hard: swing/depth s16 must convert before each func_00108030 call into f21/f20 (orig reloads the sheet index after the cast); a float temp hoists too early (best draft: drafts/mod/c059_01E03610.c)
@@ -217,6 +214,5 @@ c541:01E02C40	84%	an earlier try got this far
 c603:01E00920	91% (286/314)	hard: stack only: orig pkt at sp+0x1A8 (ours 0x1A0, 8-byte gap after p[4]) and cam spill at 0x140 (ours 0x14C); code otherwise right (best draft: drafts/mod/c603_01E00920.c)
 c605:01E028C0	96% (337/343 vs 352)	hard: left: a dead 24-byte copy of o+0x60..0x77 into three stack u64 (sp+0x178/180/188, stored via addiu pointers) before the flag tests that MWCC drops from our C (best draft: drafts/mod/c605_01E028C0.c)
 c606:01E00080	70% (127/182, same length)	hard: stack: original d[3] at sp+0x158 + 8-aligned pkt at 0x168 (ours 0x160/0x170); regs o=s0 mode=s2 t=s1 (ours s2/s1/s0) (best draft: drafts/mod/c606_01E00080.c)
-m000:01E00080	89% (113/127)	hard: 3 call-crossing webs rot/arg/ot get s2/s1/s0, target s0/s2/s1 (probe: pop order v35 ot, v33 arg, v32 rot); local copies of rot get propagated (best draft: drafts/mod/m000_01E00080.c)
 b494:01E013C0	96%	hard: scene manager; first slot-step loop has its counter and slot pointer in swapped registers (s0/s2); names per loop, declaration orders, loop forms, pragmas and 40 min of dk perm do not move it
 c022:01E01850	81%	hard: C matches all 153 insns; the asm slot ends in 35 stale words (zeros, then an old copy of the loop tail) that need a split change, not C
