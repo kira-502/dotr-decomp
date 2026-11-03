@@ -1744,7 +1744,122 @@ static void func_01E03B00_c059(Scene_c059_01E03B00 *g, Node_c059_01E03B00 *o, vo
 }
 
 
-INCLUDE_ASM("asm/nonmatchings/mod/c059", func_01E03D70_c059);
+/* shape c059:01E03D70 (C059PAINT_RAIN12), 206 insns, 1 copy: draw one c059 rain streak: mode 0 sets the material
+   (frame 0x96, the link colour with alpha 0 for a side whose flag 0x14 / 0x2C is clear, else its own or the previous
+   link colour, scene texture 0x2644); otherwise a quad 12 wide around h8 + hE from this link (height hA) to the
+   previous one (or its own start), depth 90 x the table sine of each height, scale 150/0/150, drawn under joint 0x2E
+   (0x34 apart from g+0x2E98); the 0.0f through a block local and the 1.0f through a local one (in its file after
+   c059:01E03B00) */
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_c059_01E03D70;
+
+typedef struct Ent_c059_01E03D70 {
+    s16 x;
+    s16 y;
+    u8 pad4[4];
+    s16 h8;
+    s16 hA;
+    u8 padC[2];
+    s16 hE;
+    struct Ent_c059_01E03D70 *prev;
+    s32 h14;
+    u8 pad18[0xC];
+    Col_c059_01E03D70 col;
+    u8 pad28[4];
+    s16 h2C;
+    s16 idx;
+} Ent_c059_01E03D70;
+
+typedef struct {
+    u8 m[0x34];
+} Joint_c059_01E03D70;
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f quad[4];
+    u8 pad290[0x2644 - 0x290];
+    s32 tex;
+    u8 pad2648[0x2A20 - 0x2648];
+    Vec4f sc;
+    u8 pad2A30[0x2ACC - 0x2A30];
+    s32 ot;
+    u8 pad2AD0[0x60];
+    u8 table[0x2E98 - 0x2B30];
+    Joint_c059_01E03D70 j[1];
+} Scene_c059_01E03D70;
+
+static void func_01E03D70_c059(Scene_c059_01E03D70 *g, Ent_c059_01E03D70 *e, void *p, s32 mode) {
+    extern Col_c059_01E03D70 D_01E06F88_c059;
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00106DD0(void *, f32, f32, f32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00108FF0(void *, void *, void *, s32);
+    Ent_c059_01E03D70 *q = e->prev;
+    f32 rm[4];
+    Vec4f sv;
+    f32 m[16];
+    Col_c059_01E03D70 c = D_01E06F88_c059;
+    s16 h;
+    f32 one;
+
+    if (mode == 0) {
+        func_00106080(rm, 0x96, 0, rm);
+        if (e->h14 == 0) {
+            c = e->col;
+            c.a = 0;
+            func_00107790(p, &c, 1);
+        } else {
+            func_00107790(p, &e->col, 1);
+        }
+        if (e->h2C == 0) {
+            c = e->col;
+            c.a = 0;
+            func_00107790(p, &c, 2);
+        } else if (q != 0) {
+            func_00107790(p, &q->col, 2);
+        }
+        func_00108500(p, rm, 0);
+        func_00208700(p, g->tex, 1);
+    } else {
+        g->quad[0].x = e->hE + (e->h8 - 6);
+        g->quad[1].x = e->hE + (e->h8 + 6);
+        if (q != 0) {
+            g->quad[2].x = q->hE + (q->h8 - 6);
+            g->quad[3].x = q->hE + (q->h8 + 6);
+        } else {
+            g->quad[2].x = e->x - 6;
+            g->quad[3].x = e->x + 6;
+        }
+        g->quad[1].y = g->quad[0].y = e->hA;
+        if (q != 0) {
+            h = q->hA;
+        } else {
+            h = e->y;
+        }
+        g->quad[3].y = g->quad[2].y = h;
+        g->quad[1].z = g->quad[0].z = 90.0f * func_00108030(g->table, e->hA, 0);
+        if (q != 0) {
+            g->quad[3].z = g->quad[2].z = 90.0f * func_00108030(g->table, q->hA, 0);
+        } else {
+            g->quad[3].z = g->quad[2].z = 90.0f * func_00108030(g->table, e->y, 0);
+        }
+        {
+            f32 r = 0.0f;
+            func_00106DD0(&g->sc, 150.0f, r, 150.0f);
+        }
+        one = 1.0f;
+        func_00106DD0(&sv, one, one, one);
+        func_00108EF0(m, &sv, g->j[e->idx].m + 0x10, g->j[e->idx].m);
+        func_00108FF0(g->quad, p, m, g->ot);
+    }
+}
+
 
 /* OVL_WARM */
 
