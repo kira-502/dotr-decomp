@@ -169,7 +169,6 @@ b517:01E01B10	68% (242/356)	hard: module main, same wall as b506:01E01BA0: the l
 b521:01E01BD0	78%	hard: g must colour first (s0, then n s1, id s2): `g = g0` + opt_propagation off fixes registers but un-rotates every loop (guards added); without the pragma 50% (best draft: drafts/mod/b521_01E01BD0.c)
 b526:01E02150	99.2%	an earlier try got this far
 b531:01E01970	64%	hard: mode-1 far-plane writes (pk+0x20..0x50 bitfield RMW) get hoisted out of the loop as 4 address regs, so base spills and frame is 0x240 vs 0x200; cousin of b018:01E00920 (best draft: drafts/mod/b531_01E01970.c)
-b544:01E03370	75% (254/340, ours 361)	hard: stack: our frame 0x20 bigger (pkt/temps layout), loop is a while with `(s16)` sign-extends on alpha math, and an outer for-guard the original lacks (best draft: drafts/mod/b544_01E03370.c)
 b549:01E01700	97% (239/246)	hard: in-file; FPR swap f1/f2 around the div.s at insn 88-94 (best draft: drafts/mod/b549_01E01700.c)
 b551:01E02480	77%	an earlier try got this far
 b555:01E00EA0	98% (177/180)	hard: in-file only (c.sh); md = mode & 0xF wants a2, ours a0; tried decl order/types/switch/inline (best draft: drafts/mod/b555_01E00EA0.c)
