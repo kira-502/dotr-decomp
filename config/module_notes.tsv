@@ -26,7 +26,7 @@ b029:01E01340	99.2%	an earlier try got this far
 b029:01E01D90	95.7%	an earlier try got this far
 b029:01E03660	94.5%	an earlier try got this far
 b029:01E04C90	55%	an earlier try got this far
-b029:01E05AA0	84% (240/286)	hard: chatA's two blockers stand: o[4] at 0x13C/frame 0x140 and UV temps avoiding a0/a1 (looks like an inlined helper); quick try only (best draft: drafts/mod/b029_01E05AA0.c)
+b029:01E05AA0	86% (247/286)	hard: frame fixed (packet u8 tail[0x20]); UV bitfield block's temps avoid a0/a1 in the original (b099 too), not fixed by -O1/2/3, opt pragmas, an inline helper, UV order/forms, aligned params or permuter (best draft: drafts/mod/b029_01E05AA0.c)
 b033:01E02B80	99.7%	an earlier try got this far
 b034:01E054C0	86% (317/369)	hard: box/ring draw: `i == 2 (best draft: drafts/mod/b034_01E054C0.c)
 b034:01E05A90	85% (298/349)	hard: ring draw: second angle is ((ang + 20) + a) + 90 unfolded in the original (MWCC folds my 20+90 into 0x6E); pk pointer / flags / a registers rotated; a < limit compare operands swapped (best draft: drafts/mod/b034_01E05A90.c)

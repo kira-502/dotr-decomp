@@ -1,8 +1,8 @@
 #include "common.h"
 
-/* shape b029:01E05AA0, 286 insns: a flat textured screen quad shown between frames start..end, fading in
-   over the first fade frames and out over the last 2 x fade; corners from the object (x16, offset to the
-   screen centre). Note the original's far-depth chain writes corner 1 twice and never corner 2. */
+/* shape b029:01E05AA0 (ShFx_ReqBlur), 286 insns, 10 copies: a flat textured screen quad shown between frames
+   start..end, fading in over the first fade frames and out over the last 2 x fade; corners from the object (x16,
+   offset to the screen centre). The original's far-depth chain writes corner 1 twice and never corner 2 */
 
 typedef struct {
     u16 start;
@@ -47,6 +47,7 @@ typedef struct {
         Uv_b029_01E05AA0 uv;
         Xyz_b029_01E05AA0 xyz;
     } v[4];
+    u8 tail[0x20];
 } Pk_b029_01E05AA0;
 
 typedef struct {
@@ -58,7 +59,6 @@ typedef struct {
 static s32 func_01E05AA0_b029(Obj_b029_01E05AA0 *obj, s32 dst, u16 frame) {
     Tex_b029_01E05AA0 tex;
     Pk_b029_01E05AA0 pk __attribute__((aligned(8)));
-    u32 o4[9];
     u8 o[4];
     u8 a;
     s32 d;
