@@ -365,3 +365,8 @@ there is a source form that gives the original.
   (b716:01E060B0)
 - **Float `c += k * (t - c)` steps subtracting in the wrong order:** fold k into each delta (`d = k * (t - c); c += d;`);
   if one pair still swaps, keep its deltas in later temps that a later block reuses. (c536:01E00120)
+- **Scene manager with the sine-table loop's counter and pointer swapped:** give the texture loop its own counter declared
+  last and run the sine-table loop on `i`; count draws with `n++` before the kind check. (c022:01E00C70, c051:01E00590)
+- **A whole saved-register map shifted by a strength-reduced pointer:** route the element through an earlier pointer local
+  reused later in the loop (`j = (s8 *)&o->ids[i]; ... j = tbl + i;`); a fresh pointer local does not help.
+  (b357:01E02180)
