@@ -330,3 +330,5 @@ there is a source form that gives the original.
   copy it to a spare local before those stores and store the copy after them. (c544:01E01F60)
 - **Frame 0x10 short with 8-byte gaps around a packet:** out buffers `s32 [2]` / `s32 [3]` and an 8-byte packet tail;
   a draw context swapped with a CSE pointer goes back in the parameter (`ctx = ...`). (b151:01E027D0)
+- **Frame 0x20 short in a 4-vertex textured packet (out buffer `u8 [4]` at the frame top):** give the packet a
+  `u8 tail[0x20]`, as b029:01E04780's packet has. (b029:01E05AA0)
