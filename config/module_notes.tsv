@@ -210,7 +210,6 @@ c056:01E04CF0	97%	an earlier try got this far
 c059:01E03610	273/313	hard: swing/depth s16 must convert before each func_00108030 call into f21/f20 (orig reloads the sheet index after the cast); a float temp hoists too early (best draft: drafts/mod/c059_01E03610.c)
 c061:01E01100	70% (174/249)	hard: s-register colouring only; probe search: no single/pair vreg move reaches target (o s1, s s0, flags s5, p s4); needs a different web structure (best draft: drafts/mod/c061_01E01100.c)
 c061:01E03D80	76%	an earlier try got this far
-c062:01E039E0	91% (116/127)	hard: 2nd loop: id/ent-pointer/i get s1/s2/s3 rotated; decl order and shared k/j vars don't move it (best draft: drafts/mod/c062_01E039E0.c)
 c404:01E00080		hard: not tried past reading: whole-module draw (64 slots x 8 quads, GS packet header + 14-bit UV bitfields kept in s5/fp/s6, spills); needs a long session
 c501:01E00910	96%	hard: g must take s0 over ot: local copy + opt_propagation off fixes it but then the quad loop gets a top test and dst as addiu base (index loop wants propagation on) (best draft: drafts/mod/c501_01E00910.c)
 c507:01E01540	99.7% (306/307)	hard: one store order: `g->texE0 = tex[0]` must load early (after h14C) but store after fE8; every statement position tried (best draft: drafts/mod/c507_01E01540.c)
