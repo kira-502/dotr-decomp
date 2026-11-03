@@ -339,3 +339,7 @@ there is a source form that gives the original.
   test `i < n - 1` in the condition; even an unused `last = n - 1;` changes it. (b589:01E03470)
 - **Quick scorers for scheduling/declaration searches:** `work/kr2perm.py` (every order of named declarations, 720 in 20
   s), `work/kr2move.py` (one statement to every position), `work/kr2var.py` (a list of replacements); set `KR2F=<func>`.
+- **One spill slot 4 off after the declaration order is right:** `__attribute__((aligned(8)))` on that s32 local.
+  (b415:01E03930)
+- **PAINT_RAIN20/21 grid draws (b215, b152, b597) with row pointers spilled:** b232:01E01B90's form with plain 2-D
+  indexing; the band drawers b509/b161 are not donors. (b215:01E04010, b215:01E03AC0)
