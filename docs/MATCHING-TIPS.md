@@ -353,3 +353,9 @@ there is a source form that gives the original.
   match there. (b117:01E00CB0)
 - **At -O3, a `&v.y` address set inside the loop where the original hoists it differently:** `#pragma
   opt_loop_invariants off`. (b117:01E00CB0)
+- **A GenAuraTex row stuck on frame size or packet offsets:** port b711:01E054B0 with `work/port.py` and fix the colour
+  bytes by hand. (b768:01E01D90, b216:01E052E0)
+- **A stack-array element address (`&v[3].x`) kept in a saved register across a call, yours rematerialised:** drop the
+  `(u32)` casts and pointer locals and write plain `v[3].x`. (b443:01E01B00)
+- **A loop value and a strength-reduced pointer in each other's saved registers:** keep the value in an earlier local
+  that is dead by then (`r = g->ids[i];`). (c062:01E039E0)
