@@ -343,3 +343,7 @@ there is a source form that gives the original.
   (b415:01E03930)
 - **PAINT_RAIN20/21 grid draws (b215, b152, b597) with row pointers spilled:** b232:01E01B90's form with plain 2-D
   indexing; the band drawers b509/b161 are not donors. (b215:01E04010, b215:01E03AC0)
+- **An s16 angle temp in a saved register swapped with the loop count, no declaration order helps:** set it in two steps,
+  `a = o->ang0; a = a - 8;` (permuter). (c022:01E010E0)
+- **The b244 constant-order effect can land on the new function itself:** its right form depends on whether another
+  new function earlier in the file is in; check both together (`work/bothtry_c059.sh` is an example). (c059:01E03D70)
