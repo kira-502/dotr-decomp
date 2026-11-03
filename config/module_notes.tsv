@@ -148,7 +148,6 @@ b439:01E00E80	99.2%	an earlier try got this far
 b443:01E01B00	94% (218/231)	hard: &v[3].x kept in s2 / &v[3].z in v1, ours rematerialises addiu; (u32)-cast pointers assigned in the store expr still rematerialised (best draft: drafts/mod/b443_01E01B00.c)
 b443:01E01EA0	47% (137/292, structure right)	hard: one saved register short (orig s0..s7: p=s0,o=s5,g=s6,k=s7; ours 7 regs, frame 0x10 smaller); y-branch stores via addiu temps; decl order no effect (best draft: drafts/mod/b443_01E01EA0.c)
 b444:01E00E80	99.2%	an earlier try got this far
-b453:01E02F10	92% (160/174)	hard: in-file; frame 0xC0 vs ours 0xB0: a 0x10 local missing/smaller (best draft: drafts/mod/b453_01E02F10.c)
 b455:01E02150	99.2%	an earlier try got this far
 b455:01E03990	94.5%	an earlier try got this far
 b457:01E011B0	99.2%	an earlier try got this far
