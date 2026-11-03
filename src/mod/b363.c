@@ -1377,7 +1377,155 @@ static s32 func_01E03740_b363(s32 arg0, Ring_b363_01E03740 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b363", func_01E03A30_b363);
+/* shape b363:01E03A30 (B363_OBJ_MOVE_9_), 406 insns, 1 copy (-O3,p): a spark on the scene's own fixed point and
+   30-point track (b363:01E04090 with fixed slots): set up once (point reset and nudged by a kick %30-15, track
+   filled, size 60..64.9, speed, heading, pitch, life 34); frame grows to 28 for 30 ticks then shrinks every other
+   tick, alpha 0xC0 then fades by 7; 0x80/0x40 blink; the point plus the spark offset copied to the next slot; until
+   tick 24 it drifts 5 on z (by the side flag) and the track shifts; ticks 24..33 spawn ten b363:01E04090 sparks a
+   tick, tick 23 spawns b363:01E04880 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f tmp;
+    u8 pad260[0xD930 - 0x260];
+    Vec4f track[0x1E];
+    u8 padDB10[0xDE30 - 0xDB10];
+    Vec4f pt;
+    u8 padDE40[0x10];
+    Vec4f pt2;
+    u8 padDE60[0xDEE6 - 0xDE60];
+    s16 next;
+    u8 padDEE8[6];
+    s16 cur;
+    u8 padDEF0[2];
+    s16 side;
+} World_b363_01E03A30;
+
+typedef struct {
+    u8 pad0[6];
+    s16 frame;
+    s16 life;
+    u8 padA[6];
+    Vec4f pos;
+    u8 pad20[0x10];
+    Vec4f v;
+    u8 pad40[8];
+    f32 size;
+    f32 speed;
+    u8 pad50[4];
+    s16 t;
+    u8 pad56[2];
+    s16 state;
+    s16 head;
+    s16 pitch;
+    u8 pad5E[2];
+    u8 c0[4];
+} Spark_b363_01E03A30;
+
+#pragma optimization_level 3
+
+static s32 func_01E03A30_b363(World_b363_01E03A30 *w, Spark_b363_01E03A30 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern void b363_01E05C00();
+    extern s32 b363_01E04090();
+    extern s32 b363_01E04880();
+    s16 i;
+    Vec4f *dst;
+
+    if (o->state == 1) {
+        o->frame = 1;
+        o->c0[3] = 0;
+        w->pt.x = 0.0f;
+        w->pt.y = 0.0f;
+        w->pt.z = 0.0f;
+        o->v.x = func_0019A5C8() % 30 - 15;
+        o->v.y = func_0019A5C8() % 30 - 15;
+        o->v.z = func_0019A5C8() % 30 - 15;
+        w->pt.x += o->v.x / 10.0f;
+        w->pt.y += o->v.y / 10.0f;
+        w->pt.z += o->v.z / 10.0f;
+        dst = w->track;
+        for (i = 0; i < 0x1E; i++) {
+            dst->x = w->pt.x;
+            dst->y = w->pt.y;
+            dst->z = w->pt.z;
+            dst++;
+        }
+        o->size = func_0019A5C8() % 50 + 600;
+        o->size /= 10.0f;
+        o->speed = func_0019A5C8() % 85 + 3;
+        o->speed /= 10.0f;
+        o->head = func_0019A5C8() % 360;
+        o->pitch = func_0019A5C8() % 360;
+        o->life = 0x22;
+        o->state = 2;
+    }
+    if (o->t < 0x1E) {
+        if (o->frame < 0x1C) {
+            o->frame++;
+        }
+    } else if (o->frame > 0) {
+        if (o->t % 2) {
+            o->frame--;
+        }
+    }
+    if (o->t < o->life) {
+        o->c0[3] = 0xC0;
+    } else {
+        if (o->c0[3] > 8) {
+            o->c0[3] -= 7;
+        } else {
+            o->state = 0;
+        }
+        if (o->frame != 0) {
+            o->frame--;
+        }
+    }
+    if (o->t % 2 == 0) {
+        func_001076F0(o->c0, 0x80, 0x80, 0x80);
+    } else {
+        func_001076F0(o->c0, 0x40, 0x40, 0x40);
+    }
+    o->v.x = func_0019A5C8() % 50 - 25;
+    o->v.y = func_0019A5C8() % 50 - 25;
+    o->v.z = func_0019A5C8() % 50 - 25;
+    w->tmp = w->pt;
+    w->tmp.x += o->pos.x;
+    w->tmp.y += o->pos.y;
+    w->tmp.z += o->pos.z;
+    w->pt2 = w->tmp;
+    if (o->t != 0) {
+        if ((s16)o->t < 0x18) {
+            if (w->side != 0) {
+                w->pt.z -= 5.0f;
+            } else {
+                w->pt.z += 5.0f;
+            }
+        }
+        if (o->t > 0x17 && o->t < 0x22) {
+            for (i = 0; i < 10; i++) {
+                w->cur = w->next;
+                b363_01E05C00(w, b363_01E04090, 0, 0);
+                w->next++;
+                if (w->next >= 0x46) {
+                    w->next = 0;
+                }
+            }
+        }
+        if (o->t == 0x17) {
+            w->tmp.y = 42.0f;
+            w->cur = 0;
+            b363_01E05C00(w, b363_01E04880, 0, 0);
+        }
+    }
+    if (o->t < 0x18) {
+        func_01E00080_b363(&w->track[0x1D], 0x1E, 0, &w->pt);
+    }
+    o->t++;
+    return 0;
+}
+
+#pragma optimization_level reset
 
 /* shape b363:01E04090 (B363_OBJ_MOVE_10_), 385 insns, 1 copy: b270:01E03900 jittery spark trail
    with a 30-point track: start kick %30-15, size 5..54, speed 3..87, pitch without >>4 and its sine taken with 1,
