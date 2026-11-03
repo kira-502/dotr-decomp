@@ -480,7 +480,180 @@ static s32 func_01E013C0_b515(s32 arg0, Obj_b515_01E013C0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b515", func_01E01570_b515);
+/* shape b515:01E01570 (b515), 407 insns, 1 copy: b515 scene manager, the code of b595:01E017E0 (b069:01E01210 family)
+   with seven page models, a 449-frame countdown, a zeroed 100..179 band in the second jitter table, the second sprite
+   kind drawn in mode 6 with that table, and returns 1 / 4 / 3 / 6 at frames 190 / 445 / 440 / 201..429, 8 once the
+   countdown runs out */
+
+typedef struct {
+    u8 pad0[0x10];
+    f32 x, y, z;
+    u8 pad1C[0x28];
+    void (*fn)();
+    u8 pad48[0xE];
+    s16 h56;
+    s16 used;
+    u8 pad5A[0x16];
+} Node_b515_01E01570;
+
+typedef struct {
+    u8 pad0[0x10];
+    f32 sc[3];
+    u8 pad1C[4];
+    f32 px, py, pz;
+    u8 pad2C[0x54];
+    s32 ot2;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    Vec4f rect;
+    u8 padA4[0x14];
+    s16 hB8;
+    u8 padBA[4];
+    s16 hBE;
+    s16 hC0;
+    u8 padC2[0x16];
+    u8 camD8[0x1C8];
+    Node_b515_01E01570 node[500];
+    u8 padDD60[0xDD90 - 0xDD60];
+    s32 tex5[2];
+    u8 padDD98[0x18];
+    s32 count;
+    u8 padDDB4[8];
+    s32 ot;
+    u8 padDDC0[0x28];
+    s16 model[7];
+    u8 padDDF6[2];
+    s16 model2;
+    u8 padDDFA[0x20];
+    s16 ang;
+    s16 id;
+    s16 timer;
+    s8 rnd[256];
+    s8 rnd2[256];
+} Scene_b515_01E01570;
+
+static s32 func_01E01570_b515(s32 arg0, s32 id) {
+    Scene_b515_01E01570 *g = (Scene_b515_01E01570 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_01E00920_b515();
+    extern void func_01E00E90_b515();
+    extern void func_01E01130_b515();
+    extern void func_01E013C0_b515();
+    s16 n;
+    Vec4f r1;
+    Vec4f r2;
+    s32 iv[4];
+    s32 i;
+    s16 k;
+
+    n = 0;
+    g->ot = (s32)func_00207500();
+    g->ot2 = (s32)func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0xE190);
+        func_00107C10((u8 *)g + 0xE020);
+        func_00107C10(g->camD8);
+        g->id = id;
+        g->count = 449;
+        g->model[0] = func_001F5560(func_001F53A0(), 0x32, 1);
+        g->model[1] = func_001F5560(func_001F53A0(), 0x35, 0);
+        g->model[2] = func_001F5560(func_001F53A0(), 0x38, 0);
+        g->model[3] = func_001F5560(func_001F53A0(), 0x41, 0);
+        g->model[4] = func_001F5560(func_001F53A0(), 0x4A, 0);
+        g->model[5] = func_001F5560(func_001F53A0(), 0x50, 0);
+        g->model[6] = func_001F5560(func_001F53A0(), 0x5C, 0);
+        g->model2 = func_001F5560(func_001F5380(), 1, 1);
+        for (i = 0; i < 2; i++) {
+            g->tex5[i] = func_00202BF0(5, i);
+        }
+        func_001F6160(func_001F53A0(), iv);
+        g->ang = iv[1] / 180.0f;
+        g->sc[0] = 0.1f;
+        g->sc[1] = 0.1f;
+        g->sc[2] = 0.1f;
+        for (k = 0; k < 256; k++) {
+            g->rnd[k] = func_0019A5C8() % 30 - 15;
+        }
+        for (k = 100; k < 180; k++) {
+            g->rnd[k] = func_0019A5C8() % 4;
+        }
+        for (k = 180; k < 256; k++) {
+            g->rnd[k] = func_0019A5C8() % 16 - 8;
+        }
+        for (k = 0; k < 256; k++) {
+            g->rnd2[k] = func_0019A5C8() % 40 - 20;
+        }
+        for (k = 100; k < 180; k++) {
+            g->rnd2[k] = 0;
+        }
+        return 0;
+    }
+    func_01E00E90_b515(g, 0);
+    for (k = 0; k < 500; k++) {
+        if (g->node[k].used != 0) {
+            if (g->node[k].fn != 0) {
+                g->node[k].fn(g, &g->node[k]);
+            }
+        }
+    }
+    for (k = 0; k < 500; k++) {
+        if (g->node[k].used != 0) {
+            n++;
+            if (g->node[k].fn == func_01E01130_b515) {
+                func_00106080(&r1, 0x14, g->node[k].h56, 0);
+                g->rect = r1;
+                g->hC0 = 5;
+                g->tex88 = g->tex5[0];
+                g->hB8 = 1;
+                g->px = g->node[k].x;
+                g->py = g->node[k].y;
+                g->pz = g->node[k].z;
+                g->hBE = 0;
+                func_01E00920_b515(g, &g->node[k], 16, g->rnd);
+                g->hB8 = 0;
+            }
+            if (g->node[k].fn == func_01E013C0_b515) {
+                func_00106080(&r2, 0x14, g->node[k].h56, 0);
+                g->rect = r2;
+                g->tex88 = g->tex5[0];
+                g->hB8 = 6;
+                g->hC0 = 0;
+                g->px = g->node[k].x;
+                g->py = g->node[k].y;
+                g->pz = g->node[k].z;
+                func_01E00920_b515(g, &g->node[k], 16, g->rnd2);
+                g->hB8 = 0;
+            }
+        }
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->timer == 190) {
+        return 1;
+    }
+    if (g->timer == 445) {
+        return 4;
+    }
+    if (g->timer == 440) {
+        return 3;
+    }
+    if (g->timer > 200 && g->timer < 430) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b515:01E01BD0, 98 insns, 2 copies (b236:01E02330's code, generated by chatG/ovl/gen236.py): take a free effect slot (0x1f4 of 0x70 bytes), clear it, colour it from the
    owner's colour, place it at the owner's position; returns 1, or 0 if every slot is in use */
