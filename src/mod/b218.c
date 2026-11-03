@@ -1589,7 +1589,151 @@ static s32 func_01E04890_b218(Pool_b218_01E04890 *o, s32 a, s32 b) {
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b218", func_01E049B0_b218);
+/* shape b218:01E049B0 (B218PAINT_RAIN10), 415 insns, 1 copy: the ribbon draw (b134:01E03880 form): four quads per
+   segment, step 0.25 */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b218_01E049B0;
+
+typedef struct {
+    Rgbaq_b218_01E049B0 c;
+    u64 uv;
+    u64 xyz;
+} Vtx_b218_01E049B0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b218_01E049B0 v[4];
+    u8 tail[0x20];
+} Pkt_b218_01E049B0;
+
+typedef struct {
+    u8 pad00[0x88];
+    void *texture;
+    u8 pad8C[8];
+    s16 rect[4];
+    u8 pad9C[0x22];
+    s16 mode;
+} Obj_b218_01E049B0;
+
+typedef struct {
+    u8 r, g, b, a;
+} C4_b218_01E049B0;
+
+typedef struct {
+    s16 rx, ry, rz;
+    s16 n;
+    s16 sx, sy, sz;
+    u8 pad0E[0x1A];
+    C4_b218_01E049B0 col0;
+    C4_b218_01E049B0 col1;
+} Rib_b218_01E049B0;
+
+static void func_01E049B0_b218(Obj_b218_01E049B0 *o, Rib_b218_01E049B0 *s, Vec_b018_01E00EE0 *pa,
+                               Vec_b018_01E00EE0 *pb) {
+    extern Rgbaq_b218_01E049B0 func_00107740(void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 depth[4];
+    Vec_b018_01E00EE0 rot;
+    Vec_b018_01E00EE0 scale;
+    f32 mat[4][4];
+    Vec_b018_01E00EE0 quad[4];
+    Vec_b018_01E00EE0 A[4];
+    Vec_b018_01E00EE0 B[4];
+    Vec_b018_01E00EE0 a4[4];
+    Vec_b018_01E00EE0 b4[4];
+    Pkt_b218_01E049B0 pkt __attribute__((aligned(8)));
+    C4_b218_01E049B0 c0;
+    C4_b218_01E049B0 c1;
+    s32 k;
+    s32 j;
+    s16 n;
+    Pkt_b218_01E049B0 *p;
+    s32 ot;
+    Vec_b018_01E00EE0 *pq;
+    f32 t;
+
+    ot = (s32)func_00207500();
+    n = s->n;
+    p = (Pkt_b218_01E049B0 *)(s32)&pkt;
+    func_00109270(p, 0, 0);
+    pkt.v[0].c = func_00107740(&s->col0);
+    pkt.v[1].c = func_00107740(&s->col1);
+    pkt.v[2].c = func_00107740(&s->col0);
+    pkt.v[3].c = func_00107740(&s->col1);
+    func_00108500(p, o->rect, o->mode);
+    func_00208700(p, o->texture, 1);
+    c0 = s->col0;
+    c1 = s->col1;
+    a4[0] = pa[0];
+    a4[1] = pa[1];
+    a4[2] = pa[2];
+    a4[3] = pa[3];
+    b4[0] = pb[0];
+    b4[1] = pb[0];
+    b4[2] = pb[1];
+    b4[3] = pb[2];
+    rot.x = s->rx;
+    rot.y = s->ry;
+    rot.z = s->rz;
+    scale.x = s->sx;
+    scale.y = s->sy;
+    scale.z = s->sz;
+    scale.x /= 10.0f;
+    scale.y /= 10.0f;
+    scale.z /= 10.0f;
+    func_00108EF0(mat, &scale, NULL, &rot);
+    for (k = 0; k < n - 2; k++) {
+        p->v[0].c = func_00107740(&c0);
+        p->v[1].c = func_00107740(&c1);
+        c0.a -= (u8)(s->col0.a / (n - 1));
+        c1.a -= (u8)(s->col1.a / (n - 1));
+        p->v[2].c = func_00107740(&c0);
+        p->v[3].c = func_00107740(&c1);
+        t = 0.0f;
+        pq = pb + (k - 1);
+        for (j = 0; j < 4; j++) {
+            if (k != 0) {
+                A[0] = func_01E00620_b218(pa, 0, t);
+                B[0] = func_01E00620_b218(pq, 0, t);
+                t += 0.25f;
+                A[1] = func_01E00620_b218(pa, 0, t);
+                B[1] = func_01E00620_b218(pq, 0, t);
+            } else {
+                A[0] = func_01E00620_b218(a4, 0, t);
+                B[0] = func_01E00620_b218(b4, 0, t);
+                t += 0.25f;
+                A[1] = func_01E00620_b218(a4, 0, t);
+                B[1] = func_01E00620_b218(b4, 0, t);
+            }
+            quad[0].x = A[0].x;
+            quad[0].y = A[0].y;
+            quad[0].z = A[0].z;
+            quad[1].x = A[1].x;
+            quad[1].y = A[1].y;
+            quad[1].z = A[1].z;
+            quad[2].x = B[0].x;
+            quad[2].y = B[0].y;
+            quad[2].z = B[0].z;
+            quad[3].x = B[1].x;
+            quad[3].y = B[1].y;
+            quad[3].z = B[1].z;
+            if (func_00205630(quad, 0x70000000, mat, p, depth) != 0) {
+                func_002075F0(p, ot, 0);
+            }
+        }
+        pa++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/b218", func_01E05030_b218);
 
