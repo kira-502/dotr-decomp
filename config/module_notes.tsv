@@ -197,7 +197,6 @@ b603:01E00440	40%	an earlier try got this far
 b605:01E00440	40%	an earlier try got this far
 b617:01E02870	94.5%	an earlier try got this far
 b621:01E02460	77%	an earlier try got this far
-b701:01E037D0	41% (117/282)	hard: structure written (KPOINT_RAIN_2 family, none in C yet); frame 0x220 vs 0x200, f24 saved, self/obj spilled (sp108/10C), n kept s16; needs stack/loop-shape work (best draft: drafts/mod/b701_01E037D0.c)
 b704:01E03240	87% (287/331), same length	hard: only stack offsets: both GS packets 8 bytes low (orig 0x158/0x188), out-param at 0x21C (frame 0x220 vs 0x200): some 8-byte local before the packets and ~0x24 after that my C lacks (best draft: drafts/mod/b704_01E03240.c)
 b706:01E02260	99.2%	an earlier try got this far
 b706:01E050E0	81%	hard: frame 0x1D0 vs 0x1B0 (two unknown 16-byte stack slots after the packet); xyz[] copied through address regs (sp+0x110..0x128); f20/f22 (tw vs u0) and s2/s3 (tex vs k) swapped (best draft: drafts/mod/b706_01E050E0.c)
