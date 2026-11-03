@@ -487,7 +487,160 @@ static void func_01E011E0_b116(Obj_b116_01E011E0 *o, Data_b116_01E011E0 *data, s
     } while (i < 36);
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b116", func_01E01650_b116);
+/* shape b116:01E01650 (B116_W_S), 418 insns, 1 copy: B116_W_S, the scene timer script: colour red; tick 200 and every
+   tick the point (0, 60, 0); tick 20 five view points jittered, copied, and five random ticks 90..169; at those ticks
+   a marker set off the point by 13.2 (03360, 03190, 02E90); ticks 205/230 036C0; from 368 0x4A34 follows the view
+   height; ticks 410..449 01CE0 at the view (039A0 on odd ticks); 03AA0, 03D70 and 03C60 bursts at 279..367 */
+
+typedef struct {
+    u8 pad0[0x250];
+    f32 px, py, pz;
+    u8 pad25C[0x2D20 - 0x25C];
+    Vec4f base;
+    Vec4f mark[5];
+    Vec4f low[5];
+    Vec4f pts[5];
+    Vec4f old[5];
+    u8 pad2E70[0x44A4 - 0x2E70];
+    u8 rgba[4];
+    u8 pad44A8[0x4A34 - 0x44A8];
+    f32 h4A34;
+    s16 when[5];
+    u8 pad4A42[0x4A5C - 0x4A42];
+    s16 idx;
+    u8 pad4A5E[0x4A62 - 0x4A5E];
+    s16 t;
+} Scene_b116_01E01650;
+
+static s32 func_01E01CE0_b116();
+static s32 func_01E02E90_b116();
+static s32 func_01E03190_b116();
+static s32 func_01E03360_b116();
+static s32 func_01E036C0_b116();
+static s32 func_01E039A0_b116();
+static s32 func_01E03AA0_b116();
+static s32 func_01E03C60_b116();
+static s32 func_01E03D70_b116();
+static s32 func_01E05410_b116();
+
+static void func_01E01650_b116(Scene_b116_01E01650 *g) {
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern s32 func_0019A5C8(void);
+    Vec4f v[2];
+    s32 i;
+
+    g->rgba[0] = 0x80;
+    g->rgba[1] = 0;
+    g->rgba[2] = 0;
+    g->rgba[3] = 0;
+    g->t++;
+    if (g->t == 200) {
+        g->px = 0.0f;
+        g->py = 60.0f;
+        g->pz = 0.0f;
+        g->base.x = g->px;
+        g->base.y = g->py;
+        g->base.z = g->pz;
+    }
+    if (g->t == 20) {
+        for (i = 0; i < 5; i++) {
+            func_001F5F90(func_001F53A0(), &g->pts[i]);
+        }
+        for (i = 0; i < 5; i++) {
+            g->pts[i].z -= g->pts[i].z / 75.0f;
+            g->pts[i].x += func_0019A5C8() % 20 - 10;
+            g->pts[i].y += func_0019A5C8() % 20;
+            g->pts[i].z += func_0019A5C8() % 10 - 5;
+        }
+        for (i = 0; i < 5; i++) {
+            g->old[i] = g->pts[i];
+        }
+        g->when[0] = func_0019A5C8() % 20 + 90;
+        g->when[1] = func_0019A5C8() % 20 + 105;
+        g->when[2] = func_0019A5C8() % 20 + 120;
+        g->when[3] = func_0019A5C8() % 20 + 135;
+        g->when[4] = func_0019A5C8() % 20 + 150;
+    }
+    g->px = 0.0f;
+    g->py = 60.0f;
+    g->pz = 0.0f;
+    g->base.x = g->px;
+    g->base.y = g->py;
+    g->base.z = g->pz;
+    for (i = 0; i < 5; i++) {
+        if (g->t == g->when[i]) {
+            g->idx = i;
+            g->mark[g->idx] = g->base;
+            if (i == 1) {
+                g->mark[g->idx].y += 13.2f;
+            }
+            if (i == 2) {
+                g->mark[g->idx].y -= 13.2f;
+            }
+            if (i == 3) {
+                g->mark[g->idx].x += 13.2f;
+            }
+            if (i == 4) {
+                g->mark[g->idx].x -= 13.2f;
+            }
+            g->low[g->idx] = g->mark[g->idx];
+            g->low[g->idx].y -= 60.0f;
+            func_01E05410_b116(g, func_01E03360_b116, 0);
+            func_01E05410_b116(g, func_01E03190_b116, 0);
+            func_01E05410_b116(g, func_01E02E90_b116, 0);
+        }
+    }
+    if (g->t == 205) {
+        g->idx = 0;
+        func_01E05410_b116(g, func_01E036C0_b116, 0);
+    }
+    if (g->t == 230) {
+        g->idx = 1;
+        func_01E05410_b116(g, func_01E036C0_b116, 0);
+    }
+    func_001F5F90(func_001F5380(), v);
+    if (g->t > 367) {
+        g->h4A34 += (v[0].y - 60.0f) / 58.0f;
+    }
+    func_001F5F90(func_001F5380(), v);
+    if (g->t > 409 && g->t <= 449) {
+        g->idx = 0;
+        g->px = v[0].x;
+        g->py = v[0].y;
+        g->pz = v[0].z;
+        func_01E05410_b116(g, func_01E01CE0_b116, 0);
+        if (g->t % 2 == 1) {
+            func_01E05410_b116(g, func_01E039A0_b116, 0);
+        }
+    }
+    if (g->t == 322) {
+        g->idx = 0;
+        func_01E05410_b116(g, func_01E03AA0_b116, 0);
+        g->idx = 1;
+        func_01E05410_b116(g, func_01E03AA0_b116, 0);
+    }
+    if (g->t == 309) {
+        g->idx = 0;
+        func_01E05410_b116(g, func_01E03D70_b116, 0);
+    }
+    if (g->t == 279) {
+        g->idx = 1;
+        func_01E05410_b116(g, func_01E03D70_b116, 0);
+        g->idx = 2;
+        func_01E05410_b116(g, func_01E03D70_b116, 0);
+    }
+    if (g->t == 298) {
+        g->idx = 3;
+        func_01E05410_b116(g, func_01E03D70_b116, 0);
+        g->idx = 4;
+        func_01E05410_b116(g, func_01E03D70_b116, 0);
+    }
+    if (g->t == 367) {
+        func_01E05410_b116(g, func_01E03C60_b116, 0);
+    }
+}
 
 /* shape b116:01E01CE0, 105 insns: on start 0x38 = 60, variant 0..6, colour (0x20, 0x10, 0x10), 0xA 0..7, 0xC keeps the old 0x30, 0x30
    0..19, speed 16..45 (0xE), 0x8 0..34, hold 3..7 (0x6), 0x3A 0..2; alpha 0x80 during the hold, then fades by 8 and
