@@ -101,7 +101,6 @@ b200:01E02AD0	40%	an earlier try got this far
 b201:01E00E10	40%	an earlier try got this far
 b215:01E01A70	95% (253/267)	hard: grid layout: `(2*f48)*20.0f` comes out const-first (mul.s f2,f3,f2) in ours; distance vector wants two hoisted pointers (&d.x, &d.z) where ours has one base +8 (best draft: drafts/mod/b215_01E01A70.c)
 b215:01E02660	80% (259/322)	hard: ring + layout match; left: the four screen-UV blocks (u/v from packet x/y, clamps) schedule differently (orig keeps -16.0 in f1 and 0.0 in f0, both subtractions first) (best draft: drafts/mod/b215_01E02660.c)
-b216:01E052E0	60% (104/173)	hard: stack: with u64 tails + aligned(8) (b222:01E03780 style) packets are right size but sit 8 low (orig flat 0x38, tex 0x68, w/h 0xA8/0xB0, frame 0xC0; ours 0x30/0x60/0xA0, 0xB0): one more 8-byte slot below flat (best draft: drafts/mod/b216_01E052E0.c)
 b224:01E02030	40%	an earlier try got this far
 b224:01E03D20	99.7%	an earlier try got this far
 b229:01E00E80	99.2%	an earlier try got this far
