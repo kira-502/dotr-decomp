@@ -731,7 +731,146 @@ static void func_01E01940_b203(Obj_b016_01E014F0 *o, Cam_b016_01E014F0 *cam, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b203", func_01E01D40_b203);
+/* shape b203:01E01D40 (B203_W_S), 408 insns, 1 copy: B203_W_S, the scene script: counts the frame (0x452A); on
+   211/235 catches the carried points A/B on joint A, on 211 aims the climb (z/y over 14); A rises on 212..224, B on
+   236..247 with trails; motes on joints B/C until 134/94, sparks on joint A (10 to the side) on 78..133; on 211/235 a
+   ring of 10 (kind 0/1) and a flash, on 224/247 a ring of 10 and 5+5+4 bursts and a closer */
+
+typedef struct {
+    u8 pad0000[0x250];
+    Vec4f p;
+    u8 pad0260[0x4470 - 0x260];
+    Vec4f posA;
+    Vec4f posB;
+    Vec4f step;
+    u8 pad44A0[0x44F4 - 0x44A0];
+    s16 jB;
+    s16 jC;
+    s16 jA;
+    u8 pad44FA[0x4504 - 0x44FA];
+    s16 jT;
+    u8 pad4506[0x4522 - 0x4506];
+    s16 kind;
+    u8 pad4524[2];
+    s16 side;
+    u8 pad4528[2];
+    s16 frame;
+} Ctx_b203_01E01D40;
+
+static void func_01E01D40_b203(Ctx_b203_01E01D40 *g) {
+    extern s32 func_001F5380(void);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void b203_01E03FB0();
+    extern s32 b203_01E027D0();
+    extern s32 b203_01E02950();
+    extern s32 b203_01E02B50();
+    extern s32 b203_01E02D10();
+    extern s32 b203_01E02E90();
+    extern s32 b203_01E03030();
+    extern s32 b203_01E03140();
+    extern s32 b203_01E032D0();
+    Vec4f v;
+    Vec4f w;
+    s16 i;
+    s16 j;
+
+    g->frame++;
+    if (g->frame == 0xD3) {
+        func_001F5620(func_001F53A0(), g->jA, &g->posA);
+    }
+    if (g->frame == 0xEB) {
+        func_001F5620(func_001F53A0(), g->jA, &g->posB);
+    }
+    if (g->frame == 0xD3) {
+        func_001F5620(func_001F5380(), g->jT, &v);
+        func_001F5620(func_001F53A0(), g->jB, &w);
+        g->step.z = (v.z - w.z) / 14.0f;
+        g->step.y = (v.y - w.y) / 14.0f;
+    }
+    if (g->frame > 0xD3 && g->frame < 0xE1) {
+        g->posA.z += g->step.z;
+        g->p = g->posA;
+        b203_01E03FB0(g, b203_01E027D0, 0);
+    }
+    if (g->frame > 0xEB && g->frame < 0xF8) {
+        g->posB.z += g->step.z;
+        g->p = g->posB;
+        b203_01E03FB0(g, b203_01E027D0, 0);
+    }
+    if (g->frame == 0xBA) {
+        g->p = g->posA;
+        g->kind = 0;
+    }
+    if (g->frame < 0x86) {
+        func_001F5620(func_001F53A0(), g->jB, &g->p);
+        b203_01E03FB0(g, b203_01E027D0, 0);
+    }
+    if (g->frame < 0x5E) {
+        func_001F5620(func_001F53A0(), g->jC, &g->p);
+        b203_01E03FB0(g, b203_01E027D0, 0);
+    }
+    if (g->frame > 0x4D && g->frame < 0x86) {
+        func_001F5620(func_001F53A0(), g->jA, &g->p);
+        if (g->side != 0) {
+            g->p.z -= 10.0f;
+        } else {
+            g->p.z += 10.0f;
+        }
+        b203_01E03FB0(g, b203_01E02950, 0);
+    }
+    if (g->frame == 0xD3 || g->frame == 0xEB) {
+        func_001F5620(func_001F53A0(), g->jA, &g->p);
+        for (i = 0, j = 0; i < 10; i++) {
+            g->kind = j;
+            b203_01E03FB0(g, b203_01E02B50, 0);
+            j += 0x24;
+        }
+        if (g->frame == 0xD3) {
+            g->kind = 0;
+        }
+        if (g->frame == 0xEB) {
+            g->kind = 1;
+        }
+        b203_01E03FB0(g, b203_01E02D10, 0);
+    }
+    if (g->frame == 0xE0) {
+        g->p = g->posA;
+        for (j = 0, i = 0; j < 10; j++) {
+            g->kind = i;
+            b203_01E03FB0(g, b203_01E02B50, 0);
+            i += 0x24;
+        }
+        for (i = 0; i < 5; i++) {
+            b203_01E03FB0(g, b203_01E02E90, 0);
+        }
+        for (i = 0; i < 5; i++) {
+            b203_01E03FB0(g, b203_01E03140, 0);
+        }
+        for (i = 0; i < 4; i++) {
+            b203_01E03FB0(g, b203_01E032D0, 0);
+        }
+        b203_01E03FB0(g, b203_01E03030, 0);
+    }
+    if (g->frame == 0xF7) {
+        g->p = g->posB;
+        for (j = 0, i = 0; j < 10; j++) {
+            g->kind = i;
+            b203_01E03FB0(g, b203_01E02B50, 0);
+            i += 0x24;
+        }
+        for (i = 0; i < 5; i++) {
+            b203_01E03FB0(g, b203_01E02E90, 0);
+        }
+        for (i = 0; i < 5; i++) {
+            b203_01E03FB0(g, b203_01E03140, 0);
+        }
+        for (i = 0; i < 4; i++) {
+            b203_01E03FB0(g, b203_01E032D0, 0);
+        }
+        b203_01E03FB0(g, b203_01E03030, 0);
+    }
+}
 
 /* shape b203:01E023A0, 268 insns: b111:01E01D30 with this module's table and side; b149:01E01770 cousin: size 10, grey 0x80, random frame 0..6, turn, spin and hA 0..7,
    height from 0 growing by 15 up to its limit 100..449 while it fades in by 0x20 for 147 ticks, then fades by 8 and
