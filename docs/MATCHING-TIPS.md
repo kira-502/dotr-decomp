@@ -335,3 +335,7 @@ there is a source form that gives the original.
 - **A by-value vector argument to a static sibling with `addiu a3, sp, &v` set too early:** declare the local with the
   callee's own parameter type, not `Vec4f` cast at the call; cast the other way only where the other type is taken.
   (b219:01E02920)
+- **Only spill slots differ, the loop bound and another spilled local in each other's slots:** drop the `last` local and
+  test `i < n - 1` in the condition; even an unused `last = n - 1;` changes it. (b589:01E03470)
+- **Quick scorers for scheduling/declaration searches:** `work/kr2perm.py` (every order of named declarations, 720 in 20
+  s), `work/kr2move.py` (one statement to every position), `work/kr2var.py` (a list of replacements); set `KR2F=<func>`.
