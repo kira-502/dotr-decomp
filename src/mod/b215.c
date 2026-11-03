@@ -1106,7 +1106,154 @@ static s32 func_01E03930_b215(Obj_b215_01E03930 *obj, s32 arg1, s32 arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/mod/b215", func_01E03AC0_b215);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b215", func_01E04010_b215);
+/* shape b215:01E04010 (B215PAINT_RAIN21), 323 insns, 1 copy: draws b215:01E01A70's 20 by 28 ripple grid: per cell its
+   frame from the scene table into the rect, a quad scaled by f48, turned by the two phase tables, moved to the grid
+   point; the first and last rows fade to alpha 0 on one side */
+
+typedef struct Rgbaq_b215_01E04010 {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b215_01E04010;
+
+typedef struct {
+    u8 r, g, b, a;
+} C4_b215_01E04010;
+
+typedef struct {
+    Rgbaq_b215_01E04010 c;
+    u64 rgba;
+    u64 xyz;
+} Vtx_b215_01E04010;
+
+typedef struct {
+    u8 hdr[0x10];
+    Vtx_b215_01E04010 v[4];
+    u8 tail[0x20];
+} Pk_b215_01E04010;
+
+typedef struct {
+    u8 pad0[0x20];
+    s32 rot[4];
+    u8 pad30[0x18];
+    f32 f48;
+    u8 pad4C[0x14];
+    C4_b215_01E04010 col0;
+    C4_b215_01E04010 col1;
+} Obj_b215_01E04010;
+
+typedef struct {
+    u8 pad0[0x88];
+    s32 tex;
+    u8 pad8C[8];
+    Vec4f rect;
+    u8 padA4[0x1A];
+    s16 frame;
+    u8 padC0[0x3BC0 - 0xC0];
+    Vec4f grid[20][40];
+    u8 pad6DC0[0x9FFC - 0x6DC0];
+    s32 ot;
+    u8 padA000[0xA048 - 0xA000];
+    s16 frames[20][50];
+    u8 padA818[0xB460 - 0xA818];
+    s16 a[20][40];
+    u8 padBAA0[0xC0E0 - 0xBAA0];
+    s16 b[20][40];
+    u8 padC720[0xE878 - 0xC720];
+    u8 trig[1];
+} Game_b215_01E04010;
+
+static void func_01E04010_b215(Game_b215_01E04010 *g, Obj_b215_01E04010 *o, s32 mode, Vec4f *in) {
+    extern Rgbaq_b215_01E04010 func_00107740(void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern void func_00108D20(void *, f32, f32);
+    extern void func_00109100(void *, void *, s32, void *);
+    extern void func_00107070(void *, s32, f32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f pos;
+    Vec4f q[4];
+    f32 v[4];
+    f32 m[16];
+    f32 depth[4];
+    s32 tw[4];
+    Vec4f rm;
+    Pk_b215_01E04010 pk __attribute__((aligned(8)));
+    C4_b215_01E04010 c;
+    s16 i;
+    s16 j;
+    s16 a;
+    Pk_b215_01E04010 *p;
+    s32 k;
+
+    pos = *in;
+    c = o->col0;
+    p = &pk;
+    c.a = 0;
+    a = 0;
+    func_00109270(p, 0, 0);
+    func_00107790(p, &o->col0, 1);
+    func_00107790(p, &o->col1, 2);
+    func_00108500(p, &g->rect, g->frame);
+    func_00208700(p, g->tex, 1);
+    k = mode >> 4;
+    if (k == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)k << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    v[0] = pos.x;
+    v[1] = pos.y;
+    v[2] = pos.z;
+    func_00108EF0(m, 0, o->rot, v);
+    q[0].y = 0.0f;
+    q[1].y = 0.0f;
+    q[2].y = 0.0f;
+    q[3].y = 0.0f;
+    for (i = 0; i < 20; i++) {
+        if (i == 0) {
+            p->v[0].c = func_00107740(&c);
+            p->v[1].c = func_00107740(&o->col0);
+            p->v[2].c = func_00107740(&c);
+            p->v[3].c = func_00107740(&o->col0);
+        }
+        if (i == 1) {
+            p->v[0].c = func_00107740(&o->col0);
+            p->v[1].c = func_00107740(&o->col0);
+            p->v[2].c = func_00107740(&o->col0);
+            p->v[3].c = func_00107740(&o->col0);
+        }
+        if (i == 19) {
+            p->v[0].c = func_00107740(&o->col0);
+            p->v[1].c = func_00107740(&c);
+            p->v[2].c = func_00107740(&o->col0);
+            p->v[3].c = func_00107740(&c);
+        }
+        for (j = 0; j < 28; j++) {
+            func_00106080(&rm, 0x14, g->frames[i][j], 0);
+            g->rect = rm;
+            func_00108500(p, &g->rect, g->frame);
+            func_00108D20(q, o->f48, o->f48);
+            tw[0] = g->a[i][j];
+            tw[1] = g->b[i][j];
+            func_00109100(q, tw, 1, g->trig);
+            func_00109100(q, tw, 0, g->trig);
+            func_00107070(q, 0, g->grid[i][j].x);
+            func_00107070(q, 2, g->grid[i][j].z);
+            func_00107070(q, 1, g->grid[i][j].y);
+            if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+                func_002075F0(p, g->ot, func_001A23B0(depth[0]));
+            }
+            a += 10;
+        }
+    }
+}
+
 
 /* shape b215:01E04520, 172 insns: b413:01E04E20 family effect pass over 130 entities: sets up the two packets, draws every live b215:01E02540 entity (then b215:01E02660 on it), then re-sends packet A with the model lights (func_001F7060) and draws every live b215:01E02B70 entity */
 
