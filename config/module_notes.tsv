@@ -180,7 +180,6 @@ b549:01E01700	97% (239/246)	hard: in-file; FPR swap f1/f2 around the div.s at in
 b551:01E02480	77%	an earlier try got this far
 b555:01E00EA0	98% (177/180)	hard: in-file only (c.sh); md = mode & 0xF wants a2, ours a0; tried decl order/types/switch/inline (best draft: drafts/mod/b555_01E00EA0.c)
 b558:01E003A0	99.2%	an earlier try got this far
-b567:01E03800	(twin)	hard: constant twin of b205:01E02D10 (m from 4, angle -50, nudge 0.2): close that one and modfam --consts spreads it (best draft: drafts/mod/b567_01E03800.c)
 b572:01E01400	92%	an earlier try got this far
 b576:01E02460	77%	an earlier try got this far
 b582:01E04E60	90%	an earlier try got this far
