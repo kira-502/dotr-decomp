@@ -105,7 +105,6 @@ b215:01E02660	80% (259/322)	hard: ring + layout match; left: the four screen-UV 
 b216:01E052E0	60% (104/173)	hard: stack: with u64 tails + aligned(8) (b222:01E03780 style) packets are right size but sit 8 low (orig flat 0x38, tex 0x68, w/h 0xA8/0xB0, frame 0xC0; ours 0x30/0x60/0xA0, 0xB0): one more 8-byte slot below flat (best draft: drafts/mod/b216_01E052E0.c)
 b224:01E02030	40%	an earlier try got this far
 b224:01E03D20	99.7%	an earlier try got this far
-b225:01E04480	87% (232/267)	hard: lerp block float regs/schedule (chatI notes); now compiles in module form (sibling via unprototyped extern func_01E00080_b225) (best draft: drafts/mod/b225_01E04480.c)
 b229:01E00E80	99.2%	an earlier try got this far
 b233:01E04A70	74%	an earlier try got this far
 b235:01E02370	95%	an earlier try got this far
