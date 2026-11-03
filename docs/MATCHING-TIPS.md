@@ -359,3 +359,9 @@ there is a source form that gives the original.
   `(u32)` casts and pointer locals and write plain `v[3].x`. (b443:01E01B00)
 - **A loop value and a strength-reduced pointer in each other's saved registers:** keep the value in an earlier local
   that is dead by then (`r = g->ids[i];`). (c062:01E039E0)
+- **Extra nops at the ends of if-blocks and loops, delay slots copied from the target but the branch not moved:**
+  `#pragma conditional_move off`. (b716:01E060B0)
+- **Early exit as `beqz $at, skip; nop; b end` where yours has one `bnez`:** one combined `if (x < lo || x > hi) return;`.
+  (b716:01E060B0)
+- **Float `c += k * (t - c)` steps subtracting in the wrong order:** fold k into each delta (`d = k * (t - c); c += d;`);
+  if one pair still swaps, keep its deltas in later temps that a later block reuses. (c536:01E00120)
