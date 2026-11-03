@@ -370,3 +370,7 @@ there is a source form that gives the original.
 - **A whole saved-register map shifted by a strength-reduced pointer:** route the element through an earlier pointer local
   reused later in the loop (`j = (s8 *)&o->ids[i]; ... j = tbl + i;`); a fresh pointer local does not help.
   (b357:01E02180)
+- **Stack temps each followed by an 8-step `lw/lw` copy loop into a matrix array, after calls with `a0` = the temp:** the
+  callee returns a struct; declare `typedef struct { f32 m[16]; } Mat;` and write `m[k] = func_00108EF0(...);`. (b056:01E03B40)
+- **A second `if (p)` with a redundant `beqz` on the same register at the tail of the first branch:** put the test
+  inside the first branch, not after the if/else. (b056:01E03B40)
