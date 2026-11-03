@@ -206,7 +206,6 @@ c017:01E009E0	99% (218/220)	hard: c017:01E006B0's source at -O3; only the scene 
 c020:01E003C0	83% (169/203)	hard: saved-register colouring only (loop counters/pointer temps); chatF tried 120 orders (best draft: drafts/mod/c020_01E003C0.c)
 c021:01E016C0	98% (347/355)	hard: left: andi 0xFF after the float->u8 radius shrink (x2) and the 0.0f arg built in f14 first for func_00106DD0 (best draft: drafts/mod/c021_01E016C0.c)
 c022:01E00C70	58% (98/168)	hard: structure right, all register names: g wants s0/id s2/i s1 (params copied a1-first, as m000:01E00080); same open question as m000 (best draft: drafts/mod/c022_01E00C70.c)
-c026:01E00F20	94% (138/147)	hard: draw loop: node pointer and `draw` local swapped (orig s3 ptr / s4 draw); decl order and draw forms did not move it; try mwprobe (best draft: drafts/mod/c026_01E00F20.c)
 c027:01E00660	67%	an earlier try got this far
 c030:01E01510	69% (161/233)	hard: colouring fixed with `T *g = (T *)arg0;` + a separate init counter k; left: 12 unfilled delay-slot nops the original keeps (cmov/jump-threading "give up"?), slot loops want counter s3/pointer s2, pragmas no help (best draft: drafts/mod/c030_01E01510.c)
 c031:01E006E0	67%	an earlier try got this far
