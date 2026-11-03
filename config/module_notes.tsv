@@ -198,7 +198,6 @@ b743:01E01C70	96%	hard: 2nd spawn count `n = clock < 100 ? 2 : 2`: original sign
 b756:01E02360		hard: OBJ_MOVE_3: self-copies (w.x = w.x) and `c.eq.s v.x, 0` with both arms loading the same field (macro-like ternaries); not attempted past reading
 b758:01E03700	99%	an earlier try got this far
 b767:01E003A0	99.2%	an earlier try got this far
-b768:01E01D90	75%	hard: GS packet bitfields: frame 0xC0 vs 0xB0, uv halfword ops through addiu temps (best draft: drafts/mod/b768_01E01D90.c)
 b774:01E00080	99.7% (593/595)	hard: W_S; first drift line (p.y += (a.y - r.y) / 200.0f): orig quotient in f2 (dividend), ours f1 (divisor); tried temp, *1/200, reorder (best draft: drafts/mod/b774_01E00080.c)
 c017:01E009E0	99% (218/220)	hard: c017:01E006B0's source at -O3; only the scene floor's load (lh 0x399A) takes $a0 where the original has $a2; a (void *) cast on g->v fixed the in-file func_00106DD0 float order; floor position, locals, declaration orders, prototypes, typed vs s32 parameter and the permuter do not move it (best draft: drafts/mod/c017_01E009E0.c)
 c020:01E003C0	83% (169/203)	hard: saved-register colouring only (loop counters/pointer temps); chatF tried 120 orders (best draft: drafts/mod/c020_01E003C0.c)
