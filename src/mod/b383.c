@@ -757,7 +757,164 @@ static void func_01E01F20_b383(Obj_b383_01E01F20 *o, Spr_b383_01E01F20 *s, Pkt_b
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b383", func_01E02330_b383);
+/* shape b383:01E02330 (B383_W_S), 417 insns, 1 copy: the module spawn step: scene colour red, ticks the timer; tick
+   125 a b383:01E03590 glow; ticks 80..111 step the 0x3064 frame (0..13, last in 0x3062); tick 155 the burst at joint
+   0x3048 (03DF0, 029C0, seven 03B60, three 02AE0, five 02CC0, three 02F00, 03ED0); tick 159 nine 03130 there; ticks
+   58 and 102 twenty 03330 at each of joints 0x304C/0x304E (2 lower); ticks 27..58 and 73..100 one 034A0 at each;
+   ticks 125..152 one 03640 at joint 0x3048 */
+
+typedef struct {
+    u8 pad0[0x2D0];
+    f32 px, py, pz;
+    u8 pad2DC[0x3004 - 0x2DC];
+    u8 rgba[4];
+    u8 pad3008[0x3048 - 0x3008];
+    s16 joint0;
+    u8 pad304A[2];
+    s16 joint1;
+    s16 joint2;
+    u8 pad3050[0x3062 - 0x3050];
+    s16 h3062;
+    s16 h3064;
+    u8 pad3066[2];
+    s16 t;
+} Scene_b383_01E02330;
+
+static s32 func_01E029C0_b383();
+static s32 func_01E02AE0_b383();
+static s32 func_01E02CC0_b383();
+static s32 func_01E02F00_b383();
+static s32 func_01E03130_b383();
+static s32 func_01E03330_b383();
+static s32 func_01E034A0_b383();
+static s32 func_01E03590_b383();
+static s32 func_01E03640_b383();
+static s32 func_01E03B60_b383();
+static s32 func_01E03DF0_b383();
+static s32 func_01E03ED0_b383();
+static s32 func_01E04F70_b383();
+
+static void func_01E02330_b383(Scene_b383_01E02330 *s) {
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    Vec4f v;
+    s32 i;
+
+    s->rgba[0] = 0x80;
+    s->rgba[1] = 0;
+    s->rgba[2] = 0;
+    s->rgba[3] = 0;
+    s->t++;
+    if (s->t == 125) {
+        func_01E04F70_b383(s, func_01E03590_b383, 0);
+    }
+    if (s->t >= 80 && s->t < 112) {
+        s->h3062 = s->h3064;
+        s->h3064++;
+        if (s->h3064 >= 14) {
+            s->h3064 = 0;
+        }
+    }
+    if (s->t == 155) {
+        func_001F5620(func_001F53A0(), s->joint0, &v);
+        s->px = v.x;
+        s->py = v.y;
+        s->pz = v.z;
+        func_01E04F70_b383(s, func_01E03DF0_b383, 0);
+        func_01E04F70_b383(s, func_01E029C0_b383, 0);
+        func_01E04F70_b383(s, func_01E03B60_b383, 0);
+        func_01E04F70_b383(s, func_01E03B60_b383, 0);
+        func_01E04F70_b383(s, func_01E03B60_b383, 0);
+        func_01E04F70_b383(s, func_01E03B60_b383, 0);
+        func_01E04F70_b383(s, func_01E03B60_b383, 0);
+        func_01E04F70_b383(s, func_01E03B60_b383, 0);
+        func_01E04F70_b383(s, func_01E03B60_b383, 0);
+        func_01E04F70_b383(s, func_01E02AE0_b383, 0);
+        func_01E04F70_b383(s, func_01E02AE0_b383, 0);
+        func_01E04F70_b383(s, func_01E02AE0_b383, 0);
+        s->h3062 = 0;
+        func_01E04F70_b383(s, func_01E02CC0_b383, 0);
+        func_01E04F70_b383(s, func_01E02CC0_b383, 0);
+        func_01E04F70_b383(s, func_01E02CC0_b383, 0);
+        func_01E04F70_b383(s, func_01E02CC0_b383, 0);
+        func_01E04F70_b383(s, func_01E02CC0_b383, 0);
+        s->h3062 = 0;
+        func_01E04F70_b383(s, func_01E02F00_b383, 0);
+        func_01E04F70_b383(s, func_01E02F00_b383, 0);
+        func_01E04F70_b383(s, func_01E02F00_b383, 0);
+        func_01E04F70_b383(s, func_01E03ED0_b383, 0);
+    }
+    if (s->t == 159) {
+        func_001F5620(func_001F53A0(), s->joint0, &v);
+        s->px = v.x;
+        s->py = v.y;
+        s->pz = v.z;
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+        func_01E04F70_b383(s, func_01E03130_b383, 0);
+    }
+    if (s->t == 58 || s->t == 102) {
+        func_001F5620(func_001F53A0(), s->joint1, &v);
+        s->px = v.x;
+        s->py = v.y - 2.0f;
+        s->pz = v.z;
+        for (i = 0; i < 20; i++) {
+            func_01E04F70_b383(s, func_01E03330_b383, 0);
+        }
+        func_001F5620(func_001F53A0(), s->joint2, &v);
+        s->px = v.x;
+        s->py = v.y - 2.0f;
+        s->pz = v.z;
+        for (i = 0; i < 20; i++) {
+            func_01E04F70_b383(s, func_01E03330_b383, 0);
+        }
+    }
+    if (s->t >= 27 && s->t < 59) {
+        func_001F5620(func_001F53A0(), s->joint1, &v);
+        s->px = v.x;
+        s->py = v.y;
+        s->pz = v.z;
+        for (i = 0; i < 1; i++) {
+            func_01E04F70_b383(s, func_01E034A0_b383, 0);
+        }
+        func_001F5620(func_001F53A0(), s->joint2, &v);
+        s->px = v.x;
+        s->py = v.y;
+        s->pz = v.z;
+        for (i = 0; i < 1; i++) {
+            func_01E04F70_b383(s, func_01E034A0_b383, 0);
+        }
+    }
+    if (s->t >= 73 && s->t < 101) {
+        func_001F5620(func_001F53A0(), s->joint1, &v);
+        s->px = v.x;
+        s->py = v.y;
+        s->pz = v.z;
+        for (i = 0; i < 1; i++) {
+            func_01E04F70_b383(s, func_01E034A0_b383, 0);
+        }
+        func_001F5620(func_001F53A0(), s->joint2, &v);
+        s->px = v.x;
+        s->py = v.y;
+        s->pz = v.z;
+        for (i = 0; i < 1; i++) {
+            func_01E04F70_b383(s, func_01E034A0_b383, 0);
+        }
+    }
+    if (s->t >= 125 && s->t < 153) {
+        func_001F5620(func_001F53A0(), s->joint0, &v);
+        s->px = v.x;
+        s->py = v.y;
+        s->pz = v.z;
+        func_01E04F70_b383(s, func_01E03640_b383, 0);
+    }
+}
 
 /* shape b383:01E029C0, 72 insns: a grey ring at the model point: set up once (frame 5, random angle, size 3, height 0);
    full alpha on the first frame, then down by 18 until it ends; sub-frame grows to 7; rises by its size each frame */
