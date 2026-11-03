@@ -128,7 +128,6 @@ b351:01E02E00	99.2%	an earlier try got this far
 b351:01E05A80	40%	an earlier try got this far
 b351:01E068F0	84% (157/187)	hard: float + loop-counter colouring: orig i=s1/k=s0, dy,dz,dx div order, r/base in f26/f27 and per-i offsets f23-25; ours shifted by 2 (best draft: drafts/mod/b351_01E068F0.c)
 b355:01E030D0	71%	an earlier try got this far
-b357:01E01CD0	90% (268/299)	hard: outer loop: orig jumps to the test (b; i spilled 0xA0, last 0xB0), ours guards + do-while; n/ot/pk-pointer regs s0/s2/s1 vs ours s1/s0/s2. Same family as b701:01E037D0 (packet is 0x90 with a pointer to it) (best draft: drafts/mod/b357_01E01CD0.c)
 b357:01E02180	78% (203/260)	hard: whole saved-register map shifted: orig params s3/s2/s1/s0, ids pointer s5, i s6; ours params s5..s2. Cousin b045:01E011B0 (C) is the model (best draft: drafts/mod/b357_01E02180.c)
 b357:01E03420	88% (234/267)	hard: three random angles: orig sext at rand, copies sext again into s32 loop angles after the size line, i=s2 / slot offset s3; ours sext twice early and loop regs s5/s6 (best draft: drafts/mod/b357_01E03420.c)
 b361:01E01CA0	70% (227/323)	hard: scene manager (b388/b538 form): the top `s1 = 0` var is both the tex loop counter (no sign-extend, do-while) and the s16 flash count in the run path; my s16 n adds sext + a pre-test (try first: `s32 n` + `n = (s16)(n + 1)`, see PLAYBOOK-MODULES b278) (best draft: drafts/mod/b361_01E01CA0.c)
