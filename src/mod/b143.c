@@ -759,7 +759,289 @@ static s32 func_01E01980_b143(s32 obj, Cam_b001_01E00A30 *cam, Emit_b001_01E00A3
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b143", func_01E02510_b143);
+/* shape b143:01E02510 (b143), 401 insns, 1 copy: b143 scene manager: setup (four coords, two joints, a 16-point trail
+   emitter, a 512-point falling-particle emitter, 60 spinning sprites laid on the first 60 particles), then the joints
+   followed, the trail drawn between steps 21 and 49 and faded from 34, auto-blur from 111, the drop step run; returns
+   2 at step 238 (after func_001F6580), 1 at 78, 6 in 88..237, 8 when the count runs out */
+
+typedef struct {
+    Vec4f scale;
+    Vec4f rot;
+    Vec4f pos;
+    u8 pad30[0x40];
+} Crd_b143_01E02510;
+
+typedef struct {
+    f32 x, y, z;
+    s16 pad;
+    s16 life;
+} Pt1_b143_01E02510;
+
+typedef struct {
+    void *tex;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 size;
+    f32 x, y, z;
+    s32 w1C;
+    s16 h20, h22;
+    s16 w, h;
+    s16 tu, tv, tw, th;
+    Pt1_b143_01E02510 pts[16];
+    s16 count;
+    s16 angle;
+    s16 cur;
+    s16 h136;
+    s16 h138;
+    s16 step;
+    s16 h13C;
+    s16 h13E;
+    s16 h140;
+    u8 pad142[0xE];
+} Em1_b143_01E02510;
+
+typedef struct {
+    f32 x, y, z;
+    u8 a;
+    u8 frame;
+    s16 t;
+} Pt2_b143_01E02510;
+
+typedef struct {
+    void *tex;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 size;
+    u8 pad10[0x10];
+    s32 rot[4];
+    s16 u, v, w, h, u0, v0, tw, th;
+    Pt2_b143_01E02510 *pts;
+    Vec4f *rots;
+    s32 w48;
+    f32 radius;
+    f32 grow;
+    f32 amp;
+    s16 freq;
+    s16 count;
+    s16 nframes;
+    s16 rate;
+} Em2_b143_01E02510;
+
+typedef struct {
+    f32 x, y, z;
+} Pt3_b143_01E02510;
+
+typedef struct {
+    void *tex;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 size;
+    s32 spin[4];
+    s16 u, v, w, h;
+    u8 pad28[8];
+    s32 rot[60][4];
+    Pt3_b143_01E02510 pts[60];
+} Em3_b143_01E02510;
+
+typedef struct {
+    Crd_b143_01E02510 crd;
+    Crd_b143_01E02510 crd2;
+    Crd_b143_01E02510 crd3;
+    Em2_b143_01E02510 em2;
+    Pt2_b143_01E02510 pts2[512];
+    u8 pad21B0[0x3280 - 0x21B0];
+    Em3_b143_01E02510 em3;
+    Crd_b143_01E02510 cam;
+    Em1_b143_01E02510 em1;
+    s32 count;
+    s32 step;
+    s32 id;
+    u32 flags;
+    s32 jA;
+    s32 jB;
+    f32 f3B18;
+    u8 b3B1C;
+    u8 pad3B1D[3];
+} Scene_b143_01E02510;
+
+static s32 func_01E02510_b143(s32 arg0, s32 code) {
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern void func_001039A0(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern f32 func_001F5850(void);
+    extern void func_001F6580(s32, s32);
+    extern void func_00103260(void *, s32);
+    extern void func_00103290(void *, s32);
+    extern void func_00103DB0(void *, void *, void *);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern s32 func_0019A5C8();
+    extern void b143_01E02B60();
+    Scene_b143_01E02510 *g = (Scene_b143_01E02510 *)arg0;
+    s32 ot;
+    Vec4f t[2];
+    Vec4f sc;
+    s32 tex[4];
+    s32 i;
+    s32 r;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x3B20);
+        func_00103890(&g->crd);
+        func_00103890(&g->crd2);
+        func_00103890(&g->crd3);
+        func_00103890(&g->cam);
+        g->jA = func_001F5560(func_001F53A0(), 0x23, 1);
+        g->jB = func_001F5560(func_001F53A0(), 0x1A, 0);
+        g->count = 0xFA;
+        g->step = 1;
+        g->id = code;
+        g->f3B18 = func_001F5850();
+        g->b3B1C = 0x80;
+        g->flags = 0;
+        func_00103260(tex, 0xF);
+        g->em1.tex = (void *)tex[0];
+        g->em1.flags = 0x80083;
+        g->em1.x = 0.0f;
+        g->em1.y = 0.0f;
+        g->em1.z = 0.0f;
+        g->em1.w1C = 0;
+        g->em1.tu = 0x80;
+        g->em1.tv = 0xC0;
+        g->em1.w = 0x20;
+        g->em1.h = 0x20;
+        g->em1.tw = 0x80;
+        g->em1.th = 0x40;
+        g->em1.size = 5.0f;
+        g->em1.count = 0x10;
+        g->em1.step = 2;
+        g->em1.h13C = 1;
+        g->em1.h140 = 8;
+        g->em1.h136 = 0;
+        g->em1.h138 = 0;
+        g->em1.r = 0x70;
+        g->em1.g = 0xA0;
+        g->em1.b = 0xA0;
+        g->em1.a = 0x20;
+        for (i = 0; i < 16; i++) {
+            g->em1.pts[i].x = g->em1.x + (func_0019A5C8() % 6 - 3);
+            g->em1.pts[i].y = g->em1.y + (func_0019A5C8() % 6 - 3);
+            g->em1.pts[i].z = g->em1.z;
+            g->em1.pts[i].life = -g->em1.step * i;
+            g->em1.pts[i].pad = 0;
+            g->em1.h13E = g->em1.h140 - 1;
+        }
+        func_00103290(tex, 0);
+        g->em2.tex = (void *)tex[0];
+        g->em2.flags = 0x58000003;
+        g->em2.r = 0x70;
+        g->em2.g = 0xA0;
+        g->em2.b = 0xA0;
+        g->em2.a = 0x40;
+        g->em2.size = 30.0f;
+        g->em2.rot[0] = 0;
+        g->em2.rot[1] = 0x1000;
+        g->em2.rot[2] = 0;
+        g->em2.u = 0;
+        g->em2.v = 0;
+        g->em2.w = 0x20;
+        g->em2.h = 0x20;
+        g->em2.u0 = 0;
+        g->em2.v0 = 0;
+        g->em2.tw = 0x80;
+        g->em2.th = 0x40;
+        g->em2.pts = g->pts2;
+        g->em2.rots = NULL;
+        g->em2.w48 = 0;
+        g->em2.radius = 2.0f;
+        g->em2.grow = 10.0f;
+        g->em2.amp = 50.0f;
+        g->em2.freq = 0x400;
+        g->em2.count = 0x200;
+        g->em2.nframes = 8;
+        g->em2.rate = 0x28;
+        for (i = 0; i < g->em2.count; i++) {
+            r = func_0019A5C8() % 0x10000;
+            g->pts2[i].y = 0.1f * -(f32)(func_0019A5C8() % 2000);
+            g->pts2[i].z = g->em2.radius * func_0020B480(r);
+            g->pts2[i].x = g->em2.radius * func_0020B550(r);
+            g->pts2[i].t = 0;
+            g->pts2[i].a = 0;
+            g->pts2[i].frame = func_0019A5C8() % 8;
+        }
+        func_00103290(tex, 1);
+        g->em3.tex = (void *)tex[0];
+        g->em3.flags = 0x40001001;
+        g->em3.size = 1.0f;
+        g->em3.u = 0;
+        g->em3.v = 0;
+        g->em3.w = 0x40;
+        g->em3.h = 0x80;
+        g->em3.r = 0x80;
+        g->em3.g = 0x80;
+        g->em3.b = 0x80;
+        g->em3.a = 0;
+        g->em3.spin[0] = 0;
+        g->em3.spin[1] = 0x400;
+        g->em3.spin[2] = 0;
+        for (i = 0; i < 60; i++) {
+            func_0019A5C8();
+            g->em3.pts[i].y = g->pts2[i].y;
+            g->em3.pts[i].z = g->pts2[i].z;
+            g->em3.pts[i].x = g->pts2[i].x;
+            g->em3.rot[i][0] = func_0019A5C8() % 0x10000;
+            g->em3.rot[i][1] = func_0019A5C8() % 0x10000;
+            g->em3.rot[i][2] = func_0019A5C8() % 0x10000;
+        }
+        return 0;
+    }
+    func_001F5620(func_001F53A0(), g->jA, &g->cam.pos);
+    func_001F5620(func_001F53A0(), g->jA, &g->crd3.pos);
+    func_001F5F90(func_001F5380(), &t[0]);
+    func_001F5620(func_001F53A0(), g->jA, &t[1]);
+    func_00103DB0(&t[1], &t[0], &g->crd3.rot);
+    func_001038D0(&g->crd);
+    func_001039A0(&g->crd2);
+    func_001039A0(&g->cam);
+    func_001038D0(&g->crd3);
+    if (g->step >= 0x6F) {
+        func_01E00120_b143();
+    }
+    if (g->step >= 0x15 && g->step <= 0x31) {
+        sc.x = sc.y = sc.z = 1.01f;
+        func_01E01980_b143(ot, (Cam_b001_01E00A30 *)&g->cam, (Emit_b001_01E00A30 *)&g->em1,
+                           (Vec_b001_01E00A30 *)&sc);
+        if (g->step >= 0x22) {
+            func_00103470(&g->em1.a, 0, 2);
+        }
+    }
+    b143_01E02B60(g, ot);
+    g->step++;
+    g->count--;
+    if (g->step == 0xEE) {
+        func_001F6580(func_001F5380(), 0);
+        return 2;
+    }
+    if (g->step == 0x4E) {
+        return 1;
+    }
+    if (g->step >= 0x58 && g->step <= 0xED) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b143:01E02B60, 228 insns: b169:01E05490's falling-ash ring at g+0xE0 with a second camera block
    (g+0x2274) moved alongside: while flag 0x1F is set both go towards -30 (else +30), the scene's top flag bit
