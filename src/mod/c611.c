@@ -395,4 +395,129 @@ static s32 func_01E00A80_c611(s32 obj, Slash_c611_01E00A80 *spr, Cam_c611_01E00A
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c611", func_01E01050_c611);
+/* shape c611:01E01050 (c611), 207 insns, 1 copy: the c611 scene manager: on a code (>= 0) clears the scene (0x2A0),
+   sets up the slash (texture 15, rect 0x8E,0 0x22x0x40, corners = 20 x the module table, z turn -0x3000), a 256-entry
+   random wave table and the wave cloud (rect 0xB0,0x40 32x32, size 3, amp 0.1), a 60-tick timer; else flickers both
+   colours randomly, from tick 5 draws the flash, the wave cloud and fades them, draws the slash, returns 8 when the
+   timer runs out */
+
+typedef struct Tbl_c611_01E01050 {
+    Vec4f v[4];
+} Tbl_c611_01E01050;
+
+typedef struct Sl_c611_01E01050 {
+    void *texture;
+    s32 flags;
+    Src_b000_01E00100 color;
+    f32 scale;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    Vec4f p[4];
+    s32 rot[4];
+} Sl_c611_01E01050;
+
+typedef struct Scene_c611_01E01050 {
+    u8 cam[0x70];
+    Wave_b025_01E016F0 w;
+    f32 cam2[4];
+    u8 padB0[0x60];
+    Sl_c611_01E01050 sl;
+    Src_b000_01E00400 col;
+    s32 flags;
+    s32 timer;
+    s32 code;
+    s32 t;
+    s8 tab[0x100];
+    u8 pad294[0xC];
+} Scene_c611_01E01050;
+
+static s32 func_01E01050_c611(s32 arg0, s32 code) {
+    Scene_c611_01E01050 *g = (Scene_c611_01E01050 *)arg0;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_00103260(void *, s32);
+    extern void func_00103920(void *, f32, f32);
+    extern s32 func_00103470(void *, s32, s32);
+    extern Tbl_c611_01E01050 D_01E01400_c611;
+    s32 tex __attribute__((aligned(16)));
+    Tbl_c611_01E01050 tbl;
+    s32 ot;
+    s32 i;
+    void *texp;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x2A0);
+        func_00103890(g);
+        func_00103890(g->cam2);
+        g->flags = 0;
+        g->timer = 60;
+        g->code = code;
+        g->t = 0;
+        g->col.b = g->col.g = g->col.r = 0x80;
+        g->col.a = 0xFF;
+        func_00103260(&tex, 15);
+        g->sl.flags = 0x80001;
+        g->sl.u = 0x8E;
+        g->sl.v = 0;
+        g->sl.w = 0x22;
+        g->sl.h = 0x40;
+        g->sl.color.g = g->sl.color.r = 0x80;
+        g->sl.color.b = 0xE0;
+        g->sl.color.a = 0x80;
+        texp = (void *)tex;
+        tbl = D_01E01400_c611;
+        g->sl.scale = 20.0f;
+        g->sl.texture = texp;
+        for (i = 0; i < 4; i++) {
+            g->sl.p[i].x = g->sl.scale * tbl.v[i].x;
+            g->sl.p[i].y = g->sl.scale * tbl.v[i].y;
+            g->sl.p[i].z = g->sl.scale * tbl.v[i].z;
+        }
+        g->sl.rot[2] = -0x2000;
+        g->sl.rot[2] = -0x3000;
+        for (i = 0; i < 0x100; i++) {
+            g->tab[i] = func_0019A5C8() >> 4;
+        }
+        g->w.texture = (void *)tex;
+        g->w.tab = g->tab;
+        g->w.flags = 0x20080000;
+        g->w.u = 0xB0;
+        g->w.v = 0x40;
+        g->w.w = 0x20;
+        g->w.h = 0x20;
+        g->w.bA = 0x80;
+        g->w.b9 = 0x80;
+        g->w.b8 = 0x80;
+        g->w.bB = 0x80;
+        g->w.size = 3.0f;
+        g->w.amp = 0.1f;
+        g->w.frame = 0;
+        g->w.count = 0x100;
+        g->w.phase = i + 7;
+        g->cam2[0] = 2.0f;
+        g->cam2[2] = 1.0f;
+        g->cam2[1] = 1.0f;
+        return 0;
+    }
+    func_00103920(g, 0.0f, 0.0f);
+    func_00103920(g->cam2, 80.0f, 0.0f);
+    g->sl.color.r = g->w.bA = func_0019A5C8() % 255;
+    g->sl.color.g = g->w.b9 = func_0019A5C8() % 255;
+    g->sl.color.b = g->w.b8 = func_0019A5C8() % 255;
+    if (g->t >= 5) {
+        func_01E00120_c611(ot, &g->col);
+        func_00103470(&g->col.a, 0, 8);
+        func_00103470(&g->sl.color.a, 0, 8);
+        func_01E00280_c611(ot, &g->w, (Cam_b025_01E016F0 *)g);
+        func_00103470(&g->w.bB, 0, 8);
+    }
+    func_01E00A80_c611(ot, (Slash_c611_01E00A80 *)&g->sl, (Cam_c611_01E00A80 *)g->cam2);
+    g->t++;
+    if (--g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
+
