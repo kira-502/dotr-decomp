@@ -611,7 +611,144 @@ static void func_01E01810_b582(Obj_b233_01E01BC0 *o, Fx_b233_01E01BC0 *fx, Pkt_b
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b582", func_01E01AB0_b582);
+/* shape b582:01E01AB0 (B582_W_S), 401 insns, 1 copy: B582_W_S, the effect scene step: counts the frame (0x35F4); at
+   98 six smoke puffs 0x1E02D30, 0x1E02F20, 0x1E030B0, the scene point from joint 0x35E4 and four 0x1E03360 at angles
+   135/45/90/0; at 130 0x1E02210 and 0x1E02550; on 130..305 seven and two 0x1E02100 sparks around the two units, every
+   tenth frame picks a random joint pair, else two 0x1E02300 at those joints; then the step from the camera to joint
+   0x35E4 over 100 frames */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x3560 - 0x260];
+    Vec4f d;
+    u8 pad3570[0x35B4 - 0x3570];
+    u8 col[4];
+    u8 pad35B8[0x35DC - 0x35B8];
+    s16 j35DC;
+    u8 pad35DE[0x35E4 - 0x35DE];
+    s16 j35E4;
+    u8 pad35E6[0x35EA - 0x35E6];
+    s16 j35EA;
+    s16 h35EC;
+    u8 pad35EE[2];
+    s16 h35F0;
+    u8 pad35F2[2];
+    s16 t;
+} Scene_b582_01E01AB0;
+
+static void func_01E01AB0_b582(Scene_b582_01E01AB0 *g) {
+    extern void b582_01E02100();
+    extern void b582_01E02210();
+    extern void b582_01E02300();
+    extern void b582_01E02550();
+    extern void b582_01E02D30();
+    extern void b582_01E02F20();
+    extern void b582_01E030B0();
+    extern void b582_01E03360();
+    extern void b582_01E04440();
+    extern void b582_01E04690();
+    extern Vec4f *func_001F9D30(s32);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F54E0(s32);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    s32 i;
+    Vec4f *cam;
+    Vec4f v;
+    Vec4f w;
+    f32 *py;
+    f32 *pz;
+    s32 n;
+
+    cam = func_001F9D30(0);
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    if (g->t == 98) {
+        g->h35F0 = 0;
+        b582_01E04690(g, b582_01E02D30, 0);
+        b582_01E04690(g, b582_01E02D30, 0);
+        b582_01E04690(g, b582_01E02D30, 0);
+        b582_01E04690(g, b582_01E02D30, 0);
+        b582_01E04690(g, b582_01E02D30, 0);
+        b582_01E04690(g, b582_01E02D30, 0);
+        b582_01E04690(g, b582_01E02F20, 0);
+        b582_01E04690(g, b582_01E030B0, 0);
+        func_001F5620(func_001F53A0(), g->j35E4, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->h35F0 = 1;
+        g->h35EC = 0x87;
+        b582_01E04690(g, b582_01E03360, 0);
+        g->h35EC = 0x2D;
+        b582_01E04690(g, b582_01E03360, 0);
+        g->h35EC = 0x5A;
+        b582_01E04690(g, b582_01E03360, 0);
+        g->h35EC = 0;
+        b582_01E04690(g, b582_01E03360, 0);
+    }
+    if (g->t == 130) {
+        b582_01E04690(g, b582_01E02210, 0);
+    }
+    if (g->t == 130) {
+        b582_01E04690(g, b582_01E02550, 0);
+    }
+    if (g->t >= 130 && g->t < 306) {
+        func_001F5F90(func_001F5380(), &v);
+        for (i = 0; i < 7; i++) {
+            g->pos.x = v.x + func_0019A5C8() % 250 - 125.0f;
+            g->pos.y = 150.0f + v.y + func_0019A5C8() % 100;
+            g->pos.z = v.z + func_0019A5C8() % 250 - 125.0f;
+            b582_01E04440(g, b582_01E02100, 0);
+        }
+    }
+    if (g->t >= 130 && g->t < 306) {
+        func_001F5F90(func_001F53A0(), &v);
+        for (i = 0; i < 2; i++) {
+            g->pos.x = v.x + func_0019A5C8() % 150 - 75.0f;
+            g->pos.y = 150.0f + v.y + func_0019A5C8() % 100;
+            g->pos.z = v.z + func_0019A5C8() % 150 - 75.0f;
+            b582_01E04440(g, b582_01E02100, 0);
+        }
+    }
+    if (g->t >= 130 && g->t < 306) {
+        if (g->t % 10 == 1) {
+            n = func_001F54E0(func_001F5380());
+            n = func_0019A5C8() % n;
+            if (n == 0) {
+                n++;
+            }
+            g->j35EA = func_001F5560(func_001F5380(), n, 1);
+            g->j35DC = func_001F5560(func_001F53A0(), 0x3D, 1);
+        } else {
+            func_001F5620(func_001F5380(), g->j35EA, &v);
+            py = &v.y;
+            pz = &v.z;
+            g->pos.x = v.x;
+            g->pos.y = *py;
+            g->pos.z = *pz;
+            g->h35F0 = 0;
+            b582_01E04690(g, b582_01E02300, 0);
+            func_001F5620(func_001F53A0(), g->j35DC, &v);
+            g->pos.x = v.x + func_0019A5C8() % 18 - 6.0f;
+            g->pos.y = *py + func_0019A5C8() % 18 - 6.0f;
+            g->pos.z = *pz + func_0019A5C8() % 18 - 6.0f;
+            g->h35F0 = 1;
+            b582_01E04690(g, b582_01E02300, 0);
+        }
+    }
+    func_001F5620(func_001F53A0(), g->j35E4, &w);
+    w.y += 2.0f;
+    g->d.x = (w.x - cam->x) / 100.0f;
+    g->d.y = (w.y - cam->y) / 100.0f;
+    g->d.z = (w.z - cam->z) / 100.0f;
+}
 
 /* shape b582:01E02100, 66 insns: a falling spark: above height 20 its 0x26 grows by 0x19 (below 0x32), else shrinks
    by 0x14 to 0; it falls 30 a tick; below 0 the scene takes its position and on even random rolls (scene step
