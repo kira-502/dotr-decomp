@@ -2365,4 +2365,165 @@ static s32 func_01E06200_b357(Pool_b357_01E06200 *o, s32 a, s32 b) {
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b357", func_01E06330_b357);
+/* shape b357:01E06330 (B357PAINT_RAIN9), 416 insns, 1 copy: b357:01E01CD0 ribbon through the object points jittered
+   by rand() % 20 - 10 in x and z, two spline quads per segment (module curve), width shrinking by 0.1 a quad, world
+   matrix at the object position turned by the camera plus its 0x10/0x14/0x18 and the offset z */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b357_01E06330;
+
+typedef struct {
+    Rgbaq_b357_01E06330 c;
+    f32 s, t;
+    u64 xyz;
+} Vtx_b357_01E06330;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b357_01E06330 v[4];
+    u8 tail[0x20];
+} Pkt_b357_01E06330;
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_b357_01E06330;
+
+typedef struct {
+    u8 pad0[0x88];
+    void *texture;
+    u8 pad8C[8];
+    u8 rect[0x2A];
+    s16 mode;
+} Self_b357_01E06330;
+
+typedef struct {
+    s16 x, y, z;
+    s16 n;
+    u8 pad8[8];
+    s32 rx, ry, rz;
+    u8 pad1C[0xC];
+    Col_b357_01E06330 c0;
+    Col_b357_01E06330 c1;
+    u8 pad30[8];
+    s16 w;
+} Obj_b357_01E06330;
+
+static void func_01E06330_b357(Self_b357_01E06330 *self, Obj_b357_01E06330 *obj, Vec_b018_01E00EE0 *pt, Vec4i off) {
+    extern void func_00109270(void *, s32, s32);
+    extern Rgbaq_b357_01E06330 func_00107740(void *);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00108CE0(void *, f32, f32);
+    extern void func_00106B50(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    s16 n;
+    s32 j;
+    f32 d[4];
+    Vec4f pos;
+    f32 m[16];
+    s32 rot[4];
+    Vec_b018_01E00EE0 pts[10];
+    Vec4f p[4];
+    Vec4f q[4];
+    Vec_b018_01E00EE0 a[4];
+    Vec_b018_01E00EE0 a4[4];
+    Pkt_b357_01E06330 pk __attribute__((aligned(8)));
+    Col_b357_01E06330 c0;
+    Col_b357_01E06330 c1;
+    Pkt_b357_01E06330 *pp;
+    s32 ot;
+    s32 i;
+    s32 last;
+    f32 t;
+    f32 w;
+
+    ot = (s32)func_00207500();
+    n = obj->n;
+    pp = &pk;
+    func_00109270(pp, 0, 0);
+    pp->v[0].c = func_00107740(&obj->c0);
+    pp->v[1].c = func_00107740(&obj->c1);
+    pp->v[2].c = func_00107740(&obj->c0);
+    pp->v[3].c = func_00107740(&obj->c1);
+    func_00108500(pp, self->rect, self->mode);
+    func_00208700(pp, self->texture, 1);
+    c0 = obj->c0;
+    c1 = obj->c1;
+    pos.x = obj->x;
+    pos.y = obj->y;
+    pos.z = obj->z;
+    func_00205C40((s32)rot);
+    for (i = 0; i < n; i++) {
+        pts[i].x = pt[i].x;
+        pts[i].y = pt[i].y;
+        pts[i].z = pt[i].z;
+    }
+    for (i = 0; i < n; i++) {
+        pts[i].x += func_0019A5C8() % 20 - 10;
+        pts[i].z += func_0019A5C8() % 20 - 10;
+    }
+    a4[0] = pt[0];
+    a4[1] = pt[0];
+    a4[2] = pts[1];
+    a4[3] = pts[2];
+    w = obj->w;
+    w /= 10.0f;
+    rot[0] += obj->rx;
+    rot[1] += obj->ry;
+    rot[2] += obj->rz + off.z;
+    func_00108EF0(m, 0, rot, &pos);
+    i = 0;
+    last = n - 1;
+    goto test;
+loop:
+    {
+        pp->v[0].c = func_00107740(&c0);
+        pp->v[1].c = func_00107740(&c0);
+        c0.a -= (u8)(obj->c0.a / last);
+        c1.a -= (u8)(obj->c1.a / last);
+        pp->v[2].c = func_00107740(&c0);
+        pp->v[3].c = func_00107740(&c0);
+        t = 0.0f;
+        for (j = 0; j < 2; j++) {
+            func_00108CE0(q, w, 0.0f);
+            w -= 0.1f;
+            if (i != 0) {
+                a[0] = func_01E008D0_b357(&pts[i - 1], 0, t);
+                t += 0.5f;
+                a[1] = func_01E008D0_b357(&pts[i - 1], 0, t);
+            } else {
+                a[0] = func_01E008D0_b357(a4, 0, t);
+                t += 0.5f;
+                a[1] = func_01E008D0_b357(a4, 0, t);
+            }
+            p[0].x = a[0].x;
+            p[0].y = a[0].y;
+            p[0].z = a[0].z;
+            p[1].x = a[0].x;
+            p[1].y = a[0].y;
+            p[1].z = a[0].z;
+            p[2].x = a[1].x;
+            p[2].y = a[1].y;
+            p[2].z = a[1].z;
+            p[3].x = a[1].x;
+            p[3].y = a[1].y;
+            p[3].z = a[1].z;
+            func_00106B50(&p[0], &q[0]);
+            func_00106B50(&p[1], &q[1]);
+            func_00106B50(&p[2], &q[2]);
+            func_00106B50(&p[3], &q[3]);
+            if (func_00205630(p, 0x70000000, m, pp, d) != 0) {
+                func_002075F0(pp, ot, (u32)d[0]);
+            }
+        }
+        i++;
+    }
+test:
+    if (i < last) goto loop;
+}
