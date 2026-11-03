@@ -51,7 +51,6 @@ b062:01E042E0	83%	an earlier try got this far
 b064:01E030D0	71%	an earlier try got this far
 b070:01E00E80	99.2%	an earlier try got this far
 b070:01E034D0	95%	an earlier try got this far
-b080:01E010C0	47% (130/278)	hard: first draft only: spilled params/counters on stack, frame 0x220 vs 0x200; needs the real stack layout first (best draft: drafts/mod/b080_01E010C0.c)
 b081:01E05C10	95%	an earlier try got this far
 b084:01E03750	73%	an earlier try got this far
 b097:01E00440	99.7%	an earlier try got this far
