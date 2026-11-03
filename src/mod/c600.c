@@ -94,7 +94,58 @@ static void func_01E00100_c600(Vtx_b000_01E00100 *v, Src_b000_01E00100 *s) {
     v[3].c.q = 1.0f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c600", func_01E001A0_c600);
+typedef struct Cam_c536_01E00120 {
+    f32 pos[3];
+    u8 padC[4];
+    s32 a[3];
+    u8 pad1C[4];
+    s32 b[3];
+    u8 pad2C[4];
+    f32 f30;
+    f32 f34;
+    u8 pad38[0x10];
+    s32 steps;
+} Cam_c536_01E00120;
+
+static s32 func_01E001A0_c600(Cam_c536_01E00120 *c, Cam_c536_01E00120 *t) {
+    f32 k;
+    f32 px;
+    f32 py;
+    f32 pz;
+    s32 a0;
+    s32 a1;
+    s32 a2;
+    s32 b1;
+    s32 b2;
+
+    if (t->steps != 0) {
+        k = 1.0f / t->steps;
+        py = k * (t->f30 - c->f30);
+        pz = k * (t->f34 - c->f34);
+        c->f30 += py;
+        c->f34 += pz;
+        a0 = k * (t->a[0] - c->a[0]);
+        a1 = k * (t->a[1] - c->a[1]);
+        a2 = k * (t->a[2] - c->a[2]);
+        c->a[0] += a0;
+        c->a[1] += a1;
+        c->a[2] += a2;
+        a2 = k * (t->b[0] - c->b[0]);
+        a0 = k * (t->b[1] - c->b[1]);
+        a1 = k * (t->b[2] - c->b[2]);
+        c->b[0] += a2;
+        c->b[1] += a0;
+        c->b[2] += a1;
+        px = k * (t->pos[0] - c->pos[0]);
+        py = k * (t->pos[1] - c->pos[1]);
+        pz = k * (t->pos[2] - c->pos[2]);
+        c->pos[0] += px;
+        c->pos[1] += py;
+        c->pos[2] += pz;
+    }
+    t->steps--;
+    return t->steps;
+}
 
 /* shape c536:01E00330: module copy of main-program func_0027F180 (rules/ta_misc.c): reset every vertex colour to white with the given alpha, then refresh the model. */
 
