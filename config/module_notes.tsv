@@ -101,7 +101,6 @@ b199:01E00E10	40%	an earlier try got this far
 b200:01E01690	99.7%	an earlier try got this far
 b200:01E02AD0	40%	an earlier try got this far
 b201:01E00E10	40%	an earlier try got this far
-b205:01E02D10	62%	hard: RAIN family again (both params spilled, pk in s1, n s16->int spill, loops jump to bottom test): see b018:01E01760, b130:01E01E60 (best draft: drafts/mod/b205_01E02D10.c)
 b215:01E01A70	95% (253/267)	hard: grid layout: `(2*f48)*20.0f` comes out const-first (mul.s f2,f3,f2) in ours; distance vector wants two hoisted pointers (&d.x, &d.z) where ours has one base +8 (best draft: drafts/mod/b215_01E01A70.c)
 b215:01E02660	80% (259/322)	hard: ring + layout match; left: the four screen-UV blocks (u/v from packet x/y, clamps) schedule differently (orig keeps -16.0 in f1 and 0.0 in f0, both subtractions first) (best draft: drafts/mod/b215_01E02660.c)
 b215:01E03AC0		hard: b215:01E04010's grid-draw sibling (PAINT_RAIN20, 337 insns, f20-f25 + fp packet); do both together in the hard pass
