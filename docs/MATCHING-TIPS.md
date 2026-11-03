@@ -374,3 +374,7 @@ there is a source form that gives the original.
   callee returns a struct; declare `typedef struct { f32 m[16]; } Mat;` and write `m[k] = func_00108EF0(...);`. (b056:01E03B40)
 - **A second `if (p)` with a redundant `beqz` on the same register at the tail of the first branch:** put the test
   inside the first branch, not after the if/else. (b056:01E03B40)
+- **Screen UVs: `div.s` writes into the int's `cvt` register and the divisor and second value swap FPRs:** set both values
+  first, then divide each in place (`u = ix; v = iy; u /= -16.0f; v /= -16.0f;`). (b413:01E037E0)
+- **An integer address chain folded into one register in yours:** read the packet through `g->pk->...` at every use, not a
+  `pk` local. (b413:01E037E0)
