@@ -216,7 +216,6 @@ c051:01E00590	65% (100/155)	hard: in-file; s-register colouring of params (orig 
 c056:01E00360	dk try 100%	hard: REJECTED by the full build
 c056:01E04CF0	97%	an earlier try got this far
 c059:01E03610	273/313	hard: swing/depth s16 must convert before each func_00108030 call into f21/f20 (orig reloads the sheet index after the cast); a float temp hoists too early (best draft: drafts/mod/c059_01E03610.c)
-c059:01E03B00	dk try 100%	hard: REJECTED by the full build (module c059 stops matching; c059 did this before, 893a8fe0) (best draft: drafts/mod/c059_01E03B00.c)
 c059:01E03D70	dk try 100%	hard: REJECTED by the full build (c059 again)
 c061:01E01100	70% (174/249)	hard: s-register colouring only; probe search: no single/pair vreg move reaches target (o s1, s s0, flags s5, p s4); needs a different web structure (best draft: drafts/mod/c061_01E01100.c)
 c061:01E03D80	76%	an earlier try got this far
