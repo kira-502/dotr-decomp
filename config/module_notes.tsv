@@ -182,7 +182,6 @@ b572:01E01400	92%	an earlier try got this far
 b576:01E02460	77%	an earlier try got this far
 b582:01E04E60	90%	an earlier try got this far
 b583:01E011B0	99.2%	an earlier try got this far
-b589:01E03470		hard: not started in bulk: 293 insns, heavy spills, m2c fails, no matched KPOINT_RAIN_2 sibling (9 copies elsewhere, all asm)
 b596:01E01A80	99.2%	an earlier try got this far
 b598:01E003A0	99.2%	an earlier try got this far
 b600:01E01990	89%	hard: first pass only (stop order): frame 0x10 big (stack locals), rest unchecked (best draft: drafts/mod/b600_01E01990.c)

@@ -1532,4 +1532,147 @@ static s32 func_01E03320_b589(Scene_b589_01E03320 *g, s32 a1, s32 a2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b589", func_01E03470_b589);
+/* shape b589:01E03470 (B589KPOINT_RAIN_2), 293 insns, 1 copy: rain streaks: per segment one angle x 4 quads nudged
+   apart by a spread that shrinks by 0.09 a segment, alpha dropping by alpha / count down to 0, queued at their depth
+   */
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_b589_01E03470;
+
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 padC[0xCC];
+    u8 trig[4];
+} Own_b589_01E03470;
+
+typedef struct {
+    u8 pad0[6];
+    s16 n;
+    u8 pad8[0x40];
+    f32 d;
+    u8 pad4C[0x14];
+    Col_b589_01E03470 col;
+} Fx_b589_01E03470;
+
+typedef struct {
+    u32 tag[2];
+    u8 pk[0x94];
+} Buf_b589_01E03470;
+
+static void func_01E03470_b589(Own_b589_01E03470 *g, Fx_b589_01E03470 *o, Vec4f *pts, Vec4f *base) {
+    extern void func_001092E0();
+    extern void func_001094F0();
+    extern void func_00107990();
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00107070(void *, s32, f32);
+    extern s32 func_00205630();
+    extern void func_002075F0();
+    extern s32 func_00207500(void);
+    f32 depth[4];
+    Vec4f q[4];
+    Vec4f v[2];
+    Buf_b589_01E03470 buf;
+    Col_b589_01E03470 col;
+    s16 n;
+    s32 j;
+    u8 *p;
+    s32 ot;
+    s32 i;
+    s32 k;
+    s16 da;
+    s16 c;
+    s16 a;
+    s32 ang;
+    f32 d;
+    f32 r;
+    f32 z;
+    f32 w;
+    f32 y;
+    f32 h;
+
+    ot = func_00207500();
+    n = o->n;
+    p = buf.pk;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    col = o->col;
+    v[0] = *pts;
+    v[1] = *base;
+    v[0].x -= v[1].x;
+    v[0].y -= v[1].y;
+    v[0].z -= v[1].z;
+    v[0].x = g->x;
+    v[0].y = -v[0].y;
+    v[0].z = g->z;
+    i = 0;
+    h = v[0].z;
+    y = v[0].y;
+    d = o->d;
+    w = 0.6f * h;
+    da = o->col.a;
+    da /= n;
+    goto test;
+loop:
+    {
+        a = 0;
+        func_00107990(p, &col, 1);
+        c = col.a;
+        if (c - da > 0) {
+            c -= da;
+            col.a = c;
+        } else {
+            col.a = 0;
+        }
+        func_00107990(p, &col, 2);
+        for (k = 9, ang = 0; k < 10; k++, ang += 10) {
+            r = v[0].x * func_00108030(g->trig, ang, 0);
+            z = h * func_00108030(g->trig, ang, 1) - w;
+            for (j = 0; j < 4; j++) {
+                q[0].x = pts->x;
+                q[0].y = pts->y;
+                q[0].z = pts->z;
+                q[1].x = pts->x;
+                q[1].y = pts->y;
+                q[1].z = pts->z;
+                q[2].x = pts[1].x;
+                q[2].y = pts[1].y;
+                q[2].z = pts[1].z;
+                q[3].x = pts[1].x;
+                q[3].y = pts[1].y;
+                q[3].z = pts[1].z;
+                func_00107070(q, 0, r);
+                func_00107070(q, 2, z);
+                func_00107070(q, 1, y);
+                if (j == 0) {
+                    q[0].z += d;
+                    q[2].z += d;
+                } else if (j == 1) {
+                    q[0].z -= d;
+                    q[2].z -= d;
+                } else if (j == 2) {
+                    q[0].x += d;
+                    q[2].x += d;
+                } else if (j == 3) {
+                    q[0].x -= d;
+                    q[2].x -= d;
+                }
+                if (func_00205630(q, 0x70000000, 0, p, depth)) {
+                    func_002075F0(p, ot, (u32)depth[0]);
+                }
+                a += 30;
+            }
+        }
+        d -= 0.09f;
+        if (d < 0.0f) {
+            d = 0.0f;
+        }
+        pts++;
+        i++;
+    }
+test:
+    if (i < n - 1) goto loop;
+}
+
