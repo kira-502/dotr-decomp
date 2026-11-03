@@ -347,3 +347,9 @@ there is a source form that gives the original.
   `a = o->ang0; a = a - 8;` (permuter). (c022:01E010E0)
 - **The b244 constant-order effect can land on the new function itself:** its right form depends on whether another
   new function earlier in the file is in; check both together (`work/bothtry_c059.sh` is an example). (c059:01E03D70)
+- **A field value loaded before a struct-copy table load and stored after it:** read it into a pointer local declared
+  last, before the copy. (c611:01E01050)
+- **Link-name externs for later siblings can crash mwcc in the full build:** forward `static` declarations build and
+  match there. (b117:01E00CB0)
+- **At -O3, a `&v.y` address set inside the loop where the original hoists it differently:** `#pragma
+  opt_loop_invariants off`. (b117:01E00CB0)
