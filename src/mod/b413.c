@@ -1384,7 +1384,151 @@ static s32 func_01E03610_b413(Mgr_b413_01E03610 *m, Obj_b413_01E03610 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b413", func_01E037E0_b413);
+/* shape b413:01E037E0 (B413_OBJ_MOVE_203_1), 418 insns, 1 copy: c056:01E02BE0 ring as a wall: 36 quads of 10 degrees
+   at radius 0x48 (height 0x34 to 0), at the object position; each sent quad gets screen texture coordinates from its
+   corners, clamped to 640 x 448 */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b413_01E037E0;
+
+typedef struct {
+    Rgbaq_b413_01E037E0 c;
+    f32 s, t;
+    u16 x, y;
+    u32 z;
+} Vtx_b413_01E037E0;
+
+typedef struct {
+    u8 pad0[0x10];
+    Vtx_b413_01E037E0 v[4];
+} Pkt_b413_01E037E0;
+
+typedef struct {
+    u8 pad0[0xA];
+    s16 sx;
+    u8 padC[4];
+    f32 x, y, z;
+    u8 pad1C[0x34 - 0x1C];
+    f32 z0;
+    u8 pad38[0x48 - 0x38];
+    f32 r;
+    u8 pad4C[0x5A - 0x4C];
+    s16 ang;
+    u8 pad5C[4];
+    u8 col0[4];
+    u8 col1[4];
+} Obj_b413_01E037E0;
+
+typedef struct {
+    u8 pad0[0xB23C];
+    Pkt_b413_01E037E0 *pk;
+    u8 padB240[0xB4D0 - 0xB240];
+    u8 sin[4];
+} Scene_b413_01E037E0;
+
+static s32 func_01E037E0_b413(Scene_b413_01E037E0 *g, Obj_b413_01E037E0 *o) {
+    extern Rgbaq_b413_01E037E0 func_00107740(void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f d;
+    Vec4f q[4];
+    Vec4f t;
+    f32 m[16];
+    f32 r;
+    f32 c;
+    f32 s;
+    f32 x;
+    f32 y;
+    f32 u;
+    f32 v;
+    s16 i;
+    s16 a;
+    s16 k;
+
+    a = 0;
+    g->pk->v[0].c = func_00107740(o->col0);
+    g->pk->v[1].c = func_00107740(o->col0);
+    g->pk->v[2].c = func_00107740(o->col1);
+    g->pk->v[3].c = func_00107740(o->col1);
+    t.x = o->x;
+    t.y = o->y;
+    t.z = o->z;
+    func_00108EF0(m, 0, 0, &t);
+    r = o->r;
+    q[0].z = o->z0;
+    q[1].z = o->z0;
+    q[2].z = 0.0f;
+    q[3].z = 0.0f;
+    for (i = 0; i < 36; i++) {
+        k = o->ang + a;
+        c = func_00108030(g->sin, k, 1);
+        s = func_00108030(g->sin, k, 0);
+        x = c * r;
+        y = s * r;
+        q[2].x = x;
+        q[2].y = y;
+        q[0].x = x;
+        q[0].y = y;
+        k = a + (o->ang + 10);
+        c = func_00108030(g->sin, k, 1);
+        s = func_00108030(g->sin, k, 0);
+        x = c * r;
+        y = s * r;
+        q[3].x = x;
+        q[3].y = y;
+        q[1].x = x;
+        q[1].y = y;
+        a += 10;
+        if (func_00205630(q, 0x70000000, m, g->pk, &d.x) != 0) {
+            u = (((o->sx + 0x6C0) * 16 - 8) - g->pk->v[0].x);
+            v = (0x71F8 - g->pk->v[0].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[0].s = u / 1024.0f;
+            g->pk->v[0].t = v / 512.0f;
+            u = (((o->sx + 0x6C0) * 16 - 8) - g->pk->v[1].x);
+            v = (0x71F8 - g->pk->v[1].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[1].s = u / 1024.0f;
+            g->pk->v[1].t = v / 512.0f;
+            u = (0x6BF8 - g->pk->v[2].x);
+            v = (0x71F8 - g->pk->v[2].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[2].s = u / 1024.0f;
+            g->pk->v[2].t = v / 512.0f;
+            u = (0x6BF8 - g->pk->v[3].x);
+            v = (0x71F8 - g->pk->v[3].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[3].s = u / 1024.0f;
+            g->pk->v[3].t = v / 512.0f;
+            func_002075F0(g->pk, 0, 0);
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/b413", func_01E03E70_b413);
 
