@@ -1104,7 +1104,155 @@ static s32 func_01E03930_b215(Obj_b215_01E03930 *obj, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b215", func_01E03AC0_b215);
+/* shape b215:01E03AC0 (B215PAINT_RAIN20), 337 insns, 1 copy: draws a ring of 36 quads (angle step 10, radius f48,
+   height +-f34) for the grid row of the object kind: per quad its frame from the scene table into the rect, turned
+   about its middle edge by the three phase tables, then moved by the row's grid point times the fourth table */
+
+typedef struct {
+    u8 pad0[0x20];
+    s32 rot[4];
+    u8 pad30[4];
+    f32 f34;
+    u8 pad38[0x10];
+    f32 f48;
+    u8 pad4C[4];
+    s16 kind;
+    u8 pad52[0xE];
+    u8 col0[4];
+    u8 col1[4];
+} Obj_b215_01E03AC0;
+
+typedef struct {
+    u8 pad0[0x88];
+    s32 tex;
+    u8 pad8C[8];
+    Vec4f rect;
+    u8 padA4[0x1A];
+    s16 frame;
+    u8 padC0[0x3BC0 - 0xC0];
+    Vec4f grid[20][40];
+    u8 pad6DC0[0x9FFC - 0x6DC0];
+    s32 ot;
+    u8 padA000[0xB3D0 - 0xA000];
+    s16 frames[72];
+    s16 a[20][40];
+    u8 padBAA0[0xC0E0 - 0xBAA0];
+    s16 b[20][40];
+    u8 padC720[0xCD60 - 0xC720];
+    s16 c[20][40];
+    u8 padD3A0[0xD9E0 - 0xD3A0];
+    s16 d[20][40];
+    u8 padE020[0xE878 - 0xE020];
+    u8 trig[1];
+} Game_b215_01E03AC0;
+
+typedef struct {
+    u8 hdr[0x10];
+    u8 v[0x60];
+    u8 tail[0x20];
+} Pk_b215_01E03AC0;
+
+static void func_01E03AC0_b215(Game_b215_01E03AC0 *g, Obj_b215_01E03AC0 *o, s32 mode, Vec4f *in) {
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00109100(void *, void *, s32, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f pos;
+    Vec4f q[4];
+    f32 v[4];
+    f32 m[16];
+    f32 depth[4];
+    s32 tw[4];
+    Vec4f rm;
+    Pk_b215_01E03AC0 pk __attribute__((aligned(8)));
+    s16 i;
+    s32 k;
+    s16 n;
+    s16 s;
+    s16 a;
+    Pk_b215_01E03AC0 *p;
+    f32 h;
+    f32 r;
+    f32 c0;
+    f32 s0;
+    f32 c1;
+    f32 s1;
+    f32 dx;
+    f32 dz;
+
+    pos = *in;
+    a = 0;
+    p = &pk;
+    func_00109270(p, 0, 0);
+    func_00107790(p, o->col0, 1);
+    func_00107790(p, o->col1, 2);
+    func_00108500(p, &g->rect, g->frame);
+    func_00208700(p, g->tex, 1);
+    k = mode >> 4;
+    if (k == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)k << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    v[0] = pos.x;
+    v[1] = pos.y;
+    v[2] = pos.z;
+    func_00108EF0(m, 0, o->rot, v);
+    r = o->f48;
+    for (i = 0; i < 36; i++) {
+        func_00106080(&rm, 0x14, g->frames[i], 0);
+        g->rect = rm;
+        func_00108500(p, &g->rect, g->frame);
+        q[0].y = o->f34;
+        q[1].y = o->f34;
+        q[2].y = -o->f34;
+        q[3].y = -o->f34;
+        h = g->d[o->kind][i];
+        tw[0] = g->a[o->kind][i];
+        tw[1] = g->b[o->kind][i];
+        tw[2] = g->c[o->kind][i];
+        c0 = func_00108030(g->trig, a, 1);
+        s0 = func_00108030(g->trig, a, 0);
+        c1 = func_00108030(g->trig, a + 5, 1);
+        s1 = func_00108030(g->trig, a + 5, 0);
+        q[2].x = c0 * r;
+        q[2].z = s0 * r;
+        q[0].x = c0 * r;
+        q[0].z = s0 * r;
+        s = a + 10;
+        c0 = func_00108030(g->trig, s, 1);
+        s0 = func_00108030(g->trig, s, 0);
+        q[3].x = c0 * r;
+        q[3].z = s0 * r;
+        q[1].x = c0 * r;
+        q[1].z = s0 * r;
+        dx = c1 * r;
+        dz = s1 * r;
+        for (n = 0; n < 4; n++) {
+            q[n].x -= dx;
+            q[n].z -= dz;
+        }
+        func_00109100(q, tw, 1, g->trig);
+        func_00109100(q, tw, 0, g->trig);
+        for (n = 0; n < 4; n++) {
+            q[n].x += dx + g->grid[o->kind][i].x * h;
+            q[n].z += dz + g->grid[o->kind][i].z * h;
+            q[n].y += dz + g->grid[o->kind][i].y * h;
+        }
+        if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+            func_002075F0(p, g->ot, func_001A23B0(depth[0]));
+        }
+        a += 10;
+    }
+}
+
 
 /* shape b215:01E04010 (B215PAINT_RAIN21), 323 insns, 1 copy: draws b215:01E01A70's 20 by 28 ripple grid: per cell its
    frame from the scene table into the rect, a quad scaled by f48, turned by the two phase tables, moved to the grid
