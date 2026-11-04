@@ -384,3 +384,5 @@ there is a source form that gives the original.
   (b218:01E02160, b353:01E01010)
 - **Several copy loops with one body under different `if`s, only the first matching:** give each loop its own counter
   (`i`, `j`, `k`, `l`). (b353:01E01010)
+- **A ±1 sign set with `li; li; movn` where yours branches:** `if (i == 0) s = 1; else s = -1;`; the `?:` forms branch.
+  A zero-init in the wrong place before a loop: put it in the for-init (`for (j = 0, a = 0; ...)`). (c059:01E06720)
