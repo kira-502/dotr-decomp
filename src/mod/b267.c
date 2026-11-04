@@ -1122,7 +1122,234 @@ static void func_01E01DC0_b267(s32 arg0, Scene_b267_01E01DC0 *o) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b267", func_01E01E70_b267);
+/* shape b267:01E01E70, 431 insns, 1 copy: b267 scene manager (b378:01E01D10 form): with a scene id (>= 0) it clears
+   the scene, resets both cameras, keeps the id, sets the 512-frame countdown, zeroes the scale, takes three model
+   handles and looks up the textures; otherwise it runs the scene script and every live node update
+   (B267_OBJ_MOVE_201_ written out in place), draws every live node (twice by its drawer, once for 01E03A80, a
+   KEMU_PAINT_1 square, or the IWEYE1 gradient at the node position), grows the scale by 0.01 up to 0.5 after frame
+   20, counts down and returns 1 / 3 at frames 385 / 500, 6 on frames 396..494, 8 once the countdown runs out */
+
+typedef struct Fx_b267_01E01E70 {
+    s16 x, y, z;
+    u8 pad6[0x1E];
+    void *fn;
+    u8 pad28[0xE];
+    s16 used;
+    u8 pad38[0x8];
+} Fx_b267_01E01E70;
+
+typedef struct Spr_b267_01E01E70 {
+    s32 texture;
+    s32 tex;
+    s32 c;
+    s32 mode;
+} Spr_b267_01E01E70;
+
+typedef struct Scene_b267_01E01E70 {
+    u8 pad0[0x80];
+    s32 ot80;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    Vec4f rm;
+    u8 padA4[0xD8 - 0xA4];
+    u8 cam2[0x310 - 0xD8];
+    f32 sx, sy, sz;
+    u8 pad31C[4];
+    s32 tex[16];
+    u8 pad360[0x4D4 - 0x360];
+    Fx_b267_01E01E70 fx[220];
+    u8 pad3BD4[0x3DD0 - 0x3BD4];
+    s32 count;
+    u8 pad3DD4[8];
+    s32 ot;
+    u8 pad3DE0[0x3E18 - 0x3DE0];
+    s16 model[3];
+    u8 pad3E1E[0x3E2C - 0x3E1E];
+    s16 id;
+    s16 timer;
+    u8 pad3E30[4];
+    u8 cam[0x16C];
+} Scene_b267_01E01E70;
+
+static s32 func_01E01E70_b267(s32 arg0, s32 id) {
+    Scene_b267_01E01E70 *g = (Scene_b267_01E01E70 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_01E00260_b267();
+    extern s32 func_01E00860_b267();
+    extern s32 func_01E00A80_b267();
+    extern s32 func_01E00BF0_b267();
+    extern s32 func_01E00E50_b267();
+    extern s32 func_01E00F90_b267();
+    extern s32 func_01E01260_b267();
+    extern s32 func_01E01500_b267();
+    extern s32 func_01E01610_b267();
+    extern s32 func_01E01740_b267();
+    extern s32 func_01E01820_b267();
+    extern s32 func_01E018E0_b267();
+    extern s32 func_01E01930_b267();
+    extern void func_01E01DC0_b267();
+    extern void b267_01E028D0();
+    extern void b267_01E02660();
+    extern void b267_01E02F20();
+    extern void b267_01E033C0();
+    extern void b267_01E03830();
+    extern void b267_01E02C70();
+    extern void b267_01E03A80();
+    s32 i;
+    Vec4f v;
+    Spr_b267_01E01E70 s;
+    Vec4f rm;
+    u8 buf[0x90] __attribute__((aligned(8)));
+    s32 n;
+
+    n = 0;
+    g->ot = (s32)func_00207500();
+    g->ot80 = (s32)func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x3FA0);
+        func_00107C10(g->cam);
+        func_00107C10(g->cam2);
+        g->id = id;
+        g->count = 0x200;
+        g->sx = 0.0f;
+        g->sy = 0.0f;
+        g->sz = 0.0f;
+        g->model[0] = func_001F5560(func_001F53A0(), 0x4A, 1);
+        g->model[1] = func_001F5560(func_001F53A0(), 0x3F, 0);
+        g->model[2] = func_001F5560(func_001F53A0(), 0xD, 0);
+        func_01E01DC0_b267(0, g);
+        return 0;
+    }
+    func_01E00260_b267(g, 0);
+    for (i = 0; i < 220; i++) {
+        if (g->fx[i].used != 0) {
+            if (g->fx[i].fn == func_01E00860_b267) {
+                func_01E00860_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E00A80_b267) {
+                func_01E00A80_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E00BF0_b267) {
+                func_01E00BF0_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E00E50_b267) {
+                func_01E00E50_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E00F90_b267) {
+                func_01E00F90_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01260_b267) {
+                func_01E01260_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01500_b267) {
+                func_01E01500_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01610_b267) {
+                func_01E01610_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01740_b267) {
+                func_01E01740_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01820_b267) {
+                func_01E01820_b267(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E018E0_b267) {
+                f32 b;
+                f32 a;
+
+                *(f32 *)(u32)&a = *(f32 *)(u32)&D_01E03D00_b267;
+                *(f32 *)(u32)&b = *(f32 *)(u32)&D_01E03D08_b267;
+                func_001F7170(2, 0, (s32)&a, (s32)&b, 0);
+            }
+            if (g->fx[i].fn == func_01E01930_b267) {
+                func_01E01930_b267(g, &g->fx[i]);
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &v);
+    v.z -= 25.0f;
+    for (i = 0; i < 220; i++) {
+        if (g->fx[i].used != 0) {
+            n++;
+            if (g->fx[i].fn == func_01E00860_b267) {
+                s.texture = g->tex[2];
+                s.c = 0;
+                s.tex = 0x14;
+                s.mode = 0;
+                func_01E00080_b267(g->ot, (Obj_b058_01E00080 *)&g->fx[i], (Spr_b058_01E00080 *)&s);
+            }
+            if (g->fx[i].fn == func_01E00A80_b267) {
+                b267_01E028D0(g, &g->fx[i], buf, 0);
+                b267_01E028D0(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E00BF0_b267) {
+                b267_01E02660(g, &g->fx[i], buf, 0);
+                b267_01E02660(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E00E50_b267) {
+                g->tex88 = g->tex[15];
+                func_00106080(&rm, 0x9A, 1, 0);
+                g->rm = rm;
+                v.x = g->fx[i].x;
+                v.y = g->fx[i].y;
+                v.z = g->fx[i].z;
+                func_01E01B20_b267((Obj_b233_01E01BC0 *)g, (Fx_b233_01E01BC0 *)&g->fx[i], (Pkt_b233_01E01BC0 *)buf,
+                                   v);
+            }
+            if (g->fx[i].fn == func_01E00F90_b267) {
+                b267_01E02F20(g, &g->fx[i], buf, 0);
+                b267_01E02F20(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01260_b267) {
+                b267_01E033C0(g, &g->fx[i], buf, 0);
+                b267_01E033C0(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01500_b267) {
+                b267_01E03830(g, &g->fx[i], buf, 0);
+                b267_01E03830(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01610_b267) {
+                b267_01E02C70(g, &g->fx[i], buf, 0);
+                b267_01E02C70(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01740_b267) {
+                b267_01E03A80(g, &g->fx[i], buf, 0);
+            }
+        }
+    }
+    if (g->timer > 20) {
+        if (g->sx < 0.5) {
+            g->sx += 0.01f;
+        }
+        g->sy = 0.1f;
+        if (g->sz < 0.5) {
+            g->sz += 0.01f;
+        }
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->timer == 385) {
+        return 1;
+    }
+    if (g->timer == 500) {
+        return 3;
+    }
+    if (g->timer > 395 && g->timer <= 494) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b267:01E02530, 74 insns: twin of b046:01E03E20: take the first free slot of the 220-slot pool, clear it,
    give it the scene's colour twice, the scene matrix, the scene's value 0x3E2A and 0x3E22 and the two arguments; returns 1 if a
