@@ -203,7 +203,128 @@ static Vec_b018_01E00EE0 func_01E00730_b120(Vec_b018_01E00EE0 *p, s32 type, f32 
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b120", func_01E00B70_b120);
+/* shape b120:01E00B70 (B120_W_S), 436 insns, 1 copy: B120_W_S, the scene step: colour 0x80,0,0,0, counts the frame
+   (0xACBC), reads joint 0xAC9C; frame 46 spawns two 0x1E01F60 sparks and four 0x1E02750 rings beside it, tilted by
+   the camera turn; from 46 parks two points beside it; frames 101..219 (every third) spawn 0x1E02040, 101..249
+   0x1E01BE0, 115..219 0x1E021D0 at the camera, its kind cycling 0..49; the second argument (0 at the call) holds the
+   tilt */
+
+typedef struct {
+    u8 pad0[0x20];
+    Vec4f a;
+    Vec4f b;
+    u8 pad40[0x2D0 - 0x40];
+    Vec4f pos;
+    u8 pad2E0[0xAC74 - 0x2E0];
+    u8 col[4];
+    u8 padAC78[0xAC9C - 0xAC78];
+    s16 id;
+    u8 padAC9E[0xACAE - 0xAC9E];
+    s16 ang;
+    u8 padACB0[0xACB4 - 0xACB0];
+    s16 kind;
+    s16 n;
+    u8 padACB8[0xACBC - 0xACB8];
+    s16 t;
+    u8 padACBE[0xADC0 - 0xACBE];
+    u8 tab[1];
+} Scene_b120_01E00B70;
+
+static void func_01E00B70_b120(Scene_b120_01E00B70 *g, s16 off) {
+    extern void b120_01E01BE0(void);
+    extern void b120_01E01F60(void);
+    extern void b120_01E02040(void);
+    extern void b120_01E021D0(void);
+    extern void b120_01E02750(void);
+    extern void b120_01E034D0(Scene_b120_01E00B70 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    s32 q[4];
+    Vec4f p;
+    s32 i;
+
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    func_001F5620(func_001F53A0(), g->id, &p);
+    if (g->t == 46) {
+        func_001F6160(func_001F53A0(), q);
+        off = -1.0f * func_00108030(g->tab, q[1] / 180, 1);
+        g->kind = 15;
+        for (i = 0; i < 1; i++) {
+            g->ang = func_0019A5C8() % 360;
+            g->kind = 0;
+            g->a.x = g->pos.x = p.x + 1.2;
+            g->a.y = g->pos.y = 2.0f + p.y;
+            g->a.z = g->pos.z = p.z + off;
+            b120_01E034D0(g, b120_01E01F60, 0);
+            g->ang = 0;
+            b120_01E034D0(g, b120_01E02750, 0);
+            g->ang = 90;
+            b120_01E034D0(g, b120_01E02750, 0);
+            g->ang = func_0019A5C8() % 360;
+            g->kind = 1;
+            g->b.x = g->pos.x = p.x - 1.2;
+            g->b.y = g->pos.y = 2.0f + p.y;
+            g->b.z = g->pos.z = p.z + off;
+            b120_01E034D0(g, b120_01E01F60, 0);
+            g->ang = 0;
+            b120_01E034D0(g, b120_01E02750, 0);
+            g->ang = 90;
+            b120_01E034D0(g, b120_01E02750, 0);
+            g->kind += 15;
+        }
+    }
+    if (g->t >= 46) {
+        func_001F6160(func_001F53A0(), q);
+        func_00108030(g->tab, q[1] / 180, 1);
+        g->a.x = p.x + 0.9;
+        g->a.y = p.y + 2.3;
+        g->a.z = p.z;
+        g->b.x = p.x - 1.1;
+        g->b.y = p.y + 2.3;
+        g->b.z = p.z;
+    }
+    if (g->t > 100) {
+        if (g->t < 220 && g->t % 3 == 1) {
+            g->pos.x = p.x;
+            g->pos.y = 2.0f + p.y;
+            g->pos.z = p.z;
+            g->kind = 1;
+            b120_01E034D0(g, b120_01E02040, 0);
+        }
+    }
+    if ((g->t > 100) & (g->t % 3 == 1)) {
+        if (g->t < 250) {
+            g->pos.x = p.x;
+            g->pos.y = p.y;
+            g->pos.z = p.z;
+            g->kind = 1;
+            g->pos.y = p.y - 10.0f;
+            g->kind = 0;
+            b120_01E034D0(g, b120_01E01BE0, 0);
+        }
+    }
+    if (g->t % 3 == 1 && g->t >= 115 && g->t < 220) {
+        if (g->n < 50) {
+            func_001F6160(func_001F53A0(), &p);
+            g->pos.x = p.x;
+            g->pos.y = p.y;
+            g->pos.z = p.z;
+            g->kind = g->n;
+            b120_01E034D0(g, b120_01E021D0, 0);
+        }
+        g->n++;
+        if (g->n >= 50) {
+            g->n = 0;
+        }
+    }
+}
 
 /* shape b120:01E01240, 129 insns, 2 copies: a grey wisp: set up once (random heading, frame, tilt -15..14); fades in to 0x60
    over 10 frames, then out; its size grows every other frame up to 18; x and z drift 10 along its heading, y 4 by
