@@ -140,7 +140,6 @@ b407:01E019E0	40%	an earlier try got this far
 b408:01E011B0	99.2%	an earlier try got this far
 b411:01E036C0	98%	an earlier try got this far
 b423:01E02450	77%	an earlier try got this far
-b430:01E04470	66% (250/376, ours 382)	hard: logic decoded (draws the b430:01E04A50 field); left: stack layout (rect 0x120, pts 0x140/0x150, c 0x160), counter cnt spilled at 0xA0 (s16), the two angle tables walk a running pointer (spill 0xC0) (best draft: drafts/mod/b430_01E04470.c)
 b432:01E04280	97%	an earlier try got this far
 b439:01E00E80	99.2%	an earlier try got this far
 b443:01E01EA0	47% (137/292, structure right)	hard: one saved register short (orig s0..s7: p=s0,o=s5,g=s6,k=s7; ours 7 regs, frame 0x10 smaller); y-branch stores via addiu temps; decl order no effect (best draft: drafts/mod/b443_01E01EA0.c)
