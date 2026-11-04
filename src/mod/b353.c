@@ -471,7 +471,160 @@ static void func_01E00EA0_b353(Scene_b353_01E00EA0 *s) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b353", func_01E01010_b353);
+/* shape b353:01E01010 (B353_OBJ_MOVE_6_), 420 insns, 1 copy: a streak head: on start places one of two
+   10-point rows (by side, angle -90 or 90, raised or lowered by the flip flag), fades in until frame 0x4F and out
+   after, swinging the angle by 15 each frame and pushing the point into the row */
+
+typedef struct {
+    u8 pad0[0x6AF0];
+    Vec4f row[2][10];
+    u8 pad6C30[0x6E2A - 0x6C30];
+    s16 flip;
+    s16 t;
+    u8 pad6E2E[0x7030 - 0x6E2E];
+    u8 trig[4];
+} Game_b353_01E01010;
+
+typedef struct {
+    u8 pad0[6];
+    s16 h6;
+    u8 pad8[6];
+    s16 hE;
+    u8 pad10[0x18];
+    u8 col[4];
+    u8 pad2C[4];
+    s16 side;
+    s16 tick;
+    u8 pad34[2];
+    s16 mode;
+    s16 h38;
+    s16 ang;
+} Fx_b353_01E01010;
+
+static s32 func_01E01010_b353(Game_b353_01E01010 *g, Fx_b353_01E01010 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    Vec4f v;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 l;
+    Vec4f *p;
+
+    func_001076F0(o->col, 0x20, 0x20, 0xFF);
+    if (o->mode == 1) {
+        o->h38 = 5;
+        o->hE = 30;
+        if (g->flip) {
+            if (o->side == 0) {
+                o->ang = -90;
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                v.z += 1.5f;
+                p = g->row[o->side];
+                for (i = 0; i < 9; i++, p++) {
+                    p->x = v.x;
+                    p->y = v.y;
+                    p->z = v.z;
+                }
+            }
+            if (o->side == 1) {
+                o->ang = 90;
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                v.z += 1.5f;
+                p = g->row[o->side];
+                for (j = 0; j < 9; j++, p++) {
+                    p->x = v.x;
+                    p->y = v.y;
+                    p->z = v.z;
+                }
+            }
+        } else {
+            if (o->side == 0) {
+                o->ang = -90;
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                v.z -= 1.5f;
+                p = g->row[o->side];
+                for (k = 0; k < 9; k++, p++) {
+                    p->x = v.x;
+                    p->y = v.y;
+                    p->z = v.z;
+                }
+            }
+            if (o->side == 1) {
+                o->ang = 90;
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                v.z -= 1.5f;
+                p = g->row[o->side];
+                for (l = 0; l < 9; l++, p++) {
+                    p->x = v.x;
+                    p->y = v.y;
+                    p->z = v.z;
+                }
+            }
+        }
+        if (o->side == 1) {
+            o->hE = 7;
+        }
+        o->mode = 2;
+    }
+    if (g->t < 0x4F) {
+        if (o->col[3] < 0x71) {
+            o->col[3] += 0x16;
+        }
+    } else if (o->col[3] > 0x1E) {
+        o->col[3] -= 0x1D;
+    } else {
+        o->mode = 0;
+    }
+    if (g->t < 0x4F) {
+        if (g->flip) {
+            if (o->side == 0) {
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                o->ang -= 15;
+                v.z += 1.5f;
+                func_01E00080_b353(&g->row[o->side][9], 10, 0, &v);
+            }
+            if (o->side == 1) {
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                o->ang += 15;
+                v.z += 1.5f;
+                func_01E00080_b353(&g->row[o->side][9], 10, 0, &v);
+            }
+        } else {
+            if (o->side == 0) {
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                o->ang += 15;
+                v.z -= 1.5f;
+                func_01E00080_b353(&g->row[o->side][9], 10, 0, &v);
+            }
+            if (o->side == 1) {
+                v.y = 7.0f * func_00108030(g->trig, o->ang, 0);
+                v.x = 0.0f;
+                v.z = 5.0f * func_00108030(g->trig, o->ang, 1);
+                o->ang -= 15;
+                v.z -= 1.5f;
+                func_01E00080_b353(&g->row[o->side][9], 10, 0, &v);
+            }
+        }
+    }
+    o->h6 = 10;
+    o->tick++;
+    return 0;
+}
 
 typedef struct {
     u8 pad00[6];
