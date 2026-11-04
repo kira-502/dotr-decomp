@@ -1470,7 +1470,194 @@ static s32 func_01E03C90_b430(Pool_b430_01E03C90 *o, s32 a, s32 b) {
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b430", func_01E03DB0_b430);
+/* shape b430:01E03DB0 (B430PAINT_RAIN100), 430 insns, 1 copy: B430PAINT_RAIN100: draws the 18x18 field (rings 1..18,
+   the last quad of a ring wrapping to column 0) as textured quads up to the scene count (0xEC0), each corner relative
+   to its first point, scaled by 0x3A0, from tick 236 bent by the per-quad angles (0x1734, 0x1A04), turned by 0xE10
+   and lifted by the per-quad heights (0xEC4) times its offsets (0x1194, 0x1464, 0x2DB4) over 100; from tick 236 the
+   first 0xEC2 quads grow and turn */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b430_01E03DB0;
+
+typedef struct {
+    Rgbaq_b430_01E03DB0 c;
+    u64 st;
+    u64 xyz;
+} Vtx_b430_01E03DB0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b430_01E03DB0 v[4];
+} Pkt_b430_01E03DB0;
+
+typedef struct {
+    u8 pad0[0x28];
+    u8 col[4];
+} Obj_b430_01E03DB0;
+
+typedef struct {
+    u8 pad0[0x3A0];
+    f32 sc[4];
+    u8 pad3B0[0x5C];
+    s32 tex;
+    u8 pad410[0xE10 - 0x410];
+    f32 turn[3];
+    u8 padE1C[0xE8C - 0xE1C];
+    s32 ot;
+    u8 padE90[8];
+    f32 depth;
+    u8 padE9C[0x24];
+    s16 count;
+    s16 grow;
+    s16 h[360];
+    s16 dx[360];
+    s16 dz[360];
+    s16 a0[360];
+    s16 a1[360];
+    f32 x[20][18];
+    f32 y[20][18];
+    f32 z[20][18];
+    f32 hy[324];
+    u8 pad32C4[0x3358 - 0x32C4];
+    s16 timer;
+    u8 pad335A[0x365C - 0x335A];
+    u8 bend[4];
+} Ctx_b430_01E03DB0;
+
+static void func_01E03DB0_b430(Ctx_b430_01E03DB0 *g, Obj_b430_01E03DB0 *o,
+                               Pkt_b430_01E03DB0 *p __attribute__((aligned(8)))) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00109270(void *, s32, s32);
+    extern Rgbaq_b430_01E03DB0 func_00107740(void *);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106E90(void *, void *);
+    extern void func_00108950(void *, void *, s32, void *);
+    extern void func_00107070(void *, s32, f32);
+    extern void func_00106B50(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    s16 cnt;
+    s32 i;
+    s32 j;
+    Vec4f q[4];
+    s16 rect[8];
+    s32 iv[4];
+    Vec4f a;
+    Vec4f b;
+    Vec4f c;
+
+    cnt = 0;
+    func_00106080(rect, 0x9C, 0, rect);
+    rect[0] += 2;
+    rect[1] += 2;
+    rect[2] -= 2;
+    rect[3] -= 2;
+    func_00109270(p, 0, 0);
+    p->v[0].c = func_00107740(o->col);
+    p->v[1].c = func_00107740(o->col);
+    p->v[2].c = func_00107740(o->col);
+    p->v[3].c = func_00107740(o->col);
+    func_00108500(p, rect, 0);
+    func_00208700(p, g->tex, 1);
+    func_001F5F90(func_001F53A0(), &a);
+    func_001F5F90(func_001F5380(), &b);
+    a.z = -(a.z - b.z) / 60.0f;
+    for (i = 1; i < 19; i++) {
+        for (j = 0; j < 18; j++) {
+            c.x = g->x[i][j];
+            c.y = g->y[i][j];
+            c.z = g->z[i][j];
+            if (cnt < g->count) {
+                q[0].x = g->x[i][j] - c.x;
+                q[0].z = g->z[i][j] - c.z;
+                if (j != 17) {
+                    q[1].x = g->x[i][j + 1] - c.x;
+                    q[1].z = g->z[i][j + 1] - c.z;
+                } else {
+                    q[1].x = g->x[i][0] - c.x;
+                    q[1].z = g->z[i][0] - c.z;
+                }
+                q[2].x = g->x[i + 1][j] - c.x;
+                q[2].z = g->z[i + 1][j] - c.z;
+                if (j != 17) {
+                    q[3].x = g->x[i + 1][j + 1] - c.x;
+                    q[3].z = g->z[i + 1][j + 1] - c.z;
+                } else {
+                    q[3].x = g->x[i + 1][0] - c.x;
+                    q[3].z = g->z[i + 1][0] - c.z;
+                }
+                q[0].y = g->y[i][j] - c.y;
+                if (j != 17) {
+                    q[1].y = g->y[i][j + 1] - c.y;
+                } else {
+                    q[1].y = g->y[i][0] - c.y;
+                }
+                q[2].y = g->y[i + 1][j] - c.y;
+                if (j != 17) {
+                    q[3].y = g->y[i + 1][j + 1] - c.y;
+                } else {
+                    q[3].y = g->y[i + 1][0] - c.y;
+                }
+                c.x *= g->sc[0];
+                c.y *= g->sc[1];
+                c.z *= g->sc[2];
+                func_00106E90(&q[0], g->sc);
+                func_00106E90(&q[1], g->sc);
+                func_00106E90(&q[2], g->sc);
+                func_00106E90(&q[3], g->sc);
+                if (g->timer > 235) {
+                    iv[1] = (f32)g->a0[cnt];
+                    func_00108950(&q[0], iv, 0, g->bend);
+                    func_00108950(&q[1], iv, 0, g->bend);
+                    func_00108950(&q[2], iv, 0, g->bend);
+                    func_00108950(&q[3], iv, 0, g->bend);
+                    iv[0] = (f32)g->a1[cnt];
+                    func_00108950(&q[0], iv, 1, g->bend);
+                    func_00108950(&q[1], iv, 1, g->bend);
+                    func_00108950(&q[2], iv, 1, g->bend);
+                    func_00108950(&q[3], iv, 1, g->bend);
+                }
+                func_00107070(&q[0], 0, g->turn[0]);
+                func_00107070(&q[0], 1, g->turn[1]);
+                func_00107070(&q[0], 2, g->turn[2]);
+                func_00106B50(&q[0], &c);
+                func_00106B50(&q[1], &c);
+                func_00106B50(&q[2], &c);
+                func_00106B50(&q[3], &c);
+                func_00107070(&q[0], 2, g->hy[cnt] * g->h[cnt] / 100.0f);
+                func_00107070(&q[0], 0, g->dx[cnt] * g->h[cnt] / 100);
+                func_00107070(&q[0], 1, g->dz[cnt] * g->h[cnt] / 100);
+                if (func_00205630(q, 0x70000000, 0, p, &g->depth) != 0) {
+                    func_002075F0(p, g->ot, func_001A23B0(g->depth));
+                }
+            }
+            if (g->timer > 235 && cnt < g->grow) {
+                g->h[cnt]++;
+                if (cnt < 100) {
+                    g->a0[cnt] += 14;
+                    g->a1[cnt] += 8;
+                } else if (cnt < 200) {
+                    g->a0[cnt] -= 14;
+                    g->a1[cnt] += 8;
+                } else {
+                    g->a0[cnt] += 14;
+                    g->a1[cnt] -= 8;
+                }
+            }
+            cnt++;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/b430", func_01E04470_b430);
 
