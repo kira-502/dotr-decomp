@@ -493,7 +493,194 @@ static void func_01E00B90_c061(Obj_b038_01E00920 *o, Anim_b038_01E00920 *an, s32
 
 INCLUDE_ASM("asm/nonmatchings/mod/c061", func_01E01100_c061);
 
-INCLUDE_ASM("asm/nonmatchings/mod/c061", func_01E014F0_c061);
+/* shape c061:01E014F0 (B855_W_S), 427 insns, 1 copy: B855_W_S, the scene script: colour 0x80,0,0,0, counts the frame
+   (0x68C8); loads joints and animations at 300..580, hides the side units at 663..803, spawns the empty handler
+   (301), two shock waves (364), a 10-point spine of rising columns (753) and flashes (780..860); spins the spine and
+   drags the point 0x56A0 toward joint 6 */
+
+typedef struct {
+    u8 pad0[0x250];
+    f32 px;
+    f32 py;
+    f32 pz;
+    u8 pad25C[0x5670 - 0x25C];
+    f32 k[3];
+    u8 pad567C[0x56A0 - 0x567C];
+    Vec4f a;
+    u8 pad56B0[0x5710 - 0x56B0];
+    Vec4f spine[10];
+    Vec4f b;
+    u8 pad57C0[0x6844 - 0x57C0];
+    u8 r;
+    u8 g;
+    u8 bl;
+    u8 al;
+    u8 pad6848[0x6854 - 0x6848];
+    f32 rad[10];
+    u8 pad687C[4];
+    s32 y;
+    u8 pad6884[0x6894 - 0x6884];
+    s16 ang[10];
+    u8 pad68A8[2];
+    s16 j1;
+    s16 j2;
+    u8 pad68AE[6];
+    s16 j6;
+    u8 pad68B6[6];
+    s16 hBC;
+    s16 hBE;
+    u8 pad68C0[2];
+    s16 hC2;
+    s16 side;
+    u8 pad68C6[2];
+    s16 t;
+    u8 pad68CA[0x69CC - 0x68CA];
+    u8 trig[4];
+} Scene_c061_01E014F0;
+
+static void func_01E014F0_c061(Scene_c061_01E014F0 *g) {
+    extern s32 func_001F2DD0(s32, s32, s32);
+    extern s32 func_001F1550(s32, s32);
+    extern s32 func_001F5970(s32, s32);
+    extern void func_00261680(s32);
+    extern void func_001F2EC0(s32, s32, void *);
+    extern f32 func_00108030(void *, s32, s32);
+    extern s32 c061_01E02CF0();
+    extern s32 c061_01E01BA0();
+    extern s32 c061_01E01F20();
+    extern s32 c061_01E02320();
+    extern s32 c061_01E033A0();
+    extern s32 c061_01E03510();
+    Vec4f v;
+    s32 i;
+
+    g->r = 0x80;
+    g->g = 0;
+    g->bl = 0;
+    g->al = 0;
+    g->t++;
+    if (g->t == 330) {
+        func_001F2DD0(0x20, 0xE, 0);
+        func_001F2DD0(0x20, 0xF, 1);
+    }
+    if (g->t == 400) {
+        func_001F2DD0(0x20, 0x23, 0);
+        func_001F2DD0(0x20, 0x24, 1);
+        func_001F2DD0(0x20, 0x27, 2);
+        func_001F2DD0(0x20, 0x4C, 3);
+        func_001F2DD0(0x20, 0x4D, 4);
+        func_001F2DD0(0x20, 0x50, 5);
+    }
+    if (g->t == 580) {
+        func_001F2DD0(0x20, 0x74, 0);
+        func_001F2DD0(0x20, 0x81, 1);
+        func_001F2DD0(0x20, 0x24, 2);
+        func_001F2DD0(0x20, 0x50, 3);
+        func_001F2DD0(0x20, 0xE, 4);
+        func_001F2DD0(0x20, 0xF, 5);
+        func_001F2DD0(0x20, 0x23, 6);
+    }
+    if (g->t == 300) {
+        func_001F1550(0x20, 2);
+    }
+    if (g->t >= 663 && g->t < 804) {
+        if (g->side == 0) {
+            for (i = 0x100; i < 0x106; i++) {
+                func_001F5970(i, 0);
+                func_00261680(i);
+            }
+        } else if (g->side == 1) {
+            for (i = 0; i < 6; i++) {
+                func_001F5970(i, 0);
+                func_00261680(i);
+            }
+        }
+    }
+    if (g->t == 301) {
+        c061_01E03510(g, c061_01E02CF0, 0);
+    }
+    if (g->t == 753) {
+        for (i = 0; i < 10; i++) {
+            g->spine[i].y = i * 17 - 30;
+        }
+        g->rad[0] = 0.0f;
+        for (i = 1; i < 10; i++) {
+            g->rad[i] = 3.0f;
+        }
+        for (i = 0; i < 10; i++) {
+            g->ang[i] = func_0019A5C8() % 360;
+        }
+        g->r = 0x20;
+        g->g = 0x20;
+        g->bl = 0x20;
+        g->px = 0.0f;
+        g->py = 30.0f;
+        g->pz = 0.0f;
+        for (i = 0; i < 1; i++) {
+            g->hBE = 1;
+            g->y = 0;
+            g->hC2 = 1;
+            g->hBC = 0;
+            c061_01E033A0(g, c061_01E01BA0, 0);
+        }
+    }
+    func_001F2EC0(0x20, g->j1, &v);
+    for (i = 0; i < 10; i++) {
+        if (i != 0) {
+            g->spine[i].x = g->rad[i] * func_00108030(g->trig, g->ang[i], 1);
+            g->spine[i].z = g->rad[i] * func_00108030(g->trig, g->ang[i], 0);
+        } else {
+            g->spine[i].x = g->rad[i] * func_00108030(g->trig, g->ang[i], 1);
+            g->spine[i].z = g->rad[i] * func_00108030(g->trig, g->ang[i], 0);
+        }
+        g->ang[i] += 4;
+        if (g->ang[i] >= 360) {
+            g->ang[i] %= 360;
+        }
+    }
+    if (g->t == 625 || (g->t >= 689 && g->t < 881)) {
+        func_001F2EC0(0x20, g->j2, &g->a);
+        func_001F2EC0(0x20, g->j6, &v);
+        g->a.x += g->k[0] * (g->a.x - v.x);
+        g->a.y += g->k[1] * (g->a.y - v.y);
+        g->a.z += g->k[2] * (g->a.z - v.z);
+        g->a.y += 25.0f;
+        if (g->t >= 727) {
+            if (g->k[0] < 1.0f) {
+                g->k[0] += 0.01f;
+            }
+            if (g->k[1] < 1.0f) {
+                g->k[1] += 0.01f;
+            }
+            if (g->k[2] < 1.0f) {
+                g->k[2] += 0.01f;
+            }
+        }
+    }
+    g->b = g->a;
+    if (g->t == 364) {
+        g->hBC = 0;
+        c061_01E03510(g, c061_01E01F20, 0);
+        g->hBC = 90;
+        c061_01E03510(g, c061_01E01F20, 0);
+    }
+    if (g->t == 757) {
+        g->px = g->b.x;
+        g->py = g->b.y;
+        g->pz = g->b.z;
+        for (i = 0; i < 16; i++) {
+            g->hC2 = i;
+            g->hBC = i * 45;
+        }
+    }
+    if (g->t >= 780 && g->t < 861) {
+        g->px = g->b.x;
+        g->py = g->b.y;
+        g->pz = g->b.z;
+        g->hC2 = 0;
+        c061_01E03510(g, c061_01E02320, 0);
+    }
+}
 
 /* shape c061:01E01BA0, 223 insns: b056:01E012E0's rising column on the scene's 8-point spine (g+0x5710): both colours
    (0x78, 0x78, 0x20), no spin; alpha in by 10 to 0x50 below height 100, else out by 14; the first spine point above its
