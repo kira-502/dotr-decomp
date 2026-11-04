@@ -386,3 +386,5 @@ there is a source form that gives the original.
   (`i`, `j`, `k`, `l`). (b353:01E01010)
 - **A ±1 sign set with `li; li; movn` where yours branches:** `if (i == 0) s = 1; else s = -1;`; the `?:` forms branch.
   A zero-init in the wrong place before a loop: put it in the for-init (`for (j = 0, a = 0; ...)`). (c059:01E06720)
+- **Running sums updated by float-to-int calls at the end of a loop, spill slots not following declaration order:**
+  the source is `((s32)f * i) << 4`; the compiler makes the sums itself. (b015:01E008F0)
