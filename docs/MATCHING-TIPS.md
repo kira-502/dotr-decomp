@@ -407,3 +407,6 @@ there is a source form that gives the original.
 - **A lone `slti $at, $v0, K` nothing reads, right before another compare of the same value:** an `if (x > K-1)` whose
   body the optimizer drops late (`if (g->frame > 150) m = 0;` with m already 0); empty bodies are dropped too early.
   (b520:01E01730)
+- **An -O2 scene manager with `g` and `code` in each other's saved registers:** `(Scene *g, s32 arg1)` with
+  `s32 code = arg1;` as the first local. (b075:01E05230)
+- **`b[i] = a[i] = -1;` putting the `sll` before the `li -1`:** two separate stores. (b075:01E05230)
