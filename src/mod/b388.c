@@ -479,7 +479,152 @@ static s32 func_01E00CD0_b388(Game_b388_01E00CD0 *g, Obj_b388_01E00CD0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b388", func_01E00ED0_b388);
+/* shape b388:01E00ED0 (B388_OBJ_MOVE_203_1), 424 insns, 1 copy: b413:01E037E0 with two radii: a 36-quad wall between
+   radius r1 (height y0) and r0 (height 0), each quad from angle a to a + width, a stepping by the object step; screen
+   UVs from the corners, clamped to 640 x 448 */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b388_01E00ED0;
+
+typedef struct {
+    Rgbaq_b388_01E00ED0 c;
+    f32 s, t;
+    u16 x, y;
+    u32 z;
+} Vtx_b388_01E00ED0;
+
+typedef struct {
+    u8 pad0[0x10];
+    Vtx_b388_01E00ED0 v[4];
+} Pkt_b388_01E00ED0;
+
+typedef struct {
+    u8 pad0[0xA];
+    s16 sx;
+    u8 padC[4];
+    f32 x, y, z;
+    u8 pad1C[4];
+    s32 rot[3];
+    u8 pad2C[0x34 - 0x2C];
+    f32 y0;
+    u8 pad38[0x48 - 0x38];
+    f32 r0;
+    f32 r1;
+    u8 pad50[0x5A - 0x50];
+    s16 step;
+    s16 width;
+    u8 pad5E[2];
+    u8 col0[4];
+    u8 col1[4];
+} Obj_b388_01E00ED0;
+
+typedef struct {
+    u8 pad0[0xB22C];
+    Pkt_b388_01E00ED0 *pk;
+    u8 padB230[0xB4C0 - 0xB230];
+    u8 sin[4];
+} Scene_b388_01E00ED0;
+
+static s32 func_01E00ED0_b388(Scene_b388_01E00ED0 *g, Obj_b388_01E00ED0 *o) {
+    extern Rgbaq_b388_01E00ED0 func_00107740(void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f d;
+    Vec4f q[4];
+    Vec4f t;
+    f32 m[16];
+    f32 r0;
+    f32 r1;
+    f32 c;
+    f32 s;
+    f32 u;
+    f32 v;
+    s16 i;
+    s16 a;
+    s16 k;
+    s16 w;
+
+    a = 0;
+    g->pk->v[0].c = func_00107740(o->col0);
+    g->pk->v[1].c = func_00107740(o->col0);
+    g->pk->v[2].c = func_00107740(o->col1);
+    g->pk->v[3].c = func_00107740(o->col1);
+    t.x = o->x;
+    t.y = o->y;
+    t.z = o->z;
+    func_00108EF0(m, 0, o->rot, &t);
+    r0 = o->r0;
+    r1 = o->r1;
+    q[0].y = o->y0;
+    q[1].y = o->y0;
+    q[2].y = 0.0f;
+    q[3].y = 0.0f;
+    w = o->width;
+    for (i = 0; i < 36; i++) {
+        c = func_00108030(g->sin, a, 1);
+        s = func_00108030(g->sin, a, 0);
+        q[2].x = c * r0;
+        q[2].z = s * r0;
+        q[0].x = c * r1;
+        q[0].z = s * r1;
+        k = w + a;
+        c = func_00108030(g->sin, k, 1);
+        s = func_00108030(g->sin, k, 0);
+        q[3].x = c * r0;
+        q[3].z = s * r0;
+        q[1].x = c * r1;
+        q[1].z = s * r1;
+        a += o->step;
+        if (func_00205630(q, 0x70000000, m, g->pk, &d.x) != 0) {
+            u = (0x6BF8 - g->pk->v[0].x);
+            v = (((o->sx + 0x720) * 16 - 8) - g->pk->v[0].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[0].s = u / 1024.0f;
+            g->pk->v[0].t = v / 512.0f;
+            u = (0x6BF8 - g->pk->v[1].x);
+            v = (((o->sx + 0x720) * 16 - 8) - g->pk->v[1].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[1].s = u / 1024.0f;
+            g->pk->v[1].t = v / 512.0f;
+            u = (0x6BF8 - g->pk->v[2].x);
+            v = (0x71F8 - g->pk->v[2].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[2].s = u / 1024.0f;
+            g->pk->v[2].t = v / 512.0f;
+            u = (0x6BF8 - g->pk->v[3].x);
+            v = (0x71F8 - g->pk->v[3].y);
+            u /= -16.0f;
+            v /= -16.0f;
+            if (u < 0.0f) u = 0.0f;
+            if (u > 640.0f) u = 640.0f;
+            if (v < 0.0f) v = 0.0f;
+            if (v > 448.0f) v = 448.0f;
+            g->pk->v[3].s = u / 1024.0f;
+            g->pk->v[3].t = v / 512.0f;
+            func_002075F0(g->pk, 0, 0);
+        }
+    }
+    return 0;
+}
 
 /* shape b388:01E01570, 104 insns: a grey/white tumbling ring (three random turns, width 10 growing 4 a tick, height a tenth of it) on the scene point (ctx+0xB1D0): in by 32 up to 0xC0 for 6 ticks, then out by 9 and ends */
 
