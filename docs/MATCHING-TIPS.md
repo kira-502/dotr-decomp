@@ -380,3 +380,7 @@ there is a source form that gives the original.
   `pk` local. (b413:01E037E0)
 - **`work/kr2perm.py`/`kr2c.sh` scores mean nothing for a draft with `#include "mod/<mod>.c"`:** they compare the whole
   module object; drop the include (or use `tools/mod_infile.sh`) when scoring.
+- **A float step with its `add.s` operands swapped, or stored and reloaded:** write `x += K;`, not `x = x + K;`.
+  (b218:01E02160, b353:01E01010)
+- **Several copy loops with one body under different `if`s, only the first matching:** give each loop its own counter
+  (`i`, `j`, `k`, `l`). (b353:01E01010)
