@@ -402,3 +402,5 @@ there is a source form that gives the original.
   `col, &col[4]`. (b047:01E01990)
 - **A stack out-buffer address kept in a saved register across a loop, with a gap below it:** make it a later member of a
   stack struct, passed as `out.o`. (b180:01E025C0)
+- **Per-quad tables in a nested grid loop walked by spilled pointers that step through both loops:** index them by the
+  s16 draw counter running across both loops (`g->h[cnt]`). (b430:01E03DB0)
