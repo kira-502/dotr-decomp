@@ -398,3 +398,7 @@ there is a source form that gives the original.
   the other:** set them again right before each call (`h = y = 0.0f;`) and pick the argument order per call; the
   last-assigned local gets the `mtc1`. (c518:01E031E0)
 - **`lh; addiu v1, v1, -1; sh` where the original writes a new register:** `x - 1U`. (c518:01E031E0)
+- **Two stack colour arrays passed side by side, the second's address taken first:** one `u8 col[8]`, passed as
+  `col, &col[4]`. (b047:01E01990)
+- **A stack out-buffer address kept in a saved register across a loop, with a gap below it:** make it a later member of a
+  stack struct, passed as `out.o`. (b180:01E025C0)
