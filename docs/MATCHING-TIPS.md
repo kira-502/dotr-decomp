@@ -394,3 +394,7 @@ there is a source form that gives the original.
   `((T *)(s32)&local.sub)->field`. (b037:01E03E90)
 - **Index register swapped with a stored constant in `g->slot[g->next]` stores:** `g->slot[i = g->next].used = 1;`.
   (c403:01E00080)
+- **Two (0.0f, 0.0f) calls with the `mtc1 $zero` register differing, one shared pair of locals fixing one and flipping
+  the other:** set them again right before each call (`h = y = 0.0f;`) and pick the argument order per call; the
+  last-assigned local gets the `mtc1`. (c518:01E031E0)
+- **`lh; addiu v1, v1, -1; sh` where the original writes a new register:** `x - 1U`. (c518:01E031E0)
