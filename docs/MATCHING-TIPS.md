@@ -412,3 +412,6 @@ there is a source form that gives the original.
 - **`b[i] = a[i] = -1;` putting the `sll` before the `li -1`:** two separate stores. (b075:01E05230)
 - **A second pointer in a scene manager's draw loop stepping by 0x40 beside the slot pointer's 0x70:** a separate table
   parallel to the slots, just before them; index it with the slot counter. (b495:01E02D80)
+- **A local converted from a float result lands in the next free saved register, the original has it highest (just
+  below the scene pointer):** check the caller; an extra argument it passes (`a1 = 0`) is a parameter reused as that
+  local. (b120:01E00B70)
