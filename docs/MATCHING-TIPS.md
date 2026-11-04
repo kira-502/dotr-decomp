@@ -410,3 +410,5 @@ there is a source form that gives the original.
 - **An -O2 scene manager with `g` and `code` in each other's saved registers:** `(Scene *g, s32 arg1)` with
   `s32 code = arg1;` as the first local. (b075:01E05230)
 - **`b[i] = a[i] = -1;` putting the `sll` before the `li -1`:** two separate stores. (b075:01E05230)
+- **A second pointer in a scene manager's draw loop stepping by 0x40 beside the slot pointer's 0x70:** a separate table
+  parallel to the slots, just before them; index it with the slot counter. (b495:01E02D80)
