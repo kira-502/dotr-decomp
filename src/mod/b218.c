@@ -715,7 +715,181 @@ static void func_01E01F40_b218(Obj_b046_01E00BB0 *o, Spr_b046_01E00BB0 *s, s32 b
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b218", func_01E02160_b218);
+/* shape b218:01E02160 (B218_W_S), 420 insns, 1 copy: advances the effect timer, spawns the column, ring and trail
+   layers at their frames and moves the emitter along joints and two drifting points */
+
+typedef struct Scene_b218_01E02160 {
+    u8 pad0[0x2D0];
+    Vec4f pos;
+    u8 pad2E0[0x320 - 0x2E0];
+    Vec4f a;
+    Vec4f b;
+    u8 pad340[0x2960 - 0x340];
+    Vec4f saved;
+    u8 pad2970[0x2CC0 - 0x2970];
+    Vec4f home;
+    u8 pad2CD0[0x3B04 - 0x2CD0];
+    u8 col[4];
+    u8 pad3B08[0x3B4A - 0x3B08];
+    s16 ja, jb, jc;
+    u8 pad3B50[0x3B62 - 0x3B50];
+    s16 side;
+    s16 cnt;
+    s16 unused;
+    s16 t;
+} Scene_b218_01E02160;
+
+static void func_01E02160_b218(Scene_b218_01E02160 *g) {
+    extern void b218_01E04890();
+    extern void b218_01E02AB0(), b218_01E02B60(), b218_01E02C10(), b218_01E02CC0();
+    extern void b218_01E027F0(), b218_01E02D90(), b218_01E02F10(), b218_01E03560();
+    extern void b218_01E03700(), b218_01E030E0(), b218_01E033F0(), b218_01E032F0();
+    extern void b218_01E03BB0();
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, s32 *);
+    extern s32 func_001A22C0(f32);
+    Vec4f v;
+    s32 w[4];
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    if (g->t == 0x49) {
+        b218_01E04890(g, b218_01E02AB0, 0);
+    }
+    if (g->t == 0x49) {
+        b218_01E04890(g, b218_01E02B60, 0);
+    }
+    if (g->t == 0x49) {
+        b218_01E04890(g, b218_01E02C10, 0);
+    }
+    if (g->t == 0x49) {
+        b218_01E04890(g, b218_01E02CC0, 0);
+    }
+    if (g->t == 0x50) {
+        b218_01E04890(g, b218_01E027F0, 0);
+    }
+    if ((g->t >= 0x50) && (g->t < 0x70)) {
+        g->side = g->cnt;
+        b218_01E04890(g, b218_01E02D90, 0);
+        g->cnt++;
+        if (g->cnt >= 14) {
+            g->cnt = 0;
+        }
+    }
+    if (g->t == 0x67) {
+        i = 0;
+        do {
+            g->pos.x = g->home.x;
+            g->pos.y = g->home.y;
+            g->pos.z = g->home.z;
+            b218_01E04890(g, b218_01E02F10, 0);
+            i += 1;
+        } while (i < 20);
+        i = 0;
+        do {
+            b218_01E04890(g, b218_01E03560, 0);
+            i += 1;
+        } while (i < 20);
+        b218_01E04890(g, b218_01E03700, 0);
+    }
+    if (g->t == 0x50) {
+        g->side = 15;
+        b218_01E04890(g, b218_01E030E0, 0);
+        g->side = 16;
+        b218_01E04890(g, b218_01E030E0, 0);
+    }
+    if (g->t == 0x33) {
+        func_001F5620(func_001F53A0(), g->ja, &g->saved);
+    }
+    if ((g->t > 51) && (g->t < 0x41)) {
+        func_001F5620(func_001F53A0(), g->ja, &v);
+        i = 0;
+        do {
+            i += 1;
+            g->pos.x = g->saved.x;
+            g->pos.y = g->saved.y;
+            g->pos.z = g->saved.z;
+        } while (i < 6);
+    }
+    if (g->t == 1) {
+        func_001F5F90(func_001F53A0(), &g->a);
+        func_001F5F90(func_001F53A0(), &g->b);
+    }
+    if ((g->t > 111) && (g->t < 0xC3)) {
+        func_001F6160(func_001F53A0(), w);
+        if (func_001A22C0((f32)w[1] / 180.0f)) {
+            g->a.z -= 2.4f;
+        } else {
+            g->a.z += 2.4f;
+        }
+        g->pos.x = g->a.x;
+        g->pos.y = (g->a.y - 10.0f);
+        g->pos.z = (40.0f + g->a.z);
+        g->side = 0;
+    }
+    if (g->t == 0x50) {
+        func_001F5620(func_001F53A0(), g->jb, &v);
+        g->pos.x = v.x;
+        g->pos.y = (v.y - 1.0f);
+        g->pos.z = v.z;
+        g->side = 0;
+        i = 0;
+        do {
+            b218_01E04890(g, b218_01E033F0, 0);
+            i += 1;
+        } while (i < 20);
+        func_001F5620(func_001F53A0(), g->jc, &v);
+        g->pos.x = v.x;
+        g->pos.y = (v.y - 1.0f);
+        g->pos.z = v.z;
+        g->side = 0;
+        i = 0;
+        do {
+            b218_01E04890(g, b218_01E033F0, 0);
+            i += 1;
+        } while (i < 20);
+    }
+    if (g->t < 0x32) {
+        func_001F5620(func_001F53A0(), g->jb, &v);
+        g->pos.x = v.x;
+        g->pos.y = (v.y - 1.0f);
+        g->pos.z = v.z;
+        b218_01E04890(g, b218_01E032F0, 0);
+        func_001F5620(func_001F53A0(), g->jc, &v);
+        g->pos.x = v.x;
+        g->pos.y = (v.y - 1.0f);
+        g->pos.z = v.z;
+        b218_01E04890(g, b218_01E032F0, 0);
+    }
+    if ((g->t > 170) && (g->t < 0xE1)) {
+        g->b.z = (g->b.z - 3.8f);
+        g->pos.x = g->b.x;
+        g->pos.y = (g->b.y - 10.0f);
+        g->pos.z = (40.0f + g->b.z);
+        g->side = 1;
+    }
+    if ((g->t >= 0x70) && (g->t < 0xBF)) {
+        g->pos.x = g->a.x;
+        g->pos.y = (g->a.y - 10.0f);
+        g->pos.z = (40.0f + g->a.z);
+        g->side = 0;
+    }
+    if ((g->t >= 0xA9) && (g->t < 0xDD)) {
+        g->pos.x = g->b.x;
+        g->pos.y = (g->b.y - 10.0f);
+        g->pos.z = (40.0f + g->b.z);
+        g->side = 1;
+    }
+    if (g->t == 1) {
+        b218_01E04890(g, b218_01E03BB0, 0);
+    }
+}
 
 /* shape b218:01E027F0, 173 insns: a 10-point column effect: on start both colours 0x60/0x60/0xC0 (alpha 0x80 and
    0x40), both 10-point rows at g+0x2C90/0x2D30 copied from g+0x2A10 with the first one 10 lower, size 10; the first
