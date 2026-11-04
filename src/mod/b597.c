@@ -523,7 +523,163 @@ static Rect_b152_01E014F0 func_01E014F0_b597(s32 unused, s16 n) {
 
 INCLUDE_ASM("asm/nonmatchings/mod/b597", func_01E01640_b597);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b597", func_01E01D70_b597);
+/* shape b597:01E01D70 (B597_OBJ_MOVE_4_), 444 insns, 1 copy: B152_OBJ_MOVE_4_ ring spark with frame bounds
+   350/35/78/108/205/221/235; the orbit turns -10 or +10 by scene flag hA0AE */
+
+typedef struct {
+    u8 pad0[0x3BB0];
+    Vec4f pos;
+    u8 pad3BC0[0xA01C - 0x3BC0];
+    f32 r;
+    u8 padA020[0xA032 - 0xA020];
+    s16 id0;
+    u8 padA034[0xA040 - 0xA034];
+    s16 id1;
+    u8 padA042[0xA0A4 - 0xA042];
+    s16 hA0A4;
+    u8 padA0A6[0xA0AE - 0xA0A6];
+    s16 hA0AE;
+    u8 padA0B0[0xA0B2 - 0xA0B0];
+    s16 frame;
+    u8 padA0B4[0xA2B4 - 0xA0B4];
+    u8 tab[1];
+} Ctx_b597_01E01D70;
+
+typedef struct {
+    u8 pad0[8];
+    s16 h8;
+    s16 hA;
+    u8 padC[4];
+    Vec4f pos;
+    s32 rot[4];
+    Vec4f v;
+    u8 pad40[8];
+    f32 f48;
+    u8 pad4C[4];
+    s16 h50;
+    s16 h52;
+    s16 tick;
+    s16 h56;
+    s16 mode;
+    s16 ang;
+    s16 h5C;
+    u8 pad5E[2];
+    u8 col[4];
+    u8 col2[4];
+} Fx_b597_01E01D70;
+
+static s32 func_01E01D70_b597(Ctx_b597_01E01D70 *g, Fx_b597_01E01D70 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00205C40(void *);
+    Vec4f v[2];
+    s16 t;
+
+    if (o->mode == 1) {
+        o->h8 = 10;
+        o->hA = 10;
+        o->f48 = 0.0f;
+        o->h56 = (func_0019A5C8() >> 4) % 8;
+        o->v.y = 1.2f;
+        func_001076F0(o->col, 0x80, 0x80, 0x80);
+        func_001076F0(o->col2, 0x80, 0x80, 0x80);
+        o->h52 = o->h50;
+        o->mode = 2;
+        o->col2[3] = 0;
+        o->h5C = 0;
+    }
+    if (g->frame < 350) {
+        if (o->col[3] < 0x80) {
+            o->col[3] += 10;
+        }
+        if (o->col2[3] < 0x80) {
+            o->col2[3] += 10;
+        }
+    } else {
+        if (o->col[3] > 5) {
+            o->col[3] -= 4;
+        } else {
+            o->mode = 0;
+        }
+        if (o->col[3] > 5) {
+            o->col[3] -= 4;
+        }
+    }
+    if (o->tick % 2 == 0) {
+        func_001076F0(o->col, 0xC0, 0xC0, 0xC0);
+    } else {
+        func_001076F0(o->col, 0xFF, 0xFF, 0xFF);
+    }
+    t = o->tick;
+    if (t > 10 && t < 35) {
+        o->pos.y += o->v.y;
+    } else if (t >= 78 && t < 108) {
+        if (t == 78) {
+            v[1] = g->pos;
+            v[0].x = 15.0f * func_00108030(g->tab, o->h50 * 10, 1);
+            v[0].y = 15.0f * func_00108030(g->tab, o->h50 * 10, 0);
+            o->v.x = (v[1].x + v[0].x - o->pos.x) / 30.0f;
+            o->v.y = (v[1].y + v[0].y - o->pos.y) / 30.0f;
+            o->v.z = (v[1].z - o->pos.z) / 30.0f;
+            o->ang = o->h50 * 10;
+        }
+        o->pos.x += o->v.x;
+        o->pos.y += o->v.y;
+        o->pos.z += o->v.z;
+    }
+    if (o->tick < 205 && g->frame >= 221 && g->frame < 360) {
+        func_001F5620(func_001F53A0(), g->id0, &v[1]);
+        v[0].x = 15.0f * func_00108030(g->tab, o->ang, 1);
+        v[0].y = 15.0f * func_00108030(g->tab, o->ang, 0);
+        o->pos.x = g->pos.x + v[0].x;
+        o->pos.y = g->pos.y + v[0].y;
+        o->ang += 2;
+    }
+    if (o->tick >= 205) {
+        if (o->tick == 205) {
+            g->r = func_001F5380() / 13.0f;
+            if (g->r > 60.0f) {
+                g->r = 60.0f;
+            }
+            if (g->r < 10.0f) {
+                g->r = 10.0f;
+            }
+            o->ang = 0;
+            func_001F5620(func_001F5380(), g->id1, &v[1]);
+            v[0].x = g->r * func_00108030(g->tab, o->ang, 1);
+            v[0].z = g->r * func_00108030(g->tab, o->ang, 0);
+            o->v.x = (v[1].x + v[0].x - o->pos.x) / 30.0f;
+            o->v.y = (v[1].y - o->pos.y) / 30.0f;
+            o->v.z = (v[1].z + v[0].z - o->pos.z) / 30.0f;
+        }
+        if (o->tick < 235) {
+            o->pos.x += o->v.x;
+            o->pos.y += o->v.y;
+            o->pos.z += o->v.z;
+        } else {
+            func_001F5620(func_001F5380(), g->id1, &v[1]);
+            v[0].x = g->r * func_00108030(g->tab, o->ang, 1);
+            v[0].z = g->r * func_00108030(g->tab, o->ang, 0);
+            o->pos.x = v[1].x + v[0].x;
+            o->pos.z = v[1].z + v[0].z;
+            o->pos.y = v[1].y + o->f48 * func_00108030(g->tab, o->ang + g->hA0A4 * 4, 0);
+            if (g->hA0AE) {
+                o->ang -= 10;
+            } else {
+                o->ang += 10;
+            }
+            if (o->f48 < 8.0f) {
+                o->f48 += 0.5f;
+            }
+        }
+    }
+    func_00205C40(o->rot);
+    o->tick++;
+    return 0;
+}
 
 /* shape b152:01E02530, 84 insns, 2 copies: a rising white puff: set up once (random phase 0..7, climb 2.5 a frame), both
    colours fade in over 10 frames, then the first fades out (its fade-out step is applied twice); turns each
