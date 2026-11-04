@@ -2881,7 +2881,221 @@ static s32 func_01E065D0_c059(Ctx_c059_01E065D0 *c, Fx_c059_01E065D0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c059", func_01E06720_c059);
+/* shape c059:01E06720 (C059PAINT_RAIN10), 421 insns, 1 copy: draws c059 rain-10 effects in two passes by the node
+   handler: mode 0 sets a textured packet (frame 0xA at +0x52, colours 0x44 top / 0x40 bottom, scene texture 0x260C)
+   for c059:01E063A0 nodes or a gouraud one (blend 0x48, colours 0x40 / 0x44) for c059:01E05E40 nodes; otherwise
+   01E063A0 draws twelve 30x100 quads 30 degrees apart around the node (radius 0x4E) under the camera yaw, and
+   01E05E40 draws a 12-segment fan of radius 0x4C under the node rotation at its (optionally row-moved) point; the
+   inner loop on its own counter, the first ring on its own angle */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_c059_01E06720;
+
+typedef struct {
+    Rgbaq_c059_01E06720 c;
+    u64 st;
+    u64 xyz;
+} VtxT_c059_01E06720;
+
+typedef struct {
+    Rgbaq_c059_01E06720 c;
+    u64 xyz;
+} VtxG_c059_01E06720;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    VtxT_c059_01E06720 v[4];
+} PktT_c059_01E06720;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    VtxG_c059_01E06720 v[4];
+} PktG_c059_01E06720;
+
+typedef struct {
+    u8 pad0[0x10];
+    Vec4f pos;
+    f32 rot[4];
+    u8 pad30[0xC];
+    void *fn;
+    u8 col[4];
+    u8 col2[4];
+    u8 pad48[2];
+    s16 ang;
+    s16 r4C;
+    s16 r4E;
+    u8 pad50[2];
+    s16 frame;
+    u8 pad54[2];
+    s16 idx;
+} Obj_c059_01E06720;
+
+typedef struct {
+    u8 m[0x70];
+} Row_c059_01E06720;
+
+typedef struct {
+    u8 pad0[0x180];
+    u8 m[0xA0];
+    s32 rot[4];
+    u8 pad230[0x20];
+    Vec4f quad[4];
+    u8 pad290[0x260C - 0x290];
+    void *tex;
+    u8 pad2610[0x2670 - 0x2610];
+    Row_c059_01E06720 rows[1];
+    u8 pad26E0[0x2AA2 - 0x26E0];
+    s16 stage;
+    u8 pad2AA4[0x2ACC - 0x2AA4];
+    s32 ot;
+    u8 pad2AD0[0x2B20 - 0x2AD0];
+    f32 depth;
+    u8 pad2B24[0xC];
+    u8 table[0x2C9C - 0x2B30];
+    f32 lift[1];
+} Scene_c059_01E06720;
+
+static void func_01E06720_c059(Scene_c059_01E06720 *g, Obj_c059_01E06720 *o, void *p, s32 mode) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00109270(void *, s32, s32);
+    extern Rgbaq_c059_01E06720 func_00107740(void *);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, void *, s32);
+    extern void func_001094F0(void *);
+    extern void func_00205C40(void *);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00108CE0(void *, f32, f32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00109100(void *, void *, s32, void *);
+    extern void func_00107070(void *, s32, f32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_00106E40(void *, void *);
+    extern void func_00108950(void *, void *, s32, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern s32 func_001A23B0(f32);
+    extern s32 func_01E063A0_c059();
+    extern s32 func_01E05E40_c059();
+    s16 k;
+    f32 rm[4];
+    s32 rot[4];
+    Vec4f pos;
+    f32 m[16];
+    s16 i;
+    s16 n;
+    s32 c;
+    s32 a;
+    s32 b;
+    s16 j;
+    s16 s;
+    s32 t;
+    f32 x;
+    f32 z;
+
+    if (mode == 0) {
+        if (o->fn == func_01E063A0_c059) {
+            func_00106080(rm, 10, o->frame, rm);
+            func_00109270(p, 0, 0);
+            ((PktT_c059_01E06720 *)p)->v[0].c = func_00107740(o->col2);
+            ((PktT_c059_01E06720 *)p)->v[1].c = func_00107740(o->col2);
+            ((PktT_c059_01E06720 *)p)->v[2].c = func_00107740(o->col);
+            ((PktT_c059_01E06720 *)p)->v[3].c = func_00107740(o->col);
+            func_00108500(p, rm, 0);
+            func_00208700(p, g->tex, 1);
+        }
+        if (o->fn == func_01E05E40_c059) {
+            ((PktG_c059_01E06720 *)p)->count = 0x14;
+            ((PktG_c059_01E06720 *)p)->tag = 8;
+            ((PktG_c059_01E06720 *)p)->regs = 0x41414141;
+            ((PktG_c059_01E06720 *)p)->pad = 0;
+            func_002086D0(p, ((u64)0x80 << 32) | 0x48);
+            ((PktG_c059_01E06720 *)p)->v[0].c = func_00107740(o->col);
+            ((PktG_c059_01E06720 *)p)->v[1].c = func_00107740(o->col);
+            ((PktG_c059_01E06720 *)p)->v[2].c = func_00107740(o->col2);
+            ((PktG_c059_01E06720 *)p)->v[3].c = func_00107740(o->col2);
+            func_001094F0(p);
+        }
+    } else {
+        if (o->fn == func_01E063A0_c059) {
+            func_00205C40(rot);
+            rot[0] = 0;
+            func_00108EF0(m, 0, rot, 0);
+            func_00205C40(rot);
+            rot[1] = 0;
+            rot[0] = -rot[0] / 180;
+            rot[2] = 0;
+            for (i = 0, c = 0; i < 12; i++) {
+                func_00108CE0(g->quad, 30.0f, 100.0f);
+                g->quad[2].y = 0.0f;
+                g->quad[3].y = 0.0f;
+                g->quad[1].y = g->quad[0].y = 70.0f * func_00108030(g->table, 90, 0);
+                func_00109100(g->quad, rot, 1, g->table);
+                x = o->r4E * func_00108030(g->table, o->ang + c, 1);
+                z = o->r4E * func_00108030(g->table, o->ang + c, 0);
+                func_00107070(g->quad, 0, x);
+                func_00107070(g->quad, 2, z);
+                if (func_00205630(g->quad, 0x70000000, m, p, &g->depth)) {
+                    func_002075F0(p, g->ot, func_001A23B0(g->depth));
+                    func_002075F0(p, g->ot, func_001A23B0(g->depth));
+                }
+                c += 30;
+            }
+        }
+        if (o->fn == func_01E05E40_c059) {
+            func_00205C40(g->rot);
+            func_00106E40(rot, o->rot);
+            rot[0] = g->rot[0];
+            g->quad[0].x = 0.0f;
+            g->quad[0].y = 0.0f;
+            g->quad[0].z = 0.0f;
+            g->quad[1].x = 0.0f;
+            g->quad[1].y = 0.0f;
+            g->quad[1].z = 0.0f;
+            g->quad[2].z = 0.0f;
+            g->quad[3].z = 0.0f;
+            func_00107070(g->quad, 2, -10.0f);
+            func_00107070(g->quad, 2, g->lift[o->idx]);
+            pos = o->pos;
+            if (g->stage < 135) {
+                func_00108950(&pos, &g->rows[o->idx], 0, g->table);
+            }
+            for (k = 0; k <= 0; k++) {
+                func_0020EB40(g->m);
+                func_0020C940(m, 0, g->rot, &pos);
+                func_0020BC00(g->m, m);
+                b = 30;
+                for (j = 0, a = 0; j < 6; j++) {
+                    for (n = 0; n < 2; n++) {
+                        if (n == 0) s = 1; else s = -1;
+                        t = s * a;
+                        g->quad[2].x = o->r4C * func_00108030(g->table, t, 1);
+                        g->quad[2].y = o->r4C * func_00108030(g->table, t, 0);
+                        t = s * b;
+                        g->quad[3].x = o->r4C * func_00108030(g->table, t, 1);
+                        g->quad[3].y = o->r4C * func_00108030(g->table, t, 0);
+                        if (func_00205630(g->quad, 0x70000000, g->m, p, &g->depth)) {
+                            func_002075F0(p, g->ot, -1);
+                            func_002075F0(p, g->ot, -1);
+                        }
+                    }
+                    a += 30;
+                    b += 30;
+                }
+                rot[1] += 0x3000;
+            }
+        }
+    }
+}
 
 /* shape c059:01E06DC0, 88 insns: draws a scene effect (c017:01E02970 shape): mode 0 builds the gouraud packet (blend 0x48 for
    the c059:01E063A0 and c059:01E062F0 effects, else 0x42; colours swapped, q 0), other modes queue it */
