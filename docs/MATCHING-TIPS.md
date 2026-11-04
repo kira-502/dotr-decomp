@@ -404,3 +404,6 @@ there is a source form that gives the original.
   stack struct, passed as `out.o`. (b180:01E025C0)
 - **Per-quad tables in a nested grid loop walked by spilled pointers that step through both loops:** index them by the
   s16 draw counter running across both loops (`g->h[cnt]`). (b430:01E03DB0)
+- **A lone `slti $at, $v0, K` nothing reads, right before another compare of the same value:** an `if (x > K-1)` whose
+  body the optimizer drops late (`if (g->frame > 150) m = 0;` with m already 0); empty bodies are dropped too early.
+  (b520:01E01730)
