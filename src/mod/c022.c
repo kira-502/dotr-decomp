@@ -1,6 +1,186 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/nonmatchings/mod/c022", func_01E00080_c022);
+/* shape c022:01E00080 (C022_W_S), 434 insns, 1 copy: the scene step: counts the frame (0x3A48); frame 1 picks
+   the colour by kind (0x3A44, 11 colours) and spawns c022:01E00BA0 through c022:01E01730, then two rings of 24 rising
+   segments (c022:01E00750) through c022:01E00F10; frames 6, 13 and 20 two falling rings through c022:01E01580 */
+
+typedef struct {
+    u8 pad0[0x39F4];
+    u8 col[4];
+    u8 pad39F8[8];
+    s32 head;
+    u8 pad3A04[4];
+    f32 x;
+    f32 z;
+    f32 y;
+    u8 pad3A14[8];
+    f32 f3A1C;
+    u8 pad3A20[0x1A];
+    s16 h3A3A;
+    u8 pad3A3C[2];
+    s16 ang;
+    s16 h3A40;
+    s16 h3A42;
+    s16 kind;
+    u8 pad3A46[2];
+    s16 t;
+    u8 pad3A4A[4];
+    s16 h3A4E;
+} Scene_c022_01E00080;
+
+static void func_01E00080_c022(Scene_c022_01E00080 *g) {
+    extern void c022_01E00750();
+    extern void c022_01E00BA0();
+    extern void c022_01E00F10();
+    extern void c022_01E01580();
+    extern void c022_01E01730();
+    extern void func_001076F0(void *, s32, s32, s32);
+    s32 i;
+    s16 r;
+
+    g->t++;
+    if (g->t == 1) {
+        if (g->kind == 0) {
+            func_001076F0(g->col, 0x80, 0x80, 0x80);
+        } else if (g->kind == 1) {
+            func_001076F0(g->col, 0x80, 0, 0);
+        } else if (g->kind == 2) {
+            func_001076F0(g->col, 0, 0x80, 0);
+        } else if (g->kind == 3) {
+            func_001076F0(g->col, 0, 0, 0x80);
+        } else if (g->kind == 4) {
+            func_001076F0(g->col, 0x80, 0x80, 0);
+        } else if (g->kind == 5) {
+            func_001076F0(g->col, 0x80, 0, 0x80);
+        } else if (g->kind == 6) {
+            func_001076F0(g->col, 0, 0x80, 0x80);
+        } else if (g->kind == 7) {
+            func_001076F0(g->col, 0x80, 0x40, 0x80);
+        } else if (g->kind == 8) {
+            func_001076F0(g->col, 0x80, 0, 0xFF);
+        } else if (g->kind == 9) {
+            func_001076F0(g->col, 0x80, 0x40, 0);
+        } else {
+            func_001076F0(g->col, 0x80, 0x80, 0x80);
+        }
+        g->col[3] = 0;
+        c022_01E01730(g, c022_01E00BA0);
+        g->col[3] = 0;
+        for (i = 0; i < 24; i++) {
+            g->x = 30.0f;
+            g->z = 30.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = 5.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 0;
+            c022_01E00F10(g, c022_01E00750);
+        }
+        r = func_0019A5C8() % 360;
+        for (i = 0; i < 24; i++) {
+            g->x = 15.0f;
+            g->z = 15.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(r + i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = 3.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 1;
+            g->h3A4E = i;
+            c022_01E00F10(g, c022_01E00750);
+        }
+    }
+    if (g->t == 6) {
+        g->col[3] = 0;
+        for (i = 0; i < 24; i++) {
+            g->x = 30.0f;
+            g->z = 30.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = -5.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 0;
+            c022_01E01580(g, c022_01E00750);
+        }
+        r = func_0019A5C8() % 360;
+        for (i = 0; i < 24; i++) {
+            g->x = 15.0f;
+            g->z = 15.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(r + i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = -3.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 1;
+            g->h3A4E = i;
+            c022_01E01580(g, c022_01E00750);
+        }
+    }
+    if (g->t == 13) {
+        g->col[3] = 0;
+        for (i = 0; i < 24; i++) {
+            g->x = 30.0f;
+            g->z = 30.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = -5.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 0;
+            c022_01E01580(g, c022_01E00750);
+        }
+        r = func_0019A5C8() % 360;
+        for (i = 0; i < 24; i++) {
+            g->x = 15.0f;
+            g->z = 15.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(r + i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = -3.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 1;
+            g->h3A4E = i;
+            c022_01E01580(g, c022_01E00750);
+        }
+    }
+    if (g->t == 20) {
+        g->col[3] = 0;
+        for (i = 0; i < 24; i++) {
+            g->x = 30.0f;
+            g->z = 30.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = -5.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 0;
+            c022_01E01580(g, c022_01E00750);
+        }
+        r = func_0019A5C8() % 360;
+        for (i = 0; i < 24; i++) {
+            g->x = 15.0f;
+            g->z = 15.0f;
+            g->y = 15.0f;
+            g->h3A3A = (s16)(r + i * 15);
+            g->ang = func_0019A5C8() % 360;
+            g->f3A1C = -3.0f;
+            g->head = 0;
+            g->h3A40 = 0;
+            g->h3A42 = 1;
+            g->h3A4E = i;
+            c022_01E01580(g, c022_01E00750);
+        }
+    }
+}
 
 /* shape c022:01E00750, 274 insns, 1 copy (C022_OBJ_MOVE_1_): a rising ribbon segment: grows its top (f1C) by 8 up to
    220 and pulls its bottom (f20) after it (8 a tick in state 0, 5 later) while the gap is over 20; in state 100 fades
