@@ -1022,7 +1022,143 @@ static s32 func_01E03BD0_b037(Obj_b037_01E03BD0 *o, u8 *arg1, f32 r0, f32 r1, f3
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b037", func_01E03E90_b037);
+/* shape b037:01E03E90 (LkEff_SortSpiralShaver), 423 insns, 1 copy: draws three bands of 128 textured quads between
+   the four point rings of b037:01E03BD0, texture from the screen (or rotated rings when flag 0x1F), far z when flag
+   0x13 */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b037_01E03E90;
+
+typedef struct {
+    u16 c : 14;
+    u16 p : 2;
+} Tc_b037_01E03E90;
+
+typedef struct {
+    Tc_b037_01E03E90 u;
+    Tc_b037_01E03E90 v;
+    s32 pad;
+} Uv_b037_01E03E90;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b037_01E03E90 uv;
+    Xyz_b037_01E03E90 xyz;
+} Vtx_b037_01E03E90;
+
+typedef struct {
+    u16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b037_01E03E90 v[4];
+} Pkt_b037_01E03E90;
+
+typedef struct {
+    s16 x, y;
+} Sxy_b037_01E03E90;
+
+typedef struct {
+    s32 model;
+    u8 col[4];
+    u8 pad8[4];
+    s32 z;
+    Sxy_b037_01E03E90 pts[4][128];
+    s16 rot[4];
+} Obj_b037_01E03E90;
+
+static s32 func_01E03E90_b037(Obj_b037_01E03E90 *o) {
+    s32 ot;
+    s32 i;
+    s32 j;
+    s32 jn;
+    s32 a;
+    s32 b;
+    s32 k;
+    Pkt_b037_01E03E90 pkt;
+    u64 pre;
+    s32 post[3];
+
+    ot = func_00207F60();
+    ((Pkt_b037_01E03E90 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b037_01E03E90 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b037_01E03E90 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b037_01E03E90 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(o->model, 0xC) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x44);
+    } else if (func_00104520(o->model, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(o->model, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    func_01E00080_b037((Vtx_b000_01E00100 *)&pkt, (Src_b000_01E00100 *)o->col);
+    func_00208460();
+    func_00208800(func_00209E50(), 0, (s32)&pre, (s32)post);
+    func_00208460();
+    for (k = 0; k < 4; k++) {
+        o->rot[k] %= 128;
+    }
+    for (j = 0; j < 128; j++) {
+        for (i = 0; i < 3; i++) {
+            jn = j + 1;
+            if (jn == 128) {
+                jn = 0;
+            }
+            pkt.v[0].xyz.x = o->pts[i][j].x;
+            pkt.v[0].xyz.y = o->pts[i][j].y;
+            pkt.v[1].xyz.x = o->pts[i + 1][j].x;
+            pkt.v[1].xyz.y = o->pts[i + 1][j].y;
+            pkt.v[2].xyz.x = o->pts[i][jn].x;
+            pkt.v[2].xyz.y = o->pts[i][jn].y;
+            pkt.v[3].xyz.x = o->pts[i + 1][jn].x;
+            pkt.v[3].xyz.y = o->pts[i + 1][jn].y;
+            if (func_00104520(o->model, 0x1F) != 0) {
+                a = (j + o->rot[i]) % 128;
+                if (a < 0) {
+                    a += 128;
+                }
+                b = (j + 1 + o->rot[i]) % 128;
+                if (b < 0) {
+                    b += 128;
+                }
+                ((Pkt_b037_01E03E90 *)(s32)&pkt)->count |= 0x800;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[0].uv)->u.c = o->pts[i][a].x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[0].uv)->v.c = o->pts[i][a].y - 0x7200;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[1].uv)->u.c = o->pts[i + 1][a].x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[1].uv)->v.c = o->pts[i + 1][a].y - 0x7200;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[2].uv)->u.c = o->pts[i][b].x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[2].uv)->v.c = o->pts[i][b].y - 0x7200;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[3].uv)->u.c = o->pts[i + 1][b].x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[3].uv)->v.c = o->pts[i + 1][b].y - 0x7200;
+            } else {
+                ((Pkt_b037_01E03E90 *)(s32)&pkt)->count |= 0x800;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[0].uv)->u.c = pkt.v[0].xyz.x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[0].uv)->v.c = pkt.v[0].xyz.y - 0x7200;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[1].uv)->u.c = pkt.v[1].xyz.x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[1].uv)->v.c = pkt.v[1].xyz.y - 0x7200;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[2].uv)->u.c = pkt.v[2].xyz.x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[2].uv)->v.c = pkt.v[2].xyz.y - 0x7200;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[3].uv)->u.c = pkt.v[3].xyz.x - 0x6C00;
+                ((Uv_b037_01E03E90 *)(s32)&pkt.v[3].uv)->v.c = pkt.v[3].xyz.y - 0x7200;
+            }
+            if (func_00104520(o->model, 0x13) != 0) {
+                pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFF;
+                func_002075F0((s32)&pkt, 0, 0);
+            } else {
+                func_002075F0((s32)&pkt, 0, o->z);
+            }
+        }
+    }
+    func_00207FD0(ot, (s32)func_00207500(), 0);
+    return 0;
+}
 
 typedef struct {
     f32 x, y, z;
