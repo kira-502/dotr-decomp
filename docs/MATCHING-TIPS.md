@@ -378,3 +378,5 @@ there is a source form that gives the original.
   first, then divide each in place (`u = ix; v = iy; u /= -16.0f; v /= -16.0f;`). (b413:01E037E0)
 - **An integer address chain folded into one register in yours:** read the packet through `g->pk->...` at every use, not a
   `pk` local. (b413:01E037E0)
+- **`work/kr2perm.py`/`kr2c.sh` scores mean nothing for a draft with `#include "mod/<mod>.c"`:** they compare the whole
+  module object; drop the include (or use `tools/mod_infile.sh`) when scoring.
