@@ -415,3 +415,5 @@ there is a source form that gives the original.
 - **A local converted from a float result lands in the next free saved register, the original has it highest (just
   below the scene pointer):** check the caller; an extra argument it passes (`a1 = 0`) is a parameter reused as that
   local. (b120:01E00B70)
+- **`addiu a3` before `li a2` for a slot-position argument passed by value as the callee's own vector type:** make the
+  slot field a union of `Vec4f` and that type and pass the member, not `*(T *)&slot.pos`. (b065:01E02DB0)
