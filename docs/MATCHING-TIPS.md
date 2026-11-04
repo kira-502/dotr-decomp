@@ -388,3 +388,9 @@ there is a source form that gives the original.
   A zero-init in the wrong place before a loop: put it in the for-init (`for (j = 0, a = 0; ...)`). (c059:01E06720)
 - **Running sums updated by float-to-int calls at the end of a loop, spill slots not following declaration order:**
   the source is `((s32)f * i) << 4`; the compiler makes the sums itself. (b015:01E008F0)
+- **A new function matches in-file but flips a later function's float constant loads in the full build:** first try the
+  header prototypes instead of the new function's block-scope externs. (b037:01E03E90 vs b037:01E05F30)
+- **Hoisted pointers to the second u16 of a stack struct (`addiu sN, v0, 2` kept across a loop):** write both fields through
+  `((T *)(s32)&local.sub)->field`. (b037:01E03E90)
+- **Index register swapped with a stored constant in `g->slot[g->next]` stores:** `g->slot[i = g->next].used = 1;`.
+  (c403:01E00080)
