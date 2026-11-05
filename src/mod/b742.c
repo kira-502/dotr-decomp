@@ -692,7 +692,165 @@ static s32 func_01E01950_b742(Obj_b025_01E03CF0 *o, s32 kind) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b742", func_01E01AF0_b742);
+/* shape b025:01E03E90 (LkSortShockWall), 450 insns, 9 copies: draws a textured shock wall: per segment a rotated,
+   offset 6-point strip drawn as two quads, alpha fading out, the segment count growing each frame */
+
+typedef struct {
+    u16 s : 14;
+    u16 s_pad : 2;
+    u16 t : 14;
+    u16 t_pad : 2;
+    u32 pad;
+} Uv_b025_01E03E90;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b025_01E03E90 st;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_b025_01E03E90;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b025_01E03E90 v[4];
+    u8 tail[0x20];
+} Pkt_b025_01E03E90;
+
+typedef struct {
+    s32 x, y, z;
+    u8 a;
+    u8 pad;
+    s16 t;
+} Seg_b025_01E03E90;
+
+typedef struct {
+    s32 x, y, z, w;
+} Pos_b025_01E03E90;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_b000_01E00100 col;
+    f32 r;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    Vec4f q[6];
+    Seg_b025_01E03E90 *seg;
+    u8 pad84[8];
+    f32 dy;
+    f32 dx;
+    s32 arc;
+    s16 frame;
+    s16 max;
+    s16 n;
+    s16 grow;
+} Wall_b025_01E03E90;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[16];
+} Cam_b025_01E03E90;
+
+/* n: a 4th parameter the caller never passes, reused as the segment count (its spill slot needs it) */
+
+static s32 func_01E01AF0_b742(s32 ot, Wall_b025_01E03E90 *o, Cam_b025_01E03E90 *cam __attribute__((aligned(16))),
+                              s32 n) {
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f sc;
+    Pos_b025_01E03E90 pos;
+    f32 m[16];
+    Vec4f pts[6];
+    f32 d[4];
+    Pkt_b025_01E03E90 pkt;
+    s32 step;
+    s32 start;
+    s32 k;
+    s32 i;
+    s16 tu;
+
+    n = o->n;
+    if (o->max < n) {
+        n = o->n = o->max;
+    }
+    step = -(o->arc / o->max);
+    start = -(0x8000 - o->arc) >> 1;
+    ((Pkt_b025_01E03E90 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b025_01E03E90 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b025_01E03E90 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b025_01E03E90 *)(s32)&pkt)->pad = 0;
+    func_00208CB0(&pkt, ((u64)o->v << 24) | (((u64)(o->w - 1) << 4) | 0xB | ((u64)o->u << 14)) |
+                            ((u64)(o->v + o->h - 1) << 34));
+    func_00208700(&pkt, o->texture, 0);
+    if (func_00104520(o->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(o->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    func_01E00100_b742((Vtx_b000_01E00100 *)&pkt, &o->col);
+    for (k = 0; k < n; k++) {
+        sc.z = o->r * func_0020B550(start + step * k);
+        sc.x = o->r * func_0020B480(start + step * k);
+        sc.y = 0.0f;
+        pos.x = o->seg[k].x;
+        pos.y = o->seg[k].y;
+        pos.z = o->seg[k].z;
+        func_0020C940(m, 0, &pos, &sc);
+        func_0020BCF0((s32)m, (s32)cam->view);
+        for (i = 0; i < 6; i++) {
+            pts[i] = o->q[i];
+            if (i != 2 && i != 3) {
+                pts[i].x = o->q[i].x + o->dx * o->seg[k].t;
+            }
+            if (i % 2 == 0) {
+                pts[i].y = o->q[i].y + o->dy * o->seg[k].t;
+            }
+        }
+        for (i = 0; i < 2; i++) {
+            if (i != 0) {
+                pkt.v[0].a = o->seg[k].a;
+                pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = 0;
+            } else {
+                pkt.v[0].a = pkt.v[1].a = pkt.v[3].a = 0;
+                pkt.v[2].a = o->seg[k].a;
+            }
+            tu = o->seg[k].t % o->w + (o->w >> 1) * i;
+            ((Pkt_b025_01E03E90 *)(s32)&pkt)->count |= 0x800;
+            pkt.v[0].st.s = tu * 16;
+            ((Uv_b025_01E03E90 *)(s32)&pkt.v[0].st)->t = o->v * 16;
+            pkt.v[1].st.s = tu * 16;
+            ((Uv_b025_01E03E90 *)(s32)&pkt.v[1].st)->t = (o->v + o->h - 1) * 16;
+            pkt.v[2].st.s = (tu + (o->w >> 1)) * 16;
+            ((Uv_b025_01E03E90 *)(s32)&pkt.v[2].st)->t = o->v * 16;
+            pkt.v[3].st.s = (tu + (o->w >> 1)) * 16;
+            ((Uv_b025_01E03E90 *)(s32)&pkt.v[3].st)->t = (o->v + o->h - 1) * 16;
+            if (func_00205630(&pts[i * 2], 0x70000000, m, &pkt, d) != 0) {
+                if (func_00104520(o->flags, 0x13) != 0) {
+                    pkt.v[0].z = pkt.v[1].z = pkt.v[2].z = pkt.v[3].z = 0xFFFFFF;
+                    func_002075F0(&pkt, ot, 0);
+                } else if (func_00104520(o->flags, 0x12) != 0) {
+                    func_002075F0(&pkt, ot, 0xFFFFFF);
+                } else {
+                    func_002075F0(&pkt, ot, func_001A23B0(d[0]));
+                }
+            }
+        }
+        if (func_00104520(o->flags, 0x1E) == 0) {
+            o->seg[k].t++;
+        }
+    }
+    o->frame++;
+    o->n += o->grow;
+    return 0;
+}
 
 /* shape b000:01E04EC0, 148 insns, 12 copies: seed n points with random positions: flag 0x1D set and v < 0:
    +-50 / +-50 / 0..50, flag set and v >= 0: +-240 / +-240 / 240..480, flag clear: tenths of +-240 / 0..240 */
