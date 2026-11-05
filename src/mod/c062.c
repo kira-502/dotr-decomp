@@ -122,7 +122,157 @@ static void func_01E004D0_c062(Scene_c062_01E004D0 *g, u8 *fx, void *pk, s32 mod
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c062", func_01E00730_c062);
+/* shape c062:01E00730, 446 insns, 1 copy (-O3,p): five-arm star ribbons: mode 0 clears the packet; for each of the
+   scene count entries of the module order table (0x1E05948) a quad between the midpoints of its two pair points
+   (table 0x1E05930, 0x70-byte points at +0x5A50), pushed 5 along z by the side flag, drawn twice per arm (uv flipped,
+   offset by f48, or 1.75 f48 for arms 3/4) into the scene list */
+
+typedef struct {
+    s16 v[5][2];
+} Pairs_c062_01E00730;
+
+typedef struct {
+    s16 v[5];
+} Order_c062_01E00730;
+
+typedef struct {
+    Vec4f v;
+} __attribute__((aligned(16))) Pos_c062_01E00730;
+
+typedef struct {
+    f32 s, t;
+} Uv_c062_01E00730;
+
+typedef struct {
+    Uv_c062_01E00730 uv;
+    u8 pad8[8];
+} Vtx_c062_01E00730;
+
+typedef struct {
+    u8 hdr[0x10];
+    Vtx_c062_01E00730 v[4];
+} Pk_c062_01E00730;
+
+typedef struct {
+    u8 pad0[0x48];
+    f32 f48;
+    u8 pad4C[0x14];
+    u8 c60[4];
+    u8 c64[4];
+} Obj_c062_01E00730;
+
+typedef struct {
+    Vec4f a;
+    Vec4f b;
+    u8 pad20[0x50];
+} Pt_c062_01E00730;
+
+typedef struct {
+    u8 pad0[0x5A50];
+    Pt_c062_01E00730 pt[5];
+    u8 pad5C80[0x684C - 0x5C80];
+    s32 ot;
+    u8 pad6850[0x686C - 0x6850];
+    f32 depth;
+    u8 pad6870[0x6900 - 0x6870];
+    s32 n;
+    u8 pad6904[0x693A - 0x6904];
+    s16 side;
+} Scene_c062_01E00730;
+
+extern Pairs_c062_01E00730 D_01E05930_c062 __attribute__((aligned(16)));
+extern Order_c062_01E00730 D_01E05948_c062 __attribute__((aligned(8)));
+
+static inline void uv4_c062_01E00730(Pk_c062_01E00730 *pk, u8 *a, u8 *b) {
+    extern Uv_c062_01E00730 func_00107740(void *);
+
+    pk->v[0].uv = func_00107740(a);
+    pk->v[1].uv = func_00107740(b);
+    pk->v[2].uv = func_00107740(a);
+    pk->v[3].uv = func_00107740(b);
+}
+
+#pragma optimization_level 3
+
+static void func_01E00730_c062(Scene_c062_01E00730 *g, Obj_c062_01E00730 *o, Pk_c062_01E00730 *pk, s32 mode) {
+    extern void func_001092E0(void *, s32);
+    extern Pos_c062_01E00730 func_00106DD0(f32, f32, f32);
+    extern Uv_c062_01E00730 func_00107740(void *);
+    extern void func_00107070(void *, s32, f32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f q[4];
+    Pos_c062_01E00730 c;
+    Pairs_c062_01E00730 pr __attribute__((aligned(16)));
+    Order_c062_01E00730 ord __attribute__((aligned(8)));
+    Pt_c062_01E00730 *p;
+    f32 w;
+    f32 w2;
+    s16 i;
+    s16 k;
+    s16 j;
+    s16 s;
+
+    w = o->f48;
+    pr = D_01E05930_c062;
+    ord = D_01E05948_c062;
+    if (mode == 0) {
+        func_001092E0(pk, 0);
+        return;
+    }
+    w2 = 1.75f * w;
+    for (i = 0; i < g->n; i++) {
+        p = &g->pt[pr.v[ord.v[i]][0]];
+        c = func_00106DD0(p->a.x + p->b.x, p->a.y + p->b.y, p->a.z + p->b.z);
+        q[0] = c.v;
+        q[1] = c.v;
+        p = &g->pt[pr.v[ord.v[i]][1]];
+        c = func_00106DD0(p->a.x + p->b.x, p->a.y + p->b.y, p->a.z + p->b.z);
+        q[2] = c.v;
+        q[3] = c.v;
+        func_00107070(q, 2, g->side ? -5.0f : 5.0f);
+        s = ord.v[i];
+        for (k = 0; k < 2; k++) {
+            if (s == 0 || s == 1) {
+                if (k == 0) {
+                    uv4_c062_01E00730(pk, o->c60, o->c64);
+                    q[1].x -= w;
+                    q[3].x -= w;
+                } else {
+                    uv4_c062_01E00730(pk, o->c64, o->c60);
+                    func_00107070(q, 0, w);
+                }
+            }
+            if (s == 2) {
+                if (k == 0) {
+                    uv4_c062_01E00730(pk, o->c60, o->c64);
+                    q[1].y -= w;
+                    q[3].y -= w;
+                } else {
+                    uv4_c062_01E00730(pk, o->c64, o->c60);
+                    func_00107070(q, 1, w);
+                }
+            }
+            if (s == 3 || s == 4) {
+                if (k == 0) {
+                    uv4_c062_01E00730(pk, o->c60, o->c64);
+                    q[1].x -= w2;
+                    q[3].x -= w2;
+                } else {
+                    uv4_c062_01E00730(pk, o->c64, o->c60);
+                    func_00107070(q, 0, w2);
+                }
+            }
+            if (func_00205630(q, 0x70000000, NULL, pk, &g->depth)) {
+                for (j = 0; j < 4; j++) {
+                    func_002075F0(pk, g->ot, func_001A23B0(g->depth));
+                }
+            }
+        }
+    }
+}
+#pragma optimization_level reset
 
 /* shape c062:01E00E30, 134 insns: a two-pass 12.8 x 18.4 sprite grid: mode 0 sets the material (rect 256,0 256x384, the
    object's two colours, scene texture 0x685C); other modes draw it at each of the scene's points (5 rows of 6 at
