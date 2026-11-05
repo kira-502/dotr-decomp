@@ -19,7 +19,6 @@ b024:01E02ED0	99.0%	an earlier try got this far
 b024:01E03A40	86%	an earlier try got this far
 b025:01E00910	96%	an earlier try got this far
 b025:01E01FD0	94%	an earlier try got this far
-b025:01E03E90	88%	an earlier try got this far
 b029:01E003A0	63%	an earlier try got this far
 b029:01E00EF0	97% (264/273)	hard: s3/s4/s5 rotation (walker/list/bone base); calls sibling func_01E00C20_b029 now; probe search: no single/pair vreg move (best draft: drafts/mod/b029_01E00EF0.c)
 b029:01E01340	99.2%	an earlier try got this far
