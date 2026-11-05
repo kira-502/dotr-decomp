@@ -991,4 +991,186 @@ static s32 func_01E021C0_b521(Ctx_b521_01E021C0 *ctx, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b521", func_01E02310_b521);
+/* shape b521:01E02310 (B521PAINT_RAIN), 446 insns, 1 copy (-O3,p): B521PAINT_RAIN: b056:01E03B40 at -O3 on its own
+   scene layout, each of the four matrices drawn twice: first with the glow texture (0x5490) and a fixed rect (0, 0,
+   0x1F, 0x7F), then with the texture at 0x2CC and rect 0x96 */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b521_01E02310;
+
+typedef struct {
+    Rgbaq_b521_01E02310 c;
+    f32 s, t;
+    u64 xyz;
+} Vtx_b521_01E02310;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b521_01E02310 v[4];
+} Pkt_b521_01E02310;
+
+typedef union {
+    Vec4f v;
+    struct {
+        s16 x, y, w, h;
+    } r;
+} Rc_b521_01E02310;
+
+typedef struct {
+    f32 m[16];
+} Mat_b521_01E02310;
+
+typedef struct Ring_b521_01E02310 {
+    u8 pad0[4];
+    f32 y;
+    u8 pad8[0xC];
+    f32 y2;
+    u8 pad18[0x28];
+    Vec4f pos;
+    Vec4f rot;
+    u8 pad60[0x10];
+    struct Ring_b521_01E02310 *parent;
+    u8 pad74[0xC];
+    u8 col0[4];
+    u8 col1[4];
+    u8 pad88[2];
+    s16 r0;
+    s16 r1;
+    u8 pad8E[4];
+    s16 ang;
+} Ring_b521_01E02310;
+
+typedef struct {
+    u8 pad0[0x2C8];
+    void *texture;
+    void *tex2CC;
+    u8 pad2D0[0x5460 - 0x2D0];
+    Vec4f eye;
+    u8 pad5470[0x5490 - 0x5470];
+    void *glow;
+    u8 pad5494[0x54BC - 0x5494];
+    s32 ot;
+    u8 pad54C0[0x54F4 - 0x54C0];
+    f32 depth;
+    u8 pad54F8[0x5638 - 0x54F8];
+    u8 sin[4];
+} Scene_b521_01E02310;
+
+#pragma optimization_level 3
+
+static void func_01E02310_b521(Scene_b521_01E02310 *g, Ring_b521_01E02310 *o, Pkt_b521_01E02310 *pk, s32 mode) {
+    extern void func_00109270(void *, s32, s32);
+    extern Rgbaq_b521_01E02310 func_00107740(void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern Mat_b521_01E02310 func_00108EF0(void *, s32, void *);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00106FA0(void *, void *, s32);
+    extern void func_00107DD0(void *, void *, void *, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f q[4];
+    Vec4f sc;
+    Rc_b521_01E02310 c;
+    Mat_b521_01E02310 m[5];
+    s32 i;
+    s32 j;
+    Ring_b521_01E02310 *pa;
+    s16 k;
+    s16 a;
+
+    pa = o->parent;
+    a = 0;
+    if (mode == 0) {
+        func_00109270(pk, 0, 0);
+        pk->v[0].c = func_00107740(o->col0);
+        pk->v[1].c = func_00107740(o->col0);
+        pk->v[2].c = func_00107740(o->col1);
+        pk->v[3].c = func_00107740(o->col1);
+        return;
+    }
+    sc.x = 2.0f;
+    sc.y = 0.0f;
+    sc.z = 2.0f;
+    func_00208700(pk, g->texture, 1);
+    func_00106080(&c, 0x8C, 0, &c);
+    func_00108500(pk, &c, 0);
+    m[0] = func_00108EF0(&sc, 0, &g->eye);
+    sc.x = 1.4f;
+    sc.y = 0.5f;
+    sc.z = 1.4f;
+    m[1] = func_00108EF0(&sc, 0, &g->eye);
+    sc.x = 1.2f;
+    sc.y = 1.0f;
+    sc.z = 1.2f;
+    m[2] = func_00108EF0(&sc, 0, &g->eye);
+    sc.x = 0.8f;
+    sc.y = 1.5f;
+    sc.z = 0.8f;
+    m[3] = func_00108EF0(&sc, 0, &g->eye);
+    sc.x = 0.5f;
+    sc.y = 2.0f;
+    sc.z = 0.5f;
+    m[4] = func_00108EF0(&sc, 0, &g->eye);
+    for (i = 0; i < 12; i++) {
+        if (pa != NULL) {
+            k = a + pa->ang;
+            q[0].x = pa->r1 * func_00108030(g->sin, k, 1);
+            q[0].z = pa->r1 * func_00108030(g->sin, k, 0);
+            k = a + pa->ang - 30;
+            q[1].x = pa->r1 * func_00108030(g->sin, k, 1);
+            q[1].z = pa->r1 * func_00108030(g->sin, k, 0);
+            o->y = pa->y2;
+            if (pa != NULL) {
+                func_00107DD0(q, &pa->pos, &o->pos, 0);
+            }
+        } else {
+            q[0].x = o->r0 * func_00108030(g->sin, (s16)(a + o->ang), 1);
+            q[0].z = o->r0 * func_00108030(g->sin, (s16)(a + o->ang), 0);
+            q[1].x = o->r0 * func_00108030(g->sin, (s16)(a + o->ang - 30), 1);
+            q[1].z = o->r0 * func_00108030(g->sin, (s16)(a + o->ang - 30), 0);
+        }
+        k = a + o->ang;
+        q[2].x = o->r1 * func_00108030(g->sin, k, 1);
+        q[2].z = o->r1 * func_00108030(g->sin, k, 0);
+        k = a + o->ang - 30;
+        q[3].x = o->r1 * func_00108030(g->sin, k, 1);
+        q[3].z = o->r1 * func_00108030(g->sin, k, 0);
+        q[0].y = o->y;
+        q[1].y = o->y;
+        q[2].y = o->y2;
+        q[3].y = o->y2;
+        for (j = 0; j < 4; j++) {
+            if (q[j].y < 0.0f) {
+                q[j].y = 0.0f;
+            }
+        }
+        func_00106FA0(q, &o->pos, 0);
+        func_00107DD0(&q[2], &o->pos, &o->rot, 0);
+        for (j = 0; j < 4; j++) {
+            func_00208700(pk, g->glow, 1);
+            c.r.x = 0;
+            c.r.y = 0;
+            c.r.w = 0x1F;
+            c.r.h = 0x7F;
+            func_00108500(pk, &c, 0);
+            if (func_00205630(q, 0x70000000, &m[j], pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+            func_00208700(pk, g->tex2CC, 1);
+            func_00106080(&c, 0x96, 0, &c);
+            func_00108500(pk, &c, 0);
+            if (func_00205630(q, 0x70000000, &m[j], pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+        }
+        a += 30;
+    }
+}
+
+#pragma optimization_level reset
