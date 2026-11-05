@@ -425,3 +425,7 @@ there is a source form that gives the original.
   `if (!i)`. (b594:01E01840)
 - **Scene manager frame 0x10 too small, the original copying a slot position to a stack temp before a by-value call:**
   declare `Vec4f pos;` before the rm buffers and pass `pos = g->fx[k].pos; f(..., pos);`. (b362:01E02BA0)
+- **A 16-byte struct-return slot before an earlier-declared local, its copies after it:** have both calls return into one
+  aligned-16 local (`c = f(...); q[0] = c.v; q[1] = c.v;`). (c062:01E00730)
+- **The 8-byte return slots of four `func_00107740` calls in descending order, yours ascending:** a `static inline` helper
+  for the four uv sets. (c062:01E00730)
