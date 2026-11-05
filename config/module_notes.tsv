@@ -35,7 +35,6 @@ b040:01E03440	99.2%	an earlier try got this far
 b043:01E03790	82%	an earlier try got this far
 b044:01E02940	90%	an earlier try got this far
 b046:01E01520	94%	hard: STQ block only: original divides t0/256 twice and keeps t1/256 in a mov.s copy; MWCC shares t0/256 under every form tried (needs opt_propagation off so 0/64/256 stay unfolded)
-b047:01E01270	98%	an earlier try got this far
 b051:01E003A0	99.2%	an earlier try got this far
 b051:01E00DF0	98.5%	an earlier try got this far
 b051:01E04240	99%	an earlier try got this far

@@ -436,3 +436,6 @@ there is a source form that gives the original.
   scripts instead. (b025:01E03E90)
 - **Spreading by hand:** keep the donor's shape comment and type suffixes and change only the name, include and helper;
   `house.py` would turn the copy into a shape of its own. (b025:01E03E90's 8 copies)
+- **14-bit texture coordinates from `(s16)(base + i * q) << 4` sign-extended or shifted in another place than yours:** put
+  the sum in a local first, `t = (s16)(...);`, then `t *= 16;` on its own line, placed just before the first store.
+  (b047:01E01270)
