@@ -444,3 +444,5 @@ there is a source form that gives the original.
 - **An `if` whose bit test sits at the bottom of its block, entered by a `b`:** `while (cond) { ...; break; }`. (b023:01E00990)
 - **A cue-table loop masking both `t` and `e->start` with `andi 0xFFFF`:** `t >= (u16)e->start`. (b023:01E00990)
 - **Store order of `a = b = c = d = K`:** d first, then a, b, c. (b023:01E00990)
+- **A lone `addu vN, vN, $zero` after a `% K` (the block of several `rand() % K + c` where c is 0):** add a local holding
+  zero (`s32 base = 0; ... % 144 + base;`); a literal `+ 0` is folded away. (b731:01E01F40, b550:01E02130)
