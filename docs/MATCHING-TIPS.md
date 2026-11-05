@@ -429,3 +429,10 @@ there is a source form that gives the original.
   aligned-16 local (`c = f(...); q[0] = c.v; q[1] = c.v;`). (c062:01E00730)
 - **The 8-byte return slots of four `func_00107740` calls in descending order, yours ascending:** a `static inline` helper
   for the four uv sets. (c062:01E00730)
+- **A local's spill slot after the compiler temps, right before the spilled parameter, no declaration order helping:** it
+  may be an extra parameter reused as that local (`..., s32 n) { n = o->n;`), even if callers pass fewer arguments.
+  (b025:01E03E90; its LkSort sibling takes four parameters)
+- **`dk perm` scores 0 at once when only spill slots differ:** it ignores stack offsets; score with `work/kr2c.sh`-style
+  scripts instead. (b025:01E03E90)
+- **Spreading by hand:** keep the donor's shape comment and type suffixes and change only the name, include and helper;
+  `house.py` would turn the copy into a shape of its own. (b025:01E03E90's 8 copies)
