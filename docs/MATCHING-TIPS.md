@@ -421,3 +421,5 @@ there is a source form that gives the original.
   (c560:01E01E40)
 - **Packet bitfield writes through address registers where yours folds into sp offsets:** declare the field u64 and
   write through a cast, `((Uv *)&p->v[i].uv)->u = ...`. (c560:01E01E40)
+- **An s16 loop counter tested with `if (i == 0)` inside the loop, yours testing an extra sign-extended copy:** write
+  `if (!i)`. (b594:01E01840)
