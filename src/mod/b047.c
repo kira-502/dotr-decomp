@@ -197,7 +197,190 @@ static s32 func_01E01170_b047(Obj_b047_01E01170 *o, s32 owner) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b047", func_01E01270_b047);
+/* shape b047:01E01270 (LkEff_SortBeam), 454 insns, 6 copies: draws a scrolling textured beam: rows x n quads from the
+   ring points of b047:01E01170, row widths growing by speed (flag 0xF), alpha from the items capped by the colour,
+   ends faded; drawn when all four corners project */
+
+typedef struct {
+    u16 s : 14;
+    u16 s_pad : 2;
+    u16 t : 14;
+    u16 t_pad : 2;
+    u32 pad;
+} Uv_b047_01E01270;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b047_01E01270 st;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_b047_01E01270;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b047_01E01270 v[4];
+    u8 tail[0x20];
+} Pkt_b047_01E01270;
+
+typedef struct {
+    u8 pad0[0xC];
+    u8 a;
+    u8 padD[3];
+} Item_b047_01E01270;
+
+typedef struct {
+    f32 x, y;
+} Pt_b047_01E01270;
+
+typedef struct {
+    void *texture;
+    Src_b000_01E00100 col;
+    s32 flags;
+    f32 scale;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    Pt_b047_01E01270 pts[0x24];
+    s16 n;
+    s16 phase;
+    f32 width;
+    Item_b047_01E01270 *items;
+    s16 count;
+    s16 rows;
+    f32 speed;
+} Beam_b047_01E01270;
+
+typedef struct {
+    u8 pad0[0x30];
+    f32 m[16];
+} Cam_b047_01E01270;
+
+static s32 func_01E01270_b047(s32 ot __attribute__((aligned(8))), Beam_b047_01E01270 *o, Cam_b047_01E01270 *cam) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec4f p[4];
+    f32 d[4];
+    Pkt_b047_01E01270 pkt;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 base;
+    s32 vs;
+    s32 us;
+    f32 r0;
+    f32 r1;
+    s32 t0;
+    s32 t1;
+    s32 u0;
+    s32 u1;
+
+    ((Pkt_b047_01E01270 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b047_01E01270 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b047_01E01270 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b047_01E01270 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(o->flags, 0xC) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x44);
+    } else if (func_00104520(o->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(o->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    func_01E00080_b047((Vtx_b000_01E00100 *)&pkt, &o->col);
+    ((Pkt_b047_01E01270 *)(s32)&pkt)->count |= 0x800;
+    func_00208CB0(&pkt, ((u64)o->u << 4) | 0xE | ((u64)(o->u + o->w - 1) << 14) |
+                            ((u64)(o->v + o->h - 1) << 24) | ((u64)o->v << 34));
+    func_00208700(&pkt, o->texture, 1);
+    if (o->rows > o->count - 1) {
+        o->rows = o->count - 1;
+    }
+    for (i = 0; i < o->rows; i++) {
+        base = o->h - o->phase % o->h;
+        vs = o->h / o->count;
+        t0 = (s16)(base + i * vs);
+        t1 = (s16)(base + (i + 1) * vs);
+        t0 *= 16;
+        t1 *= 16;
+        for (j = 0; j < o->n; j++) {
+            us = o->w / o->n;
+            u0 = (s16)(j * us);
+            u1 = (s16)((j + 1) * us);
+            u0 *= 16;
+            pkt.v[0].st.s = u0;
+            ((Uv_b047_01E01270 *)(s32)&pkt.v[0].st)->t = t0;
+            pkt.v[1].st.s = u0;
+            ((Uv_b047_01E01270 *)(s32)&pkt.v[1].st)->t = t1;
+            u1 *= 16;
+            pkt.v[2].st.s = u1;
+            ((Uv_b047_01E01270 *)(s32)&pkt.v[2].st)->t = t0;
+            pkt.v[3].st.s = u1;
+            ((Uv_b047_01E01270 *)(s32)&pkt.v[3].st)->t = t1;
+            if (o->items[i].a < o->col.a) {
+                pkt.v[0].a = pkt.v[2].a = o->items[i].a;
+            } else {
+                pkt.v[0].a = pkt.v[2].a = o->col.a;
+            }
+            if (o->items[i + 1].a < o->col.a) {
+                pkt.v[1].a = pkt.v[3].a = o->items[i + 1].a;
+            } else {
+                pkt.v[1].a = pkt.v[3].a = o->col.a;
+            }
+            if (i == 0) {
+                pkt.v[0].a = pkt.v[2].a = 0;
+            }
+            if (i == o->rows - 1) {
+                pkt.v[1].a = pkt.v[3].a = 0;
+            }
+            k = j + 1;
+            if (k >= o->n) {
+                k = 0;
+            }
+            if (func_00104520(o->flags, 0xF) != 0) {
+                r0 = o->scale + o->speed * i;
+                r1 = o->scale + o->speed * (i + 1);
+            } else {
+                r0 = r1 = o->scale;
+            }
+            p[0].z = o->pts[j].x * r0;
+            p[0].x = o->pts[j].y * r0;
+            p[0].y = o->width * i;
+            if (func_00205440(&p[0], cam->m, &pkt.v[0].st + 1, &d[0]) != 0) {
+                o->flags |= 0x100000;
+            }
+            p[1].z = o->pts[j].x * r1;
+            p[1].x = o->pts[j].y * r1;
+            p[1].y = o->width * (i + 1);
+            if (func_00205440(&p[1], cam->m, &pkt.v[1].st + 1, &d[1]) != 0) {
+                o->flags |= 0x200000;
+            }
+            p[2].z = o->pts[k].x * r0;
+            p[2].x = o->pts[k].y * r0;
+            p[2].y = o->width * i;
+            if (func_00205440(&p[2], cam->m, &pkt.v[2].st + 1, &d[2]) != 0) {
+                o->flags |= 0x400000;
+            }
+            p[3].z = o->pts[k].x * r1;
+            p[3].x = o->pts[k].y * r1;
+            p[3].y = o->width * (i + 1);
+            if (func_00205440(&p[3], cam->m, &pkt.v[3].st + 1, &d[3]) != 0) {
+                o->flags |= 0x800000;
+            }
+            if (func_00104520(o->flags, 0x14) != 0 && func_00104520(o->flags, 0x15) != 0 &&
+                func_00104520(o->flags, 0x16) != 0 && func_00104520(o->flags, 0x17) != 0) {
+                func_002075F0(&pkt, ot, (u32)((d[3] + (d[2] + (d[0] + d[1]))) / 4.0f));
+            }
+            o->flags &= 0xFF0FFFFF;
+        }
+    }
+    o->phase++;
+    return 0;
+}
 
 /* shape b047:01E01990 (b047), 429 insns, 1 copy: b047 scene manager: code >= 0 sets up three beams between joint
    pairs and a 256-particle emitter; else aims the beams, fades in, draws them (random blue from tick 58, faded past
