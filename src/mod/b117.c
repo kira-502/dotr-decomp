@@ -721,7 +721,259 @@ static s32 func_01E01D00_b117(Game_b117_01E01D00 *g, Fx_b117_01E01D00 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b117", func_01E01D80_b117);
+/* shape b117:01E01D80, 447 insns, 1 copy: b117 scene manager (b130:01E013E0 form): setup (three joints, textures 0..2
+   and 14..15, a 32-point trail emitter); steps b117:01E00CB0 and every live node (the b117:01E01780 flash and
+   b117:01E01D00 bodies written out), draws each node twice, from frame 27 pushes the 10-point trail head and draws
+   and fades the trail, grows the scale after frame 20; returns 1 / 4 / 2 at frames 41 / 61 / 51, 8 once the 70-frame
+   countdown runs out */
+
+typedef struct {
+    u8 pad0[0x24];
+    void *fn;
+    u8 col[4];
+    u8 pad2C[6];
+    s16 tick;
+    u8 pad34[2];
+    s16 used;
+    s16 f38;
+    u8 pad3A[6];
+} Fx_b117_01E01D80;
+
+typedef struct {
+    void *tex;
+    u8 b, g, r, a;
+    s32 flags;
+    f32 base;
+    s16 rect[8];
+    u8 pad20[2];
+    s16 kind;
+    s16 h24;
+    s16 limit;
+    s16 count;
+    s16 idx;
+    s16 h2C;
+    u8 pad2E[2];
+} Trail_b117_01E01D80;
+
+typedef struct {
+    u8 pad0[0xC0];
+    f32 sx, sy, sz;
+    u8 padCC[0xE0 - 0xCC];
+    s32 tex[16];
+    u8 pad120[0x294 - 0x120];
+    Fx_b117_01E01D80 fx[220];
+    u8 pad3994[0x3A70 - 0x3994];
+    Vec4f tr[10];
+    u8 pad3B10[0x20];
+    s32 count;
+    u8 pad3B34[8];
+    s32 ot;
+    u8 pad3B40[0x38];
+    s16 j78;
+    s16 j7A;
+    s16 j7C;
+    u8 pad3B7E[0xC];
+    s16 id;
+    s16 t;
+    u8 pad3B8E[2];
+    u8 cam[0x170];
+    u8 crd[0x70];
+    Trail_b117_01E01D80 trail;
+    Pt_b000_01E03A30 pts[32];
+} Scene_b117_01E01D80;
+
+static void func_01E025E0_b117();
+static void func_01E027F0_b117();
+static void func_01E02A30_b117();
+static void func_01E02C00_b117();
+
+static s32 func_01E01D80_b117(s32 arg0, s32 id) {
+    Scene_b117_01E01D80 *g = (Scene_b117_01E01D80 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern void func_001F7170(s32, s32, void *, void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern void func_00103290(void *, s32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern void func_01E00CB0_b117();
+    extern void b117_01E00270();
+    s32 j;
+    s32 n;
+    Vec4f v;
+    s32 tex[2];
+    u8 buf[0x90] __attribute__((aligned(8)));
+    F_b117_01E01D00 b;
+    F_b117_01E01D00 a;
+    s32 i;
+
+    n = 0;
+    g->ot = func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x3FA0);
+        func_00107C10(g->cam);
+        g->id = id;
+        g->count = 70;
+        g->sx = 0.0f;
+        g->sy = 0.0f;
+        g->sz = 0.0f;
+        g->j78 = func_001F5560(func_001F53A0(), 0x1A, 1);
+        g->j7A = func_001F5560(func_001F5380(), 1, 1);
+        g->j7C = func_001F5560(func_001F53A0(), 0xD, 0);
+        for (i = 0; i < 3; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        for (i = 14; i < 16; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        func_00103890(g->crd);
+        func_00103290(tex, 0);
+        g->trail.tex = (void *)tex[0];
+        g->trail.flags = 0x8003;
+        g->trail.r = 0x80;
+        g->trail.g = 0x80;
+        g->trail.b = 0x80;
+        g->trail.a = 0x80;
+        g->trail.rect[0] = 0x10;
+        g->trail.rect[1] = 0;
+        g->trail.rect[2] = 0x10;
+        g->trail.rect[3] = 0x20;
+        g->trail.rect[4] = 0x10;
+        g->trail.rect[5] = 0;
+        g->trail.rect[6] = 0x80;
+        g->trail.rect[7] = 0x40;
+        g->trail.base = 10.0f;
+        g->trail.kind = 0x10;
+        g->trail.h24 = 0;
+        g->trail.limit = 50;
+        g->trail.count = 0x20;
+        g->trail.idx = 0;
+        g->trail.h2C = 1;
+        return 0;
+    }
+    func_01E00CB0_b117(g, 0);
+    for (j = 0; j < 220; j++) {
+        if (g->fx[j].used != 0) {
+            if (g->fx[j].fn == func_01E01070_b117) {
+                func_01E01070_b117(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01290_b117) {
+                func_01E01290_b117(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01490_b117) {
+                func_01E01490_b117(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01640_b117) {
+                func_01E01640_b117(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01780_b117) {
+                if (g->fx[j].used == 1) {
+                    g->fx[j].f38 = 17;
+                    func_001076F0(g->fx[j].col, 0x8F, 0x8F, 0);
+                    g->fx[j].used = 2;
+                }
+                if (g->fx[j].tick < 2) {
+                    g->fx[j].col[3] += 0x40;
+                } else if (g->fx[j].col[3] > 0x10) {
+                    g->fx[j].col[3] -= 10;
+                } else {
+                    g->fx[j].used = 0;
+                }
+                g->fx[j].tick++;
+            }
+            if (g->fx[j].fn == func_01E01820_b117) {
+                func_01E01820_b117(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E019D0_b117) {
+                func_01E019D0_b117(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01BB0_b117) {
+                func_01E01BB0_b117(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01D00_b117) {
+                a = D_01E02E00_b117;
+                b = D_01E02E08_b117;
+                func_001F7170(4, 0, &a, &b, 0);
+                if (g->t == 40) {
+                    g->fx[j].used = 0;
+                }
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &v);
+    v.z -= 25.0f;
+    for (i = 0; i < 220; i++) {
+        if (g->fx[i].used != 0) {
+            n++;
+            if (g->fx[i].fn == func_01E01070_b117) {
+                func_01E025E0_b117(g, &g->fx[i], buf, 0);
+                func_01E025E0_b117(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01290_b117) {
+                func_01E02C00_b117(g, &g->fx[i], buf, 0);
+                func_01E02C00_b117(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01640_b117) {
+                func_01E027F0_b117(g, &g->fx[i], buf, 0);
+                func_01E027F0_b117(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01780_b117) {
+                func_01E02A30_b117(g, &g->fx[i], buf, 0);
+                func_01E02A30_b117(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E01820_b117) {
+                func_01E02A30_b117(g, &g->fx[i], buf, 0);
+                func_01E02A30_b117(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E019D0_b117) {
+                func_01E02C00_b117(g, &g->fx[i], buf, 0);
+                func_01E02C00_b117(g, &g->fx[i], buf, 1);
+            }
+        }
+    }
+    if (g->t > 26) {
+        func_01E00120_b117((Obj_b000_01E03A30 *)&g->trail, g->pts, &g->tr[0].x);
+    }
+    func_001038D0(g->crd);
+    if (g->t > 26) {
+        b117_01E00270(g->ot, &g->trail, g->pts, g->crd);
+        for (n = 0; n < g->trail.idx; n++) {
+            func_00103470(&g->pts[n].c, 0, 5);
+        }
+    }
+    if (g->t > 20) {
+        if (g->sx < 0.5) {
+            g->sx += 0.01f;
+        }
+        g->sy = 0.1f;
+        if (g->sz < 0.5) {
+            g->sz += 0.01f;
+        }
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->t == 41) {
+        return 1;
+    }
+    if (g->t == 61) {
+        return 4;
+    }
+    if (g->t == 51) {
+        return 2;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b117:01E02480, 85 insns: spawns an effect: handler b117:01E01490 always takes slot 0, others the first free of slots
    1..219 (0x40 bytes, b089:01E030B0 shape); colours it from the context, places it at the context's position and stores the
