@@ -439,3 +439,5 @@ there is a source form that gives the original.
 - **14-bit texture coordinates from `(s16)(base + i * q) << 4` sign-extended or shifted in another place than yours:** put
   the sum in a local first, `t = (s16)(...);`, then `t *= 16;` on its own line, placed just before the first store.
   (b047:01E01270)
+- **A draw at `pos + vel * h` with the int-to-float conversion of h out of place:** convert it once into an f32 local
+  before the first store and multiply by the local. (b434:01E02570)
