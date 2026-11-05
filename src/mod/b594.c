@@ -602,7 +602,159 @@ static void func_01E01500_b594(Obj_b094_01E01230 *obj, Cam_b094_01E01230 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b594", func_01E01840_b594);
+/* shape b594:01E01840 (B594_W_S), 441 insns, 1 copy: the scene script: t++; from 140 to 350 the limit at 0x70A4 grows
+   by 2 up to 10 x the model value, capped at 140; on frame 1 the b594:01E02CB0 backdrop and the b594:01E01F30 flash
+   at joint 0x70C8 (z +-17 by the flag), which then glides to joint 0 over frames 285..334; every 30 frames from 25 it
+   rolls eight random joints, every 4th frame a b594:01E02090 flame at each; rings, side flames, shards and sparks in
+   their own frame windows */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x7030 - 0x260];
+    Vec4f p;
+    u8 pad7040[0x10];
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    u8 pad705C[0x70A4 - 0x705C];
+    f32 lim;
+    u8 pad70A8[0x10];
+    s16 j[8];
+    s16 jC8;
+    u8 pad70CA[0x70F4 - 0x70CA];
+    s16 idx;
+    u8 pad70F6[2];
+    s16 flag;
+    u8 pad70FA[2];
+    s16 t;
+} Scene_b594_01E01840;
+
+static void func_01E01840_b594(Scene_b594_01E01840 *g) {
+    extern void b594_01E01F30();
+    extern void b594_01E02090();
+    extern void b594_01E02280();
+    extern void b594_01E023F0();
+    extern void b594_01E025E0();
+    extern void b594_01E02790();
+    extern void b594_01E02950();
+    extern void b594_01E02B00();
+    extern void b594_01E02CB0();
+    extern s32 b594_01E03770();
+    extern s32 func_001F5380(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F54E0(s32);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_001F5860(s32);
+    extern void func_001F5F90(s32, void *);
+    Vec4f v[2];
+    s32 n;
+    s16 i;
+
+    g->t++;
+    if (g->t >= 140 && g->t < 351) {
+        if (g->lim < 10.0f * func_001F5860(func_001F5380())) {
+            g->lim += 2.0f;
+        }
+        if (g->lim > 140.0f) {
+            g->lim = 140.0f;
+        }
+    }
+    if (g->t == 1) {
+        b594_01E03770(g, b594_01E02CB0, 0);
+    }
+    if (g->t < 285) {
+        if (g->t == 1) {
+            func_001F5620(func_001F5380(), g->jC8, &g->p);
+            func_001F5F90(func_001F5380(), &g->p);
+            if (g->flag) {
+                g->p.z += 17.0f;
+            } else {
+                g->p.z -= 17.0f;
+            }
+            g->idx = 0;
+            b594_01E03770(g, b594_01E01F30, 0);
+        }
+    } else {
+        if (g->t == 285) {
+            func_001F5620(func_001F53A0(), g->j[0], v);
+            g->dz = (v[0].z - g->p.z) / 50.0f;
+            g->dy = (v[0].y - g->p.y) / 50.0f;
+            g->dx = (v[0].x - g->p.x) / 50.0f;
+        }
+        if (g->t < 335) {
+            g->p.z += g->dz;
+            g->p.y += g->dy;
+            g->p.x += g->dx;
+        }
+    }
+    if (g->t >= 25 && g->t < 335) {
+        if (g->t % 30 == 1) {
+            for (i = 0; i < 8; i++) {
+                n = func_001F54E0(func_001F5380());
+                n = (s16)(func_0019A5C8() % n);
+                if (n == 0) {
+                    n = (s16)(n + 1);
+                }
+                if (!i) {
+                    g->j[i] = func_001F5560(func_001F5380(), (s16)n, 1);
+                } else {
+                    g->j[i] = func_001F5560(func_001F5380(), (s16)n, 0);
+                }
+            }
+        } else if (g->t % 4 == 0) {
+            for (i = 0; i < 8; i++) {
+                func_001F5620(func_001F5380(), g->j[i], v);
+                g->pos = v[0];
+                g->idx = i;
+                b594_01E03770(g, b594_01E02090, 0);
+            }
+        }
+    }
+    if (g->t >= 25 && g->t < 335) {
+        g->idx = 0;
+        b594_01E03770(g, b594_01E02280, 0);
+    }
+    if (g->t >= 337 && g->t < 451) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        g->pos.x += 1.0f;
+        g->pos.y -= 1.2f;
+        if (g->flag) {
+            g->pos.z += 0.7f;
+        } else {
+            g->pos.z -= 0.7f;
+        }
+        b594_01E03770(g, b594_01E023F0, 0);
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        g->pos.x -= 1.0f;
+        g->pos.y -= 1.2f;
+        if (g->flag) {
+            g->pos.z += 0.7f;
+        } else {
+            g->pos.z -= 0.7f;
+        }
+        b594_01E03770(g, b594_01E023F0, 0);
+    }
+    if (g->t >= 97 && g->t < 321) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        g->pos.y -= 0.5f;
+        b594_01E03770(g, b594_01E025E0, 0);
+    }
+    if (g->t >= 97 && g->t < 321) {
+        g->pos = g->p;
+        b594_01E03770(g, b594_01E02B00, 0);
+    }
+    if (g->t >= 88 && g->t < 321) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        g->pos.y -= 0.5f;
+        b594_01E03770(g, b594_01E02950, 0);
+    }
+    if (g->t >= 137 && g->t < 321) {
+        g->pos = g->p;
+        b594_01E03770(g, b594_01E02790, 0);
+    }
+}
 
 /* shape b594:01E01F30, 88 insns: a green flickering spinning flash (b432:01E026D0 family): f4C from the game each frame,
    size 10x10; second alpha up by 0x40 to 0x80 for 4 frames, then once the game timer passes 0x1E5 down by 11 until it
