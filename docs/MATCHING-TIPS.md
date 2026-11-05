@@ -423,3 +423,5 @@ there is a source form that gives the original.
   write through a cast, `((Uv *)&p->v[i].uv)->u = ...`. (c560:01E01E40)
 - **An s16 loop counter tested with `if (i == 0)` inside the loop, yours testing an extra sign-extended copy:** write
   `if (!i)`. (b594:01E01840)
+- **Scene manager frame 0x10 too small, the original copying a slot position to a stack temp before a by-value call:**
+  declare `Vec4f pos;` before the rm buffers and pass `pos = g->fx[k].pos; f(..., pos);`. (b362:01E02BA0)
