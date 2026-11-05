@@ -1031,7 +1031,159 @@ static s32 func_01E02AC0_b118(Dome_b118_01E02AC0 *o, s32 id, f32 r) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b118", func_01E02BB0_b118);
+/* shape b118:01E02BB0 (LkSortBall), 447 insns, 1 copy: draws the 8 x 16 point hemisphere built by b118:01E02AC0
+   as 7 x 16 textured quads (the colour helper, UV or ST rect, flags 0x18/0x13/0x14-0x17 as c505:01E003D0) */
+
+typedef struct {
+    u8 b, g, r, a;
+} Src_b118_01E02BB0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    union {
+        struct {
+            f32 s, t;
+        } st;
+        struct {
+            u64 u : 14;
+            u64 pad0 : 2;
+            u64 v : 14;
+            u64 pad1 : 34;
+        } uv;
+    } tc;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_b118_01E02BB0;
+
+typedef struct {
+    u64 u : 14;
+    u64 pad0 : 2;
+    u64 v : 14;
+    u64 pad1 : 34;
+} UV_b118_01E02BB0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b118_01E02BB0 v[4];
+    u8 tail[0x20];
+} Pkt_b118_01E02BB0;
+
+typedef struct {
+    f32 x, y, z;
+} P3_b118_01E02BB0;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_b118_01E02BB0 color;
+    u8 pad0C[4];
+    union {
+        struct {
+            s16 u, v, w, h;
+        } i;
+        struct {
+            f32 s, t, w, h;
+        } f;
+    } rect;
+    P3_b118_01E02BB0 p[8][16];
+} Ball_b118_01E02BB0;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[1];
+} Cam_b118_01E02BB0;
+
+static s32 func_01E02BB0_b118(s32 obj, Ball_b118_01E02BB0 *o, Cam_b118_01E02BB0 *cam) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 depth[4];
+    Pkt_b118_01E02BB0 pkt;
+    s32 i;
+    s32 j;
+
+    ((Pkt_b118_01E02BB0 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b118_01E02BB0 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b118_01E02BB0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b118_01E02BB0 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(o->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(o->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    func_01E00080_b118((Vtx_b000_01E00100 *)&pkt, (Src_b000_01E00100 *)&o->color);
+    if (func_00104520(o->flags, 0) != 0) {
+        ((Pkt_b118_01E02BB0 *)(s32)&pkt)->count |= 0x800;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[0].tc)->u = o->rect.i.u * 16;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[0].tc)->v = o->rect.i.v * 16;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[1].tc)->u = o->rect.i.u * 16;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[1].tc)->v = (o->rect.i.v + o->rect.i.h - 1) * 16;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[2].tc)->u = (o->rect.i.u + o->rect.i.w - 1) * 16;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[2].tc)->v = o->rect.i.v * 16;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[3].tc)->u = (o->rect.i.u + o->rect.i.w - 1) * 16;
+        ((UV_b118_01E02BB0 *)(s32)&pkt.v[3].tc)->v = (o->rect.i.v + o->rect.i.h - 1) * 16;
+    } else {
+        pkt.v[0].tc.st.s = o->rect.f.s;
+        pkt.v[0].tc.st.t = o->rect.f.t;
+        pkt.v[1].tc.st.s = o->rect.f.s;
+        pkt.v[1].tc.st.t = o->rect.f.t + o->rect.f.h;
+        pkt.v[2].tc.st.s = o->rect.f.s + o->rect.f.w;
+        pkt.v[2].tc.st.t = o->rect.f.t;
+        pkt.v[3].tc.st.s = o->rect.f.s + o->rect.f.w;
+        pkt.v[3].tc.st.t = o->rect.f.t + o->rect.f.h;
+    }
+    for (j = 1; j < 8; j++) {
+        for (i = 0; i < 16; i++) {
+            if (i == 0) {
+                if (func_00205440(&o->p[j - 1][15], cam->view, &pkt.v[0].tc + 1, &depth[0]) != 0) {
+                    o->flags |= 0x100000;
+                }
+                if (func_00205440(&o->p[j][15], cam->view, &pkt.v[1].tc + 1, &depth[1]) != 0) {
+                    o->flags |= 0x200000;
+                }
+            } else {
+                if (func_00205440(&o->p[j - 1][i - 1], cam->view, &pkt.v[0].tc + 1, &depth[0]) != 0) {
+                    o->flags |= 0x100000;
+                }
+                if (func_00205440(&o->p[j][i - 1], cam->view, &pkt.v[1].tc + 1, &depth[1]) != 0) {
+                    o->flags |= 0x200000;
+                }
+            }
+            if (func_00205440(&o->p[j - 1][i], cam->view, &pkt.v[2].tc + 1, &depth[2]) != 0) {
+                o->flags |= 0x400000;
+            }
+            if (func_00205440(&o->p[j][i], cam->view, &pkt.v[3].tc + 1, &depth[3]) != 0) {
+                o->flags |= 0x800000;
+            }
+            if (func_00104520(o->flags, 0x18) != 0) {
+                func_00208700(&pkt, o->texture, 0);
+            } else {
+                if (func_00104520(o->flags, 0) != 0) {
+                    func_00208CB0(&pkt, (u64)0xA | ((u64)o->rect.i.u << 4) |
+                                            ((u64)(o->rect.i.u + o->rect.i.w - 1) << 14) |
+                                            ((u64)o->rect.i.v << 24) | ((u64)(o->rect.i.v + o->rect.i.h - 1) << 34));
+                }
+                func_00208700(&pkt, o->texture, 1);
+            }
+            if (func_00104520(o->flags, 0x13) != 0) {
+                pkt.v[0].z = pkt.v[1].z = pkt.v[2].z = pkt.v[3].z = 0xFFFFFF;
+                func_002075F0(&pkt, obj, 0);
+            } else if (func_00104520(o->flags, 0x14) != 0 && func_00104520(o->flags, 0x15) != 0 &&
+                       func_00104520(o->flags, 0x16) != 0 && func_00104520(o->flags, 0x17) != 0) {
+                func_002075F0(&pkt, obj, func_001A23B0((depth[0] + depth[1] + depth[2] + depth[3]) / 4.0f));
+            }
+            o->flags &= 0xFF0FFFFF;
+        }
+    }
+    return 0;
+}
 
 typedef struct V4_b000_01E032C0 {
     f32 x, y, z, w;
