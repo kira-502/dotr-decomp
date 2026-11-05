@@ -183,4 +183,178 @@ static s32 func_01E00080_b023(Fx_b023_01E00080 *obj, s32 target, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b023", func_01E00990_b023);
+/* shape b023:01E00990 (b023), 458 insns, 1 copy (-O2,p): the scene manager in b181:01E03830's form: sets up two
+   units; frames 0xB6..0x133 spawn a gust puff at the model, odd frames 0x12D..0x1A3 scattered puffs at unit B; then
+   the cue table and the puff draw (ShFx_Gus) */
+
+typedef struct {
+    u16 start;
+    u16 end;
+    u8 motion;
+    u8 flags;
+    u8 rate;
+    u8 pad7;
+    s32 w8;
+    u8 c0[4];
+    u8 c1[4];
+} Cue_b023_01E00990;
+
+typedef struct {
+    u16 t;
+    u8 pad2[2];
+    s32 unitA;
+    s32 unitB;
+    s32 model;
+    s32 model2;
+    u8 pad14[0x18];
+    u8 cam[4];
+    s32 side;
+    u8 pad34[8];
+    Fx_b023_01E00080 fx[150];
+    s8 tbl[0x100];
+} Scene_b023_01E00990;
+
+#pragma optimization_level 2
+
+static s32 func_01E00990_b023(Scene_b023_01E00990 *g, s32 code) {
+    extern s32 func_00207500(void);
+    extern void func_00198948(void *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_00102330(void *, s32);
+    extern void func_001F63E0(s32, u8 *);
+    extern s32 func_00101C30(void *, s32, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00101AD0(void *, s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern s32 func_0019A5C8(void);
+    extern void func_001F71A0(s32, s32, s32, void *, void *, s32);
+    extern Cue_b023_01E00990 D_01E01100_b023[];
+    s32 ot;
+    Vec4f v;
+    u8 col[4];
+    s32 i;
+    Cue_b023_01E00990 *e;
+    u16 t;
+    s32 unit;
+    s32 n;
+
+    ot = func_00207500();
+    if (code == -3 || code == -2) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00198948(g, 0, 0x2914);
+        g->unitA = func_001F53A0();
+        g->unitB = func_001F5380();
+        func_001F6160(g->unitA, g->cam);
+        func_00202BF0(4, 0xF);
+        for (i = 0; i < 1; i++) {
+            func_00202BF0(5, i);
+        }
+        g->model = func_001F5560(g->unitA, 0x1C, 1);
+        g->model2 = func_001F5560(g->unitA, 0x2E, 0);
+        func_00102330(g->tbl, 0x100);
+        return 0;
+    }
+    g->t++;
+    switch (g->t) {
+    case 0x1D5:
+        col[2] = col[1] = col[0] = col[3] = 0x80;
+        func_001F63E0(g->unitA, col);
+        break;
+    case 0x1D6:
+        return 8;
+    }
+    if (g->t >= 0xB6 && g->t < 0x134) {
+        n = func_00101C30(g->fx, 0x44, 0x96);
+        if (n >= 0) {
+            func_00101AD0(&g->fx[n], 0x8C, 0, 0xFF);
+            g->fx[n].flags = ((func_0019A5C8() >> 4) & 3) << 4 | 4;
+            g->fx[n].texkind = 0;
+            g->fx[n].page = 1;
+            g->fx[n].frame = ((func_0019A5C8() >> 4) + 2) & 3;
+            g->fx[n].shift = 0;
+            g->fx[n].r = ((func_0019A5C8() >> 4) & 0x3F) + 0x18;
+            g->fx[n].g = ((func_0019A5C8() >> 4) & 0x3F) + 0x18;
+            g->fx[n].b = 0x60;
+            g->fx[n].a = 0xF0;
+            g->fx[n].width = 100.0f;
+            g->fx[n].grow = 4.0f;
+            g->fx[n].floor = 0.0f;
+            g->fx[n].gravity = 0.0f;
+            func_001F5620(g->unitA, g->model, &v);
+            g->fx[n].x = v.x;
+            g->fx[n].y = v.y;
+            g->fx[n].z = v.z;
+            g->fx[n].vx = ((func_0019A5C8() >> 4) % 20 - 10) / 100.0f;
+            g->fx[n].vy = ((func_0019A5C8() >> 4) % 20 - 10) / 100.0f;
+            if (g->side == 0x8000) {
+                g->fx[n].vz = -1.4f;
+            } else {
+                g->fx[n].vz = 1.4f;
+            }
+        }
+    }
+    if (g->t > 0x12C && g->t < 0x1A4) {
+        while (g->t & 1) {
+            func_001F5F90(g->unitB, &v);
+            n = func_00101C30(g->fx, 0x44, 0x96);
+            if (n < 0) {
+                break;
+            }
+            func_00101AD0(&g->fx[n], 0x30, 0, 0xFF);
+            g->fx[n].flags = ((func_0019A5C8() >> 4) & 3) << 4 | 4;
+            g->fx[n].texkind = 0;
+            g->fx[n].page = 1;
+            g->fx[n].frame = ((func_0019A5C8() >> 4) + 2) & 3;
+            g->fx[n].shift = 0;
+            g->fx[n].r = ((func_0019A5C8() >> 4) & 0x3F) + 0x18;
+            g->fx[n].g = ((func_0019A5C8() >> 4) & 0x3F) + 0x18;
+            g->fx[n].b = 0x60;
+            g->fx[n].a = 0xF0;
+            g->fx[n].width = 240.0f;
+            g->fx[n].grow = 25.0f;
+            g->fx[n].floor = 0.0f;
+            g->fx[n].gravity = 0.0f;
+            func_001F5F90(g->unitB, &v);
+            g->fx[n].x = v.x + ((func_0019A5C8() >> 4) % 0xA28 - 0x514) / 100.0f;
+            g->fx[n].y = v.y + ((func_0019A5C8() >> 4) % 0xA28 - 0x514) / 100.0f;
+            g->fx[n].z = v.z + ((func_0019A5C8() >> 4) % 0xA28 - 0x514) / 100.0f;
+            g->fx[n].vz = 0.0f;
+            g->fx[n].vx = 0.0f;
+            g->fx[n].vy = 0.25f;
+            break;
+        }
+    }
+    t = g->t;
+    for (e = D_01E01100_b023; e->start != 0; e++) {
+        if (t >= (u16)e->start && t <= e->end) {
+            if (e->flags & 0x80) {
+                unit = func_001F5380();
+            } else {
+                unit = func_001F53A0();
+            }
+            if (e->flags & 0x40) {
+                e->c0[3] = e->c1[3] = (t - *(u8 *)&e->start) * e->rate;
+            }
+            func_001F71A0(unit, e->motion, e->flags & 3, e->c0, e->c1, e->w8);
+            break;
+        }
+    }
+    func_01E00080_b023(g->fx, ot, 0xA0);
+    if (g->t >= 0x12C && g->t <= 0x1C8) {
+        return 6;
+    }
+    switch (g->t) {
+    case 0x122:
+        return 1;
+    case 0x1C9:
+        return 2;
+    }
+    return 0;
+}
+#pragma optimization_level reset
