@@ -441,3 +441,6 @@ there is a source form that gives the original.
   (b047:01E01270)
 - **A draw at `pos + vel * h` with the int-to-float conversion of h out of place:** convert it once into an f32 local
   before the first store and multiply by the local. (b434:01E02570)
+- **An `if` whose bit test sits at the bottom of its block, entered by a `b`:** `while (cond) { ...; break; }`. (b023:01E00990)
+- **A cue-table loop masking both `t` and `e->start` with `andi 0xFFFF`:** `t >= (u16)e->start`. (b023:01E00990)
+- **Store order of `a = b = c = d = K`:** d first, then a, b, c. (b023:01E00990)
