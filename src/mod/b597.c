@@ -521,7 +521,135 @@ static Rect_b152_01E014F0 func_01E014F0_b597(s32 unused, s16 n) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b597", func_01E01640_b597);
+/* shape b597:01E01640 (B597_W_S), 460 insns, 1 copy: the scene script: counts the frame (0xA0B2); frame 1 spawns
+   b597:01E03040; from 141 the sizes at 0x9FC0/0x9FC4 grow to 80/50; from 15, 36 sparks (b597:01E01D70) and two
+   b597:01E02460 a frame until 200 at random spots round joint 0xA030; frames 80..350 b597:01E025B0 at joint 0xA032;
+   frame 30 places the point 0x3BB0 (z +-10 by the flag); frames 280..340 two orbiting b597:01E02750 and a
+   b597:01E02EA0; frame 175 the b597:01E02A20 pair and eight b597:01E02CC0 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x3BB0 - 0x260];
+    Vec4f p;
+    u8 pad3BC0[0x9FC0 - 0x3BC0];
+    f32 w;
+    f32 h;
+    u8 pad9FC8[0xA030 - 0x9FC8];
+    s16 id;
+    s16 id0;
+    u8 padA034[0xA040 - 0xA034];
+    s16 id1;
+    u8 padA042[0xA09A - 0xA042];
+    s16 cnt;
+    u8 padA09C[0xA0A4 - 0xA09C];
+    s16 ang;
+    u8 padA0A6[0xA0AA - 0xA0A6];
+    s16 idx;
+    u8 padA0AC[0xA0AE - 0xA0AC];
+    s16 flag;
+    u8 padA0B0[0xA0B2 - 0xA0B0];
+    s16 frame;
+    u8 padA0B4[0xA2B4 - 0xA0B4];
+    u8 tab[1];
+} Scene_b597_01E01640;
+
+static void func_01E01640_b597(Scene_b597_01E01640 *g) {
+    extern void b597_01E01D70();
+    extern void b597_01E02460();
+    extern void b597_01E025B0();
+    extern void b597_01E02750();
+    extern void b597_01E02A20();
+    extern void b597_01E02CC0();
+    extern void b597_01E02EA0();
+    extern void b597_01E03040();
+    extern s32 b597_01E03E50();
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    s16 i;
+
+    g->frame++;
+    if (g->frame == 1) {
+        b597_01E03E50(g, b597_01E03040, 0);
+    }
+    if (g->frame == 141) {
+        g->idx = 0;
+    }
+    if (g->frame >= 141) {
+        if (g->h < 50.0f) {
+            g->h += 1.5f;
+        }
+        if (g->w < 80.0f) {
+            g->w += 1.0f;
+        }
+    }
+    if (g->frame >= 15) {
+        if (g->cnt < 36) {
+            func_001F5620(func_001F53A0(), g->id, &g->pos);
+            g->idx = g->cnt;
+            g->pos.y = 30.0f;
+            g->pos.x += func_0019A5C8() % 60 - 30;
+            g->pos.z += func_0019A5C8() % 60 - 30;
+            g->pos.y += func_0019A5C8() % 20 - 10;
+            b597_01E03E50(g, b597_01E01D70, 0);
+            g->cnt++;
+        }
+    }
+    if (g->frame >= 80 && g->frame < 351) {
+        func_001F5620(func_001F53A0(), g->id0, &g->pos);
+        b597_01E03E50(g, b597_01E025B0, 0);
+    }
+    if (g->frame >= 15 && g->frame < 201) {
+        for (i = 0; i < 2; i++) {
+            func_001F5620(func_001F53A0(), g->id, &g->pos);
+            g->pos.y = 30.0f;
+            g->pos.x += func_0019A5C8() % 60 - 30;
+            g->pos.z += func_0019A5C8() % 60 - 30;
+            g->pos.y += func_0019A5C8() % 20 - 10;
+            b597_01E03E50(g, b597_01E02460, 0);
+        }
+    }
+    if (g->frame == 30) {
+        func_001F5620(func_001F53A0(), g->id0, &g->p);
+        if (g->flag) {
+            g->p.z -= 10.0f;
+        } else {
+            g->p.z += 10.0f;
+        }
+        g->p.y += 7.0f;
+    }
+    g->ang += 5;
+    if (g->frame >= 280 && g->frame < 341) {
+        for (i = 0; i < 2; i++) {
+            func_001F5620(func_001F5380(), g->id, &g->pos);
+            g->pos.y = 40.0f;
+            if (i == 0) {
+                g->pos.x += 10.0f * func_00108030(g->tab, g->ang, 1);
+                g->pos.z += 10.0f * func_00108030(g->tab, g->ang, 0);
+            }
+            if (i == 1) {
+                g->pos.x += 10.0f * func_00108030(g->tab, g->ang + 180, 1);
+                g->pos.z += 10.0f * func_00108030(g->tab, g->ang + 180, 0);
+            }
+            b597_01E03E50(g, b597_01E02750, 0);
+        }
+        func_001F5620(func_001F5380(), g->id1, &g->pos);
+        g->pos.y += func_0019A5C8() % 5;
+        b597_01E03E50(g, b597_01E02EA0, 0);
+    }
+    if (g->frame == 175) {
+        g->idx = 1;
+        b597_01E03E50(g, b597_01E02A20, 0);
+        g->idx = 2;
+        b597_01E03E50(g, b597_01E02A20, 0);
+        g->pos = g->p;
+        for (i = 0; i < 8; i++) {
+            b597_01E03E50(g, b597_01E02CC0, 0);
+        }
+    }
+}
 
 /* shape b597:01E01D70 (B597_OBJ_MOVE_4_), 444 insns, 1 copy: B152_OBJ_MOVE_4_ ring spark with frame bounds
    350/35/78/108/205/221/235; the orbit turns -10 or +10 by scene flag hA0AE */
