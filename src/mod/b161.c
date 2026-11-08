@@ -408,7 +408,128 @@ static void func_01E00F60_b161(Obj_b016_01E00ED0 *obj, Cam_b016_01E00ED0 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b161", func_01E01220_b161);
+/* shape b161:01E01220 (B161_W_S), 467 insns, 1 copy: the scene step: counts the frame (0xC3FC); the ribbon
+   point follows joint 0xC3C4 until 155, then glides 1/32 a frame toward joint 0xC3D4 until 186 and becomes the spawn
+   point; 52..141 a 0x1E02120 riser, 112..260 a 0x1E01F80 beam, 165..272 every 4th frame a jitter, 26..141 seven
+   0x1E01970 sparks a frame, frame 26 seven 0x1E01B50 blinkers, odd frames 27..121 a 0x1E022B0 trail */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xC350 - 0x260];
+    Vec4f v;
+    Vec4f step;
+    u8 padC370[0xC3C4 - 0xC370];
+    s16 j[9];
+    u8 padC3D6[0xC3EA - 0xC3D6];
+    s16 next;
+    u8 padC3EC[2];
+    s16 cnt;
+    u8 padC3F0[4];
+    s16 side;
+    u8 padC3F6[2];
+    s16 dir;
+    u8 padC3FA[2];
+    s16 t;
+} Scene_b161_01E01220;
+
+static void func_01E01220_b161(Scene_b161_01E01220 *g) {
+    extern void b161_01E01970(void);
+    extern void b161_01E01B50(void);
+    extern void b161_01E01F80(void);
+    extern void b161_01E02120(void);
+    extern void b161_01E022B0(void);
+    extern void b161_01E03370(Scene_b161_01E01220 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern s32 func_0019A5C8(void);
+    Vec4f tmp[2];
+    s16 i;
+
+    g->t++;
+    if (g->t < 155) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->v);
+    } else {
+        if (g->t == 155) {
+            func_001F5620(func_001F5380(), g->j[8], tmp);
+            g->step.z = (tmp[0].z - g->v.z) / 32.0f;
+            g->step.y = (tmp[0].y - g->v.y) / 32.0f;
+        }
+        if (g->t < 186) {
+            g->v.z += g->step.z;
+            g->v.y += g->step.y;
+        }
+    }
+    if (g->t == 186) {
+        g->pos = g->v;
+        g->side = 0;
+    }
+    if (g->t >= 52 && g->t < 142) {
+        func_001F5620(func_001F53A0(), g->j[7], &g->pos);
+        if (g->dir) {
+            g->pos.z += 10.0f;
+        } else {
+            g->pos.z -= 10.0f;
+        }
+        g->side = 0;
+        b161_01E03370(g, b161_01E02120, 0);
+        g->cnt += 3;
+    }
+    if (g->t >= 112 && g->t < 261) {
+        func_001F5620(func_001F5380(), g->j[8], &g->pos);
+        g->side = 1;
+        b161_01E03370(g, b161_01E01F80, 0);
+        g->cnt += 3;
+    }
+    if (g->t >= 165 && g->t < 273 && g->t % 4 == 1) {
+        func_001F5620(func_001F5380(), g->j[8], &g->pos);
+        g->pos.x += func_0019A5C8() % 20 - 10;
+        g->pos.y += func_0019A5C8() % 20 - 10;
+    }
+    if (g->t >= 26 && g->t < 142) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        b161_01E03370(g, b161_01E01970, 0);
+        func_001F5620(func_001F53A0(), g->j[1], &g->pos);
+        b161_01E03370(g, b161_01E01970, 0);
+        func_001F5620(func_001F53A0(), g->j[2], &g->pos);
+        b161_01E03370(g, b161_01E01970, 0);
+        func_001F5620(func_001F53A0(), g->j[3], &g->pos);
+        b161_01E03370(g, b161_01E01970, 0);
+        func_001F5620(func_001F53A0(), g->j[4], &g->pos);
+        b161_01E03370(g, b161_01E01970, 0);
+        func_001F5620(func_001F53A0(), g->j[5], &g->pos);
+        b161_01E03370(g, b161_01E01970, 0);
+        func_001F5620(func_001F53A0(), g->j[6], &g->pos);
+        b161_01E03370(g, b161_01E01970, 0);
+    }
+    if (g->t == 26) {
+        g->side = 0;
+        b161_01E03370(g, b161_01E01B50, 0);
+        g->side = 1;
+        b161_01E03370(g, b161_01E01B50, 0);
+        g->side = 2;
+        b161_01E03370(g, b161_01E01B50, 0);
+        g->side = 3;
+        b161_01E03370(g, b161_01E01B50, 0);
+        g->side = 4;
+        b161_01E03370(g, b161_01E01B50, 0);
+        g->side = 5;
+        b161_01E03370(g, b161_01E01B50, 0);
+        g->side = 6;
+        b161_01E03370(g, b161_01E01B50, 0);
+    }
+    if (g->t > 26 && g->t < 122 && g->t % 2 == 1) {
+        for (i = 0; i < 1; i++) {
+            g->side = g->next;
+            b161_01E03370(g, b161_01E022B0, 0);
+            g->next++;
+            if (g->next >= 80) {
+                g->next = 0;
+            }
+        }
+    }
+}
 
 /* shape b161:01E01970, 117 insns: b594:01E02790 family: a white tumbling spark (size 2, frame 4, three random turns, angle 3..12, spin 1..3, size 1..8) held 1..3 ticks: in by 64 up to 0xC0, then out by 19 and ends; also ends once the scene value reaches 121 */
 
