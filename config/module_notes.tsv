@@ -215,3 +215,4 @@ b494:01E013C0	96%	hard: scene manager; first slot-step loop has its counter and 
 c022:01E01850	81%	hard: C matches all 153 insns; the asm slot ends in 35 stale words (zeros, then an old copy of the loop tail) that need a split change, not C
 b281:01E02440	97%	hard: slot-step loop counter/pointer swapped ($s1/$s2); separate setup/step variables fix the draw loop but not the step loop, one shared k swaps n and k in the draw loop instead (best draft: drafts/mod/b281_01E02440.c)
 c560:01E01E40	97%	hard: two colour-mask statements (u32 masks on a stack Rgbaq) take the lbu and the lw in each other's registers; operand orders, casts, inline setters, statement orders, permuter tried (best draft: drafts/mod/c560_01E01E40.c)
+b005:01E027F0	97%	hard: b715:01E003A0's source at -O3; only the 0xFFFFFE z-chain temps sit one register up (a2/a3 for a1/a2); store forms, pragmas, permuter and an Ndl-before-it context did not move it (best draft: drafts/mod/b005_01E027F0.c)
