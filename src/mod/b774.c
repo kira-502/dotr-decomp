@@ -1007,7 +1007,241 @@ static void func_01E02430_b774(s32 ot, Obj_b058_01E00080 *o, Spr_b058_01E00080 *
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b774", func_01E02610_b774);
+/* shape b774:01E02610 (b774), 462 insns, 1 copy: b774 scene manager (b194:01E01B30 form): with a scene id (>= 0) it
+   clears the scene, resets the camera, keeps the id, sets the 374-frame countdown, zeroes the scale, takes four model
+   handles and loads textures 0..15; otherwise it runs the module step and every live node update (B774_OBJ_MOVE_201_
+   written out in place, ending at frame 58), draws every live node (twice by its drawer, once for B774PAINT_RAIN5, or
+   one KEMU_PAINT_1 square), steps and draws the 30 early effects, grows the scene scale by 0.01 up to 0.5 after frame
+   20, counts down and returns 1 / 4 / 2 at frames 245 / 355 / 345, 6 in 256..339, 8 once the countdown runs out */
+
+typedef struct Fx_b774_01E02610 {
+    u8 pad0[0x24];
+    void *fn;
+    u8 pad28[0xE];
+    s16 used;
+    u8 pad38[0x8];
+} Fx_b774_01E02610;
+
+typedef struct Fx2_b774_01E02610 {
+    u8 pad0[0x26];
+    s16 used;
+    u8 pad28[0x8];
+} Fx2_b774_01E02610;
+
+typedef struct Spr_b774_01E02610 {
+    s32 texture;
+    s32 tex;
+    s32 c;
+    s32 mode;
+} Spr_b774_01E02610;
+
+typedef struct Scene_b774_01E02610 {
+    u8 pad0[0xC0];
+    f32 sx, sy, sz;
+    u8 padCC[0x4];
+    s32 tex[16];
+    u8 pad110[0x660 - 0x110];
+    Fx_b774_01E02610 fx[170];
+    Fx2_b774_01E02610 fx2[30];
+    u8 pad3680[0x36B0 - 0x3680];
+    s16 model[3];
+    u8 pad36B6[0x36C0 - 0x36B6];
+    s16 model2;
+    u8 pad36C2[0x36D0 - 0x36C2];
+    s32 count;
+    u8 pad36D4[8];
+    s32 ot;
+    u8 pad36E0[0x371C - 0x36E0];
+    s16 id;
+    s16 timer;
+    u8 pad3720[4];
+    u8 cam[0x170];
+} Scene_b774_01E02610;
+
+static s32 func_01E02610_b774(s32 arg0, s32 id) {
+    Scene_b774_01E02610 *g = (Scene_b774_01E02610 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F7170(s32, s32, void *, void *, s32);
+    extern void b774_01E02F60();
+    extern void b774_01E03370();
+    extern void b774_01E036C0();
+    extern void b774_01E03860();
+    extern void b774_01E03BB0();
+    extern void b774_01E03E90();
+    extern void b774_01E041D0();
+    extern void b774_01E04530();
+    s32 j;
+    s32 n;
+    Vec4f v;
+    Spr_b774_01E02610 s;
+    Vec4f w;
+    u8 buf[0x90] __attribute__((aligned(8)));
+    s32 i;
+
+    n = 0;
+    g->ot = (s32)func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x3890);
+        func_00107C10(g->cam);
+        g->id = id;
+        g->count = 374;
+        g->sx = 0.0f;
+        g->sy = 0.0f;
+        g->sz = 0.0f;
+        g->model[0] = func_001F5560(func_001F53A0(), 0x49, 1);
+        g->model[1] = func_001F5560(func_001F53A0(), 0x4A, 0);
+        g->model[2] = func_001F5560(func_001F53A0(), 1, 0);
+        g->model2 = func_001F5560(func_001F5380(), 1, 1);
+        for (i = 0; i < 16; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        return 0;
+    }
+    func_01E00080_b774(g, 0);
+    for (j = 0; j < 170; j++) {
+        if (g->fx[j].used != 0) {
+            if (g->fx[j].fn == func_01E009D0_b774) {
+                func_01E009D0_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E00E50_b774) {
+                func_01E00E50_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E00F90_b774) {
+                func_01E00F90_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E011C0_b774) {
+                func_01E011C0_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E014A0_b774) {
+                func_01E014A0_b774((s32)g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E015D0_b774) {
+                func_01E015D0_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01760_b774) {
+                func_01E01760_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E018C0_b774) {
+                func_01E018C0_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01B70_b774) {
+                func_01E01B70_b774((s32)g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E01E30_b774) {
+                func_01E01E30_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E02080_b774) {
+                func_01E02080_b774(g, &g->fx[j]);
+            }
+            if (g->fx[j].fn == func_01E02160_b774) {
+                F_b774_01E02160 b;
+                F_b774_01E02160 a;
+
+                a = D_01E04880_b774;
+                b = D_01E04888_b774;
+                func_001F7170(3, 0, &a, &b, 0);
+                if (g->timer == 0x3A) {
+                    g->fx[j].used = 0;
+                }
+            }
+            if (g->fx[j].fn == func_01E021E0_b774) {
+                func_01E021E0_b774(g, &g->fx[j]);
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &v);
+    v.z -= 25.0f;
+    for (i = 0; i < 170; i++) {
+        if (g->fx[i].used != 0) {
+            n++;
+            if (g->fx[i].fn == func_01E009D0_b774) {
+                b774_01E03370(g, &g->fx[i], buf, 0);
+                b774_01E03370(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E00E50_b774) {
+                b774_01E036C0(g, &g->fx[i], buf, 0);
+                b774_01E036C0(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E00F90_b774) {
+                b774_01E02F60(g, &g->fx[i], buf, 0);
+                b774_01E02F60(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E011C0_b774) {
+                b774_01E02F60(g, &g->fx[i], buf, 0);
+                b774_01E02F60(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E014A0_b774) {
+                b774_01E03BB0(g, &g->fx[i], buf, 0);
+                b774_01E03BB0(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E015D0_b774) {
+                b774_01E03860(g, &g->fx[i], buf, 0);
+            }
+            if (g->fx[i].fn == func_01E01760_b774) {
+                b774_01E03E90(g, &g->fx[i], buf, 0);
+                b774_01E03E90(g, &g->fx[i], buf, 1);
+            }
+            if (g->fx[i].fn == func_01E018C0_b774) {
+                s.texture = g->tex[15];
+                s.c = 0;
+                s.tex = 0x9B;
+                s.mode = 0;
+                func_01E02430_b774(g->ot, (Obj_b058_01E00080 *)&g->fx[i], (Spr_b058_01E00080 *)&s);
+            }
+            if (g->fx[i].fn == func_01E01B70_b774) {
+                b774_01E04530(g, &g->fx[i], buf, 0);
+                b774_01E04530(g, &g->fx[i], buf, 1);
+            }
+        }
+    }
+    for (i = 0; i < 30; i++) {
+        if (g->fx2[i].used != 0) {
+            func_01E01CD0_b774(g, &g->fx2[i]);
+        }
+    }
+    for (i = 0; i < 30; i++) {
+        if (g->fx2[i].used != 0) {
+            b774_01E041D0(g, &g->fx2[i], buf, 0);
+            b774_01E041D0(g, &g->fx2[i], buf, 1);
+        }
+    }
+    func_001F6160(func_001F53A0(), &w);
+    if (g->timer > 20) {
+        if (g->sx < 0.5) {
+            g->sx += 0.01f;
+        }
+        g->sy = 0.1f;
+        if (g->sz < 0.5) {
+            g->sz += 0.01f;
+        }
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->timer == 245) {
+        return 1;
+    }
+    if (g->timer == 355) {
+        return 4;
+    }
+    if (g->timer == 345) {
+        return 2;
+    }
+    if (g->timer > 255 && g->timer < 340) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b774:01E02D50, 72 insns: twin of b046:01E03E20: take the first free slot of the 170-slot pool, clear it, give
    it the scene's colour twice, the scene matrix, the scene's value 0x3716 and the two arguments; returns 1 if a
