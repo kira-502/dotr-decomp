@@ -453,3 +453,7 @@ there is a source form that gives the original.
 - **A big manager where each fix to one argument-order or `mtc1` difference flips another call:** change how a member is
   spelled or typed, not only the cast (`g->mdl.r` for `&g->mdl`, `g->line + 1` for `&g->line[1]`, `s32 v[4]` for a
   `Vec4f` read as ints); script the combinations. (c560:01E02720)
+- **Point sums `p.x = it->x + out[j].x * it->scale` with the scale loaded before the component:** read the vectors through
+  a walking pointer (`for (j = 0, q = out; ...; j++, q++)`), not `out[j]`. (b105:01E02190)
+- **`x / n` and `x % n` in one branch as `div` + `div1` in parallel, yours dividing twice with a reload:** write the
+  `%` statement before the `/` one. (b105:01E02190)
