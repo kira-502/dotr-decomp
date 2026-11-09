@@ -457,3 +457,5 @@ there is a source form that gives the original.
   a walking pointer (`for (j = 0, q = out; ...; j++, q++)`), not `out[j]`. (b105:01E02190)
 - **`x / n` and `x % n` in one branch as `div` + `div1` in parallel, yours dividing twice with a reload:** write the
   `%` statement before the `/` one. (b105:01E02190)
+- **A real `mul.s` by a zero that was just stored:** a float local set to 0.0f, used for both the store and the multiply;
+  a literal `0.0f * x` is folded away. (b139:01E01910)
