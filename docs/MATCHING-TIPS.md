@@ -450,3 +450,6 @@ there is a source form that gives the original.
   slot through a pointer local (`r = g->rib; *(Vec4f *)r[k].pos = v;`), not straight into `g->rib[k]`. (b024:01E04CC0)
 - **`dk perm` gives up at once on a draft with `#include "mod/<mod>.c"`:** `base.c` carries the layout checks; run
   `sed -i "/__builtin_offsetof/d" nonmatchings/<func>/base.c` and `permuter.py` yourself. (b024:01E04CC0, as c603)
+- **A big manager where each fix to one argument-order or `mtc1` difference flips another call:** change how a member is
+  spelled or typed, not only the cast (`g->mdl.r` for `&g->mdl`, `g->line + 1` for `&g->line[1]`, `s32 v[4]` for a
+  `Vec4f` read as ints); script the combinations. (c560:01E02720)
