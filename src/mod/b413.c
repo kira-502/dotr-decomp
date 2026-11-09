@@ -733,7 +733,142 @@ static void func_01E01860_b413(Obj_b016_01E014F0 *o, Cam_b016_01E014F0 *cam, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b413", func_01E01C60_b413);
+/* shape b413:01E01C60 (B413_W_S), 474 insns, 1 copy: B413_W_S, the effect scene step: counts the frame (0xB2CC);
+   before 118 spawns 0x1E02C70 each frame; every third frame to 82 spawns 0x1E03610 on sides 0,1; frame 1 spawns
+   0x1E03500; 110 takes joints 0xB25C/0xB25E into pt[0..1]; frames 110..120 at each pt spawn five 0x1E02590, two
+   0x1E03200, two 0x1E02F40, two 0x1E02740; at 110 four 0x1E023D0 (angles 0/90/45/135) and a 0x1E033E0 at each pt; 22
+   and 30 spawn ten 0x1E02590 and fifteen 0x1E029E0 at each joint, z moved 5 by flag */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xB1D0 - 0x260];
+    Vec4f pt[2];
+    u8 padB1F0[0xB25C - 0xB1F0];
+    s16 joint0;
+    s16 joint1;
+    u8 padB260[0xB2B6 - 0xB260];
+    s16 ang;
+    u8 padB2B8[0xB2C4 - 0xB2B8];
+    s16 side;
+    u8 padB2C6[2];
+    s16 flag;
+    u8 padB2CA[2];
+    s16 t;
+} Scene_b413_01E01C60;
+
+static void func_01E01C60_b413(Scene_b413_01E01C60 *g) {
+    extern void b413_01E023D0(void);
+    extern void b413_01E02590(void);
+    extern void b413_01E02740(void);
+    extern void b413_01E029E0(void);
+    extern void b413_01E02C70(void);
+    extern void b413_01E02F40(void);
+    extern void b413_01E03200(void);
+    extern void b413_01E033E0(void);
+    extern void b413_01E03500(void);
+    extern void b413_01E03610(void);
+    extern void b413_01E04770(Scene_b413_01E01C60 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    s16 i;
+
+    g->t++;
+    if (g->t < 118) {
+        b413_01E04770(g, b413_01E02C70, 0);
+    }
+    if (g->t % 3 == 1 && g->t < 83) {
+        g->side = 0;
+        b413_01E04770(g, b413_01E03610, 0);
+        g->side = 1;
+        b413_01E04770(g, b413_01E03610, 0);
+    }
+    if (g->t == 1) {
+        b413_01E04770(g, b413_01E03500, 0);
+    }
+    if (g->t == 110) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pt[0]);
+    }
+    if (g->t == 110) {
+        func_001F5620(func_001F53A0(), g->joint1, &g->pt[1]);
+    }
+    if (g->t >= 110 && g->t < 121) {
+        g->pos = g->pt[0];
+        for (i = 0; i < 5; i++) {
+            b413_01E04770(g, b413_01E02590, 0);
+        }
+        for (i = 0; i < 2; i++) {
+            b413_01E04770(g, b413_01E03200, 0);
+        }
+        for (i = 0; i < 2; i++) {
+            b413_01E04770(g, b413_01E02F40, 0);
+        }
+        g->side = 0;
+        for (i = 0; i < 2; i++) {
+            b413_01E04770(g, b413_01E02740, 0);
+        }
+        g->pos = g->pt[1];
+        for (i = 0; i < 5; i++) {
+            b413_01E04770(g, b413_01E02590, 0);
+        }
+        for (i = 0; i < 2; i++) {
+            b413_01E04770(g, b413_01E03200, 0);
+        }
+        for (i = 0; i < 2; i++) {
+            b413_01E04770(g, b413_01E02F40, 0);
+        }
+        g->side = 0;
+        for (i = 0; i < 2; i++) {
+            b413_01E04770(g, b413_01E02740, 0);
+        }
+        if (g->t == 110) {
+            for (i = 0; i < 2; i++) {
+                g->pos = g->pt[i];
+                g->ang = 0;
+                g->side = 0;
+                b413_01E04770(g, b413_01E023D0, 0);
+                g->ang = 90;
+                g->side = 0;
+                b413_01E04770(g, b413_01E023D0, 0);
+                g->ang = 45;
+                g->side = 1;
+                b413_01E04770(g, b413_01E023D0, 0);
+                g->ang = 135;
+                g->side = 1;
+                b413_01E04770(g, b413_01E023D0, 0);
+                b413_01E04770(g, b413_01E033E0, 0);
+            }
+        }
+    }
+    if (g->t == 22 || g->t == 30) {
+        func_001F5620(func_001F53A0(), g->joint0, &g->pos);
+        if (g->flag) {
+            g->pos.z -= 5.0f;
+        } else {
+            g->pos.z += 5.0f;
+        }
+        for (i = 0; i < 10; i++) {
+            b413_01E04770(g, b413_01E02590, 0);
+        }
+        g->side = 0;
+        for (i = 0; i < 15; i++) {
+            b413_01E04770(g, b413_01E029E0, 0);
+        }
+        func_001F5620(func_001F53A0(), g->joint1, &g->pos);
+        if (g->flag) {
+            g->pos.z -= 5.0f;
+        } else {
+            g->pos.z += 5.0f;
+        }
+        for (i = 0; i < 10; i++) {
+            b413_01E04770(g, b413_01E02590, 0);
+        }
+        g->side = 0;
+        for (i = 0; i < 15; i++) {
+            b413_01E04770(g, b413_01E029E0, 0);
+        }
+    }
+}
 
 /* shape b413:01E023D0, 110 insns: c062:01E033E0 family shock wave (yellow, scale 6): kind 0 from 470 growing 30 (width 40.5), kind 1 from 350 growing 10, kind 2 400 x 8 fixed; in by 64 up to 0x80 for 4 ticks, then out by 9 and ends; +0x52 counts to 25; spins 6 */
 
