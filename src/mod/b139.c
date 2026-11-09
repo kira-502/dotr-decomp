@@ -601,7 +601,179 @@ static s32 func_01E01780_b139(void *arg0, Obj_b139_01E01780 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b139", func_01E01910_b139);
+/* shape b139:01E01910 (B139_OBJ_MOVE_9_), 469 insns, 1 copy (-O3,p): a dark-red spark on a joint-anchored ring: on
+   start a random height offset, turn, heading (fixed 0/90 from scene count 200) and spin angle, goal radius 30 (or
+   0..29.9 later), radius 0, the 15-point track filled from the joint point; follows the joint until count 0xBF, then
+   drifts 5 on z by the side flag and grows by 0.3; alpha up by 0x15 for 10/17 ticks, then down by 9; each tick the
+   point circles the joint and the track shifts, red blink, frame to 7, radius grows by 2.5 toward its goal for 12
+   ticks */
+
+typedef struct {
+    Vec4f p[15];
+} Track_b139_01E01910;
+
+typedef struct {
+    u8 pad0[0x4470];
+    Track_b139_01E01910 track[120];
+    u8 padB4F0[0xBD1C - 0xB4F0];
+    f32 rate[120];
+    f32 goal[120];
+    u8 padC0DC[0xC0EC - 0xC0DC];
+    s16 id0;
+    u8 padC0EE[0xC10C - 0xC0EE];
+    s16 ang[120];
+    u8 padC1FC[0xC206 - 0xC1FC];
+    s16 base;
+    u8 padC208[0xC20E - 0xC208];
+    s16 side;
+    u8 padC210[2];
+    s16 count;
+    u8 padC214[0xC414 - 0xC214];
+    u8 trig[4];
+} World_b139_01E01910;
+
+typedef struct {
+    u8 pad0[6];
+    s16 frame;
+    s16 h8;
+    s16 hA;
+    u8 padC[4];
+    Vec4f pos;
+    s32 rot[3];
+    s32 r;
+    u8 pad30[0x18];
+    f32 size;
+    u8 pad4C[4];
+    s16 idx;
+    u8 pad52[2];
+    s16 t;
+    s16 h56;
+    s16 state;
+    s16 pitch;
+    s16 head;
+    u8 pad5E[2];
+    u8 c0[4];
+    u8 c1[4];
+} Obj_b139_01E01910;
+
+#pragma optimization_level 3
+
+static s32 func_01E01910_b139(World_b139_01E01910 *w, Obj_b139_01E01910 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    Vec4f v;
+    f32 f;
+    s16 i;
+    s16 n;
+    Vec4f *dst;
+
+    if (o->state == 1) {
+        o->hA = w->base + (func_0019A5C8() % 50 + 5);
+        o->h8 = func_0019A5C8() % 2;
+        func_001076F0(o->c1, 0x80, 0x80, 0x80);
+        if (w->count < 200) {
+            o->head = func_0019A5C8() % 360;
+        } else if (w->side != 0) {
+            o->head = 0;
+        } else {
+            o->head = 90;
+        }
+        w->ang[o->idx] = func_0019A5C8() % 360;
+        if (w->count < 200) {
+            w->goal[o->idx] = 30.0f;
+        } else {
+            w->goal[o->idx] = func_0019A5C8() % 300;
+            w->goal[o->idx] /= 10.0f;
+        }
+        f = 0.0f;
+        w->rate[o->idx] = f;
+        o->r = f * func_00108030(w->trig, o->head, 1);
+        func_001F5620(func_001F53A0(), w->id0, &v);
+        o->pitch = 90;
+        f = o->r;
+        v.y += f * func_00108030(w->trig, w->ang[o->idx], 0);
+        v.z += f * func_00108030(w->trig, o->pitch, 0);
+        v.x += f * func_00108030(w->trig, o->pitch, 1);
+        dst = w->track[o->idx].p;
+        for (i = 0; i < 15; i++) {
+            dst->x = v.x;
+            dst->y = v.y;
+            dst->z = v.z;
+            dst++;
+        }
+        o->frame = 2;
+        o->c0[3] = 0;
+        o->h8 = 0;
+        o->h56 = 0;
+        o->size = 2.5f;
+        o->state = 2;
+        o->rot[0] = func_0019A5C8() % 0xFFFF;
+        o->rot[1] = func_0019A5C8() % 0xFFFF;
+        o->rot[2] = func_0019A5C8() % 0xFFFF;
+        func_001F5620(func_001F53A0(), w->id0, &o->pos);
+    }
+    if (w->count < 0xBF) {
+        func_001F5620(func_001F53A0(), w->id0, &o->pos);
+    } else if (o->t > 1) {
+        if (w->side != 0) {
+            o->pos.z -= 5.0f;
+        } else {
+            o->pos.z += 5.0f;
+        }
+        o->size += 0.3f;
+    }
+    if (w->count < 0xBF) {
+        n = 10;
+    } else {
+        n = 17;
+    }
+    if (o->t < n) {
+        if (o->c0[3] < 0x80) {
+            o->c0[3] += 0x15;
+        }
+    } else if (o->c0[3] > 10) {
+        o->c0[3] -= 9;
+    } else {
+        o->state = 0;
+    }
+    o->pitch += 12;
+    if (o->pitch >= 360) {
+        o->pitch %= 360;
+    }
+    v.y += o->h8;
+    f = o->r;
+    v.y = f * func_00108030(w->trig, w->ang[o->idx], 0);
+    v.z = f * func_00108030(w->trig, o->pitch, 0);
+    v.x = f * func_00108030(w->trig, o->pitch, 1);
+    v.x += o->pos.x;
+    v.y += o->pos.y;
+    v.z += o->pos.z;
+    func_01E00080_b139(&w->track[o->idx].p[14], 15, 0, &v);
+    if (o->t % 2 == 1) {
+        func_001076F0(o->c0, 0x80, 0x20, 0x40);
+    } else {
+        func_001076F0(o->c0, 0x70, 0x10, 0x30);
+    }
+    if (o->t != 0) {
+        if (o->frame < 7) {
+            o->frame++;
+        }
+    }
+    o->r = w->rate[o->idx] * func_00108030(w->trig, o->head, 1);
+    o->head += 6;
+    w->ang[o->idx] += 6;
+    if (o->t < 12) {
+        if (w->rate[o->idx] < w->goal[o->idx]) {
+            w->rate[o->idx] += 2.5f;
+        }
+    }
+    o->t++;
+    return 0;
+}
+
+#pragma optimization_level reset
 
 /* shape b139:01E02070, 176 insns: variant of b149:01E020F0 (game value at 0xC212): a glow whose kind (f50) picks its look: kinds 0/1 are grey with an orange second
    colour, flickering, brightening for 12 ticks; kind 1 also grows to 400 by 15; kind 2 starts at 840, white with a
