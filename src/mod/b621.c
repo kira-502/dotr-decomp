@@ -740,6 +740,178 @@ static s32 func_01E00B70_b621(s32 obj, Emit_b000_01E01140 *e, Cam_b000_01E01140 
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b621", func_01E02460_b621);
+typedef struct {
+    u16 s : 14;
+    u16 s_pad : 2;
+    u16 t : 14;
+    u16 t_pad : 2;
+    u32 pad;
+} Uv_b105_01E02190;
+
+typedef struct {
+    Uv_b105_01E02190 st;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_b105_01E02190;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx_b105_01E02190 v[4];
+    u8 tail[0x20];
+} Pkt_b105_01E02190;
+
+typedef struct {
+    f32 x, y, z;
+    u8 a;
+    u8 cell;
+    s16 t;
+    f32 scale;
+    s32 ang;
+    u8 pad18[8];
+} Item_b105_01E02190;
+
+typedef struct {
+    void *texture;
+    u8 b, g, r, a;
+    s32 flags;
+    u8 padC[8];
+    s16 w, h, u, v, tw, th;
+    Vec4f q[4];
+    f32 dy;
+    f32 shrink;
+    u8 pad68[0xE];
+    s16 n1;
+    s16 n2;
+    u8 pad7A[2];
+    s16 cells;
+    s16 rate;
+} Obj_b105_01E02190;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[16];
+} Cam_b105_01E02190;
+
+typedef struct {
+    Vec4f v;
+} Axis_b105_01E02190;
+
+static s32 func_01E02460_b621(s32 ot __attribute__((aligned(8))), Obj_b105_01E02190 *o, Item_b105_01E02190 *it, Cam_b105_01E02190 *cam __attribute__((aligned(16)))) {
+    extern Axis_b105_01E02190 D_01E03E80_b621;
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_0020CF00(void *, void *, void *, s32);
+    f32 m[16];
+    f32 d[4];
+    Axis_b105_01E02190 axis;
+    Vec4f p[4];
+    Vec4f out[4];
+    Pkt_b105_01E02190 pkt __attribute__((aligned(8)));
+    s32 i;
+    s32 n;
+    s32 j;
+    s16 cols;
+    s16 rows;
+    s16 w3;
+    Vec4f *q;
+    s16 b;
+    s16 a;
+
+    axis = D_01E03E80_b621;
+    if (func_00104520(o->flags, 0x1F) != 0) {
+        n = o->n1;
+    } else {
+        n = o->n2;
+    }
+    ((Pkt_b105_01E02190 *)(s32)&pkt)->count = 0x24;
+    ((Pkt_b105_01E02190 *)(s32)&pkt)->tag = 9;
+    ((Pkt_b105_01E02190 *)(s32)&pkt)->regs = ((u64)4 << 32) | 0x24242421;
+    ((Pkt_b105_01E02190 *)(s32)&pkt)->pad = 0;
+    ((Pkt_b105_01E02190 *)(s32)&pkt)->count |= 0x800;
+    func_00208700(&pkt, o->texture, 1);
+    if (func_00104520(o->flags, 0xC) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x44);
+    } else if (func_00104520(o->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(o->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    pkt.r = o->r;
+    pkt.g = o->g;
+    pkt.b = o->b;
+    pkt.q = 1.0f;
+    cols = o->tw / o->w;
+    rows = o->th / o->h;
+    w3 = o->w / 3;
+    for (i = 0; i < n; i++, it++) {
+        if (it->t < 0) {
+            it->t++;
+            continue;
+        }
+        if (func_00104520(o->flags, 1) != 0) {
+            b = o->u + o->w * (it->cell % cols);
+            a = o->v + o->h * (it->cell / cols);
+        } else {
+            b = o->u + o->w * (it->cell / rows);
+            a = o->v + o->h * (it->cell % rows);
+        }
+        if (it->t % o->rate == 0) {
+            it->cell++;
+            if (it->cell > o->cells - 1) {
+                it->cell = 0;
+            }
+        }
+        if (func_00104520(o->flags, 0xF) != 0) {
+            it->scale *= o->shrink;
+        }
+        it->t++;
+        func_0020C750(m, &axis, it->ang);
+        func_0020CF00(out, m, o->q, 4);
+        it->ang += 0x400;
+        if (it->a < o->a) {
+            pkt.a = it->a;
+        } else {
+            pkt.a = o->a;
+        }
+        for (j = 0, q = out; j < 3; j++, q++) {
+            p[0].x = it->x + q[0].x * it->scale;
+            p[0].y = o->dy + (it->y + q[0].y * it->scale);
+            p[0].z = it->z + q[0].z * it->scale;
+            p[1].x = it->x + q[1].x * it->scale;
+            p[1].y = o->dy + (it->y + q[1].y * it->scale);
+            p[1].z = it->z + q[1].z * it->scale;
+            p[2].x = it->x + q[0].x * it->scale;
+            p[2].y = it->y + q[0].y * it->scale;
+            p[2].z = it->z + q[0].z * it->scale;
+            p[3].x = it->x + q[1].x * it->scale;
+            p[3].y = it->y + q[1].y * it->scale;
+            p[3].z = it->z + q[1].z * it->scale;
+            if (func_00205630(p, 0x70000000, cam->view, &pkt, d) != 0) {
+                pkt.v[0].st.s = (b + w3 * j) * 16;
+                ((Uv_b105_01E02190 *)(s32)&pkt.v[0].st)->t = a * 16;
+                pkt.v[1].st.s = (b + w3 * (j + 1)) * 16;
+                ((Uv_b105_01E02190 *)(s32)&pkt.v[1].st)->t = a * 16;
+                pkt.v[2].st.s = (b + w3 * j) * 16;
+                ((Uv_b105_01E02190 *)(s32)&pkt.v[2].st)->t = (a + o->h) * 16;
+                pkt.v[3].st.s = (b + w3 * (j + 1)) * 16;
+                ((Uv_b105_01E02190 *)(s32)&pkt.v[3].st)->t = (a + o->h) * 16;
+                func_00208CB0(&pkt, ((u64)a << 24) |
+                                        (((u64)(b + w3 * j) << 4) | 0xA | ((u64)(b + w3 * (j + 1) - 1) << 14)) |
+                                        ((u64)(a + o->h - 1) << 34));
+                func_002075F0(&pkt, ot, func_001A23B0(d[0]));
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/b621", func_01E02BC0_b621);
