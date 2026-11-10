@@ -475,3 +475,6 @@ there is a source form that gives the original.
 - **A constant stored once (`li a2, 1; sh a2, ...`) gets a register one above ours, and an `s32` local for it
   still lands one low:** the original has `$a1` blocked there; use a spare parameter as the local,
   `(s32 arg0, s32 id, s32 o) { ... o = 1; g->rm[1] = o; }` (like b120:01E00B70 and b025:01E03E90). (b082:01E02860)
+- **A step loop that skips some handlers and counts them: the original falls through to the `jalr` and branches to
+  a shared `m++`, ours puts `m++` right after the `bne`:** write `if (fn != A && fn != B) fn(g, slot); else m++;`,
+  not `if (fn == A || fn == B) m++; else fn(g, slot);`. (b092:01E03950)
