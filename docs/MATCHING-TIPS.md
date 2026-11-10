@@ -519,3 +519,6 @@ there is a source form that gives the original.
 - **In a scene manager only the step loop has its counter and slot pointer in each other's saved registers, and the
   setup's random-table loop counts with the draw counter `m`:** count that setup loop with `i` like every other
   loop. Using `m` there is what swaps the step loop. (b513:01E02690)
+- **A static sibling's pointer argument `&slot.pos` comes out as `addiu a3` before `li a2`, and no cast form moves
+  it:** make the slot field a union of `Vec4f` and the callee's parameter type and pass that member with no cast
+  (the b065 union fix, for a pointer argument). (b492:01E038C0)
