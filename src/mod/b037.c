@@ -1118,7 +1118,180 @@ static s32 func_01E03260_b037(Ring_b037_01E03260 *o, s32 kind, f32 r1, f32 r2, f
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b037", func_01E03420_b037);
+/* shape b037:01E03420 (LkSortRing2), 491 insns, 1 copy: draws the 30-segment ring built by b037:01E03260 (31 segments
+   as a fan of degenerate quads, inner point twice, when flag 0x1E is set), b001:01E03860s form with the colour helper
+   hoisted out of the loop */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_b037_01E03420;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b037_01E03420 v[4];
+    u8 tail[0x20];
+} Pkt_b037_01E03420;
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b037_01E03420;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_b000_01E00100 color;
+    u8 pad0C[4];
+    s16 u;
+    s16 v;
+    s16 w;
+    s16 h;
+    u8 pad18[8];
+    Vec_b037_01E03420 p0;
+    Vec_b037_01E03420 p1;
+    Vec_b037_01E03420 in[30];
+    Vec_b037_01E03420 out[30];
+} Ring_b037_01E03420;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[1];
+} Cam_b037_01E03420;
+
+static s32 func_01E03420_b037(s32 obj __attribute__((aligned(8))), Ring_b037_01E03420 *ring, Cam_b037_01E03420 *cam) {
+    extern s32 func_00104520(s32, s32);
+    extern void func_002086D0(void *, u64);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00208CB0(void *, u64);
+    extern void func_00208700(void *, void *, s32);
+    extern void func_002075F0(void *, s32, s32);
+    extern s32 func_00104540(void *, void *, s32);
+    extern s32 func_001A23B0(f32);
+    f32 depth[4];
+    Pkt_b037_01E03420 pkt;
+    s32 i;
+    s32 n;
+
+    ((Pkt_b037_01E03420 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b037_01E03420 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b037_01E03420 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b037_01E03420 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(ring->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(ring->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    func_01E00080_b037((Vtx_b000_01E00100 *)&pkt, &ring->color);
+    if (func_00104520(ring->flags, 0x1E) != 0) {
+        n = 31;
+        func_00104540(&pkt, &ring->u, 0);
+    } else {
+        n = 30;
+        func_00104540(&pkt, &ring->u, 2);
+    }
+    for (i = 0; i < n; i++) {
+        if (func_00104520(ring->flags, 0x1E) != 0) {
+            if (i != 30) {
+                if (i == 0) {
+                    if (func_00205440(&ring->p0, cam->view, &pkt.v[0].st + 1, &depth[0]) != 0) {
+                        ring->flags |= 0x100000;
+                    }
+                    if (func_00205440(&ring->p0, cam->view, &pkt.v[1].st + 1, &depth[1]) != 0) {
+                        ring->flags |= 0x200000;
+                    }
+                } else {
+                    if (func_00205440(&ring->in[i - 1], cam->view, &pkt.v[0].st + 1, &depth[0]) != 0) {
+                        ring->flags |= 0x100000;
+                    }
+                    if (func_00205440(&ring->in[i - 1], cam->view, &pkt.v[1].st + 1, &depth[1]) != 0) {
+                        ring->flags |= 0x200000;
+                    }
+                }
+                if (i != 29) {
+                    if (func_00205440(&ring->out[i + 1], cam->view, &pkt.v[2].st + 1, &depth[2]) != 0) {
+                        ring->flags |= 0x400000;
+                    }
+                } else {
+                    if (func_00205440(&ring->p1, cam->view, &pkt.v[2].st + 1, &depth[2]) != 0) {
+                        ring->flags |= 0x400000;
+                    }
+                }
+                if (func_00205440(&ring->out[i], cam->view, &pkt.v[3].st + 1, &depth[3]) != 0) {
+                    ring->flags |= 0x800000;
+                }
+            } else {
+                if (func_00205440(&ring->in[28], cam->view, &pkt.v[0].st + 1, &depth[0]) != 0) {
+                    ring->flags |= 0x100000;
+                }
+                if (func_00205440(&ring->in[28], cam->view, &pkt.v[1].st + 1, &depth[1]) != 0) {
+                    ring->flags |= 0x200000;
+                }
+                if (func_00205440(&ring->out[0], cam->view, &pkt.v[2].st + 1, &depth[2]) != 0) {
+                    ring->flags |= 0x400000;
+                }
+                if (func_00205440(&ring->p1, cam->view, &pkt.v[3].st + 1, &depth[3]) != 0) {
+                    ring->flags |= 0x800000;
+                }
+            }
+        } else {
+            if (i == 0) {
+                if (func_00205440(&ring->p0, cam->view, &pkt.v[0].st + 1, &depth[0]) != 0) {
+                    ring->flags |= 0x100000;
+                }
+                if (func_00205440(&ring->p1, cam->view, &pkt.v[1].st + 1, &depth[1]) != 0) {
+                    ring->flags |= 0x200000;
+                }
+            } else {
+                if (func_00205440(&ring->in[i - 1], cam->view, &pkt.v[0].st + 1, &depth[0]) != 0) {
+                    ring->flags |= 0x100000;
+                }
+                if (func_00205440(&ring->out[i - 1], cam->view, &pkt.v[1].st + 1, &depth[1]) != 0) {
+                    ring->flags |= 0x200000;
+                }
+            }
+            if (i != 29) {
+                if (func_00205440(&ring->in[i], cam->view, &pkt.v[2].st + 1, &depth[2]) != 0) {
+                    ring->flags |= 0x400000;
+                }
+                if (func_00205440(&ring->out[i], cam->view, &pkt.v[3].st + 1, &depth[3]) != 0) {
+                    ring->flags |= 0x800000;
+                }
+            } else {
+                if (func_00205440(&ring->p0, cam->view, &pkt.v[2].st + 1, &depth[2]) != 0) {
+                    ring->flags |= 0x400000;
+                }
+                if (func_00205440(&ring->p1, cam->view, &pkt.v[3].st + 1, &depth[3]) != 0) {
+                    ring->flags |= 0x800000;
+                }
+            }
+        }
+        func_00208CB0(&pkt, (u64)0xA | ((u64)ring->u << 4) | ((u64)(ring->u + ring->w - 1) << 14) |
+                                ((u64)ring->v << 24) | ((u64)(ring->v + ring->h - 1) << 34));
+        func_00208700(&pkt, ring->texture, 1);
+        if (func_00104520(ring->flags, 0x14) != 0 && func_00104520(ring->flags, 0x15) != 0 &&
+            func_00104520(ring->flags, 0x16) != 0 && func_00104520(ring->flags, 0x17) != 0) {
+            if (func_00104520(ring->flags, 0x13) != 0) {
+                pkt.v[0].z = pkt.v[1].z = pkt.v[2].z = pkt.v[3].z = 0xFFFFFF;
+                func_002075F0(&pkt, obj, 0);
+            } else {
+                func_002075F0(&pkt, obj, func_001A23B0((depth[0] + depth[1] + depth[2] + depth[3]) / 4.0f));
+            }
+        }
+        ring->flags &= 0xFF0FFFFF;
+    }
+    return 0;
+}
+
 
 /* shape b037:01E03BD0, 174 insns: projects four rings (radii r0..r1 in thirds) of 128 points each (step 2pi/128) at height h, in the x/y plane or (when func_00104520 says the model lacks flag 0x1D) the x/z plane, storing the screen x/y of each into the object's point table */
 
