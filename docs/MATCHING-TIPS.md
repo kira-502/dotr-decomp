@@ -510,3 +510,9 @@ there is a source form that gives the original.
   following its `jal`), with one more `nop` at the join; ours has the store written in each arm and two nops
   missing:** write the shared statement once, after the if/else. The delay slot copies it from the join.
   (b572:01E024D0)
+- **A loop with an index that also steps other values by fixed amounts: the original gives the index the last saved
+  register (after the compiler's array pointer), ours gives it the first whatever the declaration order:** write
+  the stepped values as expressions of the index (`i * 20`, `i * 20 + 20`, `i * 10 - 45`) rather than separate
+  variables added each pass. The compiler makes its own running values and the index is left for the loop test.
+  If an earlier simple loop then takes the wrong registers, give it its own counter, declared first.
+  (b266:01E01D50)
