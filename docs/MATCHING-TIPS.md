@@ -496,3 +496,7 @@ there is a source form that gives the original.
 - **A pointer local whose saved register comes too low:** also assign it in the other branch where the same address
   is used (`func_00103290(c = (Vec4f *)&tex[0], 0)`). Once it is assigned in both branches, its declaration order no
   longer matters. (b741:01E02E50)
+- **In a chain of `if/else if` tests on a value computed just before it, only the first test should come out as
+  `slt v0; xori v0, 1; beqz` (or `slt v0` where ours has `slt at`):** assign the value inside that first test,
+  `if ((t = expr) <= K)`. If a second chain's temps still land in permuted registers, give that chain its own
+  block-local variable and swap the operands of its first test (`if (K > (d = expr))`). (c508:01E015C0)
