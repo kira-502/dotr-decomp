@@ -516,3 +516,6 @@ there is a source form that gives the original.
   variables added each pass. The compiler makes its own running values and the index is left for the loop test.
   If an earlier simple loop then takes the wrong registers, give it its own counter, declared first.
   (b266:01E01D50)
+- **In a scene manager only the step loop has its counter and slot pointer in each other's saved registers, and the
+  setup's random-table loop counts with the draw counter `m`:** count that setup loop with `i` like every other
+  loop. Using `m` there is what swaps the step loop. (b513:01E02690)
