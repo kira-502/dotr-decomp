@@ -506,3 +506,7 @@ there is a source form that gives the original.
 - **An extra `jal fptodp` before a call to a static of the same module that takes an f32:** a no-prototype
   block-scope extern promotes the float to double; call the static directly (with casts on the other arguments) so
   its real prototype applies. (b084:01E02E50)
+- **An if/else whose then-arm has a store in its `b` delay slot equal to the else-arm's last store (after a `nop`
+  following its `jal`), with one more `nop` at the join; ours has the store written in each arm and two nops
+  missing:** write the shared statement once, after the if/else. The delay slot copies it from the join.
+  (b572:01E024D0)
