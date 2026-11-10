@@ -490,3 +490,9 @@ there is a source form that gives the original.
 - **At -O2 a chained assignment `a = b = c = d = K;` stores straight right to left (d, c, b, a):** list the targets
   in the reverse of the store order you need; `c44[2] = c44[1] = c44[0] = c44[3] = 0xC0;` stores 3, 0, 1, 2.
   (b368:01E05440)
+- **A stack address read with direct `sp` offsets in one part of the function but held in a saved register across a
+  loop in another:** the address of a plain variable is never kept in a register, but the address of an array
+  element at a non-zero offset is, from its second use on. (b741:01E02E50)
+- **A pointer local whose saved register comes too low:** also assign it in the other branch where the same address
+  is used (`func_00103290(c = (Vec4f *)&tex[0], 0)`). Once it is assigned in both branches, its declaration order no
+  longer matters. (b741:01E02E50)
