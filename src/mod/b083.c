@@ -890,6 +890,165 @@ static s32 func_01E04830_b083(Obj_b010_01E05740 *o, s32 tex, s32 h, s32 d) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b083", func_01E04D80_b083);
+/* shape b083:01E04D80 (ShFx_Frmdiv), 479 insns, 1 copy (-O2,p): draws the module frame-division entities (0x58 bytes
+   each) as textured screen quads: one packet set up on the first live entity, an optional full-screen black/grey
+   sprite per entity (flags & 3), then the four corners pushed out by (end - frame) * step * scale. Sends the list if
+   anything was live */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b083_01E04D80;
+
+typedef struct {
+    u16 u : 14;
+    u16 pu : 2;
+    u16 v : 14;
+    u16 pv : 2;
+    u32 pad;
+} Uv_b083_01E04D80;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b083_01E04D80 uv;
+    Xyz_b083_01E04D80 xyz;
+} Vtx_b083_01E04D80;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b083_01E04D80 v[4];
+    u8 tail[8];
+} Pkt_b083_01E04D80;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    Xyz_b083_01E04D80 v[4];
+} Spr_b083_01E04D80;
+
+typedef struct {
+    u16 x;
+    u16 y;
+    u8 pad[4];
+} Pt_b083_01E04D80;
+
+typedef struct {
+    u8 frame;
+    u8 pad1;
+    u8 end;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[3];
+    Pt_b083_01E04D80 pt[4];
+    s32 u[4];
+    s32 v[4];
+    f32 sx;
+    f32 sy;
+    f32 scale;
+    u8 pad54[4];
+} Div_b083_01E04D80;
+
+#pragma optimization_level 2
+
+static s32 func_01E04D80_b083(Div_b083_01E04D80 *arg0, s32 ot, s32 n) {
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_00208800(s32, s32, void *, void *);
+    Div_b083_01E04D80 *e = arg0;
+    struct {
+        Pkt_b083_01E04D80 pk;
+        s32 a[2];
+        s32 b[2];
+    } w;
+    Spr_b083_01E04D80 sp;
+    f32 dx;
+    f32 dy;
+    s32 i;
+    s32 list;
+    s32 any;
+
+    list = func_00207F60();
+    any = 0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        {
+            s32 d = e->end - e->frame;
+            dx = d * (e->sx * e->scale);
+            dy = d * (e->sy * e->scale);
+        }
+        if (any == 0) {
+            ((Pkt_b083_01E04D80 *)(s32)&w.pk)->count = 0x34;
+            ((Pkt_b083_01E04D80 *)(s32)&w.pk)->tag = 0xC;
+            ((Pkt_b083_01E04D80 *)(s32)&w.pk)->regs = ((u64)0x4214 << 32) | 0x21421421;
+            ((Pkt_b083_01E04D80 *)(s32)&w.pk)->pad = 0;
+            w.pk.v[0].r = w.pk.v[1].r = w.pk.v[2].r = w.pk.v[3].r = w.pk.v[0].g = w.pk.v[1].g = w.pk.v[2].g = w.pk.v[3].g =
+                w.pk.v[0].b = w.pk.v[1].b = w.pk.v[2].b = w.pk.v[3].b = w.pk.v[0].a = w.pk.v[1].a = w.pk.v[2].a =
+                    w.pk.v[3].a = 0x80;
+            w.pk.v[0].q = w.pk.v[1].q = w.pk.v[2].q = w.pk.v[3].q = 1.0f;
+            w.pk.v[0].xyz.z = w.pk.v[1].xyz.z = w.pk.v[2].xyz.z = w.pk.v[3].xyz.z = 0xFFFFFF;
+            w.pk.v[0].xyz.f = w.pk.v[1].xyz.f = w.pk.v[2].xyz.f = w.pk.v[3].xyz.f = 0;
+            func_00208460();
+            func_00208800(func_00209E50(), 0, w.a, w.b);
+            func_00208460();
+            any = 1;
+        }
+        if (e->flags & 3) {
+            ((Spr_b083_01E04D80 *)(s32)&sp)->count = 4;
+            ((Spr_b083_01E04D80 *)(s32)&sp)->tag = 5;
+            ((Spr_b083_01E04D80 *)(s32)&sp)->regs = 0x44441;
+            ((Spr_b083_01E04D80 *)(s32)&sp)->pad = 0;
+            sp.a = 0x80;
+            if (e->flags & 1) {
+                sp.r = sp.g = sp.b = 0;
+            } else {
+                sp.r = sp.g = sp.b = 0x80;
+            }
+            sp.q = 1.0f;
+            ((Xyz_b083_01E04D80 *)(s32)&sp.v[0])->x = ((Xyz_b083_01E04D80 *)(s32)&sp.v[2])->x = 0x6C00;
+            ((Xyz_b083_01E04D80 *)(s32)&sp.v[1])->x = ((Xyz_b083_01E04D80 *)(s32)&sp.v[3])->x = 0x9400;
+            sp.v[0].y = sp.v[1].y = 0x7200;
+            sp.v[2].y = sp.v[3].y = 0x8E00;
+            sp.v[0].z = sp.v[1].z = sp.v[2].z = sp.v[3].z = 0xFFFFFF;
+            func_002075F0(&sp, 0, 0);
+        }
+        ((Pkt_b083_01E04D80 *)(s32)&w.pk)->count |= 0x800;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[0].uv)->u = e->u[0] << 4;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[0].uv)->v = e->v[0] << 4;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[1].uv)->u = e->u[1] << 4;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[1].uv)->v = e->v[1] << 4;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[2].uv)->u = e->u[2] << 4;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[2].uv)->v = e->v[2] << 4;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[3].uv)->u = e->u[3] << 4;
+        ((Uv_b083_01E04D80 *)(s32)&w.pk.v[3].uv)->v = e->v[3] << 4;
+        w.pk.v[0].xyz.x = (u32)((u32)e->pt[0].x + dx);
+        w.pk.v[0].xyz.y = (u32)((u32)e->pt[0].y + dy);
+        w.pk.v[1].xyz.x = (u32)((u32)e->pt[1].x + dx);
+        w.pk.v[1].xyz.y = (u32)((u32)e->pt[1].y + dy);
+        w.pk.v[2].xyz.x = (u32)((u32)e->pt[2].x + dx);
+        w.pk.v[2].xyz.y = (u32)((u32)e->pt[2].y + dy);
+        w.pk.v[3].xyz.x = (u32)((u32)e->pt[3].x + dx);
+        w.pk.v[3].xyz.y = (u32)((u32)e->pt[3].y + dy);
+        func_002075F0(&w.pk, 0, 0);
+    }
+    if (any) {
+        func_00207FD0(list, ot, 0);
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b083", func_01E05500_b083);
