@@ -500,3 +500,6 @@ there is a source form that gives the original.
   `slt v0; xori v0, 1; beqz` (or `slt v0` where ours has `slt at`):** assign the value inside that first test,
   `if ((t = expr) <= K)`. If a second chain's temps still land in permuted registers, give that chain its own
   block-local variable and swap the operands of its first test (`if (K > (d = expr))`). (c508:01E015C0)
+- **A manager's frame is 0x60 too small and a saved register holds a high stack address (`sp+0xD8`) passed as one
+  call's out argument:** the argument is a field inside a stack packet the function never uses otherwise; declare
+  `u8 pk[0x90];` last and pass `&pk[0x18]`. (b577:01E01EE0)
