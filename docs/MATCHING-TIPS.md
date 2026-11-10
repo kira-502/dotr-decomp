@@ -481,3 +481,9 @@ there is a source form that gives the original.
 - **A block-local `f32 v = K;` fixes one call's address/`mtc1` order but flips it in a later call:** declare the
   float local at function scope and assign it just before the call (`f32 v; ... v = 20.0f; f(&g->rain, 64, v);`).
   (c557:01E01AC0)
+- **An -O2 draw has a `beqz` to a lone `nop` block, and the `then` arm ends in a `b` past it, right after a flag test
+  that sets a float to 0.0f:** the source has an `else` copying a value already in that register,
+  `if (f & 0x80) { xy.z = 0xFFFFFE; z = 0.0f; } else { z = d; }`. The copy folds away but the empty arm stays.
+  (b133:01E00410)
+- **A spill slot 8 bytes too low that no declaration order moves:** `__attribute__((aligned(16)))` on that s32
+  local (`aligned(8)` was not enough). (b133:01E00410)
