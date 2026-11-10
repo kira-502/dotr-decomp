@@ -808,7 +808,189 @@ static s32 func_01E01DA0_c537(Num_c508_01E013C0 *o, s16 x, s16 y, s32 n) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c537", func_01E01FA0_c537);
+typedef struct {
+    u16 u : 14;
+    u16 pu : 2;
+    u16 v : 14;
+    u16 pv : 2;
+    s32 pad;
+} Uv_c508_01E015C0;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_c508_01E015C0;
+
+typedef struct {
+    Uv_c508_01E015C0 uv;
+    Xyz_c508_01E015C0 p;
+} Vtx_c508_01E015C0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx_c508_01E015C0 v[4];
+    u8 tail[0x20];
+} Pkt_c508_01E015C0;
+
+typedef struct {
+    u8 b, g, r, a;
+} Src_c508_01E015C0;
+
+typedef struct {
+    void *tex;
+    s32 flags;
+    Src_c508_01E015C0 c;
+    s16 w;
+    s16 h;
+    s16 u;
+    s16 v;
+    s16 du;
+    s16 dv;
+    s16 u0;
+    s16 v0;
+    u8 pad1C[4];
+    s16 digit[5];
+    s16 anim[5];
+    s16 x;
+    s16 h36;
+    s32 frame;
+} Num_c508_01E015C0;
+
+typedef struct {
+    s32 x;
+    s32 y;
+    s32 pad;
+    s32 off;
+} Pos_c508_01E015C0;
+
+static s32 func_01E01FA0_c537(s32 obj __attribute__((aligned(8))), Num_c508_01E015C0 *o, Pos_c508_01E015C0 *pos) {
+    extern s32 func_00104520(s32, s32);
+    Pkt_c508_01E015C0 pkt __attribute__((aligned(8)));
+    s32 i;
+    s32 x;
+    s32 half;
+    s32 n;
+    s32 t;
+
+    if (o->digit[2] < 0) {
+        n = 2;
+        x = o->x - o->w;
+    } else if (o->digit[3] < 0) {
+        n = 3;
+        x = o->x - (o->w + (o->w >> 1));
+    } else if (o->digit[4] < 0) {
+        n = 4;
+        x = o->x - o->w * 2;
+    } else {
+        n = 5;
+        x = o->x - ((o->w >> 1) + o->w * 2);
+    }
+    half = o->h >> 1;
+    ((Pkt_c508_01E015C0 *)(s32)&pkt)->count = 0x24;
+    ((Pkt_c508_01E015C0 *)(s32)&pkt)->tag = 9;
+    ((Pkt_c508_01E015C0 *)(s32)&pkt)->regs = ((u64)4 << 32) | 0x24242421;
+    ((Pkt_c508_01E015C0 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(o->flags, 0x12) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x44);
+    }
+    pkt.r = o->c.r;
+    pkt.g = o->c.g;
+    pkt.b = o->c.b;
+    pkt.a = o->c.a;
+    pkt.q = 1.0f;
+    for (i = 0; i < n; i++) {
+        o->u = o->u0;
+        if (func_00104520(o->flags, 9) != 0 && func_00104520(o->flags, i + 10) == 0) {
+            o->v = o->anim[i];
+            if (o->v >= o->dv * 12) {
+                o->anim[i] = 0;
+                o->v = 0;
+            }
+            o->anim[i] += 8;
+        } else {
+            o->v = o->v0 + o->dv * o->digit[i];
+        }
+        ((Pkt_c508_01E015C0 *)(s32)&pkt)->count |= 0x800;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[0].uv)->u = o->u * 16;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[0].uv)->v = o->v * 16;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[1].uv)->u = (o->u + o->du) * 16;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[1].uv)->v = o->v * 16;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[2].uv)->u = o->u * 16;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[2].uv)->v = (o->v + o->dv) * 16;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[3].uv)->u = (o->u + o->du) * 16;
+        ((Uv_c508_01E015C0 *)(s32)&pkt.v[3].uv)->v = (o->v + o->dv) * 16;
+        if (func_00104520(o->flags, 0x1C) != 0) {
+            if (n % 2 == 0) {
+                if ((t = x + o->w * i) <= -o->w * 2) {
+                    pos->off = -pos->y;
+                } else if (t <= -o->w) {
+                    pos->off = -pos->y >> 1;
+                } else if (t >= o->w) {
+                    pos->off = pos->y;
+                } else if (t >= 0) {
+                    pos->off = pos->y >> 1;
+                } else {
+                    pos->off = 0;
+                }
+            } else {
+                s32 d;
+                if (-(o->w + (o->w >> 1)) > (d = x + o->w * i)) {
+                    pos->off = -pos->y;
+                } else if (d < -o->w >> 1) {
+                    pos->off = -pos->y >> 1;
+                } else if (d >= o->w + (o->w >> 1)) {
+                    pos->off = pos->y;
+                } else if (d >= o->w >> 1) {
+                    pos->off = pos->y >> 1;
+                } else {
+                    pos->off = 0;
+                }
+            }
+        }
+        pkt.v[0].p.x = (pos->off + (pos->x + 0x800 + (x + o->w * i))) << 4;
+        pkt.v[0].p.y = (pos->y + 0x800 - half) << 4;
+        pkt.v[0].p.z = 0xFFFFFF;
+        pkt.v[0].p.f = 0;
+        pkt.v[1].p.x = (pos->off + (pos->x + 0x800 + (x + o->w * (i + 1)))) << 4;
+        pkt.v[1].p.y = (pos->y + 0x800 - half) << 4;
+        pkt.v[1].p.z = 0xFFFFFF;
+        pkt.v[1].p.f = 0;
+        pkt.v[2].p.x = (pos->off + (pos->x + 0x800 + (x + o->w * i))) << 4;
+        pkt.v[2].p.y = (pos->y + 0x800 + half) << 4;
+        pkt.v[2].p.z = 0xFFFFFF;
+        pkt.v[2].p.f = 0;
+        pkt.v[3].p.x = (pos->off + (pos->x + 0x800 + (x + o->w * (i + 1)))) << 4;
+        pkt.v[3].p.y = (pos->y + 0x800 + half) << 4;
+        pkt.v[3].p.z = 0xFFFFFF;
+        pkt.v[3].p.f = 0;
+        func_00208700(&pkt, o->tex, 0);
+        func_002075F0((s32)&pkt, obj, 0);
+    }
+    o->frame++;
+    if (func_00104520(o->flags, 0xF) == 0) {
+        if (o->frame == 4) {
+            o->flags |= 0x400;
+        } else if (o->frame == 8) {
+            o->flags |= 0x800;
+        } else if (o->frame == 12) {
+            o->flags |= 0x1000;
+        } else if (o->frame == 16) {
+            o->flags |= 0x2000;
+        } else if (o->frame == 20) {
+            o->flags |= 0x4000;
+        }
+    }
+    return 0;
+}
 
 typedef struct V4_b000_01E032C0 {
     f32 x, y, z, w;
