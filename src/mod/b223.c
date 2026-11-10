@@ -1089,7 +1089,188 @@ static s32 func_01E02960_b223(s32 obj, Wave_b025_01E016F0 *w, Cam_b025_01E016F0 
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b223", func_01E03160_b223);
+/* shape b223:01E03160 (LkSortFlare), 478 insns, 1 copy: a textured flare quad from p[0]/p[1] and the
+   same points pushed along the normalised dir * len (flag 0x19; drawn once or, unless flag 0x1A, twice, once each
+   way), colour inline, UV or ST rect, texture rect unless flag 0x18, far z under flag 0x13 */
+
+typedef struct {
+    u8 b, g, r, a;
+} Src_b223_01E03160;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    union {
+        struct {
+            f32 s, t;
+        } st;
+        struct {
+            u64 u : 14;
+            u64 pad0 : 2;
+            u64 v : 14;
+            u64 pad1 : 34;
+        } uv;
+    } tc;
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Vtx_b223_01E03160;
+
+typedef struct {
+    u64 u : 14;
+    u64 pad0 : 2;
+    u64 v : 14;
+    u64 pad1 : 34;
+} UV_b223_01E03160;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b223_01E03160 v[4];
+    u8 tail[0x20];
+} Pkt_b223_01E03160;
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b223_01E03160;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_b223_01E03160 color;
+    f32 len;
+    union {
+        struct {
+            s16 u, v, w, h;
+        } i;
+        struct {
+            f32 s, t, w, h;
+        } f;
+    } rect;
+    Vec_b223_01E03160 p[2];
+    Vec_b223_01E03160 dir;
+} Spr_b223_01E03160;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[1];
+} Cam_b223_01E03160;
+
+static s32 func_01E03160_b223(s32 obj, Spr_b223_01E03160 *spr, Cam_b223_01E03160 *cam) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_0020D070(void *);
+    f32 depth[4];
+    Vec_b223_01E03160 pos;
+    Pkt_b223_01E03160 pkt;
+    s32 i;
+    s32 n;
+    f32 ox;
+    f32 oy;
+    f32 oz;
+
+    ((Pkt_b223_01E03160 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b223_01E03160 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b223_01E03160 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b223_01E03160 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(spr->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(spr->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = spr->color.r;
+    pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = spr->color.g;
+    pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = spr->color.b;
+    pkt.v[0].a = pkt.v[1].a = spr->color.a;
+    pkt.v[2].a = pkt.v[3].a = 0;
+    pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+    if (func_00104520(spr->flags, 0) != 0) {
+        ((Pkt_b223_01E03160 *)(s32)&pkt)->count |= 0x800;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[0].tc)->u = spr->rect.i.u * 16;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[0].tc)->v = spr->rect.i.v * 16;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[1].tc)->u = (spr->rect.i.u + spr->rect.i.w - 1) * 16;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[1].tc)->v = spr->rect.i.v * 16;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[2].tc)->u = spr->rect.i.u * 16;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[2].tc)->v = (spr->rect.i.v + spr->rect.i.h - 1) * 16;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[3].tc)->u = (spr->rect.i.u + spr->rect.i.w - 1) * 16;
+        ((UV_b223_01E03160 *)(s32)&pkt.v[3].tc)->v = (spr->rect.i.v + spr->rect.i.h - 1) * 16;
+    } else {
+        pkt.v[0].tc.st.s = spr->rect.f.s;
+        pkt.v[0].tc.st.t = spr->rect.f.t;
+        pkt.v[1].tc.st.s = spr->rect.f.s + spr->rect.f.w;
+        pkt.v[1].tc.st.t = spr->rect.f.t;
+        pkt.v[2].tc.st.s = spr->rect.f.s;
+        pkt.v[2].tc.st.t = spr->rect.f.t + spr->rect.f.h;
+        pkt.v[3].tc.st.s = spr->rect.f.s + spr->rect.f.w;
+        pkt.v[3].tc.st.t = spr->rect.f.t + spr->rect.f.h;
+    }
+    n = func_00104520(spr->flags, 0x1A) ? 1 : 2;
+    if (func_00104520(spr->flags, 0x19) != 0) {
+        func_0020D070(&spr->dir);
+        ox = spr->dir.x * spr->len;
+        oy = spr->dir.y * spr->len;
+        oz = spr->dir.z * spr->len;
+    } else {
+        oy = spr->len;
+        ox = oz = 0.0f;
+    }
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            pos.x = spr->p[0].x - ox;
+            pos.z = spr->p[0].z - oz;
+            pos.y = spr->p[0].y - oy;
+        } else {
+            pos.x = spr->p[0].x + ox;
+            pos.z = spr->p[0].z + oz;
+            pos.y = spr->p[0].y + oy;
+        }
+        if (func_00205440(&pos, cam->view, &pkt.v[0].tc + 1, &depth[0]) != 0) {
+            spr->flags |= 0x100000;
+        }
+        if (i != 0) {
+            pos.x = spr->p[1].x - ox;
+            pos.z = spr->p[1].z - oz;
+            pos.y = spr->p[1].y - oy;
+        } else {
+            pos.x = spr->p[1].x + ox;
+            pos.z = spr->p[1].z + oz;
+            pos.y = spr->p[1].y + oy;
+        }
+        if (func_00205440(&pos, cam->view, &pkt.v[1].tc + 1, &depth[1]) != 0) {
+            spr->flags |= 0x200000;
+        }
+        if (func_00205440(&spr->p[0], cam->view, &pkt.v[2].tc + 1, &depth[2]) != 0) {
+            spr->flags |= 0x400000;
+        }
+        if (func_00205440(&spr->p[1], cam->view, &pkt.v[3].tc + 1, &depth[3]) != 0) {
+            spr->flags |= 0x800000;
+        }
+        if (func_00104520(spr->flags, 0x18) != 0) {
+            func_00208700(&pkt, spr->texture, 0);
+        } else {
+            if (func_00104520(spr->flags, 0) != 0) {
+                func_00208CB0(&pkt, (u64)0xA | ((u64)spr->rect.i.u << 4) |
+                                        ((u64)(spr->rect.i.u + spr->rect.i.w - 1) << 14) |
+                                        ((u64)spr->rect.i.v << 24) | ((u64)(spr->rect.i.v + spr->rect.i.h - 1) << 34));
+            }
+            func_00208700(&pkt, spr->texture, 1);
+        }
+        if (func_00104520(spr->flags, 0x13) != 0) {
+            pkt.v[0].z = pkt.v[1].z = pkt.v[2].z = pkt.v[3].z = 0xFFFFFF;
+            func_002075F0(&pkt, obj, 0);
+        } else if (func_00104520(spr->flags, 0x14) != 0 && func_00104520(spr->flags, 0x15) != 0 &&
+                   func_00104520(spr->flags, 0x16) != 0 && func_00104520(spr->flags, 0x17) != 0) {
+            func_002075F0(&pkt, obj, func_001A23B0((depth[0] + depth[1] + depth[2] + depth[3]) / 4.0f));
+        }
+        spr->flags &= 0xFF0FFFFF;
+    }
+    return 0;
+}
 
 /* shape b001:01E00900, 73 insns, 54 copies: one GS sprite (RGBAQ, ST, XYZ2, ST, XYZ2) sent with the current texture */
 
