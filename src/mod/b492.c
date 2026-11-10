@@ -574,7 +574,160 @@ static Vec_b018_01E00EE0 func_01E01630_b492(Vec_b018_01E00EE0 *p, s32 type, f32 
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b492", func_01E01A70_b492);
+/* shape b492:01E01A70 (B492_W_S), 493 insns, 1 copy: B492_W_S, the scene timer script: counts the frame (0xCBB8);
+   frame 1 spawns b492:01E030B0, 01E031C0 and three 01E03430; frame 35 takes the camera point, moves it 30 in z by the
+   flag and spawns 01E02790; frames 25/203 four 01E02880 (angles 0/90/45/135) at joints 0xCB4C and 0xCB4E; frames
+   116/156 at joints 0xCB44/0xCB46 01E02F90 and ten 01E02230, on 156 four 01E02A40 and ten 01E02570; frame 86
+   01E02C00; frames 86..179 01E023E0 at both joints */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xCB44 - 0x260];
+    s16 j44;
+    s16 j46;
+    u8 padCB48[4];
+    s16 j4C;
+    s16 j4E;
+    u8 padCB50[0xCBA2 - 0xCB50];
+    s16 ang;
+    u8 padCBA4[0xCBB0 - 0xCBA4];
+    s16 side;
+    u8 padCBB2[2];
+    s16 flag;
+    u8 padCBB6[2];
+    s16 t;
+} Scene_b492_01E01A70;
+
+static void func_01E01A70_b492(Scene_b492_01E01A70 *g) {
+    extern void b492_01E02230(void);
+    extern void b492_01E023E0(void);
+    extern void b492_01E02570(void);
+    extern void b492_01E02790(void);
+    extern void b492_01E02880(void);
+    extern void b492_01E02A40(void);
+    extern void b492_01E02C00(void);
+    extern void b492_01E02F90(void);
+    extern void b492_01E030B0(void);
+    extern void b492_01E031C0(void);
+    extern void b492_01E03430(void);
+    extern void b492_01E040A0(Scene_b492_01E01A70 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    s16 i;
+
+    g->t++;
+    if (g->t == 1) {
+        b492_01E040A0(g, b492_01E030B0, 0);
+    }
+    if (g->t == 1) {
+        b492_01E040A0(g, b492_01E031C0, 0);
+    }
+    if (g->t == 1) {
+        b492_01E040A0(g, b492_01E03430, 0);
+    }
+    if (g->t == 1) {
+        b492_01E040A0(g, b492_01E03430, 0);
+    }
+    if (g->t == 1) {
+        b492_01E040A0(g, b492_01E03430, 0);
+    }
+    if (g->t == 35) {
+        func_001F5F90(func_001F53A0(), &g->pos);
+        if (g->flag) {
+            g->pos.z += 30.0f;
+        } else {
+            g->pos.z -= 30.0f;
+        }
+        b492_01E040A0(g, b492_01E02790, 0);
+    }
+    if (g->t == 25 || g->t == 203) {
+        func_001F5620(func_001F53A0(), g->j4C, &g->pos);
+        g->pos.y -= 0.7f;
+        g->ang = 0;
+        g->side = 0;
+        b492_01E040A0(g, b492_01E02880, 0);
+        g->ang = 90;
+        g->side = 0;
+        b492_01E040A0(g, b492_01E02880, 0);
+        g->ang = 45;
+        g->side = 1;
+        b492_01E040A0(g, b492_01E02880, 0);
+        g->ang = 135;
+        g->side = 1;
+        b492_01E040A0(g, b492_01E02880, 0);
+        func_001F5620(func_001F53A0(), g->j4E, &g->pos);
+        g->pos.y -= 0.7f;
+        g->ang = 0;
+        g->side = 0;
+        b492_01E040A0(g, b492_01E02880, 0);
+        g->ang = 90;
+        g->side = 0;
+        b492_01E040A0(g, b492_01E02880, 0);
+        g->ang = 45;
+        g->side = 1;
+        b492_01E040A0(g, b492_01E02880, 0);
+        g->ang = 135;
+        g->side = 1;
+        b492_01E040A0(g, b492_01E02880, 0);
+    }
+    if (g->t == 116 || g->t == 156) {
+        func_001F5620(func_001F53A0(), g->j44, &g->pos);
+        b492_01E040A0(g, b492_01E02F90, 0);
+        for (i = 0; i < 10; i++) {
+            b492_01E040A0(g, b492_01E02230, 0);
+        }
+        if (g->t == 156) {
+            g->ang = 0;
+            g->side = 0;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            g->ang = 90;
+            g->side = 0;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            g->ang = 45;
+            g->side = 1;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            g->ang = 135;
+            g->side = 1;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            for (i = 0; i < 10; i++) {
+                b492_01E040A0(g, b492_01E02570, 0);
+            }
+        }
+        func_001F5620(func_001F53A0(), g->j46, &g->pos);
+        b492_01E040A0(g, b492_01E02F90, 0);
+        for (i = 0; i < 10; i++) {
+            b492_01E040A0(g, b492_01E02230, 0);
+        }
+        if (g->t == 156) {
+            g->ang = 0;
+            g->side = 0;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            g->ang = 90;
+            g->side = 0;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            g->ang = 45;
+            g->side = 1;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            g->ang = 135;
+            g->side = 1;
+            b492_01E040A0(g, b492_01E02A40, 0);
+            for (i = 0; i < 10; i++) {
+                b492_01E040A0(g, b492_01E02570, 0);
+            }
+        }
+    }
+    if (g->t == 86) {
+        b492_01E040A0(g, b492_01E02C00, 0);
+    }
+    if (g->t >= 86 && g->t < 180) {
+        func_001F5620(func_001F53A0(), g->j44, &g->pos);
+        b492_01E040A0(g, b492_01E023E0, 0);
+        func_001F5620(func_001F53A0(), g->j46, &g->pos);
+        b492_01E040A0(g, b492_01E023E0, 0);
+    }
+}
 
 /* shape b492:01E02230, 105 insns: b282:01E01C20 family spinning white spark (random size 10..24, frame 0..2, angle 10..49, spin 16..35, held 3..5 ticks): in by 64 up to 0xC0, then out by 14 and ends */
 
