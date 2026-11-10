@@ -462,3 +462,7 @@ there is a source form that gives the original.
 - **The b244 `static inline` wrapper taking `void *p` still leaves `addiu a0` after `mtc1 f12`, and the struct
   behind the address was just filled from a shared constant register:** type the wrapper parameters as the real
   struct pointers and keep the cast (`(s32)p`) inside the wrapper. (c533:01E031E0)
+- **Four stores of one value into four packet vertices come out v3, v2, v1, v0:** write one chained assignment
+  `v[0].r = v[1].r = v[2].r = v[3].r = c;`. The order of the middle stores does not follow a simple rule
+  (`v[2]=v[1]=v[0]=v[3]` gives v3, v2, v0, v1), so script the six orders of the first three targets. A two-target
+  chain stores the rightmost first. (b223:01E03160)
