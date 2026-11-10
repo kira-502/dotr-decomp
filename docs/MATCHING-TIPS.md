@@ -503,3 +503,6 @@ there is a source form that gives the original.
 - **A manager's frame is 0x60 too small and a saved register holds a high stack address (`sp+0xD8`) passed as one
   call's out argument:** the argument is a field inside a stack packet the function never uses otherwise; declare
   `u8 pk[0x90];` last and pass `&pk[0x18]`. (b577:01E01EE0)
+- **An extra `jal fptodp` before a call to a static of the same module that takes an f32:** a no-prototype
+  block-scope extern promotes the float to double; call the static directly (with casts on the other arguments) so
+  its real prototype applies. (b084:01E02E50)
