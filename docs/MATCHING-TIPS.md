@@ -466,3 +466,6 @@ there is a source form that gives the original.
   `v[0].r = v[1].r = v[2].r = v[3].r = c;`. The order of the middle stores does not follow a simple rule
   (`v[2]=v[1]=v[0]=v[3]` gives v3, v2, v0, v1), so script the six orders of the first three targets. A two-target
   chain stores the rightmost first. (b223:01E03160)
+- **A call with four float constants loads `$f15` before `$f14`, and the next call puts its argument address
+  before its `mtc1`:** pass only the last constant through a block local, `{ f32 h = 6.0f; f(p, id, A, B, C, h); }`.
+  That one change fixed both calls. (c529:01E01B90)
