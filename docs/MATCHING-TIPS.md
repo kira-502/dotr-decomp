@@ -469,3 +469,6 @@ there is a source form that gives the original.
 - **A call with four float constants loads `$f15` before `$f14`, and the next call puts its argument address
   before its `mtc1`:** pass only the last constant through a block local, `{ f32 h = 6.0f; f(p, id, A, B, C, h); }`.
   That one change fixed both calls. (c529:01E01B90)
+- **`(f32)(a - b) * (x * s)`: the original does `x * s` first and converts the int afterwards, ours does the
+  `mtc1`/`cvt` first:** put the difference in a block-local s32, `{ s32 d = a - b; dx = d * (x * s); ... }`, and
+  multiply by `d` with no cast. (b083:01E04D80)
