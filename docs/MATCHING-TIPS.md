@@ -472,3 +472,6 @@ there is a source form that gives the original.
 - **`(f32)(a - b) * (x * s)`: the original does `x * s` first and converts the int afterwards, ours does the
   `mtc1`/`cvt` first:** put the difference in a block-local s32, `{ s32 d = a - b; dx = d * (x * s); ... }`, and
   multiply by `d` with no cast. (b083:01E04D80)
+- **A constant stored once (`li a2, 1; sh a2, ...`) gets a register one above ours, and an `s32` local for it
+  still lands one low:** the original has `$a1` blocked there; use a spare parameter as the local,
+  `(s32 arg0, s32 id, s32 o) { ... o = 1; g->rm[1] = o; }` (like b120:01E00B70 and b025:01E03E90). (b082:01E02860)
