@@ -988,7 +988,260 @@ static s32 func_01E02480_b572(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b572", func_01E024D0_b572);
+/* shape b572:01E024D0 (b572), 494 insns, 1 copy: b572 scene manager (b552:01E02630 form): setup (six models, type-4
+   and three type-5 textures, two s8 jitter tables with the second cleared from 180, eight random 0..3 values), step
+   B572_W_S and 170 slots of seven kinds (the 201 handler written out), draw four kinds; scene code from the timer */
+
+typedef struct Fx_b572_01E024D0 {
+    s16 x;
+    u8 pad2[8];
+    s16 sel;
+    u8 padC[0x18];
+    void *fn;
+    u8 pad28[0xA];
+    s16 h32;
+    s16 h34;
+    s16 used;
+    u8 pad38[8];
+} Fx_b572_01E024D0;
+
+typedef struct Q_b572_01E024D0 {
+    f32 a, b, c, d;
+} Q_b572_01E024D0;
+
+typedef union R_b572_01E024D0 {
+    Q_b572_01E024D0 q;
+    s16 s[8];
+} R_b572_01E024D0;
+
+typedef struct Scene_b572_01E024D0 {
+    u8 pad0[0x20];
+    f32 px, py, pz;
+    u8 pad2C[0x80 - 0x2C];
+    s32 ot;
+    u8 pad84[4];
+    s32 texture;
+    u8 pad8C[8];
+    R_b572_01E024D0 rect;
+    u8 padA4[0x14];
+    s16 count;
+    u8 padBA[4];
+    s16 mode;
+    s16 hC0[8];
+    u8 padD0[8];
+    u8 camD8[0x260 - 0xD8];
+    s32 tex[16];
+    Fx_b572_01E024D0 fx[170];
+    s32 tex2[3];
+    u8 pad2D2C[0x2D70 - 0x2D2C];
+    s32 state;
+    u8 pad2D74[8];
+    s32 ot2;
+    u8 pad2D80[0x2D94 - 0x2D80];
+    f32 ta[170];
+    f32 tb[170];
+    u8 pad32E4[0x32F0 - 0x32E4];
+    s16 model0;
+    s16 model1;
+    s16 model2;
+    u8 pad32F6[2];
+    s16 model3;
+    s16 model4;
+    u8 pad32FC[2];
+    s16 model5;
+    u8 pad3300[0x330C - 0x3300];
+    s16 id;
+    s16 flag;
+    s16 timer;
+    s8 rnd[256];
+    s8 rnd2[256];
+    u8 pad3512[2];
+    u8 cam[0x3680 - 0x3514];
+} Scene_b572_01E024D0;
+
+static s32 func_01E024D0_b572(s32 arg0, s32 id) {
+    Scene_b572_01E024D0 *g = (Scene_b572_01E024D0 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern f32 D_01E02E00_b572;
+    extern f32 D_01E02E08_b572;
+    extern void func_01E01400_b572();
+    extern s32 func_01E01830_b572();
+    extern s32 func_01E019E0_b572();
+    extern s32 func_01E01E90_b572();
+    extern s32 func_01E020A0_b572();
+    extern s32 func_01E02250_b572();
+    extern s32 func_01E023C0_b572();
+    extern s32 func_01E02480_b572();
+    extern void func_01E00920_b572();
+    extern void func_01E00EA0_b572();
+    s32 n;
+    Vec4f v;
+    Q_b572_01E024D0 r0;
+    Q_b572_01E024D0 r1;
+    Q_b572_01E024D0 r2;
+    Q_b572_01E024D0 r3;
+    s32 info[4];
+    s32 i;
+
+    n = 0;
+    g->ot = (s32)func_00207500();
+    g->ot2 = (s32)func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x3680);
+        func_00107C10(g->cam);
+        func_00107C10(g->camD8);
+        g->id = id;
+        g->state = 0x18B;
+        g->model0 = func_001F5560(func_001F53A0(), 0x23, 1);
+        g->model1 = func_001F5560(func_001F53A0(), 0x22, 0);
+        g->model2 = func_001F5560(func_001F53A0(), 0x25, 0);
+        g->model3 = func_001F5560(func_001F53A0(), 0xC, 0);
+        g->model4 = func_001F5560(func_001F53A0(), 0x37, 0);
+        g->model5 = func_001F5560(func_001F5380(), 1, 1);
+        for (i = 10; i < 16; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        g->tex[2] = func_00202BF0(4, 2);
+        g->tex[0] = func_00202BF0(4, 0);
+        for (i = 0; i < 3; i++) {
+            g->tex2[i] = func_00202BF0(5, i);
+        }
+        func_001F6160(func_001F53A0(), info);
+        g->flag = (s32)(info[1] / 180.0f);
+        for (i = 0; i < 256; i++) {
+            g->rnd[i] = func_0019A5C8() % 16 - 8;
+        }
+        for (i = 0; i < 256; i++) {
+            g->rnd2[i] = func_0019A5C8() % 16 - 8;
+        }
+        for (i = 180; i < 256; i++) {
+            g->rnd2[i] = 0;
+        }
+        for (i = 0; i < 8; i++) {
+            g->hC0[i] = func_0019A5C8() % 4;
+        }
+        return 0;
+    }
+    func_01E01400_b572(g, 0);
+    for (i = 0; i < 170; i++) {
+        if (g->fx[i].used != 0) {
+            if (g->fx[i].fn == func_01E01830_b572) {
+                func_01E01830_b572(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E019E0_b572) {
+                func_01E019E0_b572(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E01E90_b572) {
+                func_01E01E90_b572(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E020A0_b572) {
+                func_01E020A0_b572(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E02250_b572) {
+                func_01E02250_b572(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E023C0_b572) {
+                func_01E023C0_b572(g, &g->fx[i]);
+            }
+            if (g->fx[i].fn == func_01E02480_b572) {
+                f32 b;
+                f32 a;
+
+                *(f32 *)(u32)&a = *(f32 *)(u32)&D_01E02E00_b572;
+                *(f32 *)(u32)&b = *(f32 *)(u32)&D_01E02E08_b572;
+                func_001F7170(1, 0, (s32)&a, (s32)&b, 1);
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &v);
+    for (i = 0; i < 170; i++) {
+        if (g->fx[i].used != 0) {
+            n++;
+            if (g->fx[i].fn == func_01E01830_b572) {
+                g->texture = g->tex2[1];
+                func_00106080(&r0, 0x14, g->fx[i].h34, 0);
+                g->rect.q = r0;
+                g->count = 3;
+                g->mode = func_0019A5C8() % 4;
+                func_01E00920_b572(g, &g->fx[i], 0x10, g->rnd2);
+                g->count = 0;
+            }
+            if (g->fx[i].fn == func_01E019E0_b572) {
+                g->texture = g->tex[0];
+                func_00106080(&r1, 0x14, g->fx[i].h34, 0);
+                g->rect.q = r1;
+                g->texture = g->tex2[2];
+                g->rect.s[0] = g->fx[i].h34 * 32 + 1;
+                g->rect.s[1] = 1;
+                g->rect.s[2] = 0x1F;
+                g->rect.s[3] = 0x3F;
+                if (g->fx[i].h32 > 1) {
+                    g->count = 3;
+                    g->mode = func_0019A5C8() % 4;
+                    g->px = g->fx[i].x;
+                    g->py = g->ta[g->fx[i].sel];
+                    g->pz = g->tb[g->fx[i].sel];
+                    if (g->timer < 0xAA) {
+                        func_01E00EA0_b572(g, &g->fx[i], 0x21, g->rnd);
+                    } else {
+                        func_01E00EA0_b572(g, &g->fx[i], 0x20, g->rnd);
+                    }
+                    g->count = 0;
+                }
+            }
+            if (g->fx[i].fn == func_01E01E90_b572) {
+                g->texture = g->tex[0];
+                func_00106080(&r2, 0x14, g->fx[i].h34, 0);
+                g->rect.q = r2;
+                g->texture = g->tex2[2];
+                g->rect.s[0] = g->fx[i].h34 * 32 + 1;
+                g->rect.s[1] = 1;
+                g->rect.s[2] = 0x1F;
+                g->rect.s[3] = 0x3F;
+                g->count = 3;
+                g->mode = func_0019A5C8() % 4;
+                func_01E00920_b572(g, &g->fx[i], 0x20, g->rnd);
+                g->count = 0;
+            }
+            if (g->fx[i].fn == func_01E020A0_b572) {
+                g->texture = g->tex2[1];
+                func_00106080(&r3, 0x14, g->fx[i].h34, 0);
+                g->rect.q = r3;
+                g->count = 8;
+                g->mode = func_0019A5C8() % 4;
+                func_01E00920_b572(g, &g->fx[i], 0x20, g->rnd2);
+                g->count = 0;
+            }
+        }
+    }
+    if (g->state != 0) {
+        g->state--;
+    }
+    if (g->timer == 180) {
+        return 1;
+    }
+    if (g->timer == 375) {
+        return 4;
+    }
+    if (g->timer == 355) {
+        return 2;
+    }
+    if (g->timer > 190 && g->timer < 345) {
+        return 6;
+    }
+    if (g->state <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b003:01E02E90, 72 insns: twin of b046:01E03E20: take the first free slot of the 170-slot pool, clear it, give
    it the scene's colour twice, the scene matrix, the scene's value 0x330A and the two arguments; returns 1 if a
