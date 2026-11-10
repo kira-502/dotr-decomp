@@ -459,3 +459,6 @@ there is a source form that gives the original.
   `%` statement before the `/` one. (b105:01E02190)
 - **A real `mul.s` by a zero that was just stored:** a float local set to 0.0f, used for both the store and the multiply;
   a literal `0.0f * x` is folded away. (b139:01E01910)
+- **The b244 `static inline` wrapper taking `void *p` still leaves `addiu a0` after `mtc1 f12`, and the struct
+  behind the address was just filled from a shared constant register:** type the wrapper parameters as the real
+  struct pointers and keep the cast (`(s32)p`) inside the wrapper. (c533:01E031E0)
