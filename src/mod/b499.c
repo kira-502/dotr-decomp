@@ -395,7 +395,162 @@ static void func_01E00CB0_b499(Obj_b111_01E00D70 *obj, Data_b111_01E00D70 *data,
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b499", func_01E01200_b499);
+/* shape b499:01E01200 (B499_W_S), 484 insns, 1 copy (-O3,p): B499_W_S, the scene timer script: colour red,
+   counts the frame (0xBB14); the scene angle follows the model turn; ticks 39..65 spawn twin sparks at joints
+   0xBAF8/0xBAFA, the point follows joint 0xBAF6; streams before 95; at 77 saves the scene point; at 93 40
+   b499:01E01C50 bursts, 93..95 30 b499:01E01AF0 wisps, at 93 60 b499:01E01D30, 85..95 b499:01E01FA0 at the scene
+   point */
+
+typedef struct {
+    u8 pad0[0x2D0];
+    Vec4f pos;
+    u8 pad2E0[0x2F0 - 0x2E0];
+    s32 rot[3];
+    u8 pad2FC[0xB930 - 0x2FC];
+    Vec4f pt;
+    u8 padB940[0xBA70 - 0xB940];
+    Vec4f save;
+    u8 padBA80[0xBAB4 - 0xBA80];
+    u8 col[4];
+    u8 padBAB8[0xBAF6 - 0xBAB8];
+    s16 j0;
+    s16 j1;
+    s16 j2;
+    u8 padBAFC[8];
+    s16 ang;
+    u8 padBB06[2];
+    s16 hBB08;
+    u8 padBB0A[6];
+    s16 hBB10;
+    u8 padBB12[2];
+    s16 count;
+    u8 padBB16[0xBC18 - 0xBB16];
+    u8 trig[4];
+} Ctx_b499_01E01200;
+
+#pragma optimization_level 3
+
+static void func_01E01200_b499(Ctx_b499_01E01200 *g) {
+    extern void b499_01E01990(void);
+    extern void b499_01E01A10(void);
+    extern void b499_01E01AF0(void);
+    extern void b499_01E01C50(void);
+    extern void b499_01E01D30(void);
+    extern void b499_01E01FA0(void);
+    extern void b499_01E02110(void);
+    extern void b499_01E02370(void);
+    extern void b499_01E02550(void);
+    extern void b499_01E02770(void);
+    extern void b499_01E02B00(void);
+    extern void b499_01E035D0(Ctx_b499_01E01200 *, void (*)(void), s32);
+    extern void b499_01E03760(Ctx_b499_01E01200 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F6160(s32, s32 *);
+    extern f32 func_00108030(void *, s16, s32);
+    s32 r[4];
+    s32 i;
+    s32 h;
+    s32 z;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->count++;
+    func_001F6160(func_001F53A0(), r);
+    g->ang = (s32)(r[1] / 180.0f);
+    g->ang -= 180;
+    h = (s32)(15.0f * -func_00108030(g->trig, g->ang, 1));
+    g->hBB10 = 0;
+    g->pos.w = 0.0f;
+    if (g->count == 93) {
+        b499_01E035D0(g, b499_01E01990, 0);
+    }
+    if (g->count == 84) {
+        b499_01E035D0(g, b499_01E01A10, 0);
+    }
+    if (g->count == 1) {
+        b499_01E03760(g, b499_01E02B00, 0);
+    }
+    if (g->count >= 39 && g->count < 66) {
+        for (i = 0; i < 2; i++) {
+            func_001F5620(func_001F53A0(), g->j1, &g->pos);
+            g->pos.x += (f32)(func_0019A5C8() % 30 - 15);
+            b499_01E03760(g, b499_01E02110, 0);
+            func_001F5620(func_001F53A0(), g->j2, &g->pos);
+            g->pos.x += (f32)(func_0019A5C8() % 30 - 15);
+            b499_01E03760(g, b499_01E02110, 0);
+        }
+    }
+    g->col[3] = 0;
+    func_001F5620(func_001F53A0(), g->j0, &g->pos);
+    if (g->count >= 39 && g->count < 95) {
+        b499_01E03760(g, b499_01E02370, 0);
+    }
+    if (g->count >= 16 && g->count < 95) {
+        b499_01E03760(g, b499_01E02550, 0);
+    }
+    if (g->count == 39) {
+        b499_01E035D0(g, b499_01E01A10, 0);
+    }
+    if (g->count < 95) {
+        b499_01E03760(g, b499_01E02770, 0);
+    }
+    if (g->count < 95) {
+        b499_01E03760(g, b499_01E02770, 0);
+    }
+    if (g->count >= 88 && g->count < 95) {
+        b499_01E03760(g, b499_01E02770, 0);
+    }
+    if (g->count == 77) {
+        g->save.x = g->pt.x;
+        g->save.y = g->pt.y;
+        g->save.z = g->pt.z;
+    }
+    if (g->count == 93) {
+        for (i = 0; i < 40; i++) {
+            if (-g->ang < 90) {
+                g->rot[0] = func_0019A5C8() % 0x8000 - 0x8000;
+            } else {
+                z = 0;
+                g->rot[0] = func_0019A5C8() % 0x8000 + z;
+            }
+            g->rot[2] = func_0019A5C8() % 0x8000 + 0x4000;
+            g->pos.x = 0.0f;
+            g->pos.y = 0.0f;
+            g->pos.z = 0.0f;
+            b499_01E035D0(g, b499_01E01C50, 0);
+        }
+    }
+    if (g->count == 93 || g->count == 94 || g->count == 95) {
+        for (i = 0; i < 30; i++) {
+            g->pos.x = g->pt.x + (f32)(func_0019A5C8() % 20) - 10.0f;
+            g->pos.y = g->pt.y + (f32)(func_0019A5C8() % 20) - 10.0f;
+            g->pos.z = (f32)h + (g->pt.z + (f32)(func_0019A5C8() % 20) - 10.0f);
+            g->hBB10 = func_0019A5C8() % 80;
+            g->hBB08 = func_0019A5C8() % 360;
+            b499_01E035D0(g, b499_01E01AF0, 0);
+        }
+    }
+    if (g->count == 93) {
+        for (i = 0; i < 60; i++) {
+            g->pos.x = g->pt.x;
+            g->pos.y = g->pt.y;
+            g->pos.z = g->pt.z + h;
+            b499_01E035D0(g, b499_01E01D30, 0);
+        }
+    }
+    if (g->count > 84 && g->count < 96) {
+        g->pos.x = g->pt.x;
+        g->pos.y = g->pt.y;
+        g->pos.z = g->pt.z;
+        g->hBB10 = 0;
+        g->hBB08 = 0;
+        b499_01E035D0(g, b499_01E01FA0, 0);
+    }
+}
+#pragma optimization_level reset
 
 /* shape b004:01E00460, 32 insns, 5 copies: step of a flash: first rises to alpha 0xF0 (then marks itself done rising),
    afterwards fades by 14 until it ends; keeps its colour at 0x9F/0x5F/0x5F */
