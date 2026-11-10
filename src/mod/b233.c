@@ -591,7 +591,201 @@ static void func_01E01BC0_b233(Obj_b233_01E01BC0 *o, Fx_b233_01E01BC0 *fx, Pkt_b
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b233", func_01E01E60_b233);
+/* shape b233:01E01E60 (B233_W_S), 503 insns, 1 copy (-O3,p): B233_W_S, the scene timer script: colour red, counts the
+   frame (0x3972); at 163 four b233 glows, at 1 b233:01E03980/01E03900 and saves two points; at 89/111/170 and
+   100/120/170 ten b233:01E03090 sparks at joints; at 167 the flash and three rings; 165..177 three steps of two
+   trails between saved points; the point follows the saved points and joints by frame range */
+
+typedef struct {
+    Vec4f a;
+    Vec4f b;
+} Pair_b233_01E01E60;
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x290 - 0x260];
+    Vec4f a;
+    Vec4f b;
+    u8 pad2B0[0x28C0 - 0x2B0];
+    Vec4f r0;
+    Vec4f r1;
+    u8 pad28E0[0x2960 - 0x28E0];
+    Vec4f q0;
+    Vec4f q1;
+    u8 pad2980[0x31B0 - 0x2980];
+    Pair_b233_01E01E60 arr[60];
+    u8 pad[0x3934 - 0x31B0 - 60 * 32];
+    u8 col[4];
+    u8 pad3938[0x395C - 0x3938];
+    s16 k;
+    s16 j0;
+    s16 j1;
+    s16 j2;
+    s16 j3;
+    s16 pad3966;
+    s16 h;
+    s16 pad396A[2];
+    s16 idx;
+    s16 pad3970;
+    s16 t;
+} Ctx_b233_01E01E60;
+
+#pragma optimization_level 3
+
+static void func_01E01E60_b233(Ctx_b233_01E01E60 *g) {
+    extern void b233_01E04760();
+    extern void b233_01E02FE0(), b233_01E031F0(), b233_01E02F10(), b233_01E032D0();
+    extern void b233_01E03980(), b233_01E03900(), b233_01E03090(), b233_01E03490();
+    extern void b233_01E03570(), b233_01E036D0(), b233_01E02D60(), b233_01E033B0();
+    extern void b233_01E03B90();
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    Vec4f v;
+    f32 d[4];
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    if (g->t == 0xA3) {
+        b233_01E04760(g, b233_01E02FE0, 0);
+    }
+    if (g->t == 0xA3) {
+        b233_01E04760(g, b233_01E031F0, 0);
+    }
+    if (g->t == 0xA3) {
+        b233_01E04760(g, b233_01E02F10, 0);
+    }
+    if (g->t == 0xA3) {
+        b233_01E04760(g, b233_01E032D0, 0);
+    }
+    if (g->t == 1) {
+        b233_01E04760(g, b233_01E03980, 0);
+    }
+    if (g->t == 1) {
+        b233_01E04760(g, b233_01E03900, 0);
+    }
+    if (g->t == 0x59 || g->t == 0x6F || g->t == 0xAA) {
+        func_001F5620(func_001F53A0(), g->j2, &v);
+        for (i = 0; i < 10; i++) {
+            g->pos.x = v.x;
+            g->pos.y = v.y;
+            g->pos.z = v.z;
+            b233_01E04760(g, b233_01E03090, 0);
+        }
+    }
+    if (g->t == 0x64 || g->t == 0x78 || g->t == 0xAA) {
+        func_001F5620(func_001F53A0(), g->j3, &v);
+        for (i = 0; i < 10; i++) {
+            g->pos.x = v.x;
+            g->pos.y = v.y;
+            g->pos.z = v.z;
+            b233_01E04760(g, b233_01E03090, 0);
+        }
+    }
+    if (g->t == 0xA7) {
+        func_001F5620(func_001F53A0(), g->j0, &v);
+        func_001F5F90(func_001F5380(), d);
+        g->pos.x = d[0];
+        g->pos.y = v.y;
+        g->pos.z = d[2];
+        b233_01E04760(g, b233_01E03490, 0);
+        g->idx = 0;
+        g->h = 0;
+        b233_01E04760(g, b233_01E03570, 0);
+        g->idx = 1;
+        g->h = 45;
+        b233_01E04760(g, b233_01E03570, 0);
+        g->idx = 2;
+        g->h = 90;
+        b233_01E04760(g, b233_01E03570, 0);
+        b233_01E04760(g, b233_01E036D0, 0);
+    }
+    if (g->t > 0xA4 && g->t < 0xB2) {
+        func_001F5620(func_001F53A0(), g->j0, &v);
+        for (i = 0; i < 3; i++) {
+            g->idx = g->k;
+            d[0] = (g->q1.x - g->q0.x) / 3.0f;
+            d[1] = (g->q1.y - g->q0.y) / 3.0f;
+            d[2] = (g->q1.z - g->q0.z) / 3.0f;
+            g->pos.x = g->q0.x + d[0] * i;
+            g->pos.y = g->q0.y + d[1] * i;
+            g->pos.z = g->q0.z + d[2] * i;
+            g->arr[g->idx].b.x = g->pos.x;
+            g->arr[g->idx].b.y = g->pos.y;
+            g->arr[g->idx].b.z = g->pos.z;
+            b233_01E04760(g, b233_01E02D60, 0);
+            d[0] = (g->r1.x - g->r0.x) / 3.0f;
+            d[1] = (g->r1.y - g->r0.y) / 3.0f;
+            d[2] = (g->r1.z - g->r0.z) / 3.0f;
+            g->pos.x = g->r0.x + d[0] * i;
+            g->pos.y = g->r0.y + d[1] * i;
+            g->pos.z = g->r0.z + d[2] * i;
+            g->arr[g->idx].a.x = g->pos.x;
+            g->arr[g->idx].a.y = g->pos.y;
+            g->arr[g->idx].a.z = g->pos.z;
+            b233_01E04760(g, b233_01E033B0, 0);
+            g->k++;
+            if (g->k >= 60) {
+                g->k = 0;
+            }
+        }
+    }
+    if (g->t == 0x42) {
+        b233_01E04760(g, b233_01E03B90, 0);
+    }
+    if (g->t == 1) {
+        func_001F5F90(func_001F53A0(), &g->a);
+        func_001F5F90(func_001F53A0(), &g->b);
+    }
+    if (g->t > 0x6F && g->t < 0xC3) {
+        g->a.z -= 2.4f;
+        g->pos.x = g->a.x;
+        g->pos.y = g->a.y - 10.0f;
+        g->pos.z = 40.0f + g->a.z;
+        g->idx = 0;
+    }
+    if (g->t > 0xAA && g->t < 0xE1) {
+        g->b.z -= 3.8f;
+        g->pos.x = g->b.x;
+        g->pos.y = g->b.y - 10.0f;
+        g->pos.z = 40.0f + g->b.z;
+        g->idx = 1;
+    }
+    if (g->t >= 0x70 && g->t < 0xBF) {
+        g->pos.x = g->a.x;
+        g->pos.y = g->a.y - 10.0f;
+        g->pos.z = 40.0f + g->a.z;
+        g->idx = 0;
+    }
+    if (g->t >= 0xA9 && g->t < 0xDD) {
+        g->pos.x = g->b.x;
+        g->pos.y = g->b.y - 10.0f;
+        g->pos.z = 40.0f + g->b.z;
+        g->idx = 1;
+    }
+    if (g->t == 0x30 || g->t == 0x31 || g->t == 0x32 || g->t == 0x33) {
+        func_001F5620(func_001F53A0(), g->j0, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->idx = 0;
+    }
+    if (g->t == 0x33 || g->t == 0x34 || g->t == 0x35 || g->t == 0x36) {
+        func_001F5620(func_001F53A0(), g->j1, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->idx = 1;
+    }
+}
+
+#pragma optimization_level reset
 
 /* shape b233:01E02640, 134 insns: b117:01E01070's grey-purple drifting mote with a -15..14 tilt, drifting 10 sideways and 4 up */
 
