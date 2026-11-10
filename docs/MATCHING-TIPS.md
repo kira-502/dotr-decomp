@@ -478,3 +478,6 @@ there is a source form that gives the original.
 - **A step loop that skips some handlers and counts them: the original falls through to the `jalr` and branches to
   a shared `m++`, ours puts `m++` right after the `bne`:** write `if (fn != A && fn != B) fn(g, slot); else m++;`,
   not `if (fn == A || fn == B) m++; else fn(g, slot);`. (b092:01E03950)
+- **A block-local `f32 v = K;` fixes one call's address/`mtc1` order but flips it in a later call:** declare the
+  float local at function scope and assign it just before the call (`f32 v; ... v = 20.0f; f(&g->rain, 64, v);`).
+  (c557:01E01AC0)
