@@ -1582,7 +1582,263 @@ static s32 func_01E03370_b529(Game_b529_01E03370 *g, Fx_b529_01E03370 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b529", func_01E03630_b529);
+/* shape b529:01E03630 (b529), 493 insns, 1 copy: b529 scene manager in b750:01E02F60 form: setup (six joints and a
+   camera, one type-4 and three type-5 textures, two 256 s8 jitter tables and 36 random s16 0..7, angle from the
+   turn), step b529:01E01950 and every slot but b529:01E03370 (counted; any count runs b529:01E04240 after the draws),
+   draw nine kinds (b529:01E03F40, circle G4 four ways, circle GT4, SPRIM at the camera projected into a stack packet,
+   magic gas twice); scene code from the timer */
+
+typedef struct {
+    u8 pad0[0x10];
+    Vec4f pos;
+    u8 pad20[0x24];
+    s32 (*fn)();
+    u8 pad48[0xE];
+    s16 h56;
+    s16 used;
+    u8 pad5A[0x16];
+} Fx_b529_01E03630;
+
+typedef struct {
+    u8 pad0[0x10];
+    f32 sx;
+    f32 sy;
+    f32 sz;
+    u8 pad1C[4];
+    f32 px;
+    f32 py;
+    f32 pz;
+    u8 pad2C[0x54];
+    s32 ot80;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    s32 rm[4];
+    u8 padA4[0xC];
+    s16 hB0;
+    u8 padB2[6];
+    s16 hB8;
+    u8 padBA[4];
+    s16 hBE;
+    u8 padC0[0x18];
+    u8 crdD8[0x188];
+    s32 tex260[16];
+    Fx_b529_01E03630 fx[250];
+    u8 pad7000[0x270];
+    Vec4f p7270;
+    u8 pad7280[0x10];
+    s32 tex[3];
+    u8 pad729C[0x14];
+    s32 count;
+    u8 pad72B4[8];
+    s32 ot;
+    u8 pad72C0[0xC];
+    f32 depth;
+    u8 pad72D0[0x18];
+    s16 jA;
+    s16 jB;
+    s16 jC;
+    s16 jD;
+    s16 jE;
+    s16 jF;
+    u8 pad72F4[4];
+    s16 cam;
+    u8 pad72FA[0xE];
+    s16 rnd[36];
+    u8 pad7350[0x5C];
+    s16 turn;
+    s16 id;
+    s16 frame;
+    s8 jit[0x100];
+    s8 jit2[0x100];
+    u8 pad75B2[2];
+    u8 crd[0x16C];
+} Scene_b529_01E03630;
+
+static s32 func_01E03630_b529(s32 arg0, s32 id) {
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_01E01950_b529();
+    extern void func_01E00ED0_b529();
+    extern void func_01E00920_b529();
+    extern void func_01E01230_b529();
+    extern void b529_01E03F40();
+    extern void b529_01E04240();
+    Scene_b529_01E03630 *g = (Scene_b529_01E03630 *)arg0;
+    s16 m;
+    s16 n;
+    Vec4f v;
+    s32 rm[4];
+    s32 rm2[4];
+    s32 rm3[4];
+    s32 rm4[4];
+    s32 ang[4];
+    u8 pk[0x90];
+    s32 i;
+    s16 k;
+    s32 (*fn)();
+
+    m = 0;
+    n = 0;
+    g->ot = func_00207500();
+    g->ot80 = func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x7720);
+        func_00107C10(g->crd);
+        func_00107C10(g->crdD8);
+        g->id = id;
+        g->count = 360;
+        g->jA = func_001F5560(func_001F53A0(), 0x3A, 1);
+        g->jB = func_001F5560(func_001F53A0(), 0x34, 0);
+        g->jC = func_001F5560(func_001F53A0(), 0x35, 0);
+        g->jD = func_001F5560(func_001F53A0(), 0x30, 0);
+        g->jE = func_001F5560(func_001F53A0(), 0x2F, 0);
+        g->jF = func_001F5560(func_001F53A0(), 0x2C, 0);
+        g->cam = func_001F5560(func_001F5380(), 1, 1);
+        for (i = 15; i < 16; i++) {
+            g->tex260[i] = func_00202BF0(4, i);
+        }
+        for (i = 0; i < 3; i++) {
+            g->tex[i] = func_00202BF0(5, i);
+        }
+        func_001F6160(func_001F53A0(), ang);
+        g->turn = ang[1] / 180.0f;
+        g->sx = 0.1f;
+        g->sy = 0.1f;
+        g->sz = 0.1f;
+        for (k = 0; k < 0x100; k++) {
+            g->jit[k] = func_0019A5C8() % 30 - 15;
+        }
+        for (k = 0; k < 0x100; k++) {
+            g->jit2[k] = func_0019A5C8() % 40 - 20;
+        }
+        for (k = 0; k < 36; k++) {
+            g->rnd[k] = func_0019A5C8() % 8;
+        }
+        return 0;
+    }
+    func_01E01950_b529(g, 0);
+    for (k = 0; k < 250; k++) {
+        if (g->fx[k].used != 0) {
+            fn = g->fx[k].fn;
+            if (fn != NULL) {
+                if (fn != (s32 (*)())func_01E03370_b529) {
+                    fn(g, &g->fx[k]);
+                } else {
+                    m++;
+                }
+            }
+        }
+    }
+    for (k = 0; k < 250; k++) {
+        if (g->fx[k].used != 0) {
+            n++;
+            if (g->fx[k].fn == (s32 (*)())func_01E01E90_b529) {
+                g->tex88 = g->tex[0];
+                func_00106080(rm, 0x14, g->fx[k].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm;
+                g->hB8 = 1;
+                g->hBE = 0;
+                b529_01E03F40(g, &g->fx[k], 0x20, &g->p7270);
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E02240_b529) {
+                g->hB8 = 0x18;
+                func_01E00ED0_b529(g, &g->fx[k], 0x21, &g->fx[k].pos);
+                g->hB8 = 0;
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E023B0_b529) {
+                g->hB8 = 0x18;
+                func_01E00ED0_b529(g, &g->fx[k], 0x21, &g->p7270);
+                g->hB8 = 0;
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E02650_b529) {
+                func_00106080(rm2, 0x14, g->fx[k].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm2;
+                g->tex88 = g->tex[1];
+                g->hB8 = 0;
+                g->px = g->p7270.x;
+                g->py = g->p7270.y;
+                g->pz = g->p7270.z;
+                g->hB8 = 0x24;
+                g->hBE = 0;
+                func_01E01230_b529(g, &g->fx[k], 0x20, &g->p7270);
+                g->hB8 = 0;
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E027F0_b529) {
+                g->hB8 = 0x18;
+                func_01E00ED0_b529(g, &g->fx[k], 0x20, &g->p7270);
+                g->hB8 = 0;
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E02AB0_b529) {
+                g->hB8 = 1;
+                func_01E00ED0_b529(g, &g->fx[k], 0x20, &g->p7270);
+                g->hB8 = 0;
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E02C10_b529) {
+                func_001F5F90(func_001F5380(), &v);
+                if (g->turn) {
+                    v.z -= 30.0f;
+                } else {
+                    v.z += 30.0f;
+                }
+                func_00205440(&v, NULL, &pk[0x18], &g->depth);
+                func_01E01630_b529((s32)g, (u8 *)&g->fx[k], 0x20, g->depth);
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E02D10_b529) {
+                g->tex88 = g->tex[2];
+                func_00106080(rm3, 0x14, g->fx[k].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm3;
+                g->hB8 = 7;
+                g->hB0 = 0;
+                func_01E00920_b529(g, &g->fx[k], 0x20, g->jit);
+                g->hB8 = 0;
+                g->hB0 = 0;
+            }
+            if (g->fx[k].fn == (s32 (*)())func_01E02EF0_b529) {
+                g->tex88 = g->tex[2];
+                func_00106080(rm4, 0x14, g->fx[k].h56, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm4;
+                g->hB8 = 3;
+                g->hB0 = 0;
+                func_01E00920_b529(g, &g->fx[k], 0x20, g->jit);
+                g->hB8 = 0;
+                g->hB0 = 0;
+            }
+        }
+    }
+    if (m) {
+        b529_01E04240(g);
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->frame == 0xE7) {
+        return 1;
+    }
+    if (g->frame == 0x159) {
+        return 4;
+    }
+    if (g->frame == 0x13B) {
+        return 2;
+    }
+    if (g->frame > 0xF1 && g->frame < 0x136) {
+        return 6;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
+
 
 /* shape b529:01E03DF0, 82 insns: c035:01E01150 family: take the first free effect slot of 250 (0x70 bytes each, at ctx+0x2A0), clear it, give it the scene colour twice, the scene position, two angles and both arguments; returns 1 when it got one */
 
