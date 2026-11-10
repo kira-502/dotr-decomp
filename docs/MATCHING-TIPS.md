@@ -487,3 +487,6 @@ there is a source form that gives the original.
   (b133:01E00410)
 - **A spill slot 8 bytes too low that no declaration order moves:** `__attribute__((aligned(16)))` on that s32
   local (`aligned(8)` was not enough). (b133:01E00410)
+- **At -O2 a chained assignment `a = b = c = d = K;` stores straight right to left (d, c, b, a):** list the targets
+  in the reverse of the store order you need; `c44[2] = c44[1] = c44[0] = c44[3] = 0xC0;` stores 3, 0, 1, 2.
+  (b368:01E05440)
