@@ -270,7 +270,185 @@ static s32 func_01E00440_b123(Fx_b097_01E059B0 *obj, s32 target, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b123", func_01E00DA0_b123);
+/* shape b123:01E00DA0 (ShFx_Afx03), 508 insns, 1 copy (-O1,p): b106:01E042B0 built at -O1, the flare
+   sprites drawn as screen quads stepping out from the projected point */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b123_01E00DA0;
+
+typedef struct {
+    u16 u : 14;
+    u16 pu : 2;
+    u16 v : 14;
+    u16 pv : 2;
+    u32 pad;
+} Uv_b123_01E00DA0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b123_01E00DA0 uv;
+    Xyz_b123_01E00DA0 xyz;
+} Vtx_b123_01E00DA0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b123_01E00DA0 v[4];
+    u8 tail[8];
+} Pkt_b123_01E00DA0;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 span;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[3];
+    u8 len;
+    u8 blend;
+    u8 dx;
+    u8 dy;
+    s32 obj;
+    u8 pad10[3];
+    u8 alpha;
+    u8 pad14[0x10];
+} Flare_b123_01E00DA0;
+
+#pragma optimization_level 1
+
+static s32 func_01E00DA0_b123(Flare_b123_01E00DA0 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_001F7060(s32, s32, void *, void *);
+    extern Vec4f *func_001F9AD0(s32);
+    extern void func_001F53C0(s32, s32, void *);
+    extern f32 func_001F5860(s32);
+    extern void func_00101A00(void *, void *);
+    extern void func_0020CDD0(void *, void *, void *);
+    extern s32 func_00101770(void *);
+    extern void func_00101C80(void *, u8 *);
+    Flare_b123_01E00DA0 *e = arg0;
+    f32 mat[16];
+    Vec4f pos;
+    Vec4f d;
+    Vec4f p;
+    Vec4f cam;
+    f32 m2[16];
+    u8 td[0x20];
+    struct {
+        Pkt_b123_01E00DA0 pk;
+        s32 a[2];
+        s32 b[2];
+    } w;
+    Xyz_b123_01E00DA0 xy;
+    f32 depth;
+    u8 bl[4];
+    s32 i;
+    s32 list;
+    s32 any;
+    s32 j;
+    s32 k;
+    s32 cnt;
+    s32 x;
+    s32 y;
+    s32 m;
+
+    list = func_00207F60();
+    any = 0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        if (any == 0) {
+            ((Pkt_b123_01E00DA0 *)(s32)&w.pk)->count = 0x34;
+            ((Pkt_b123_01E00DA0 *)(s32)&w.pk)->tag = 0xC;
+            ((Pkt_b123_01E00DA0 *)(s32)&w.pk)->regs = ((u64)0x4214 << 32) | 0x21421421;
+            ((Pkt_b123_01E00DA0 *)(s32)&w.pk)->pad = 0;
+            w.pk.v[0].r = w.pk.v[1].r = w.pk.v[2].r = w.pk.v[3].r = w.pk.v[0].g = w.pk.v[1].g = w.pk.v[2].g = w.pk.v[3].g =
+                w.pk.v[0].b = w.pk.v[1].b = w.pk.v[2].b = w.pk.v[3].b = w.pk.v[0].a = w.pk.v[1].a = w.pk.v[2].a =
+                    w.pk.v[3].a = 0x80;
+            w.pk.v[0].q = w.pk.v[1].q = w.pk.v[2].q = w.pk.v[3].q = 1.0f;
+            w.pk.v[0].xyz.z = w.pk.v[1].xyz.z = w.pk.v[2].xyz.z = w.pk.v[3].xyz.z = 0xFFFFFF;
+            w.pk.v[0].xyz.f = w.pk.v[1].xyz.f = w.pk.v[2].xyz.f = w.pk.v[3].xyz.f = 0;
+            func_00208460();
+            func_001F7060(e->obj, 0, w.a, w.b);
+            func_00208460();
+            any = 1;
+            ((Pkt_b123_01E00DA0 *)(s32)&w.pk)->count |= 0x800;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[0].uv)->u = 0;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[0].uv)->v = 0;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[1].uv)->u = 0x2800;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[1].uv)->v = 0;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[2].uv)->u = 0;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[2].uv)->v = 0x1C00;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[3].uv)->u = 0x2800;
+            ((Uv_b123_01E00DA0 *)(s32)&w.pk.v[3].uv)->v = 0x1C00;
+        }
+        func_0020EB40(mat);
+        cam = *func_001F9AD0(0);
+        func_001F53C0(1, e->obj, &pos);
+        d.x = cam.x - pos.x;
+        d.y = cam.y - pos.y;
+        d.z = cam.z - pos.z;
+        func_00101A00(&d, m2);
+        d.x = d.z = 0.0f;
+        d.y = func_001F5860(e->obj);
+        if (e->flags & 1) {
+            d.y *= -1.0f;
+        }
+        func_0020CDD0(&p, m2, &d);
+        p.x += pos.x;
+        p.y += pos.y;
+        p.z += pos.z;
+        if (func_00205440(&p, mat, &xy, &depth) != 0 && func_00101770(&xy) != 0) {
+            w.pk.v[0].xyz.z = w.pk.v[1].xyz.z = w.pk.v[2].xyz.z = w.pk.v[3].xyz.z = xy.z;
+            w.pk.v[0].xyz.f = w.pk.v[1].xyz.f = w.pk.v[2].xyz.f = w.pk.v[3].xyz.f = 0;
+            td[5] = e->blend;
+            func_00101C80(td, bl);
+            func_002086D0(&w.pk, (u64)bl[0] | ((u64)bl[1] << 2) | ((u64)bl[2] << 4) | ((u64)bl[3] << 6));
+            w.pk.v[0].a = w.pk.v[1].a = w.pk.v[2].a = w.pk.v[3].a = e->alpha;
+            cnt = e->len >> 1;
+            m = e->span - e->life + 1;
+            if (m < cnt) {
+                cnt = m;
+            }
+            if (e->life < cnt) {
+                cnt = e->life;
+            }
+            for (k = 0; k < 2; k++) {
+                for (j = 0; j < cnt; j++) {
+                    if (k) {
+                        x = e->dx * (j + 1);
+                        y = e->dy * (j + 1);
+                    } else {
+                        x = -e->dx * (j + 1);
+                        y = -e->dy * (j + 1);
+                    }
+                    w.pk.v[0].xyz.x = w.pk.v[2].xyz.x = (u32)((x << 4) + 27648.0f);
+                    w.pk.v[1].xyz.x = w.pk.v[3].xyz.x = (u32)(37888.0f + (x << 4));
+                    w.pk.v[0].xyz.y = w.pk.v[1].xyz.y = (u32)((y << 4) + 29184.0f);
+                    w.pk.v[2].xyz.y = w.pk.v[3].xyz.y = (u32)(36352.0f + (y << 4));
+                    func_002075F0(&w.pk, 0, (u32)depth);
+                }
+            }
+        }
+    }
+    if (any) {
+        func_00207FD0(list, ot, 0);
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b123", func_01E01590_b123);
 
