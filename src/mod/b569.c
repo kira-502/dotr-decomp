@@ -444,7 +444,132 @@ static void func_01E00FE0_b569(Game_b569_01E00FE0 *g, Obj_b569_01E00FE0 *o, s32 
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b569", func_01E012A0_b569);
+/* shape b569:01E012A0 (B569_W_S), 513 insns, 1 copy: B569_W_S, the scene timer script: counts the frame (0xB2B8);
+   eight windows (35..43, 51..60, 72..81, 93..102, 114..124, 156..161, 175..183, 197..200) put the spawn point on
+   joint 0xB244 and spawn three 0x1E021B0 each frame, three more on joint 0xB246 (162..167, 184..190, 200..205); frame
+   207 reads joint 0xB248 into 0xB1D0; 207..220 copy it to the spawn point, spawn four 0x1E01E90 and two 0x1E01C60,
+   and on 207 four 0x1E01AB0 at angles 0/90/45/135 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xB1D0 - 0x260];
+    Vec4f v;
+    u8 padB1E0[0xB244 - 0xB1E0];
+    s16 j[3];
+    u8 padB24A[0xB2A2 - 0xB24A];
+    s16 ang;
+    u8 padB2A4[0xB2B0 - 0xB2A4];
+    s16 side;
+    u8 padB2B2[0xB2B8 - 0xB2B2];
+    s16 t;
+} Scene_b569_01E012A0;
+
+static void func_01E012A0_b569(Scene_b569_01E012A0 *g) {
+    extern void b569_01E01AB0();
+    extern void b569_01E01C60();
+    extern void b569_01E01E90();
+    extern void b569_01E021B0();
+    extern void b569_01E02B80();
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    s16 i;
+
+    g->t++;
+    if (g->t >= 35 && g->t < 44) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 51 && g->t < 61) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 72 && g->t < 82) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 93 && g->t < 103) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 114 && g->t < 125) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 156 && g->t < 162) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 175 && g->t < 184) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 197 && g->t < 201) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 162 && g->t < 168) {
+        func_001F5620(func_001F53A0(), g->j[1], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 184 && g->t < 191) {
+        func_001F5620(func_001F53A0(), g->j[1], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t >= 200 && g->t < 206) {
+        func_001F5620(func_001F53A0(), g->j[1], &g->pos);
+        for (i = 0; i < 3; i++) {
+            b569_01E02B80(g, b569_01E021B0, 0);
+        }
+    }
+    if (g->t == 207) {
+        func_001F5620(func_001F53A0(), g->j[2], &g->v);
+    }
+    if (g->t >= 207 && g->t < 221) {
+        g->pos = g->v;
+        for (i = 0; i < 4; i++) {
+            b569_01E02B80(g, b569_01E01E90, 0);
+        }
+        g->side = 0;
+        for (i = 0; i < 2; i++) {
+            b569_01E02B80(g, b569_01E01C60, 0);
+        }
+        if (g->t == 207) {
+            g->ang = 0;
+            g->side = 0;
+            b569_01E02B80(g, b569_01E01AB0, 0);
+            g->ang = 90;
+            g->side = 0;
+            b569_01E02B80(g, b569_01E01AB0, 0);
+            g->ang = 45;
+            g->side = 1;
+            b569_01E02B80(g, b569_01E01AB0, 0);
+            g->ang = 135;
+            g->side = 1;
+            b569_01E02B80(g, b569_01E01AB0, 0);
+        }
+    }
+}
 
 /* shape b569:01E01AB0, 107 insns: c062:01E033E0 family shock wave (white/blue, scale 6): kind 0 from 200 growing 120 (width 15 +0.3), kind 1 from 120 growing 60 (15 +0.3), kind 2 400 x 8 fixed; in by 64 up to 0x80 for 12 ticks, then out by 7 and ends; spins 6 a tick */
 
