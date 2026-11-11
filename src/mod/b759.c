@@ -783,7 +783,181 @@ static void func_01E01D30_b759(Scene_b759_01E01D30 *g) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b759", func_01E01FE0_b759);
+/* shape b759:01E01FE0 (B759_OBJ_MOVE_2_), 511 insns, 1 copy: b547:01E019E0 form: random drift with the scene
+   direction picking the turn sign; at tick 83 three jittered b759:01E027E0 sparks; frame cycles, sinks to the point
+   height */
+
+typedef struct {
+    u8 pad0000[0x250];
+    Vec4f pos;
+    u8 pad260[0x8644 - 0x260];
+    f32 *dir;
+    u8 pad8648[0x8668 - 0x8648];
+    s16 point;
+    u8 pad866A[0x869A - 0x866A];
+    s16 flip;
+    u8 pad869C[2];
+    s16 count;
+    u8 pad86A0[0x88A0 - 0x86A0];
+    u8 table[1];
+} Mgr_b759_01E01FE0;
+
+typedef struct {
+    u8 pad00[6];
+    s16 h6;
+    s16 h8;
+    s16 hA;
+    s16 hC;
+    s16 hE;
+    Vec4f pos;
+    u8 pad20[0x10];
+    f32 f30;
+    f32 f34;
+    f32 f38;
+    f32 f3C;
+    u8 pad40[8];
+    f32 f48;
+    u8 pad4C[4];
+    s16 h50;
+    s16 h52;
+    s16 h54;
+    s16 h56;
+    s16 h58;
+    s16 h5A;
+    s16 h5C;
+    u8 pad5E[2];
+    u8 c60[4];
+} Obj_b759_01E01FE0;
+
+static s32 func_01E01FE0_b759(Mgr_b759_01E01FE0 *m, Obj_b759_01E01FE0 *o) {
+    extern void b759_01E027E0();
+    extern void b759_01E03880();
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s32, s32);
+    f32 v[4];
+    f32 w[4];
+    f32 u[4];
+
+    if (o->h58 == 1) {
+        o->f48 = 5.0f;
+        o->h56 = (func_0019A5C8() >> 4) % 2;
+        if (o->h56 == 0) {
+            o->h56 = 5;
+        } else {
+            o->h56 = 3;
+        }
+        func_001076F0(o->c60, 0x80, 0x80, 0x80);
+        o->h5A = func_0019A5C8() % 360;
+        if (m->flip != 0) {
+            if (*m->dir > 0.0f) {
+                o->h5C = 45;
+            } else {
+                o->h5C = -45;
+            }
+        } else {
+            if (*m->dir > 0.0f) {
+                o->h5C = -45;
+            } else {
+                o->h5C = 45;
+            }
+        }
+        if (func_0019A5C8() % 2) {
+            o->hA = 2;
+        } else {
+            o->hA = 0;
+        }
+        o->hC = o->h50;
+        o->h50 = 0;
+        o->h52 = func_0019A5C8() % 350 + 100;
+        o->hE = func_0019A5C8() % 20 + 10;
+        o->h8 = func_0019A5C8() % 35;
+        o->h6 = func_0019A5C8() % 5 + 3;
+        o->f30 = func_0019A5C8() % 40 - 20;
+        o->f34 = func_0019A5C8() % 40 - 20;
+        o->f38 = func_0019A5C8() % 40 - 20;
+        o->f30 /= 38.0f;
+        o->f34 /= 38.0f;
+        o->f38 /= 38.0f;
+        func_001F5F90(func_001F5380(), v);
+        func_001F5620(func_001F53A0(), m->point, w);
+        o->f3C = (v[2] - w[2]) / 80.0f;
+        o->h58 = 2;
+    }
+    if (m->count < 305) {
+        if (o->c60[3] < 0x80) {
+            o->c60[3] += 0x20;
+        }
+        if (o->h52 > o->h50) {
+            o->h50 += 15;
+        }
+    } else if (o->c60[3] > 9) {
+        o->c60[3] -= 8;
+    } else {
+        o->h58 = 0;
+    }
+    if (o->h54 > 20 && o->h54 < 30) {
+        o->pos.x += o->f30;
+        o->pos.z += o->f38;
+        o->f48 += 0.3f;
+    }
+    if (o->h54 == 83) {
+        if (m->count < 300) {
+            m->pos = o->pos;
+            m->pos.x += func_0019A5C8() % 16 - 8;
+            m->pos.y += func_0019A5C8() % 16 - 8;
+            m->pos.z += func_0019A5C8() % 16 - 8;
+            b759_01E03880(m, b759_01E027E0, 0);
+            m->pos = o->pos;
+            m->pos.x += func_0019A5C8() % 16 - 8;
+            m->pos.y += func_0019A5C8() % 16 - 8;
+            m->pos.z += func_0019A5C8() % 16 - 8;
+            b759_01E03880(m, b759_01E027E0, 0);
+            m->pos = o->pos;
+            m->pos.x += func_0019A5C8() % 16 - 8;
+            m->pos.y += func_0019A5C8() % 16 - 8;
+            m->pos.z += func_0019A5C8() % 16 - 8;
+            b759_01E03880(m, b759_01E027E0, 0);
+        }
+    }
+    if (m->count >= 246) {
+        if (m->count == 246) {
+            o->h56 = (func_0019A5C8() >> 4) % 3;
+            o->h5C = 0;
+        }
+        o->h56++;
+        if (o->h56 > 2) {
+            o->h56 = 0;
+        }
+    } else if (o->h54 < 80) {
+        if (o->h56 == 5) {
+            o->h56 = 3;
+        } else {
+            o->h56 = 5;
+        }
+    } else {
+        o->h56++;
+        if (o->h56 > 2) {
+            o->h56 = 0;
+        }
+    }
+    func_001F5F90(func_001F5380(), u);
+    o->f34 = 3.0f * func_00108030(m->table, o->h5C, 1);
+    if (o->h54 < 80) {
+        o->pos.z += o->f3C;
+        if (u[1] - 10.0f < o->pos.y) {
+            o->pos.y -= 0.4f;
+        }
+        o->f48 += 0.5f;
+    } else if (o->h54 >= 80) {
+        o->pos.y += 0.4f;
+    }
+    o->h54++;
+    return 0;
+}
 
 /* shape b759:01E027E0, 102 insns: a red spark (b149:01E01AC0 shape): size 5, random sub-frame 0..3, angle, frame 0..7, start
    height 10..59 (old one kept), rise 16..45 once started, width 0..34, hold 3..7; full alpha until the hold, then down by 8 */
