@@ -521,7 +521,152 @@ static Rect_b152_01E014F0 func_01E014F0_b152(s32 unused, s16 n) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b152", func_01E01640_b152);
+/* shape b152:01E01640 (B152_W_S), 518 insns, 1 copy (-O3,p): B152_W_S, the scene timer script: counts the frame
+   (0xA0B2); frame 1 and 36 spawn b152:01E031F0/01E03110, 81..159 b152:01E03400; from 141 the sizes at 0x9FC0/0x9FC4
+   grow to 80/50; from 83, 36 sparks (b152:01E01E60); 80..350 b152:01E02680 at joint 0xA032 and 80..200 two
+   b152:01E02530 a frame; frame 183 places the point 0x3BB0; 370..425 two orbiting b152:01E02820 and a b152:01E02F70;
+   odd frames 267..281 b152:01E02990; frame 290 the b152:01E02AF0 pair and eight b152:01E02D90 (b597:01E01640 form) */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x3BB0 - 0x260];
+    Vec4f p;
+    u8 pad3BC0[0x9FC0 - 0x3BC0];
+    f32 w;
+    f32 h;
+    u8 pad9FC8[0xA030 - 0x9FC8];
+    s16 id;
+    s16 id0;
+    u8 padA034[0xA040 - 0xA034];
+    s16 id1;
+    u8 padA042[0xA09A - 0xA042];
+    s16 cnt;
+    u8 padA09C[0xA0A4 - 0xA09C];
+    s16 ang;
+    u8 padA0A6[0xA0AA - 0xA0A6];
+    s16 idx;
+    u8 padA0AC[0xA0AE - 0xA0AC];
+    s16 flag;
+    u8 padA0B0[0xA0B2 - 0xA0B0];
+    s16 frame;
+    u8 padA0B4[0xA2B4 - 0xA0B4];
+    u8 tab[1];
+} Scene_b152_01E01640;
+
+#pragma optimization_level 3
+
+static void func_01E01640_b152(Scene_b152_01E01640 *g) {
+    extern void b152_01E01E60();
+    extern void b152_01E02530();
+    extern void b152_01E02680();
+    extern void b152_01E02820();
+    extern void b152_01E02990();
+    extern void b152_01E02AF0();
+    extern void b152_01E02D90();
+    extern void b152_01E02F70();
+    extern void b152_01E03110();
+    extern void b152_01E031F0();
+    extern void b152_01E03400();
+    extern s32 b152_01E03FD0();
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    s16 i;
+
+    g->frame++;
+    if (g->frame == 1) {
+        b152_01E03FD0(g, b152_01E031F0, 0);
+    }
+    if (g->frame == 36) {
+        b152_01E03FD0(g, b152_01E03110, 0);
+    }
+    if (g->frame >= 81 && g->frame < 160) {
+        b152_01E03FD0(g, b152_01E03400, 0);
+    }
+    if (g->frame == 141) {
+        g->idx = 0;
+    }
+    if (g->frame >= 141) {
+        if (g->h < 50.0f) {
+            g->h += 1.5f;
+        }
+        if (g->w < 80.0f) {
+            g->w += 1.0f;
+        }
+    }
+    if (g->frame >= 83) {
+        if (g->cnt < 36) {
+            func_001F5620(func_001F53A0(), g->id, &g->pos);
+            g->idx = g->cnt;
+            g->pos.y = 30.0f;
+            g->pos.x += func_0019A5C8() % 60 - 30;
+            g->pos.z += func_0019A5C8() % 60 - 30;
+            g->pos.y += func_0019A5C8() % 20 - 10;
+            b152_01E03FD0(g, b152_01E01E60, 0);
+            g->cnt++;
+        }
+    }
+    if (g->frame >= 80 && g->frame < 351) {
+        func_001F5620(func_001F53A0(), g->id0, &g->pos);
+        b152_01E03FD0(g, b152_01E02680, 0);
+    }
+    if (g->frame >= 80 && g->frame < 201) {
+        for (i = 0; i < 2; i++) {
+            func_001F5620(func_001F53A0(), g->id, &g->pos);
+            g->pos.y = 30.0f;
+            g->pos.x += func_0019A5C8() % 60 - 30;
+            g->pos.z += func_0019A5C8() % 60 - 30;
+            g->pos.y += func_0019A5C8() % 20 - 10;
+            b152_01E03FD0(g, b152_01E02530, 0);
+        }
+    }
+    if (g->frame == 183) {
+        func_001F5620(func_001F53A0(), g->id0, &g->p);
+        if (g->flag) {
+            g->p.z -= 10.0f;
+        } else {
+            g->p.z += 10.0f;
+        }
+        g->p.y += 8.0f;
+    }
+    g->ang += 5;
+    if (g->frame >= 370 && g->frame < 426) {
+        for (i = 0; i < 2; i++) {
+            func_001F5620(func_001F5380(), g->id, &g->pos);
+            g->pos.y = 40.0f;
+            if (i == 0) {
+                g->pos.x += 10.0f * func_00108030(g->tab, g->ang, 1);
+                g->pos.z += 10.0f * func_00108030(g->tab, g->ang, 0);
+            }
+            if (i == 1) {
+                g->pos.x += 10.0f * func_00108030(g->tab, g->ang + 180, 1);
+                g->pos.z += 10.0f * func_00108030(g->tab, g->ang + 180, 0);
+            }
+            b152_01E03FD0(g, b152_01E02820, 0);
+        }
+        func_001F5620(func_001F5380(), g->id1, &g->pos);
+        g->pos.y += func_0019A5C8() % 5;
+        b152_01E03FD0(g, b152_01E02F70, 0);
+    }
+    if (g->frame == 267 || g->frame == 269 || g->frame == 271 || g->frame == 273 ||
+        g->frame == 275 || g->frame == 277 || g->frame == 279 || g->frame == 281) {
+        b152_01E03FD0(g, b152_01E02990, 0);
+    }
+    if (g->frame == 290) {
+        g->idx = 1;
+        b152_01E03FD0(g, b152_01E02AF0, 0);
+        g->idx = 2;
+        b152_01E03FD0(g, b152_01E02AF0, 0);
+        g->pos = g->p;
+        for (i = 0; i < 8; i++) {
+            b152_01E03FD0(g, b152_01E02D90, 0);
+        }
+    }
+}
+
+#pragma optimization_level reset
 
 /* shape b152:01E01E60 (B152_OBJ_MOVE_4_), 435 insns, 1 copy: a ring spark: fades in by 10 to 0x80 before scene
    frame 430, then out by 4; flickers 0xC0/0xFF; rises 1.2 a tick (ticks 11-44), flies over 30 ticks from 103 to its
