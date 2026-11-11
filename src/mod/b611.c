@@ -386,7 +386,133 @@ static void func_01E00ED0_b611(Obj_b016_01E00ED0 *obj, Cam_b016_01E00ED0 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b611", func_01E01190_b611);
+/* shape b611:01E01190 (B611_W_S), 524 insns, 1 copy: B611_W_S, the scene timer script: counts the frame (0xCA08);
+   frame 1 takes the joint-to-camera y/z steps over 40 and spawns the 01E020D0 fader; frames 140/160/180 add a ring
+   (0xCA02), each ring grows to 40 and turns its height angle to 180; 31..88 two 01E019C0 sparks on joints
+   0xC996/0xC998; 11..14 spawns 01E021B0; before 155 the spawn point sits on joint 0xC994 at y 30; 66..277 puts two
+   01E01DB0 smokes per ring on a circle around the joint (angles 0xC9BC and +180), turning odd rings +10 and even
+   rings -10 a frame */
+
+typedef struct {
+    u8 pad0[0xD8];
+    u8 crd[0x178];
+    Vec4f pos;
+    u8 pad260[0xC7B0 - 0x260];
+    Vec4f p[3];
+    u8 padC7E0[0xC8B4 - 0xC7E0];
+    f32 dy;
+    f32 dz;
+    u8 padC8BC[0xC904 - 0xC8BC];
+    f32 fl[6];
+    u8 padC91C[0xC944 - 0xC91C];
+    f32 sz[20];
+    s16 jA;
+    s16 jB;
+    s16 jC;
+    u8 padC99A[0xC9A4 - 0xC99A];
+    s16 cam;
+    u8 padC9A6[0xC9BC - 0xC9A6];
+    s16 w[5];
+    u8 padC9C6[0xC9DC - 0xC9C6];
+    s16 h[8];
+    u8 padC9EC[0xCA00 - 0xC9EC];
+    s16 sel;
+    s16 c;
+    u8 padCA04[4];
+    s16 t;
+} Scene_b611_01E01190;
+
+static void func_01E01190_b611(Scene_b611_01E01190 *g) {
+    extern void b611_01E019C0();
+    extern void b611_01E01DB0();
+    extern void b611_01E020D0();
+    extern void b611_01E021B0();
+    extern void b611_01E02C40();
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s32, s32);
+    Vec4f v[2];
+    s16 i;
+
+    g->t++;
+    if (g->t == 1) {
+        func_001F5620(func_001F53A0(), g->jA, &v[1]);
+        func_001F5620(func_001F5380(), g->cam, &v[0]);
+        g->dz = (v[0].z - v[1].z) / 40.0f;
+        g->dy = (v[0].y - v[1].y) / 40.0f;
+    }
+    if (g->t == 140) {
+        g->c++;
+    }
+    if (g->t == 160) {
+        g->c++;
+    }
+    if (g->t == 180) {
+        g->c++;
+    }
+    for (i = 0; i < g->c; i++) {
+        if (g->sz[i] < 40.0f) {
+            g->sz[i] += 1.0f;
+        }
+        if (g->h[i] < 180) {
+            g->h[i] += 3;
+        }
+    }
+    if (g->t == 1) {
+        b611_01E02C40(g, b611_01E020D0, 0);
+    }
+    if (g->t >= 31 && g->t < 89) {
+        func_001F5620(func_001F53A0(), g->jB, &g->pos);
+        b611_01E02C40(g, b611_01E019C0, 0);
+        func_001F5620(func_001F53A0(), g->jC, &g->pos);
+        b611_01E02C40(g, b611_01E019C0, 0);
+    }
+    if (g->t > 10 && g->t < 15) {
+        b611_01E02C40(g, b611_01E021B0, 0);
+    }
+    if (g->t < 155) {
+        func_001F5620(func_001F53A0(), g->jA, &g->pos);
+        g->pos.y = 30.0f;
+    }
+    func_001F5620(func_001F53A0(), g->jA, &v[0]);
+    if (g->t > 65 && g->t < 278) {
+        for (i = 0; i < 3; i++) {
+            g->sel = i;
+            g->p[i].x = 0.0f;
+            g->p[i].y = 0.0f;
+            g->p[i].z = 0.0f;
+            g->p[i].z += g->fl[i] * func_00108030(g->crd, g->w[i], 0);
+            g->p[i].x += g->fl[i] * func_00108030(g->crd, g->w[i], 1);
+            g->p[i].y += 7.0f + (35.0f + g->fl[i] * func_00108030(g->crd, g->h[i], 0));
+            g->p[i].x += v[0].x;
+            g->p[i].z += v[0].z + g->dz * g->sz[i];
+            g->pos = g->p[i];
+            b611_01E02C40(g, b611_01E01DB0, 0);
+            g->p[i].x = 0.0f;
+            g->p[i].y = 0.0f;
+            g->p[i].z = 0.0f;
+            g->p[i].z += g->fl[i] * func_00108030(g->crd, (s16)(g->w[i] + 180), 0);
+            g->p[i].x += g->fl[i] * func_00108030(g->crd, (s16)(g->w[i] + 180), 1);
+            g->p[i].y += 11.0f + (40.0f + g->fl[i] * func_00108030(g->crd, g->h[i], 0));
+            g->p[i].x += v[0].x;
+            g->p[i].z += v[0].z + g->dz * g->sz[i];
+            g->pos = g->p[i];
+            b611_01E02C40(g, b611_01E01DB0, 0);
+            if (i % 2 == 1) {
+                g->w[i] += 10;
+                if (g->w[i] >= 360) {
+                    g->w[i] %= 360;
+                }
+            } else {
+                g->w[i] -= 10;
+                if (g->w[i] < -359) {
+                    g->w[i] %= 360;
+                }
+            }
+        }
+    }
+}
 
 /* shape b611:01E019C0, 131 insns: white spark (size 2, frame 0..3, random turn, f50 20..119 before scene count 70 else 10..29, angle 0..359, f8 1..8): alpha up by 42 to 0x80 for 2..4 ticks, then down by 11 */
 
