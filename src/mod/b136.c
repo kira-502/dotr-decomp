@@ -372,7 +372,168 @@ static s32 func_01E00AE0_b136(Mgr_b136_01E00AE0 *m, Obj_b136_01E00AE0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b136", func_01E00CA0_b136);
+/* shape b136:01E00CA0 (B136_OBJ_MOVE_4_), 516 insns, 1 copy: a white spark on side n (0..9) whose trail row it feeds:
+   turned by the camera angle, it climbs 8 a tick along z, then (scene mode 1) bursts 20 red embers and two flashes at
+   tick 21 and drifts on its angle, or (else) bursts 13 embers and 10 sparks at tick 22; three tumbling sparks each
+   tick (z jitter -7..6) until 29 / 23; after 28 fades by 0x33 and ends */
+
+typedef struct {
+    u8 pad0[0x80];
+    Vec4f pos;
+    u8 pad90[0x2FC0 - 0x90];
+    Vec4f row[10][10];
+    u8 pad3600[0x3652 - 0x3600];
+    s16 ang;
+    u8 pad3654[0x365A - 0x3654];
+    s16 mode;
+    u8 pad365C[0x3664 - 0x365C];
+    u8 tab[1];
+} Scene_b136_01E00CA0;
+
+typedef struct {
+    s16 x, y, z;
+    u8 pad06[0x28 - 0x06];
+    u8 col[4];
+    u8 pad2C[4];
+    s16 side;
+    s16 tick;
+    s16 h34;
+    s16 mode;
+    s16 h38;
+    s16 ang;
+} Obj_b136_01E00CA0;
+
+static s32 func_01E00CA0_b136(Scene_b136_01E00CA0 *g, Obj_b136_01E00CA0 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s32, s32);
+    extern s16 func_001A22C0(f32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F6160(s32, s32 *);
+    extern s32 b136_01E01F00();
+    extern void b136_01E014B0(void);
+    extern void b136_01E01670(void);
+    extern void b136_01E01780(void);
+    Vec4f v;
+    s32 out[4];
+    s32 a;
+    s16 i;
+
+    func_001076F0(o->col, 0xFF, 0xFF, 0xFF);
+    if (o->mode == 1) {
+        o->ang = func_0019A5C8() % 360;
+        o->col[3] = 0xFF;
+        o->h34 = 0;
+        o->mode = 2;
+    }
+    v.x = o->x;
+    v.y = o->y;
+    v.z = o->z;
+    if (o->side == 0) {
+        func_01E00260_b136(&g->row[0][9], 10, 0, &v);
+    }
+    if (o->side == 1) {
+        func_01E00260_b136(&g->row[1][9], 10, 0, &v);
+    }
+    if (o->side == 2) {
+        func_01E00260_b136(&g->row[2][9], 10, 0, &v);
+    }
+    if (o->side == 3) {
+        func_01E00260_b136(&g->row[3][9], 10, 0, &v);
+    }
+    if (o->side == 4) {
+        func_01E00260_b136(&g->row[4][9], 10, 0, &v);
+    }
+    if (o->side == 5) {
+        func_01E00260_b136(&g->row[5][9], 10, 0, &v);
+    }
+    if (o->side == 6) {
+        func_01E00260_b136(&g->row[6][9], 10, 0, &v);
+    }
+    if (o->side == 7) {
+        func_01E00260_b136(&g->row[7][9], 10, 0, &v);
+    }
+    if (o->side == 8) {
+        func_01E00260_b136(&g->row[8][9], 10, 0, &v);
+    }
+    if (o->side == 9) {
+        func_01E00260_b136(&g->row[9][9], 10, 0, &v);
+    }
+    func_001F6160(func_001F53A0(), out);
+    a = func_001A22C0(out[1] / 180.0f);
+    if (g->mode == 1) {
+        if (o->tick < 22) {
+            o->z = func_001A22C0(o->z + 8.0f * -func_00108030(g->tab, a - 180, 1));
+        } else {
+            o->z = func_001A22C0(o->z - 8.0f * -func_00108030(g->tab, a - 180, 1));
+            o->y = func_001A22C0(o->y - 8.0f * func_00108030(g->tab, o->ang, 0));
+            o->x = func_001A22C0(o->x - 8.0f * func_00108030(g->tab, o->ang, 1));
+        }
+        if (o->tick == 21) {
+            for (i = 0; i < 20; i++) {
+                g->ang = func_0019A5C8() % 360;
+                g->pos.x = o->x;
+                g->pos.y = o->y;
+                g->pos.z = o->z;
+                b136_01E01F00(g, func_01E00AE0_b136, 0);
+            }
+            g->pos.x = o->x;
+            g->pos.y = o->y;
+            g->pos.z = o->z;
+            b136_01E01F00(g, b136_01E01780, 0);
+            b136_01E01F00(g, b136_01E01780, 0);
+        }
+        if (o->tick < 29) {
+            g->pos.x = o->x;
+            g->pos.y = o->y;
+            g->pos.z = o->z;
+            b136_01E01F00(g, b136_01E01670, 0);
+            g->pos.z = o->z + func_0019A5C8() % 14 - 7;
+            b136_01E01F00(g, b136_01E01670, 0);
+            g->pos.z = o->z + func_0019A5C8() % 14 - 7;
+            b136_01E01F00(g, b136_01E01670, 0);
+        }
+    } else {
+        if (o->tick < 23) {
+            o->z = func_001A22C0(o->z + 8.0f * -func_00108030(g->tab, a - 180, 1));
+        }
+        if (o->tick == 22) {
+            for (i = 0; i < 13; i++) {
+                g->ang = func_0019A5C8() % 360;
+                g->pos.x = o->x;
+                g->pos.y = o->y;
+                g->pos.z = o->z;
+                b136_01E01F00(g, b136_01E014B0, 0);
+            }
+            for (i = 0; i < 10; i++) {
+                g->ang = func_0019A5C8() % 360;
+                g->pos.x = o->x;
+                g->pos.y = o->y;
+                g->pos.z = o->z;
+                b136_01E01F00(g, func_01E00AE0_b136, 0);
+            }
+        }
+        if (o->tick < 23) {
+            g->pos.x = o->x;
+            g->pos.y = o->y;
+            g->pos.z = o->z;
+            b136_01E01F00(g, b136_01E01670, 0);
+            g->pos.z = o->z + func_0019A5C8() % 14 - 7;
+            b136_01E01F00(g, b136_01E01670, 0);
+            g->pos.z = o->z + func_0019A5C8() % 14 - 7;
+            b136_01E01F00(g, b136_01E01670, 0);
+        }
+    }
+    o->tick++;
+    if (o->tick > 27) {
+        if (o->col[3] > 16) {
+            o->col[3] -= 0x33;
+        } else {
+            o->mode = 0;
+        }
+    }
+    return 0;
+}
+
 
 /* shape b136:01E014B0, 110 insns: b266:01E01610 family: a red ember (size 7, random frame 0..3) at two random angles drifting 7 a tick on all three axes (sine table ctx+0x3664): in by 20 up to 0xA0 for 8 ticks, then out by 5 and ends */
 
