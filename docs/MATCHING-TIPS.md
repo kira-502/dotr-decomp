@@ -535,3 +535,6 @@ there is a source form that gives the original.
 - **A two-case `switch` that returns constants tests its values in the reverse of ours:** list the cases in the
   other order (MWCC emits the tests in reverse source order here); an if chain branches differently.
   (b596:01E03DA0)
+- **A static call's struct-address argument (`addiu a0`) comes before its float constant's `mtc1 $f12`, and the
+  b244 `void *` inline wrapper makes that call worse:** put an `(s32)` step inside the cast,
+  `f((T *)(s32)&g->member, n, K)` (`(void *)(s32)` works too). (b049:01E032E0)
