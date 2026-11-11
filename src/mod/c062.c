@@ -371,7 +371,178 @@ static void func_01E00E30_c062(Game_c062_01E00E30 *g, Obj_c062_01E00E30 *o, u8 *
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c062", func_01E01050_c062);
+/* shape c062:01E01050, 519 insns, 1 copy (-O3,p): b119:01E01050's sprite ring (b363:01E01160 at -O3) with an f32
+   size; mode 0 also pushes every corner to far z before drawing */
+
+typedef struct Data_c062_01E01050 {
+    u8 pad0[8];
+    s16 f8;
+    u8 padA[0x3E];
+    f32 f48;
+    u8 pad4C[4];
+    s16 f50;
+    u8 pad52[8];
+    s16 step;
+    u8 pad5C[4];
+    Vec4f f60;
+} Data_c062_01E01050;
+
+typedef struct Obj_c062_01E01050 {
+    u8 pad0[0x20];
+    Vec4f pos;
+    u8 pad30[0x50];
+    s32 f80;
+    u8 pad84[4];
+    s32 f88;
+    u8 pad8C[8];
+    u8 f94[0x24];
+    s16 count;
+    u8 padBA[6];
+    s16 fC0;
+    u8 padC2[0x16];
+    u8 table[1];
+} Obj_c062_01E01050;
+
+typedef struct Xyz_c062_01E01050 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+    u64 reg;
+} Xyz_c062_01E01050;
+
+typedef struct Uv_c062_01E01050 {
+    f32 u, v;
+} Uv_c062_01E01050;
+
+typedef struct Pk_c062_01E01050 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    Uv_c062_01E01050 uv;
+    u64 pad18;
+    Xyz_c062_01E01050 v[4];
+    u64 pad60[6];
+} Pk_c062_01E01050;
+
+typedef struct Buf_c062_01E01050 {
+    u64 tag;
+    Pk_c062_01E01050 pk;
+} Buf_c062_01E01050;
+
+#pragma optimization_level 3
+
+static void func_01E01050_c062(Obj_c062_01E01050 *obj, Data_c062_01E01050 *data, s32 flags, s8 *tab) {
+    f32 size;
+    f32 fov;
+    extern void func_01E00080_c062();
+    extern void func_00108950();
+    extern void func_00108EF0();
+    extern f32 func_001F9A20(s32);
+    Vec4f view[4];
+    f32 t[4];
+    Vec4f pos;
+    Vec4f s;
+    f32 depth[4];
+    f32 m[4][4];
+    s32 ang[4];
+    s32 rot[4];
+    Buf_c062_01E01050 buf;
+    Uv_c062_01E01050 uv;
+    s16 sel;
+    s16 i;
+    Pk_c062_01E01050 *p;
+    s32 mode;
+    s8 *row;
+    s32 half;
+    f32 zero;
+
+    func_00207500();
+    p = &buf.pk;
+    p->flags = 0x24;
+    p->size = 9;
+    p->regs = ((u64)4 << 32) | 0x24242421;
+    p->pad4 = 0;
+    p->flags |= 0x800;
+    sel = flags >> 4;
+    if (sel == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((s64)sel << 2) | (((u64)0x80 << 32) | 0x40));
+    }
+    func_00107740(&uv, &data->f60);
+    p->uv = uv;
+    func_00208700(p, (void *)obj->f88, 1);
+    s.x = 0.1f;
+    s.y = 0.1f;
+    s.z = 0.1f;
+    func_00205C40((s32)ang);
+    ang[1] /= 180;
+    ang[1] = -ang[1];
+    ang[0] /= 180;
+    ang[0] = -ang[0];
+    rot[1] = data->step;
+    pos.x = obj->pos.x;
+    pos.y = obj->pos.y;
+    pos.z = obj->pos.z;
+    func_00108EF0(m, &s, 0, &pos);
+    func_01E00080_c062(p, obj->f94, obj->fC0);
+    fov = func_001F9A20(0);
+    if (fov == 0.0f) {
+        fov = 400.0f;
+    }
+    mode = flags & 0xF;
+    for (i = 0; i < obj->count; i++) {
+        size = data->f48;
+        zero = 0.0f;
+        func_00108CE0(view, zero, zero);
+        row = tab + i;
+        half = i >> 1;
+        t[0] = (row[data->f8] / 20.0f) * (data->f50 + half);
+        t[1] = (row[data->f8 + 100] / 20.0f) * (data->f50 + half);
+        t[2] = (row[data->f8 + 180] / 20.0f) * (data->f50 + half);
+        func_00108950(t, rot, 0, obj->table);
+        view[0].x += t[0];
+        view[1].x += t[0];
+        view[2].x += t[0];
+        view[3].x += t[0];
+        view[0].y += t[1];
+        view[1].y += t[1];
+        view[2].y += t[1];
+        view[3].y += t[1];
+        view[0].z += t[2];
+        view[1].z += t[2];
+        view[2].z += t[2];
+        view[3].z += t[2];
+        if (mode == 0) {
+            if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, depth) != 0) {
+                size /= depth[0] / (fov / 10.0f);
+                p->v[0].x = (u32)((f32)(u32)p->v[0].x - size);
+                p->v[0].y = (u32)((f32)(u32)p->v[0].y + size);
+                p->v[1].x = (u32)((f32)(u32)p->v[1].x + size);
+                p->v[1].y = (u32)((f32)(u32)p->v[1].y + size);
+                p->v[2].x = (u32)((f32)(u32)p->v[2].x - size);
+                p->v[2].y = (u32)((f32)(u32)p->v[2].y - size);
+                p->v[3].x = (u32)((f32)(u32)p->v[3].x + size);
+                p->v[3].y = (u32)((f32)(u32)p->v[3].y - size);
+                p->v[0].z = p->v[1].z = p->v[2].z = p->v[3].z = 0xFFFFFF;
+                func_002075F0((s32)p, obj->f80, 0);
+            }
+        } else if (mode == 1) {
+            if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, depth) != 0) {
+                p->v[0].z = p->v[1].z = p->v[2].z = p->v[3].z = 0xFFFFFF;
+                func_002075F0((s32)p, obj->f80, 0);
+            }
+        } else if (mode == 2) {
+            if (func_00205630((s32)view, 0x70000000, (s32)m, (s32)p, depth) != 0) {
+                func_002075F0((s32)p, obj->f80, -1);
+            }
+        }
+    }
+}
+
+#pragma optimization_level reset
 
 typedef struct {
     f32 x, y, z, w;
