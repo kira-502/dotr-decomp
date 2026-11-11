@@ -1249,7 +1249,277 @@ static s32 func_01E02DB0_b018(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b018", func_01E02E00_b018);
+/* shape b018:01E02E00 (b018), 528 insns, 1 copy: b018 scene manager (b513:01E02690 form): with a scene id (>= 0) it
+   clears the scene, keeps the id, sets the 150-frame countdown, takes three joint handles and the root joint, looks
+   up textures 0..2 and 13..15 and fills a 256-byte random table (-15..14); otherwise it runs the script, at frame 24
+   fills both nine-point trails from joints 0 and 1, shifts the two trails, steps the 200 slots (0x1E02560 and
+   0x1E02AC0 written out in place), draws every live slot and returns 1 / 4 / 2 at frames 88 / 105 / 98, 8 once the
+   countdown runs out */
+
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    s16 f6;
+    s16 h8;
+    u8 padA[2];
+    s16 hC;
+    u8 padE[0x16];
+    s32 (*fn)();
+    u8 c0[4];
+    u8 pad2C[6];
+    s16 t;
+    s16 h34;
+    s16 used;
+    s16 h38;
+    u8 pad3A[6];
+} Slot_b018_01E02E00;
+
+typedef struct {
+    u8 pad0[0x80];
+    s32 ot80;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    s32 rm[4];
+    u8 padA4[0x34];
+    u8 crdD8[0x238];
+    s32 z310[3];
+    u8 pad31C[0x24];
+    s32 tex[16];
+    u8 pad380[0xF8];
+    Slot_b018_01E02E00 slot[200];
+    u8 pad3678[0x58];
+    Vec4f trB[10];
+    Vec4f trA[10];
+    u8 pad3810[0x10];
+    s32 count;
+    u8 pad3824[8];
+    s32 ot;
+    u8 pad3830[0x38];
+    s16 j[3];
+    u8 pad386E[8];
+    s16 jG;
+    u8 pad3878[4];
+    s16 id;
+    s16 frame;
+    u8 pad3880[2];
+    s8 jit[0x100];
+    u8 pad3982[2];
+    u8 crd[0x16C];
+} Scene_b018_01E02E00;
+
+static s32 func_01E02E00_b018(s32 arg0, s32 id) {
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_01E01BD0_b018();
+    extern void func_01E00C50_b018();
+    extern void func_01E01760_b018();
+    extern void b018_01E03760();
+    extern void b018_01E03B10();
+    Scene_b018_01E02E00 *g = (Scene_b018_01E02E00 *)arg0;
+    s32 m;
+    Vec4f c;
+    s32 rm[4];
+    s32 rm2[4];
+    s32 rm3[4];
+    s32 rm4[4];
+    Vec4f pa;
+    Vec4f pb;
+    u8 buf[0x90] __attribute__((aligned(8)));
+    s32 i;
+
+    m = 0;
+    g->ot80 = (s32)func_00207500();
+    g->ot = (s32)func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x3AF0);
+        func_00107C10(g->crd);
+        func_00107C10(g->crdD8);
+        g->id = id;
+        g->count = 0x96;
+        g->z310[0] = 0;
+        g->z310[1] = 0;
+        g->z310[2] = 0;
+        g->j[0] = func_001F5560(func_001F53A0(), 0x19, 1);
+        g->j[1] = func_001F5560(func_001F53A0(), 0x4C, 0);
+        g->j[2] = func_001F5560(func_001F53A0(), 0xD, 0);
+        g->jG = func_001F5560(func_001F5380(), 1, 0);
+        for (i = 0; i < 3; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        for (i = 13; i < 16; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        for (i = 0; i < 0x100; i++) {
+            g->jit[i] = func_0019A5C8() % 30 - 15;
+        }
+        return 0;
+    }
+    func_01E01BD0_b018(g, 0);
+    if (g->frame == 0x18) {
+        Vec4f *p = g->trA;
+
+        func_001F5620(func_001F53A0(), g->j[0], (s32)&pa);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = pa.x;
+            p->y = pa.y;
+            p->z = pa.z;
+        }
+    }
+    if (g->frame == 0x18) {
+        Vec4f *p = g->trB;
+
+        func_001F5620(func_001F53A0(), g->j[1], (s32)&pb);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = pb.x;
+            p->y = pb.y;
+            p->z = pb.z;
+        }
+    }
+    func_01E00080_b018((Vec_b004_01E00B40 *)&g->trA[9], 10, g->j[0]);
+    func_01E00080_b018((Vec_b004_01E00B40 *)&g->trB[9], 10, g->j[1]);
+    for (i = 0; i < 200; i++) {
+        if (g->slot[i].used != 0) {
+            if (g->slot[i].fn == func_01E01F60_b018) {
+                func_01E01F60_b018((World_b018_01E01F60 *)g, (Wisp_b018_01E01F60 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E02180_b018) {
+                func_01E02180_b018((Game_b018_01E02180 *)g, (Fx_b018_01E02180 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E022E0_b018) {
+                func_01E022E0_b018((World_b018_01E022E0 *)g, (Arc_b018_01E022E0 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E02480_b018) {
+                func_01E02480_b018(g, (Obj_b018_01E02480 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E02560_b018) {
+                func_001076F0(g->slot[i].c0, 0x80, 0x50, 0);
+                if (g->slot[i].used == 1) {
+                    g->slot[i].h38 = 5;
+                    g->slot[i].used = 2;
+                }
+                if (g->slot[i].t < 0x4B) {
+                    g->slot[i].c0[3] = 0x50;
+                } else if (g->slot[i].c0[3] > 10) {
+                    g->slot[i].c0[3] -= 9;
+                } else {
+                    g->slot[i].used = 0;
+                }
+                g->slot[i].f6 = 10;
+                g->slot[i].t++;
+            }
+            if (g->slot[i].fn == func_01E02610_b018) {
+                func_01E02610_b018((s32)g, (Spark_b018_01E02610 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E027C0_b018) {
+                func_01E027C0_b018((s32)g, (Spark_b018_01E027C0 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E02950_b018) {
+                func_01E02950_b018((s32)g, (Spark_b018_01E02950 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E02AC0_b018) {
+                if (g->slot[i].used == 1) {
+                    func_001076F0(g->slot[i].c0, 0xA0, 0x80, 8);
+                    g->slot[i].f6 = 9;
+                    g->slot[i].c0[3] = 0x80;
+                    g->slot[i].h38 = 8;
+                    g->slot[i].used = 2;
+                }
+                if (g->slot[i].t < 0x4B) {
+                    g->slot[i].c0[3] = 0x60;
+                } else if (g->slot[i].c0[3] > 10) {
+                    g->slot[i].c0[3] -= 9;
+                } else {
+                    g->slot[i].used = 0;
+                }
+                g->slot[i].t++;
+            }
+            if (g->slot[i].fn == func_01E02B70_b018) {
+                func_01E02B70_b018((World_b018_01E02B70 *)g, (Flash_b018_01E02B70 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E02CF0_b018) {
+                func_01E02CF0_b018((Game_b018_01E02CF0 *)g, (Fade_b018_01E02CF0 *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == func_01E02DB0_b018) {
+                f32 bb;
+                f32 aa;
+
+                *(f32 *)(u32)&aa = *(f32 *)(u32)&D_01E03E80_b018;
+                *(f32 *)(u32)&bb = *(f32 *)(u32)&D_01E03E88_b018;
+                func_001F7170(2, 0, (s32)&aa, (s32)&bb, 0);
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &c);
+    for (i = 0; i < 200; i++) {
+        if (g->slot[i].used != 0) {
+            m++;
+            if (g->slot[i].fn == func_01E02180_b018) {
+                b018_01E03B10(g, &g->slot[i], buf, 0);
+                b018_01E03B10(g, &g->slot[i], buf, 1);
+            }
+            if (g->slot[i].fn == func_01E022E0_b018) {
+                b018_01E03760(g, &g->slot[i], buf, 0);
+                b018_01E03760(g, &g->slot[i], buf, 1);
+            }
+            if (g->slot[i].fn == func_01E02480_b018) {
+                g->tex88 = g->tex[15];
+                func_00106080(rm, 0x9B, g->slot[i].h34, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm;
+                func_01E00C50_b018(g, &g->slot[i], buf, 0);
+            }
+            if (g->slot[i].fn == func_01E02560_b018) {
+                func_01E01760_b018(g, &g->slot[i], g->trB, g->trA);
+            }
+            if (g->slot[i].fn == func_01E02610_b018) {
+                g->tex88 = g->tex[15];
+                func_00106080(rm2, 0x9B, g->slot[i].h34, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm2;
+                func_01E005A0_b018((u8 *)g, (Obj_b018_01E005A0 *)&g->slot[i], (Pk_b018_01E005A0 *)buf, g->jit);
+            }
+            if (g->slot[i].fn == func_01E027C0_b018) {
+                g->tex88 = g->tex[1];
+                func_00106080(rm3, 0xA, g->slot[i].h34, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm3;
+                func_01E00920_b018((u8 *)g, (Obj_b018_01E00920 *)&g->slot[i], (Pk_b018_01E00920 *)buf, g->jit);
+            }
+            if (g->slot[i].fn == func_01E02950_b018) {
+                g->tex88 = g->tex[15];
+                func_00106080(rm4, 0x9B, g->slot[i].h34, NULL);
+                *(Vec4f *)g->rm = *(Vec4f *)rm4;
+                func_01E00920_b018((u8 *)g, (Obj_b018_01E00920 *)&g->slot[i], (Pk_b018_01E00920 *)buf, g->jit);
+            }
+            if (g->slot[i].fn == func_01E02AC0_b018) {
+                func_01E01320_b018((s32)g, (Beam_b018_01E01320 *)&g->slot[i], (Vec_b018_01E00EE0 *)g->trB);
+            }
+        }
+    }
+    if (g->count != 0) {
+        g->count--;
+    }
+    if (g->frame == 0x58) {
+        return 1;
+    }
+    if (g->frame == 0x69) {
+        return 4;
+    }
+    if (g->frame == 0x62) {
+        return 2;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
+
 
 /* shape b018:01E03640, 72 insns: twin of b046:01E03E20: take the first free slot of the 200-slot pool, clear it, give
    it the scene's colour twice, the scene matrix, the scene's value 0x387A and the two arguments; returns 1 if a
