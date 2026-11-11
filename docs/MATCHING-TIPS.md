@@ -526,3 +526,6 @@ there is a source form that gives the original.
   and no cast fixes it:** declare it by block-scope extern as b049:01E02690 does,
   `extern s32 func_00205440(void *, void *, void *, f32 *);`, and pass the addresses with no casts.
   (b025:01E00910)
+- **A float temp and the constant it is multiplied by (`3.1415927f * e->ang / 180.0f`) sit in each other's FPRs
+  (`$f1`/`$f2`) and no operand order changes it:** do the degree-to-radian step through a
+  `static inline f32 rad(f32 d) { return 3.1415927f * d / 180.0f; }` helper. (b457:01E04300)

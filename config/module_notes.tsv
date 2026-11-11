@@ -144,7 +144,6 @@ b444:01E00E80	99.2%	an earlier try got this far
 b455:01E02150	99.2%	an earlier try got this far
 b455:01E03990	94.5%	an earlier try got this far
 b457:01E011B0	99.2%	an earlier try got this far
-b457:01E04300	93%	an earlier try got this far
 b462:01E04230	99%	an earlier try got this far
 b463:01E01C50	40%	an earlier try got this far
 b491:01E02370	96% (283/296)	hard: orig keeps &b (sp+0x70) in s0 across a call and reads b.x through it; a pointer local gets copy-propagated; plus one loop-alignment nop (best draft: drafts/mod/b491_01E02370.c)
@@ -214,3 +213,4 @@ b281:01E02440	97%	hard: slot-step loop counter/pointer swapped ($s1/$s2); separa
 c560:01E01E40	97%	hard: two colour-mask statements (u32 masks on a stack Rgbaq) take the lbu and the lw in each other's registers; operand orders, casts, inline setters, statement orders, permuter tried (best draft: drafts/mod/c560_01E01E40.c)
 b005:01E027F0	97%	hard: b715:01E003A0's source at -O3; only the 0xFFFFFE z-chain temps sit one register up (a2/a3 for a1/a2); store forms, pragmas, permuter and an Ndl-before-it context did not move it (best draft: drafts/mod/b005_01E027F0.c)
 b741:01E02E50	97%	hard: a stack-address pointer and the &t[1] temp land in each other's saved regs (s4/s5); only an out-of-bounds t[2] read past Vec4f t[2] matches, rejected as not honest C; permuter 20 min found nothing (best draft: drafts/mod/b741_01E02E50.c)
+b457:01E04300	99%	hard: case-2 half-width split (td.u/td.w) leaves &td.u and the half-width in swapped arg regs (a0/a1); b387:01E00410's reused-local form works at -O2 but gives a2 here; ~150 variants, pragmas and two permuter runs tried (best draft: drafts/mod/b457_01E04300.c)
