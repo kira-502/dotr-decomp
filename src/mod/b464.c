@@ -1252,7 +1252,207 @@ static s32 func_01E033F0_b464(Trail_b025_01E007C0 *o, Vec4f *p1, Vec4f *p2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b464", func_01E03540_b464);
+/* shape b025:01E00910 (LkPrim_SortSwordtail), 509 insns, 13 copies: splines the two 8-point trails (o->len + 3
+   points) into (len + 2) * 4 points each, then per segment draws two quads, mid(p1,p2)[i] / [i+1] to p1 and to p2,
+   alpha fading along the strip; grows len up to max */
+
+typedef struct {
+    u16 c : 14;
+    u16 p : 2;
+} Tc_b025_01E00910;
+
+typedef struct {
+    Tc_b025_01E00910 u;
+    Tc_b025_01E00910 v;
+    s32 pad;
+} Uv_b025_01E00910;
+
+typedef union {
+    Uv_b025_01E00910 uv;
+    struct {
+        f32 s, t;
+    } st;
+} Tex_b025_01E00910;
+
+typedef struct {
+    u16 x, y;
+    u32 z;
+} Xyz_b025_01E00910;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Tex_b025_01E00910 tc;
+    Xyz_b025_01E00910 xyz;
+} Vtx_b025_01E00910;
+
+typedef struct {
+    u16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b025_01E00910 v[4];
+    u8 tail[0x20];
+} Pkt_b025_01E00910;
+
+typedef struct {
+    s32 n;
+    f32 x[8];
+    f32 y[8];
+    f32 z[8];
+    Vec4f pts[28];
+    u8 pad[0xC];
+} Spl_b025_01E00910;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_b000_01E00100 col;
+    s16 max;
+    s16 len;
+    Vec4f a[8];
+    Vec4f b[8];
+    union {
+        struct {
+            s16 u, v, w, h;
+        } i;
+        struct {
+            f32 s, t, w, h;
+        } f;
+    } r;
+    Vec4f *p1;
+    Vec4f *p2;
+} Obj_b025_01E00910;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 m[16];
+} Cam_b025_01E00910;
+
+#define UV(k) ((Uv_b025_01E00910 *)(s32)&pkt.v[k].tc)
+
+static s32 func_01E03540_b464(Obj_b025_01E00910 *o, Cam_b025_01E00910 *cam) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_001036E0(void *, void *, void *);
+    Spl_b025_01E00910 spl;
+    Vec4f t[2];
+    f32 d[4];
+    Pkt_b025_01E00910 pkt;
+    s32 old;
+    s32 n;
+    s32 step;
+    s32 i;
+
+    old = func_00207F60();
+    n = (o->len + 2) * 4;
+    step = o->col.a / n;
+    spl.n = o->len + 3;
+    for (i = 0; i < o->len + 3; i++) {
+        spl.x[i] = o->a[i].x;
+        spl.y[i] = o->a[i].y;
+        spl.z[i] = o->a[i].z;
+    }
+    func_00102550(&spl);
+    for (i = 0; i < n; i++) {
+        o->p1[i].x = spl.pts[i].x;
+        o->p1[i].y = spl.pts[i].y;
+        o->p1[i].z = spl.pts[i].z;
+    }
+    for (i = 0; i < o->len + 3; i++) {
+        spl.x[i] = o->b[i].x;
+        spl.y[i] = o->b[i].y;
+        spl.z[i] = o->b[i].z;
+    }
+    func_00102550(&spl);
+    for (i = 0; i < n; i++) {
+        o->p2[i].x = spl.pts[i].x;
+        o->p2[i].y = spl.pts[i].y;
+        o->p2[i].z = spl.pts[i].z;
+    }
+    ((Pkt_b025_01E00910 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b025_01E00910 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b025_01E00910 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b025_01E00910 *)(s32)&pkt)->pad = 0;
+    func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    func_01E00080_b464((Vtx_b000_01E00100 *)&pkt, &o->col);
+    if (func_00104520(o->flags, 0) != 0) {
+        ((Pkt_b025_01E00910 *)(s32)&pkt)->count |= 0x800;
+        UV(0)->u.c = o->r.i.u * 16;
+        UV(0)->v.c = o->r.i.v * 16;
+        UV(1)->u.c = o->r.i.u * 16;
+        UV(1)->v.c = (o->r.i.v + o->r.i.h - 1) * 16;
+        UV(2)->u.c = (o->r.i.u + o->r.i.w - 1) * 16;
+        UV(2)->v.c = o->r.i.v * 16;
+        UV(3)->u.c = (o->r.i.u + o->r.i.w - 1) * 16;
+        UV(3)->v.c = (o->r.i.v + o->r.i.h - 1) * 16;
+    } else {
+        pkt.v[0].tc.st.s = o->r.f.s;
+        pkt.v[0].tc.st.t = o->r.f.t;
+        pkt.v[1].tc.st.s = o->r.f.s;
+        pkt.v[1].tc.st.t = o->r.f.t + o->r.f.h;
+        pkt.v[2].tc.st.s = o->r.f.s + o->r.f.w;
+        pkt.v[2].tc.st.t = o->r.f.t;
+        pkt.v[3].tc.st.s = o->r.f.s + o->r.f.w;
+        pkt.v[3].tc.st.t = o->r.f.t + o->r.f.h;
+    }
+    for (i = 0; i < n - 1; i++) {
+        if (i == 0) {
+            pkt.v[0].a = 0;
+        } else {
+            pkt.v[0].a = o->col.a - (u8)(i * step);
+        }
+        if (i == n - 2) {
+            pkt.v[1].a = 0;
+        } else {
+            pkt.v[1].a = o->col.a - (step + (u8)(i * step));
+        }
+        pkt.v[2].a = pkt.v[3].a = 0;
+        func_001036E0(&o->p1[i], &o->p2[i], &t[0]);
+        func_001036E0(&o->p1[i + 1], &o->p2[i + 1], &t[1]);
+        if (func_00205440(&t[0], cam->m, &pkt.v[0].xyz, &d[0]) != 0) {
+            o->flags |= 0x100000;
+        }
+        if (func_00205440(&t[1], cam->m, &pkt.v[1].xyz, &d[1]) != 0) {
+            o->flags |= 0x200000;
+        }
+        if (func_00205440(&o->p1[i], cam->m, &pkt.v[2].xyz, &d[2]) != 0) {
+            o->flags |= 0x400000;
+        }
+        if (func_00205440(&o->p1[i + 1], cam->m, &pkt.v[3].xyz, &d[3]) != 0) {
+            o->flags |= 0x800000;
+        }
+        if (func_00104520(o->flags, 0x14) != 0 && func_00104520(o->flags, 0x15) != 0 &&
+            func_00104520(o->flags, 0x16) != 0 && func_00104520(o->flags, 0x17) != 0) {
+            func_00208700(&pkt, o->texture, 0);
+            func_002075F0(&pkt, 0, (u32)((d[3] + (d[2] + (d[0] + d[1]))) / 4.0f));
+        }
+        o->flags &= 0xFF0FFFFF;
+        if (func_00205440(&t[0], cam->m, &pkt.v[0].xyz, &d[0]) != 0) {
+            o->flags |= 0x100000;
+        }
+        if (func_00205440(&t[1], cam->m, &pkt.v[1].xyz, &d[1]) != 0) {
+            o->flags |= 0x200000;
+        }
+        if (func_00205440(&o->p2[i], cam->m, &pkt.v[2].xyz, &d[2]) != 0) {
+            o->flags |= 0x400000;
+        }
+        if (func_00205440(&o->p2[i + 1], cam->m, &pkt.v[3].xyz, &d[3]) != 0) {
+            o->flags |= 0x800000;
+        }
+        if (func_00104520(o->flags, 0x14) != 0 && func_00104520(o->flags, 0x15) != 0 &&
+            func_00104520(o->flags, 0x16) != 0 && func_00104520(o->flags, 0x17) != 0) {
+            func_00208700(&pkt, o->texture, 0);
+            func_002075F0(&pkt, 0, (u32)((d[3] + (d[2] + (d[0] + d[1]))) / 4.0f));
+        }
+        o->flags &= 0xFF0FFFFF;
+    }
+    func_00207FD0(old, (s32)func_00207500(), 0);
+    if (o->len + 3 < o->max) {
+        o->len++;
+    }
+    return 0;
+}
 
 typedef struct V4_b000_01E032C0 {
     f32 x, y, z, w;
