@@ -522,3 +522,7 @@ there is a source form that gives the original.
 - **A static sibling's pointer argument `&slot.pos` comes out as `addiu a3` before `li a2`, and no cast form moves
   it:** make the slot field a union of `Vec4f` and the callee's parameter type and pass that member with no cast
   (the b065 union fix, for a pointer argument). (b492:01E038C0)
+- **In `func_00205440(pt, m, &pkt.v[k].xyz, &d[k])` calls, `addiu a3` (the `&d` argument) comes before `addiu a2`,
+  and no cast fixes it:** declare it by block-scope extern as b049:01E02690 does,
+  `extern s32 func_00205440(void *, void *, void *, f32 *);`, and pass the addresses with no casts.
+  (b025:01E00910)
