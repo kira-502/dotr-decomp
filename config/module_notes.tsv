@@ -17,7 +17,6 @@ b015:01E008F0	97%	hard: -O3; only the prologue q.x/q.y temp regs and the packet-
 b018:01E01760	60% (in-file)	hard: frame layout off (pk at sp+0x228, trails at 0x160/0x1A0, ours 0x200/0x140), n kept s16->int spilled at 0xC0, colour copied through a pointer; 7 copies (best draft: drafts/mod/b018_01E01760.c)
 b024:01E02ED0	99.0%	an earlier try got this far
 b024:01E03A40	86%	an earlier try got this far
-b025:01E00910	96%	an earlier try got this far
 b025:01E01FD0	94%	an earlier try got this far
 b029:01E003A0	63%	an earlier try got this far
 b029:01E00EF0	97% (264/273)	hard: s3/s4/s5 rotation (walker/list/bone base); calls sibling func_01E00C20_b029 now; probe search: no single/pair vreg move (best draft: drafts/mod/b029_01E00EF0.c)
@@ -203,7 +202,6 @@ c061:01E03D80	76%	an earlier try got this far
 c404:01E00080		hard: not tried past reading: whole-module draw (64 slots x 8 quads, GS packet header + 14-bit UV bitfields kept in s5/fp/s6, spills); needs a long session
 c501:01E00910	96%	hard: g must take s0 over ot: local copy + opt_propagation off fixes it but then the quad loop gets a top test and dst as addiu base (index loop wants propagation on) (best draft: drafts/mod/c501_01E00910.c)
 c507:01E01540	99.7% (306/307)	hard: one store order: `g->texE0 = tex[0]` must load early (after h14C) but store after fE8; every statement position tried (best draft: drafts/mod/c507_01E01540.c)
-c508:01E015C0	95%	an earlier try got this far
 c514:01E01040	98%	an earlier try got this far
 c534:01E027F0	86% (345/399, ours 395)	hard: logic decoded (LkSortRing idioms); left: UV writes go through pointers to the vertex uv words (orig a0/a1/a2/v1 = &pkt.v[k].uv) and the obj arg spill slot (0xA8 vs 0xAC) (best draft: drafts/mod/c534_01E027F0.c)
 c541:01E02C40	84%	an earlier try got this far
