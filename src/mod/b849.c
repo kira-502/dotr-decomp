@@ -580,7 +580,143 @@ static void func_01E01570_b849(Obj_b094_01E01230 *obj, Cam_b094_01E01230 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b849", func_01E018B0_b849);
+/* shape b849:01E018B0 (B849_W_S), 515 insns, 1 copy: B849_W_S, the scene timer script: counts the frame (0xF20E);
+   frame 1 reads joint 0xF128 into five points and moves their z by +-10 by side 0xF20A; frame 220 reads it into eight
+   more; frame 306 spawns 0x1E031B0; 35..420 spawns five 0x1E02280 a frame while 0xF1DA < 36; odd frames 127..420 put
+   the spawn point on the joint and spawn 0x1E02F30 and 0x1E02CD0 while 0xF1E4 < 480 (step 30, 0x1E030B0 at the end);
+   frame 127 spawns five 0x1E020C0 and five 0x1E029D0 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xEF10 - 0x260];
+    Vec4f a[5];
+    u8 padEF60[0xF030 - 0xEF60];
+    Vec4f b[8];
+    u8 padF0B0[0xF128 - 0xF0B0];
+    s16 j;
+    u8 padF12A[0xF1DA - 0xF12A];
+    s16 n;
+    u8 padF1DC[2];
+    s16 arg;
+    u8 padF1E0[4];
+    s16 k;
+    s16 m;
+    u8 padF1E8[0xF206 - 0xF1E8];
+    s16 sel;
+    u8 padF208[2];
+    s16 side;
+    u8 padF20C[2];
+    s16 t;
+} Scene_b849_01E018B0;
+
+static void func_01E018B0_b849(Scene_b849_01E018B0 *g) {
+    extern void b849_01E020C0();
+    extern void b849_01E02280();
+    extern void b849_01E029D0();
+    extern void b849_01E02CD0();
+    extern void b849_01E02F30();
+    extern void b849_01E030B0();
+    extern void b849_01E031B0();
+    extern void b849_01E03DC0();
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    s16 i;
+
+    g->t++;
+    if (g->t == 1) {
+        func_001F5620(func_001F53A0(), g->j, &g->a[0]);
+        func_001F5620(func_001F53A0(), g->j, &g->a[1]);
+        func_001F5620(func_001F53A0(), g->j, &g->a[2]);
+        func_001F5620(func_001F53A0(), g->j, &g->a[3]);
+        func_001F5620(func_001F53A0(), g->j, &g->a[4]);
+        if (g->side) {
+            g->a[0].z += 10.0f;
+            g->a[1].z += 10.0f;
+            g->a[2].z += 10.0f;
+            g->a[3].z += 10.0f;
+            g->a[4].z += 10.0f;
+        } else {
+            g->a[0].z -= 10.0f;
+            g->a[1].z -= 10.0f;
+            g->a[2].z -= 10.0f;
+            g->a[3].z -= 10.0f;
+            g->a[4].z -= 10.0f;
+        }
+    }
+    if (g->t == 220) {
+        for (i = 0; i < 8; i++) {
+            func_001F5620(func_001F53A0(), g->j, &g->b[i]);
+        }
+    }
+    if (g->t == 306) {
+        b849_01E03DC0(g, b849_01E031B0, 0);
+    }
+    if (g->t >= 35 && g->t < 421) {
+        if (g->n < 36) {
+            g->arg = g->n * 10;
+            g->sel = g->n;
+            b849_01E03DC0(g, b849_01E02280, 0);
+            g->arg = g->n * 10 + 90;
+            g->sel = g->n + 36;
+            b849_01E03DC0(g, b849_01E02280, 0);
+            g->arg = g->n * 10 + 180;
+            g->sel = g->n + 72;
+            b849_01E03DC0(g, b849_01E02280, 0);
+            g->arg = g->n * 10 + 270;
+            g->sel = g->n + 108;
+            b849_01E03DC0(g, b849_01E02280, 0);
+            g->arg = g->n * 10;
+            g->sel = g->n + 144;
+            b849_01E03DC0(g, b849_01E02280, 0);
+            g->n++;
+        }
+    }
+    if (g->t >= 127 && g->t < 421) {
+        if (g->t % 2 == 1) {
+            if (g->k < 480) {
+                func_001F5620(func_001F53A0(), g->j, &g->pos);
+                if (g->side) {
+                    g->sel = g->k;
+                } else {
+                    g->sel = 180 - g->k;
+                }
+                g->arg = g->k;
+                b849_01E03DC0(g, b849_01E02F30, 0);
+                g->arg = g->k;
+                g->sel = g->m;
+                b849_01E03DC0(g, b849_01E02CD0, 0);
+                g->k += 30;
+                if (g->k >= 480) {
+                    b849_01E03DC0(g, b849_01E030B0, 0);
+                }
+                g->m++;
+            }
+        }
+    }
+    if (g->t == 127) {
+        g->sel = 0;
+        b849_01E03DC0(g, b849_01E020C0, 0);
+        g->sel = 1;
+        b849_01E03DC0(g, b849_01E020C0, 0);
+        g->sel = 2;
+        b849_01E03DC0(g, b849_01E020C0, 0);
+        g->sel = 3;
+        b849_01E03DC0(g, b849_01E020C0, 0);
+        g->sel = 4;
+        b849_01E03DC0(g, b849_01E020C0, 0);
+        g->sel = 0;
+        b849_01E03DC0(g, b849_01E029D0, 0);
+        g->sel = 1;
+        b849_01E03DC0(g, b849_01E029D0, 0);
+        g->sel = 2;
+        b849_01E03DC0(g, b849_01E029D0, 0);
+        g->sel = 3;
+        b849_01E03DC0(g, b849_01E029D0, 0);
+        g->sel = 4;
+        b849_01E03DC0(g, b849_01E029D0, 0);
+    }
+}
 
 /* shape b849:01E020C0, 111 insns: on start f48 0, f4C 30.0f, hold 200 (0x6), colours (0x80, 0x80, 0x40) and (0x80, 0x80, 0x80) (second alpha 0),
    0x5A/0x5C = 15; the second alpha grows by 0x30 (below 0xC0) during the hold, then fades by 11 and stops; the rotation
