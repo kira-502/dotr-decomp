@@ -532,3 +532,6 @@ there is a source form that gives the original.
 - **An element address built as `addu v0, v0(idx<<1), sN(base)` where ours has `addu v0, sN, v0`, and every
   `&e->h[j]` / `e->h + j` / `(u8 *)` spelling and a typed local copy leave it reversed:** write it as an integer
   sum with the shifted index first, `(s16 *)((j << 1) + (s32)e + 0x2C)`. (b268:01E03FE0)
+- **A two-case `switch` that returns constants tests its values in the reverse of ours:** list the cases in the
+  other order (MWCC emits the tests in reverse source order here); an if chain branches differently.
+  (b596:01E03DA0)
