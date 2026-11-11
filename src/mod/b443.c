@@ -450,7 +450,206 @@ static void func_01E00FC0_b443(Obj_b064_01E00C10 *o, Anim_b064_01E00C10 *an, voi
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b443", func_01E012E0_b443);
+/* shape b081:01E05C10 (B081PAINT_RAIN10), 517 insns, 4 copies: b121:01E033A0 beam form with a world matrix: the
+   textured beam along the module spline (b081:01E009A0), 3 sub-steps per segment, each a 2-quad cross drawn through a
+   matrix from the beam rotation (0x10) at the context position; width shrinks by width/(4n) per step, alpha fades by
+   col0.a/(3n); also reads the camera angle (unused); flags picks the depth (0 real, 1 far, 2 -1) */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b081_01E05C10;
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_b081_01E05C10;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b081_01E05C10;
+
+typedef struct {
+    u8 hdr[0x10];
+    struct {
+        Rgbaq_b081_01E05C10 c;
+        u64 st;
+        Xyz_b081_01E05C10 p;
+    } v[4];
+    u8 tail[0x20];
+} Pkt_b081_01E05C10;
+
+typedef struct {
+    u8 pad00[0x20];
+    f32 x, y, z;
+    u8 pad2C[0x5C];
+    void *texture;
+    u8 pad8C[8];
+    s16 rect[4];
+    u8 pad9C[0x22];
+    s16 mode;
+} Ctx_b081_01E05C10;
+
+typedef struct {
+    u8 pad00[6];
+    s16 count;
+    u8 pad08[8];
+    s32 rot[4];
+    u8 pad20[8];
+    Col_b081_01E05C10 col0;
+    Col_b081_01E05C10 col1;
+    u8 pad30[8];
+    s16 width;
+} Beam_b081_01E05C10;
+
+/* pts aligned: its spill slot, needed for the match */
+static void func_01E012E0_b443(Ctx_b081_01E05C10 *c, Beam_b081_01E05C10 *an, Vec_b018_01E00EE0 *pts __attribute__((aligned(16))), s32 flags) {
+    extern s32 func_00207500(void);
+    extern void func_00109270(void *, s32, s32);
+    extern Rgbaq_b081_01E05C10 func_00107740(void *);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00205C40(s32 *);
+    extern void func_00107790(void *, void *, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec_b018_01E00EE0 ab[2];
+    Vec_b018_01E00EE0 ctrl[4];
+    Vec_b018_01E00EE0 prev;
+    Vec_b018_01E00EE0 q[4];
+    Vec_b018_01E00EE0 pos;
+    f32 depth[4];
+    s32 rot[4];
+    f32 m[16];
+    Vec_b018_01E00EE0 r1;
+    Vec_b018_01E00EE0 r2;
+    Pkt_b081_01E05C10 pkt __attribute__((aligned(8)));
+    Col_b081_01E05C10 col;
+    s32 x;
+    s32 i;
+    s32 k;
+    s32 j;
+    s16 n;
+    Pkt_b081_01E05C10 *p;
+    s32 target;
+    f32 t;
+    f32 w;
+    f32 w0;
+    f32 w1;
+
+    w = an->width;
+    target = func_00207500();
+    p = &pkt;
+    w /= 10.0f;
+    n = an->count;
+    w0 = w;
+    func_00109270(p, 0, 0);
+    p->v[0].c = func_00107740(&an->col0);
+    p->v[1].c = func_00107740(&an->col1);
+    p->v[2].c = func_00107740(&an->col0);
+    p->v[3].c = func_00107740(&an->col1);
+    func_00108500(p, c->rect, c->mode);
+    func_00208700(p, c->texture, 1);
+    col = an->col0;
+    ctrl[0] = pts[0];
+    ctrl[1] = pts[0];
+    ctrl[2] = pts[1];
+    ctrl[3] = pts[2];
+    pos.x = c->x;
+    pos.y = c->y;
+    pos.z = c->z;
+    func_00108EF0(m, 0, an->rot, &pos);
+    func_00205C40(rot);
+    rot[1] /= 180;
+    rot[1] = -rot[1];
+    for (i = 0; i < n - 1; i++) {
+        t = 0.0f;
+        for (j = 0; j < 3; j++) {
+            if (i != 0) {
+                if (i == 0 && j == 0) {
+                    ab[0] = func_01E00150_b443(&pts[(s16)i - 1], 0, t);
+                } else {
+                    ab[0] = prev;
+                }
+                t += 0.33f;
+                if (!(t < 0.9f)) {
+                    t = 1.0f;
+                }
+                r1 = func_01E00150_b443(&pts[(s16)i - 1], 0, t);
+                ab[1] = r1;
+                prev = ab[1];
+            } else {
+                if (i == 0 && j == 0) {
+                    ab[0] = func_01E00150_b443(ctrl, 0, t);
+                } else {
+                    ab[0] = prev;
+                }
+                t += 0.33f;
+                if (!(t < 0.9f)) {
+                    t = 1.0f;
+                }
+                r2 = func_01E00150_b443(ctrl, 0, t);
+                ab[1] = r2;
+                prev = ab[1];
+            }
+            func_00107790(p, &col, 1);
+            x = col.a - (s16)(an->col0.a / (n * 3));
+            if (x <= 0) {
+                col.a = 0;
+            } else {
+                col.a = x;
+            }
+            func_00107790(p, &col, 2);
+            w1 = w;
+            w -= w0 / (4.0f * n);
+            for (k = 0; k < 2; k++) {
+                q[0].x = ab[0].x;
+                q[0].y = ab[0].y;
+                q[0].z = ab[0].z;
+                q[1].x = ab[0].x;
+                q[1].y = ab[0].y;
+                q[1].z = ab[0].z;
+                q[2].x = ab[1].x;
+                q[2].y = ab[1].y;
+                q[2].z = ab[1].z;
+                q[3].x = ab[1].x;
+                q[3].y = ab[1].y;
+                q[3].z = ab[1].z;
+                if (k == 0) {
+                    q[1].y += w1;
+                    q[3].y += w;
+                    q[0].y -= w1;
+                    q[2].y -= w;
+                } else if (k == 1) {
+                    q[1].x += w1;
+                    q[3].x += w;
+                    q[1].z += w1 / 2.0f;
+                    q[3].z += w / 2.0f;
+                    q[0].x -= w1;
+                    q[2].x -= w;
+                    q[0].z -= w1 / 2.0f;
+                    q[2].z -= w / 2.0f;
+                }
+                if (flags == 0) {
+                    if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+                        func_002075F0(p, target, func_001A23B0(depth[0]));
+                    }
+                } else if (flags == 1) {
+                    if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+                        p->v[0].p.z = p->v[1].p.z = p->v[2].p.z = p->v[3].p.z = 0xFFFFFF;
+                        func_002075F0(p, target, 0);
+                    }
+                } else if (flags == 2) {
+                    if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+                        func_002075F0(p, target, -1);
+                    }
+                }
+            }
+        }
+    }
+}
 
 /* shape b443:01E01B00 (IWWhirlpool1), 231 insns, 1 copy: draw an object as o->n rings of 9 quads (angles 40 apart
    through the sine table g+0xD8), the radius growing by o->h38 / o->n each ring, the ring angle turning o->h1C; each
