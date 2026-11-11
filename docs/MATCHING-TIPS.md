@@ -529,3 +529,6 @@ there is a source form that gives the original.
 - **A float temp and the constant it is multiplied by (`3.1415927f * e->ang / 180.0f`) sit in each other's FPRs
   (`$f1`/`$f2`) and no operand order changes it:** do the degree-to-radian step through a
   `static inline f32 rad(f32 d) { return 3.1415927f * d / 180.0f; }` helper. (b457:01E04300)
+- **An element address built as `addu v0, v0(idx<<1), sN(base)` where ours has `addu v0, sN, v0`, and every
+  `&e->h[j]` / `e->h + j` / `(u8 *)` spelling and a typed local copy leave it reversed:** write it as an integer
+  sum with the shifted index first, `(s16 *)((j << 1) + (s32)e + 0x2C)`. (b268:01E03FE0)
