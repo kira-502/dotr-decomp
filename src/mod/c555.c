@@ -783,7 +783,200 @@ static s32 func_01E01190_c555(s32 obj, Cam_b001_01E00A30 *cam, Emit_b001_01E00A3
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c555", func_01E01D20_c555);
+/* shape c555:01E01D20 (LkSortFiretail4), 531 insns, 1 copy: a fire tail along the 8-point history
+   (shifted in from pos): per segment two points at +-width * (8 - i) / 8 across the segment frame rolled by o->roll,
+   segments 0..5 as quads (alpha dimmed by eighths), the last as a triangle to hist[7] */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_c555_01E01D20;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_c555_01E01D20;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Xyz_c555_01E01D20 p;
+} Vtx_c555_01E01D20;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_c555_01E01D20 v[3];
+    u64 tail;
+} Tri_c555_01E01D20;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_c555_01E01D20 v[4];
+    u64 tail;
+} Quad_c555_01E01D20;
+
+typedef struct {
+    Vec_c555_01E01D20 hist[8];
+    s32 flags;
+    f32 width;
+    u8 b, g, r, a;
+    s32 roll;
+} Tail_c555_01E01D20;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[1];
+} Cam_c555_01E01D20;
+
+static s32 func_01E01D20_c555(s32 ot __attribute__((aligned(8))), Tail_c555_01E01D20 *o, Cam_c555_01E01D20 *cam, Vec_c555_01E01D20 *pos) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_0020CBD0();
+    f32 m[16];
+    Vec_c555_01E01D20 u[1];
+    Vec_c555_01E01D20 p[1];
+    Vec_c555_01E01D20 v[1];
+    s32 cr[4];
+    s32 rot[4];
+    f32 d[4];
+    Quad_c555_01E01D20 quad __attribute__((aligned(8)));
+    Tri_c555_01E01D20 tri __attribute__((aligned(8)));
+    s32 i;
+
+    for (i = 6; i > -1; i--) {
+        o->hist[i + 1] = o->hist[i];
+        if (i == 0) {
+            o->hist[i].x = pos->x;
+            o->hist[i].y = pos->y;
+            o->hist[i].z = pos->z;
+        }
+    }
+    ((Quad_c555_01E01D20 *)(s32)&quad)->count = 0x14;
+    ((Quad_c555_01E01D20 *)(s32)&quad)->tag = 8;
+    ((Quad_c555_01E01D20 *)(s32)&quad)->regs = 0x41414141;
+    ((Quad_c555_01E01D20 *)(s32)&quad)->pad = 0;
+    ((Tri_c555_01E01D20 *)(s32)&tri)->count = 0x13;
+    ((Tri_c555_01E01D20 *)(s32)&tri)->tag = 6;
+    ((Tri_c555_01E01D20 *)(s32)&tri)->regs = 0x414141;
+    ((Tri_c555_01E01D20 *)(s32)&tri)->pad = 0;
+    func_002086D0(&quad, ((u64)0x80 << 32) | 0x48);
+    func_002086D0(&tri, ((u64)0x80 << 32) | 0x48);
+    for (i = 0; i < 6; i++) {
+        func_01E00120_c555((Pkt_c555_01E00120 *)&quad, (Col_c555_01E00120 *)&o->b, i);
+
+        v[0].x = o->hist[i + 1].x - o->hist[i].x;
+        v[0].y = o->hist[i + 1].y - o->hist[i].y;
+        v[0].z = o->hist[i + 1].z - o->hist[i].z;
+        v[0].w = 0.0f;
+        func_00103B50(&v[0].x, rot);
+        func_001FAFB0(0, (s32)cr);
+        cr[1] %= 0x10000;
+        func_00103D00(rot[0], cr[0]);
+        func_00103D00(rot[1], cr[1]);
+        u[0].x = o->width / 8.0f * (8 - i);
+        u[0].w = 0.0f;
+        u[0].z = 0.0f;
+        u[0].y = 0.0f;
+        func_0020C630(m, rot);
+        func_0020CDD0(&p[0], m, &u[0]);
+        func_0020CBD0(m, &v[0], o->roll);
+        func_0020CDD0(&u[0], m, &p[0]);
+        p[0].x = u[0].x + o->hist[i].x;
+        p[0].y = u[0].y + o->hist[i].y;
+        p[0].z = u[0].z + o->hist[i].z;
+        if (func_00205440(&p[0], cam->view, &quad.v[0].p, &d[0]) != 0) {
+            o->flags |= 0x100000;
+        }
+        p[0].x = o->hist[i].x - u[0].x;
+        p[0].y = o->hist[i].y - u[0].y;
+        p[0].z = o->hist[i].z - u[0].z;
+        if (func_00205440(&p[0], cam->view, &quad.v[1].p, &d[1]) != 0) {
+            o->flags |= 0x200000;
+        }
+
+        v[0].x = o->hist[i + 2].x - o->hist[i + 1].x;
+        v[0].y = o->hist[i + 2].y - o->hist[i + 1].y;
+        v[0].z = o->hist[i + 2].z - o->hist[i + 1].z;
+        v[0].w = 0.0f;
+        func_00103B50(&v[0].x, rot);
+        func_001FAFB0(0, (s32)cr);
+        cr[1] %= 0x10000;
+        func_00103D00(rot[0], cr[0]);
+        func_00103D00(rot[1], cr[1]);
+        u[0].x = o->width / 8.0f * (7 - i);
+        u[0].w = 0.0f;
+        u[0].z = 0.0f;
+        u[0].y = 0.0f;
+        func_0020C630(m, rot);
+        func_0020CDD0(&p[0], m, &u[0]);
+        func_0020CBD0(m, &v[0], o->roll);
+        func_0020CDD0(&u[0], m, &p[0]);
+        p[0].x = u[0].x + o->hist[i + 1].x;
+        p[0].y = u[0].y + o->hist[i + 1].y;
+        p[0].z = u[0].z + o->hist[i + 1].z;
+        if (func_00205440(&p[0], cam->view, &quad.v[2].p, &d[2]) != 0) {
+            o->flags |= 0x400000;
+        }
+        p[0].x = o->hist[i + 1].x - u[0].x;
+        p[0].y = o->hist[i + 1].y - u[0].y;
+        p[0].z = o->hist[i + 1].z - u[0].z;
+        if (func_00205440(&p[0], cam->view, &quad.v[3].p, &d[3]) != 0) {
+            o->flags |= 0x800000;
+        }
+        if (func_00104520(o->flags, 0x14) != 0 && func_00104520(o->flags, 0x15) != 0 &&
+            func_00104520(o->flags, 0x16) != 0 && func_00104520(o->flags, 0x17) != 0) {
+            func_002075F0(&quad, ot, (u32)((d[3] + (d[2] + (d[0] + d[1]))) / 4.0f));
+        }
+        o->flags &= 0xFF0FFFFF;
+    }
+
+    func_01E00080_c555((Pkt_c555_01E00080 *)&tri, (Col_c555_01E00080 *)&o->b);
+    v[0].x = o->hist[7].x - o->hist[6].x;
+    v[0].y = o->hist[7].y - o->hist[6].y;
+    v[0].z = o->hist[7].z - o->hist[6].z;
+    v[0].w = 0.0f;
+    func_00103B50(&v[0].x, rot);
+    func_001FAFB0(0, (s32)cr);
+    cr[1] %= 0x10000;
+    func_00103D00(rot[0], cr[0]);
+    func_00103D00(rot[1], cr[1]);
+    u[0].x = o->width / 8.0f * 2.0f;
+    u[0].w = 0.0f;
+    u[0].z = 0.0f;
+    u[0].y = 0.0f;
+    func_0020C630(m, rot);
+    func_0020CDD0(&p[0], m, &u[0]);
+    func_0020CBD0(m, &v[0], o->roll);
+    func_0020CDD0(&u[0], m, &p[0]);
+    p[0].x = o->hist[6].x + u[0].x;
+    p[0].y = o->hist[6].y + u[0].y;
+    p[0].z = o->hist[6].z + u[0].z;
+    if (func_00205440(&u[0], cam->view, &tri.v[0].p, &d[0]) != 0) {
+        o->flags |= 0x100000;
+    }
+    p[0].x = o->hist[6].x - u[0].x;
+    p[0].y = o->hist[6].y - u[0].y;
+    p[0].z = o->hist[6].z - u[0].z;
+    if (func_00205440(&u[0], cam->view, &tri.v[1].p, &d[1]) != 0) {
+        o->flags |= 0x200000;
+    }
+    if (func_00205440(&o->hist[7], cam->view, &tri.v[2].p, &d[2]) != 0) {
+        o->flags |= 0x400000;
+    }
+    if (func_00104520(o->flags, 0x14) != 0 && func_00104520(o->flags, 0x15) != 0 &&
+        func_00104520(o->flags, 0x16) != 0) {
+        func_002075F0(&tri, ot, (u32)((d[2] + (d[0] + d[1])) / 3.0f));
+    }
+    o->flags &= 0xFF0FFFFF;
+    return 0;
+}
 
 /* OVL_WARM: compile warm (its (u32) cast is jal fptoui, func_001A23B0) */
 
