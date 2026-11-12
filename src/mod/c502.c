@@ -229,4 +229,185 @@ static s32 func_01E001E0_c502(s32 ot, Frame_c501_01E001E0 *o, Cam_c501_01E001E0 
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c502", func_01E00910_c502);
+/* shape c502:01E00910 (c502), 263 insns, 1 copy: c502's scene manager: with a scene id (>= 0) it sets up the scene
+   (120-frame countdown, grey colour, the camera's channel/id, the frame's colour and flags per scene kind 0..9 by a
+   switch, the 24-scaled quad template); otherwise it steps it: draws the frame unless flag 30, fades its alpha in by
+   16 and grows its height by 2 to -40, then fades the scene out and ends it (flag 31), or once flag 31 is set fades
+   back in and the colour out; returns 2 on frame 35 and 8 when done */
+
+typedef struct Quad_c502_01E00910 {
+    Vec4f v[4];
+} Quad_c502_01E00910;
+
+typedef struct Fr_c502_01E00910 {
+    s32 w0;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 h;
+    Vec4f pts[4];
+} Fr_c502_01E00910;
+
+typedef struct Scene_c502_01E00910 {
+    u8 pad0[0x20];
+    Vec4f v20;
+    u8 pad30[0x40];
+    Fr_c502_01E00910 fr;
+    u8 padC0[0x40];
+    s32 count;
+    s32 frame;
+    s32 id;
+    u32 flags;
+    u8 col[4];
+    s32 cam0;
+    s32 cam1;
+    s32 kind;
+    s32 fade;
+} Scene_c502_01E00910;
+
+static s32 func_01E00910_c502(s32 arg0, s32 id) {
+    Scene_c502_01E00910 *g = (Scene_c502_01E00910 *)arg0;
+    extern Quad_c502_01E00910 D_01E00D80_c502;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern s32 func_001F5380(void);
+    extern void func_00103890(void *);
+    extern void func_00103260(s32 *, s32);
+    extern void func_001E10F0(s32, s32, s32, void *);
+    extern void func_001038D0(void *);
+    extern s32 func_001032C0(u8 *, s32, s32);
+    extern s32 func_00103540(f32 *, f32, f32);
+    extern void func_001E23A0(s32, s32, s32);
+    extern s32 func_00103500(s32 *, s32, s32);
+    extern s32 func_00103350(s32 *, s32, s32);
+    extern void func_001E2220(s32, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_00103470(void *, u32, s32);
+    s32 t[4];
+    Quad_c502_01E00910 q;
+    s32 ot;
+    s32 i;
+    f32 w;
+
+    ot = func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x130);
+        func_00103890(g);
+        g->flags = 0;
+        g->count = 120;
+        g->frame = 0;
+        g->id = id;
+        g->col[0] = 0x80;
+        g->col[1] = 0x80;
+        g->col[2] = 0x80;
+        g->col[3] = 0xFF;
+        g->cam0 = func_001F5380() & 0xFF;
+        g->cam1 = func_001F5380() >> 8;
+        g->kind = g->id;
+        g->fade = 0;
+        func_00103260(t, 0);
+        g->fr.w0 = t[0];
+        g->fr.flags = 0;
+        switch (g->kind) {
+        case 0:
+            g->fr.r = 0x40;
+            g->fr.g = 0x80;
+            g->fr.b = 0x50;
+            break;
+        case 1:
+            g->fr.r = 0x60;
+            g->fr.g = 0x50;
+            g->fr.b = 0x30;
+            break;
+        case 2:
+            g->fr.r = 0x40;
+            g->fr.g = 0x40;
+            g->fr.b = 0x40;
+            break;
+        case 3:
+            g->fr.r = 0x50;
+            g->fr.g = 0x60;
+            g->fr.b = 0x30;
+            break;
+        case 4:
+            g->fr.r = 0x40;
+            g->fr.g = 0x50;
+            g->fr.b = 0x60;
+            break;
+        case 5:
+            g->fr.flags |= 0x400;
+            g->fr.r = 0x20;
+            g->fr.g = 0x20;
+            g->fr.b = 0x20;
+            break;
+        case 6:
+            g->fr.flags |= 0x1000;
+            g->fr.r = 0x80;
+            g->fr.g = 0x80;
+            g->fr.b = 0x80;
+            break;
+        case 7:
+            g->fr.r = 0x60;
+            g->fr.g = 0x50;
+            g->fr.b = 0x60;
+            break;
+        case 8:
+            g->fr.flags |= 0x400;
+            g->fr.flags |= 0x1000;
+            g->fr.r = 0x20;
+            g->fr.g = 0x20;
+            g->fr.b = 0x20;
+            break;
+        case 9:
+            g->fr.r = 0x60;
+            g->fr.g = 0x20;
+            g->fr.b = 0x30;
+            break;
+        }
+        g->fr.a = 0;
+        q = D_01E00D80_c502;
+        for (i = 0; i < 4; i++) {
+            g->fr.pts[i].x = 24.0f * q.v[i].x;
+            g->fr.pts[i].y = q.v[i].y;
+            g->fr.pts[i].z = 24.0f * q.v[i].z;
+        }
+        g->fr.h = 0.0f;
+        func_001E10F0(g->cam0, g->cam1, 0, &g->v20);
+        return 0;
+    }
+    func_001038D0(g);
+    if (!func_00104520(g->flags, 0x1E)) {
+        func_01E001E0_c502(ot, (void *)&g->fr, (void *)g);
+    }
+    if (!func_00104520(g->flags, 0x1F)) {
+        if (!func_001032C0(&g->fr.a, 0xFF, 0x10)) {
+            w = -40.0f;
+            if (!func_00103540(&g->fr.h, w, 2.0f)) {
+                func_001E23A0(g->cam0, g->cam1, g->fade);
+                if (!func_00103500(&g->fade, -0x80, 4)) {
+                    g->flags |= 0x80000000;
+                    func_001E2220(g->cam0, g->cam1, g->kind);
+                }
+            }
+        }
+    } else {
+        func_001E23A0(g->cam0, g->cam1, g->fade);
+        if (!func_00103350(&g->fade, 0, 4)) {
+            g->flags |= 0x40000000;
+            if (func_001F53A0()) {
+                func_01E00080_c502(ot, (void *)g->col);
+            }
+            if (!func_00103470(&g->col[3], 0, 0x10)) {
+                return 8;
+            }
+        }
+    }
+    g->frame++;
+    g->count--;
+    if (g->frame == 35) {
+        return 2;
+    }
+    if (g->count <= 0) {
+        return 8;
+    }
+    return 0;
+}
