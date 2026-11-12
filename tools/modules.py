@@ -278,6 +278,11 @@ def write_ld(n: str, r: dict[str, Any]) -> None:
     starts = sorted({p.stem.split("_")[1] for k in ("nonmatchings", "matchings")
                      for p in (ROOT / f"asm/{k}/mod/{n}").glob(f"func_*_{n}.s")})
     aliases = "".join(f"{n}_{a} = 0x{a};\n" for a in starts) + ("\n" if starts else "")
+    # a jump table in the literal pool names its targets by the asm's labels (.word .L<VRAM>_<n>); once the
+    # function is C those labels are gone, so they also answer to their addresses (PROVIDE: the asm's own wins)
+    pool_s = ROOT / f"asm/data/mod/{n}_pool.rodata.s"
+    labels = sorted(set(re.findall(rf"\.word (\.L([0-9A-F]{{8}})_{n})\b", pool_s.read_text()))) if pool else []
+    aliases += "".join(f"PROVIDE({s} = 0x{a});\n" for s, a in labels) + ("\n" if labels else "")
     (ROOT / f"linker/mod/{n}.ld").write_text(LD.format(n=n, pool=pool, data=data, aliases=aliases))
 
 
