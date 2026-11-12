@@ -1119,7 +1119,275 @@ static s32 func_01E04AA0_b351(void *arg0, s32 ot, s32 n) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b351", func_01E05A80_b351);
+/* shape b285:01E03B50 (ShFx_Lfl), 921 insns, 2 copies: lens flare: n emitters (0x6C bytes each) spin by drot; when
+   the emitter's up axis faces the camera (dot <= -0.7) each of its cnt elements is projected along that axis and
+   drawn as a 36-step fan (kinds 0-2, 3-vertex packet) or ring band (kinds 3-5, 4-vertex packet, kind 5 adds the inner
+   band) sized by depth, alpha fading with the facing; then a full-screen white flash */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b285_01E03B50;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Xyz_b285_01E03B50 xyz;
+} Vtx_b285_01E03B50;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b285_01E03B50 v[3];
+    u8 tail[8];
+} Pkt3_b285_01E03B50;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b285_01E03B50 v[4];
+    u8 tail[8];
+} Pkt4_b285_01E03B50;
+
+typedef struct {
+    f32 x, y, z;
+} V3_b285_01E03B50;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    u8 flags;
+    u8 pad5[3];
+    u8 kind[8];
+    u8 cnt;
+    u8 a1;
+    u8 a2;
+    u8 pad13;
+    f32 size[8];
+    f32 base;
+    f32 step;
+    V3_b285_01E03B50 pos;
+    f32 pad48;
+    s32 rot[3];
+    f32 pad58;
+    s32 drot[3];
+    f32 pad68;
+} Lfl_b285_01E03B50;
+
+static s32 func_01E05A80_b351(Lfl_b285_01E03B50 *arg0, s32 ot, s32 n) {
+    extern Vec4f *func_001FAD10(s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern void func_0020C630(void *, void *);
+    extern void func_0020CDD0(void *, void *, void *);
+    extern void func_0020D070(void *);
+    extern f32 func_0020D1A0(void *, void *);
+    extern void func_002086D0(void *, u64);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern f32 func_001018E0(f32, f32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Lfl_b285_01E03B50 *e;
+    f32 mat2[16];
+    f32 mat[16];
+    f32 m[16];
+    Vec4f d;
+    Vec4f v;
+    Vec4f cam;
+    Xyz_b285_01E03B50 xy;
+    Pkt3_b285_01E03B50 p3 __attribute__((aligned(8)));
+    Pkt4_b285_01E03B50 p4 __attribute__((aligned(8)));
+    f32 depth;
+    s32 i;
+    s32 j;
+    s32 seg;
+    s32 k;
+    s32 a1;
+    s32 a2;
+    s32 al;
+    f32 r;
+    f32 q;
+    f32 z;
+    f32 step;
+    f32 x0, y0, x1, y1, x2, y2;
+    f32 dot;
+    f32 px0, px1, px2, py0, py1, py2;
+
+    e = arg0;
+    cam = *func_001FAD10(0);
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        e->rot[0] += e->drot[0];
+        e->rot[1] += e->drot[1];
+        e->rot[2] += e->drot[2];
+        func_00101BA0(e, &e->pos);
+        func_0020EB40(mat);
+        if (func_00205440(&e->pos, mat, &xy, &depth) == 0) {
+            continue;
+        }
+        if (func_00101600(&xy) == 0) {
+            continue;
+        }
+        d.z = 0.0f;
+        d.x = 0.0f;
+        d.y = 1.0f;
+        func_0020C630(m, e->rot);
+        func_0020CDD0(&v, m, &d);
+        func_0020D070(&cam);
+        dot = func_0020D1A0(&v, &cam);
+        if (dot <= -0.7f) {
+            seg = 9;
+            step = 90.0f / seg;
+            ((Pkt3_b285_01E03B50 *)(s32)&p3)->count = 0x13;
+            ((Pkt3_b285_01E03B50 *)(s32)&p3)->tag = 6;
+            ((Pkt3_b285_01E03B50 *)(s32)&p3)->regs = 0x414141;
+            ((Pkt3_b285_01E03B50 *)(s32)&p3)->pad = 0;
+            p3.v[0].r = p3.v[1].r = p3.v[2].r = p3.v[0].g = p3.v[1].g = p3.v[2].g = p3.v[0].b = p3.v[1].b =
+                p3.v[2].b = 0x80;
+            p3.v[0].q = p3.v[1].q = p3.v[2].q = 1.0f;
+            func_002086D0(&p3, 0x48);
+            ((Pkt4_b285_01E03B50 *)(s32)&p4)->count = 0x14;
+            ((Pkt4_b285_01E03B50 *)(s32)&p4)->tag = 8;
+            ((Pkt4_b285_01E03B50 *)(s32)&p4)->regs = 0x41414141;
+            ((Pkt4_b285_01E03B50 *)(s32)&p4)->pad = 0;
+            p4.v[0].r = p4.v[1].r = p4.v[2].r = p4.v[3].r = p4.v[0].g = p4.v[1].g = p4.v[2].g = p4.v[3].g =
+                p4.v[0].b = p4.v[1].b = p4.v[2].b = p4.v[3].b = 0x80;
+            p4.v[0].q = p4.v[1].q = p4.v[2].q = p4.v[3].q = 1.0f;
+            func_002086D0(&p4, 0x48);
+            func_0020EB40(mat);
+            func_0020C940(mat2, NULL, e->rot, &e->pos);
+            func_0020BC00(mat, mat2);
+            if (e->life < 8) {
+                a1 = (e->a1 >> 3) * e->life;
+                a2 = (e->a2 >> 3) * e->life;
+            } else {
+                a1 = e->a1;
+                a2 = e->a2;
+            }
+            for (k = 0; k < e->cnt; k++) {
+                d.y = e->base + e->step * k;
+                if (func_00205440(&d, mat, &xy, &depth) == 0) {
+                    continue;
+                }
+                if (func_00101600(&xy) == 0) {
+                    continue;
+                }
+                r = func_001018E0(e->size[k], depth);
+                al = (s32)(a1 * (-dot - 0.7f) / 0.3f);
+                switch (e->kind[k]) {
+                case 0:
+                    p3.v[0].a = p3.v[1].a = p3.v[2].a = al;
+                    break;
+                case 1:
+                    p3.v[0].a = al;
+                    p3.v[1].a = p3.v[2].a = al >> 2;
+                    break;
+                case 2:
+                    p3.v[0].a = 0;
+                    p3.v[1].a = p3.v[2].a = al;
+                    break;
+                case 3:
+                case 5:
+                    p4.v[0].a = p4.v[1].a = 0;
+                    p4.v[2].a = p4.v[3].a = al;
+                    break;
+                case 4:
+                    p4.v[0].a = p4.v[1].a = al;
+                    p4.v[2].a = p4.v[3].a = 0;
+                    break;
+                }
+                if (e->flags & 0x80) {
+                    xy.z = 0xFFFFFE;
+                    z = 0.0f;
+                } else {
+                    z = depth;
+                }
+                p4.v[0].xyz.z = p4.v[1].xyz.z = p4.v[2].xyz.z = p4.v[3].xyz.z = p3.v[0].xyz.z = p3.v[1].xyz.z =
+                    p3.v[2].xyz.z = xy.z;
+                p4.v[0].xyz.f = p4.v[1].xyz.f = p4.v[2].xyz.f = p4.v[3].xyz.f = p3.v[0].xyz.f = p3.v[1].xyz.f =
+                    p3.v[2].xyz.f = 1;
+                x0 = r * func_001A6898(0.0f);
+                y0 = r * func_001A6A88(0.0f);
+                q = r / 4.0f;
+                x1 = (r + q) * func_001A6898(0.0f);
+                y1 = (r + q) * func_001A6A88(0.0f);
+                x2 = (r - q) * func_001A6898(0.0f);
+                y2 = (r - q) * func_001A6A88(0.0f);
+                for (j = 1; j < seg * 4 + 1; j++) {
+                    if (e->kind[k] >= 3) {
+                        px0 = x0;
+                        px1 = x1;
+                        px2 = x2;
+                        py0 = y0;
+                        py1 = y1;
+                        py2 = y2;
+                        x0 = r * func_001A6898(3.1415927f * (step * j) / 180.0f);
+                        y0 = r * func_001A6A88(3.1415927f * (step * j) / 180.0f);
+                        x1 = (r + q) * func_001A6898(3.1415927f * (step * j) / 180.0f);
+                        y1 = (r + q) * func_001A6A88(3.1415927f * (step * j) / 180.0f);
+                        x2 = (r - q) * func_001A6898(3.1415927f * (step * j) / 180.0f);
+                        y2 = (r - q) * func_001A6A88(3.1415927f * (step * j) / 180.0f);
+                        p4.v[0].xyz.x = (u32)(xy.x + px1);
+                        p4.v[0].xyz.y = (u32)(xy.y + py1);
+                        p4.v[1].xyz.x = (u32)(xy.x + x1);
+                        p4.v[1].xyz.y = (u32)(xy.y + y1);
+                        p4.v[2].xyz.x = (u32)(xy.x + px0);
+                        p4.v[2].xyz.y = (u32)(xy.y + py0);
+                        p4.v[3].xyz.x = (u32)(xy.x + x0);
+                        p4.v[3].xyz.y = (u32)(xy.y + y0);
+                        func_002075F0(&p4, ot, (u32)z);
+                        if (e->kind[k] == 5) {
+                            p4.v[0].xyz.x = (u32)(xy.x + px2);
+                            p4.v[0].xyz.y = (u32)(xy.y + py2);
+                            p4.v[1].xyz.x = (u32)(xy.x + x2);
+                            p4.v[1].xyz.y = (u32)(xy.y + y2);
+                            func_002075F0(&p4, ot, (u32)z);
+                        }
+                    } else {
+                        px0 = x0;
+                        py0 = y0;
+                        x0 = r * func_001A6898(3.1415927f * (step * j) / 180.0f);
+                        y0 = r * func_001A6A88(3.1415927f * (step * j) / 180.0f);
+                        p3.v[0].xyz.x = xy.x;
+                        p3.v[0].xyz.y = xy.y;
+                        p3.v[1].xyz.x = (u32)(xy.x + px0);
+                        p3.v[1].xyz.y = (u32)(xy.y + py0);
+                        p3.v[2].xyz.x = (u32)(xy.x + x0);
+                        p3.v[2].xyz.y = (u32)(xy.y + y0);
+                        func_002075F0(&p3, ot, (u32)z);
+                    }
+                }
+            }
+            p4.v[0].r = p4.v[1].r = p4.v[2].r = p4.v[3].r = p4.v[0].g = p4.v[1].g = p4.v[2].g = p4.v[3].g =
+                p4.v[0].b = p4.v[1].b = p4.v[2].b = p4.v[3].b = 0xFF;
+            p4.v[0].q = p4.v[1].q = p4.v[2].q = p4.v[3].q = 1.0f;
+            p4.v[0].xyz.z = p4.v[1].xyz.z = p4.v[2].xyz.z = p4.v[3].xyz.z = 0xFFFFFF;
+            p4.v[0].a = p4.v[1].a = p4.v[2].a = p4.v[3].a = (s32)(a2 * (-dot - 0.7f) / 0.3f);
+            p4.v[0].xyz.x = p4.v[2].xyz.x = 0x6C00;
+            p4.v[1].xyz.x = p4.v[3].xyz.x = 0x9400;
+            p4.v[0].xyz.y = p4.v[1].xyz.y = 0x7200;
+            p4.v[2].xyz.y = p4.v[3].xyz.y = 0x8E00;
+            func_002075F0(&p4, ot, 0);
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/b351", func_01E068F0_b351);
 
