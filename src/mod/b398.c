@@ -1291,7 +1291,133 @@ INCLUDE_ASM("asm/nonmatchings/mod/b398", func_01E04300_b398);
 
 INCLUDE_ASM("asm/nonmatchings/mod/b398", func_01E05120_b398);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b398", func_01E05600_b398);
+/* shape b398:01E05600 (ShFx_ReqBlur2), 427 insns, 1 copy (-O2,p): screen blur quads: two textured full-width bands
+   (rows 0..h and h..448) at x offsets x0 and x1, alpha fading in over fade frames from start and out over 2*fade
+   before end */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b398_01E05600;
+
+typedef struct {
+    u16 u : 14;
+    u16 pu : 2;
+    u16 v : 14;
+    u16 pv : 2;
+    u32 pad;
+} Uv_b398_01E05600;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b398_01E05600 uv;
+    Xyz_b398_01E05600 xyz;
+} Vtx_b398_01E05600;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b398_01E05600 v[4];
+    u8 tail[0x20];
+} Pkt_b398_01E05600;
+
+typedef struct {
+    s32 id;
+    u8 sub;
+    u8 blend;
+    u8 pad6[2];
+    s32 u, w, v, h;
+} Tex_b398_01E05600;
+
+typedef struct {
+    u16 start;
+    u16 end;
+    u8 pad4;
+    u8 fade;
+    u8 blend;
+    u8 pad7;
+    s32 h;
+    s32 x0;
+    s32 x1;
+    f32 depth;
+    u8 b, g, r;
+} Blur_b398_01E05600;
+
+#pragma optimization_level 2
+
+static s32 func_01E05600_b398(Blur_b398_01E05600 *o, s32 ot, u16 t) {
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_00101C80(void *, u8 *);
+    Tex_b398_01E05600 td;
+    Pkt_b398_01E05600 pk __attribute__((aligned(8)));
+    u8 bl[4];
+    u8 a;
+    s32 d;
+
+    if (t >= o->start && t <= o->end) {
+        ((Pkt_b398_01E05600 *)(s32)&pk)->count = 0x34;
+        ((Pkt_b398_01E05600 *)(s32)&pk)->tag = 0xC;
+        ((Pkt_b398_01E05600 *)(s32)&pk)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b398_01E05600 *)(s32)&pk)->pad = 0;
+        func_002087A0(&pk, 1);
+        pk.v[0].r = pk.v[1].r = pk.v[2].r = pk.v[3].r = o->r;
+        pk.v[0].g = pk.v[1].g = pk.v[2].g = pk.v[3].g = o->g;
+        pk.v[0].b = pk.v[1].b = pk.v[2].b = pk.v[3].b = o->b;
+        pk.v[0].q = pk.v[1].q = pk.v[2].q = pk.v[3].q = 1.0f;
+        pk.v[0].xyz.z = pk.v[1].xyz.z = pk.v[1].xyz.z = pk.v[3].xyz.z = 0xFFFFFF;
+        pk.v[0].xyz.f = pk.v[1].xyz.f = pk.v[2].xyz.f = pk.v[3].xyz.f = 0;
+        d = t - o->start;
+        a = o->fade << 4;
+        if (d < o->fade) {
+            a = d << 4;
+        }
+        if (o->end - t < o->fade * 2) {
+            a = (o->end - t) << 3;
+        }
+        pk.v[0].a = pk.v[1].a = pk.v[2].a = pk.v[3].a = a;
+        td.blend = o->blend;
+        func_00101C80(&td, bl);
+        func_002086D0(&pk, (u64)bl[0] | ((u64)bl[1] << 2) | ((u64)bl[2] << 4) | ((u64)bl[3] << 6));
+        ((Pkt_b398_01E05600 *)(s32)&pk)->count |= 0x800;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[0].uv)->u = 0;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[0].uv)->v = 0;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[1].uv)->u = 0x2800;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[1].uv)->v = 0;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[2].uv)->u = 0;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[2].uv)->v = o->h << 4;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[3].uv)->u = 0x2800;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[3].uv)->v = o->h << 4;
+        pk.v[0].xyz.x = (u32)(27648.0f + (o->x0 << 4));
+        pk.v[1].xyz.x = (u32)(37888.0f + (o->x0 << 4));
+        pk.v[2].xyz.x = (u32)(27648.0f + (o->x0 << 4));
+        pk.v[3].xyz.x = (u32)(37888.0f + (o->x0 << 4));
+        pk.v[0].xyz.y = pk.v[1].xyz.y = 0x7200;
+        pk.v[2].xyz.y = pk.v[3].xyz.y = (u32)(29184.0f + (o->h << 4));
+        func_002075F0(&pk, ot, (u32)o->depth);
+        ((Uv_b398_01E05600 *)(s32)&pk.v[0].uv)->u = 0;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[0].uv)->v = o->h << 4;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[1].uv)->u = 0x2800;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[1].uv)->v = o->h << 4;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[2].uv)->u = 0;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[2].uv)->v = 0x1C00;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[3].uv)->u = 0x2800;
+        ((Uv_b398_01E05600 *)(s32)&pk.v[3].uv)->v = 0x1C00;
+        pk.v[0].xyz.x = (u32)(27648.0f + (o->x1 << 4));
+        pk.v[1].xyz.x = (u32)(37888.0f + (o->x1 << 4));
+        pk.v[2].xyz.x = (u32)(27648.0f + (o->x1 << 4));
+        pk.v[3].xyz.x = (u32)(37888.0f + (o->x1 << 4));
+        pk.v[0].xyz.y = pk.v[1].xyz.y = (u32)(29184.0f + (o->h << 4));
+        pk.v[2].xyz.y = pk.v[3].xyz.y = 0x8E00;
+        func_002075F0(&pk, ot, (u32)o->depth);
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 /* OVL_CFLAGS: -O2,p -sdatathreshold 0 -relax_pointers */
 
