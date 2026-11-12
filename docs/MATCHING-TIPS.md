@@ -521,3 +521,7 @@ there is a source form that gives the original.
   "its asm uses 0". (b172:01E02F30)
 - **Four vertex q values, s/t reuse q from registers, the 1/d divides in an odd order:** write `v[0].q` straight
   from its divide, then `q1`..`q3` into locals right after; of the 24 orders only that one matches. (b172:01E02F30)
+- **Around a `jal func_001A23B0`/`func_001A22C0` every temp sits one or two registers higher than yours
+  (`$a2`/`$a3`/`$t0` for your `$a0`/`$a1`/`$a2`), `$a0`/`$a1` unused:** those are the compiler's `fptoui`/`fptosi`;
+  write `(u32)x`/`(s32)x` instead of calling them (the cast keeps `$a0`/`$a1` blocked up to the call).
+  (b132:01E04B00, b398:01E05600)
