@@ -89,7 +89,209 @@ static void func_01E00080_b712(Obj_b002_01E00080 *arg0) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b712", func_01E00440_b712);
+/* shape b011:01E02AD0 (ShFx_Afx01), 738 insns, 2 copies (-O1,p): the -O1 build of ShFx_Afx01 (b010:01E015A0's C):
+   draws n glow entities (0x30 bytes each) */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b011_01E02AD0;
+
+typedef struct {
+    u16 u : 14;
+    u16 pu : 2;
+    u16 v : 14;
+    u16 pv : 2;
+    u32 pad;
+} Uv_b011_01E02AD0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b011_01E02AD0 uv;
+    Xyz_b011_01E02AD0 xyz;
+} Vtx_b011_01E02AD0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b011_01E02AD0 v[4];
+    u8 tail[8];
+} Pkt_b011_01E02AD0;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 span;
+    u8 pad3[5];
+    u8 size;
+    u8 blend;
+    u8 mask;
+    u8 padB;
+    Vec4f pos;
+    u8 b2, g2, r2, a2;
+    u8 b, g, r, a;
+    u8 pad24[4];
+    Xyz_b011_01E02AD0 xy;
+} Afx_b011_01E02AD0;
+
+#pragma optimization_level 1
+
+/* ot aligned: its spill slot, needed for the match */
+static s32 func_01E00440_b712(Afx_b011_01E02AD0 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern s32 func_00101770(void *);
+    extern void func_00101C80(void *, u8 *);
+    Afx_b011_01E02AD0 *e = arg0;
+    f32 mat[16];
+    u8 td[0x20];
+    Pkt_b011_01E02AD0 pk;
+    f32 depth;
+    u8 bl[4];
+    s32 i;
+    s32 u;
+    s32 v;
+    s32 j;
+    s32 sz;
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        if (e->life == e->span - 1) {
+            func_0020EB40(mat);
+            if (func_00205440(&e->pos, mat, &e->xy, &depth) == 0) {
+                e->life = 0;
+                continue;
+            }
+            if (func_00101770(&e->xy) == 0) {
+                e->life = 0;
+                continue;
+            }
+        }
+        u = (s32)(e->xy.x - 27648.0f);
+        v = (s32)(e->xy.y - 29184.0f);
+        ((Pkt_b011_01E02AD0 *)(s32)&pk)->count = 0x33;
+        ((Pkt_b011_01E02AD0 *)(s32)&pk)->tag = 9;
+        ((Pkt_b011_01E02AD0 *)(s32)&pk)->regs = ((u64)4 << 32) | 0x21421421;
+        ((Pkt_b011_01E02AD0 *)(s32)&pk)->pad = 0;
+        func_002087A0(&pk, 1);
+        pk.v[0].r = pk.v[1].r = e->r;
+        pk.v[2].r = e->r2;
+        pk.v[0].g = pk.v[1].g = e->g;
+        pk.v[2].g = e->g2;
+        pk.v[0].b = pk.v[1].b = e->b;
+        pk.v[2].b = e->b2;
+        pk.v[0].q = pk.v[1].q = pk.v[2].q = 1.0f;
+        pk.v[0].xyz.z = pk.v[1].xyz.z = pk.v[2].xyz.z = 0xFFFFFF;
+        pk.v[0].xyz.f = pk.v[1].xyz.f = pk.v[2].xyz.f = 0;
+        td[5] = e->blend;
+        func_00101C80(td, bl);
+        func_002086D0(&pk, (u64)bl[0] | ((u64)bl[1] << 2) | ((u64)bl[2] << 4) | ((u64)bl[3] << 6));
+        ((Pkt_b011_01E02AD0 *)(s32)&pk)->count |= 0x800;
+        ((Uv_b011_01E02AD0 *)(s32)&pk.v[2].uv)->u = u;
+        ((Uv_b011_01E02AD0 *)(s32)&pk.v[2].uv)->v = v;
+        pk.v[2].xyz.x = e->xy.x;
+        pk.v[2].xyz.y = e->xy.y;
+        if (e->life < 8) {
+            pk.v[0].a = pk.v[1].a = (e->a >> 3) * e->life;
+            pk.v[2].a = (e->a2 >> 3) * e->life;
+        } else {
+            pk.v[0].a = pk.v[1].a = e->a;
+            pk.v[2].a = e->a2;
+        }
+        sz = e->size + (e->life & 3) * 2;
+        for (j = 0; j < 8; j++) {
+            if (!(e->mask & (1 << j))) {
+                continue;
+            }
+            switch (j) {
+            case 0:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = v;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = 0;
+                pk.v[0].xyz.x = pk.v[1].xyz.x = (u32)(27648.0f - (sz << 4));
+                pk.v[0].xyz.y = e->xy.y;
+                pk.v[1].xyz.y = (u32)(29184.0f - (sz << 4));
+                break;
+            case 1:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = u;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = 0;
+                pk.v[0].xyz.x = (u32)(27648.0f - (sz << 4));
+                pk.v[1].xyz.x = e->xy.x;
+                pk.v[0].xyz.y = pk.v[1].xyz.y = (u32)(29184.0f - (sz << 4));
+                break;
+            case 2:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = u;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = 0x2800;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = 0;
+                pk.v[0].xyz.x = e->xy.x;
+                pk.v[1].xyz.x = (u32)(37888.0f + (sz << 4));
+                pk.v[0].xyz.y = pk.v[1].xyz.y = (u32)(29184.0f - (sz << 4));
+                break;
+            case 3:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = 0x2800;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = 0x2800;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = v;
+                pk.v[0].xyz.x = pk.v[1].xyz.x = (u32)(37888.0f + (sz << 4));
+                pk.v[0].xyz.y = (u32)(29184.0f - (sz << 4));
+                pk.v[1].xyz.y = e->xy.y;
+                break;
+            case 4:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = 0x2800;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = v;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = 0x2800;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = 0x1C00;
+                pk.v[0].xyz.x = pk.v[1].xyz.x = (u32)(37888.0f + (sz << 4));
+                pk.v[0].xyz.y = e->xy.y;
+                pk.v[1].xyz.y = (u32)(36352.0f + (sz << 4));
+                break;
+            case 5:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = 0x2800;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = 0x1C00;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = u;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = 0x1C00;
+                pk.v[0].xyz.x = (u32)(37888.0f + (sz << 4));
+                pk.v[1].xyz.x = e->xy.x;
+                pk.v[0].xyz.y = pk.v[1].xyz.y = (u32)(36352.0f + (sz << 4));
+                break;
+            case 6:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = u;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = 0x1C00;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = 0x1C00;
+                pk.v[0].xyz.x = e->xy.x;
+                pk.v[1].xyz.x = (u32)(27648.0f - (sz << 4));
+                pk.v[0].xyz.y = pk.v[1].xyz.y = (u32)(36352.0f + (sz << 4));
+                break;
+            case 7:
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->u = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[0].uv)->v = 0x1C00;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->u = 0;
+                ((Uv_b011_01E02AD0 *)(s32)&pk.v[1].uv)->v = v;
+                pk.v[0].xyz.x = pk.v[1].xyz.x = (u32)(27648.0f - (sz << 4));
+                pk.v[0].xyz.y = (u32)(36352.0f + (sz << 4));
+                pk.v[1].xyz.y = e->xy.y;
+                break;
+            }
+            func_002075F0(&pk, ot, 0);
+        }
+    }
+    return 1;
+}
 
 /* shape b712:01E00FD0 (ShFx_Fdust), 356 insns, 1 copy (-O1,p): draws n dust billboards (0x20-byte emitters) rising
    along y: a screen-space sprite sized by depth, its colour and texture frame picked by flag 1 and age */
