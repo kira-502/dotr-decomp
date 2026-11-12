@@ -449,7 +449,234 @@ static s32 func_01E02940_b172(Obj_b172_01E02940 *obj, s32 ot __attribute__((alig
 
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b172", func_01E02F30_b172);
+/* shape b172:01E02F30 (ShFx_Mgc01), 464 insns, 2 copies: n 3x3 grid quads (0x44-byte emitters): spin and grow unless
+   flag 4, project a 3x3 grid (x, z in -size, 0, size) through the emitter's rotation, then draw the four textured
+   corner quads whose points all project; far z with flags & 0x80 */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b172_01E02F30;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    f32 s, t;
+    Xyz_b172_01E02F30 xyz;
+} Vtx_b172_01E02F30;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b172_01E02F30 v[4];
+    u8 tail[0x20];
+} Pkt_b172_01E02F30;
+
+typedef struct {
+    s32 id;
+    u8 sub;
+    u8 b5;
+    u8 pad6[2];
+    s32 u, w, v, h;
+} Tex_b172_01E02F30;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    u8 flags;
+    u8 follow;
+    u8 pad6[2];
+    u8 texid;
+    u8 bA;
+    u8 bB;
+    u8 sub;
+    f32 size;
+    f32 grow;
+    u8 b, g, r, a;
+    s32 rot[4];
+    s32 drot[3];
+    u8 pad34[4];
+    f32 x, y, z;
+} Obj_b172_01E02F30;
+
+static s32 func_01E02F30_b172(Obj_b172_01E02F30 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_001020B0(void *, s32, s32);
+    s32 i;
+    s32 tex;
+    f32 mat2[16];
+    f32 mat[16];
+    Vec4f pos;
+    Vec4f a;
+    Xyz_b172_01E02F30 xy[9];
+    f32 depth[9];
+    Tex_b172_01E02F30 td;
+    s32 ok[9];
+    Pkt_b172_01E02F30 pkt __attribute__((aligned(8)));
+    u8 bl[4];
+    Obj_b172_01E02F30 *e;
+    s32 k;
+    s32 c0, c1, c2, c3;
+    f32 z;
+    f32 q1, q2, q3;
+
+    e = arg0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(5, e->texid);
+        if ((e->flags & 4) == 0) {
+            e->rot[0] += e->drot[0];
+            e->rot[1] += e->drot[1];
+            e->rot[2] += e->drot[2];
+            e->size += e->grow;
+        }
+        pos.x = e->x;
+        pos.y = e->y;
+        pos.z = e->z;
+        if (e->follow) {
+            func_00101BA0(e, &pos);
+        }
+        func_0020EB40(mat);
+        func_0020C940(mat2, NULL, e->rot, &pos);
+        func_0020BC00(mat, mat2);
+        a.y = 0.0f;
+        for (k = 0; k < 9; k++) {
+            switch (k) {
+            case 0:
+                a.x = a.z = -e->size;
+                break;
+            case 1:
+                a.x = 0.0f;
+                a.z = -e->size;
+                break;
+            case 2:
+                a.x = e->size;
+                a.z = -e->size;
+                break;
+            case 3:
+                a.x = -e->size;
+                a.z = 0.0f;
+                break;
+            case 4:
+                a.x = a.z = 0.0f;
+                break;
+            case 5:
+                a.x = e->size;
+                a.z = 0.0f;
+                break;
+            case 6:
+                a.x = -e->size;
+                a.z = e->size;
+                break;
+            case 7:
+                a.x = 0.0f;
+                a.z = e->size;
+                break;
+            case 8:
+                a.x = a.z = e->size;
+                break;
+            }
+            ok[k] = func_00205440(&a, mat, &xy[k], &depth[k]);
+        }
+        ((Pkt_b172_01E02F30 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b172_01E02F30 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b172_01E02F30 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b172_01E02F30 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->r;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->g;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->b;
+        pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+        td.b5 = e->sub;
+        func_001020B0(&td, e->bB, e->bA);
+        if (e->life < 8) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = (e->a >> 3) * e->life;
+        } else {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = e->a;
+        }
+        for (k = 0; k < 4; k++) {
+            switch (k) {
+            case 0:
+                c0 = 0;
+                c1 = 1;
+                c2 = 3;
+                c3 = 4;
+                break;
+            case 1:
+                c0 = 2;
+                c1 = 1;
+                c2 = 5;
+                c3 = 4;
+                break;
+            case 2:
+                c0 = 6;
+                c1 = 7;
+                c2 = 3;
+                c3 = 4;
+                break;
+            case 3:
+                c0 = 8;
+                c1 = 7;
+                c2 = 5;
+                c3 = 4;
+                break;
+            }
+            if (ok[c0] == 0 || ok[c1] == 0 || ok[c2] == 0 || ok[c3] == 0) {
+                continue;
+            }
+            pkt.v[0].xyz = xy[c0];
+            pkt.v[1].xyz = xy[c1];
+            pkt.v[2].xyz = xy[c2];
+            pkt.v[3].xyz = xy[c3];
+            if (e->flags & 0x80) {
+                pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFE;
+                z = 0.0f;
+            } else {
+                z = (depth[c0] + depth[c1] + depth[c2] + depth[c3]) / 4.0f;
+            }
+            pkt.v[0].xyz.x = xy[c0].x;
+            pkt.v[1].xyz.x = xy[c1].x;
+            pkt.v[2].xyz.x = xy[c2].x;
+            pkt.v[3].xyz.x = xy[c3].x;
+            pkt.v[0].xyz.y = xy[c0].y;
+            pkt.v[1].xyz.y = xy[c1].y;
+            pkt.v[2].xyz.y = xy[c2].y;
+            pkt.v[3].xyz.y = xy[c3].y;
+            pkt.v[0].q = 1.0f / depth[c0];
+            q1 = 1.0f / depth[c1];
+            q2 = 1.0f / depth[c2];
+            q3 = 1.0f / depth[c3];
+            pkt.v[1].q = q1;
+            pkt.v[2].q = q2;
+            pkt.v[3].q = q3;
+            pkt.v[0].s = 0.0f;
+            pkt.v[0].t = 0.0f;
+            pkt.v[1].s = q1;
+            pkt.v[1].t = 0.0f;
+            pkt.v[2].s = 0.0f;
+            pkt.v[2].t = q2;
+            pkt.v[3].s = q3;
+            pkt.v[3].t = q3;
+            func_00208CB0(&pkt, 0xA | ((u64)td.u << 4) | ((u64)(td.w - 1) << 14) | ((u64)td.v << 24) |
+                                    ((u64)(td.h - 1) << 34));
+            func_00101C80(&td, bl);
+            func_002086D0(&pkt, (u64)bl[0] | ((u64)bl[1] << 2) | ((u64)bl[2] << 4) | ((u64)bl[3] << 6));
+            func_00208700(&pkt, (void *)tex, 1);
+            func_002075F0((s32)&pkt, ot, (u32)z);
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/b172", func_01E03670_b172);
 
