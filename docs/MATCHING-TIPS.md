@@ -538,3 +538,7 @@ there is a source form that gives the original.
 - **A static call's struct-address argument (`addiu a0`) comes before its float constant's `mtc1 $f12`, and the
   b244 `void *` inline wrapper makes that call worse:** put an `(s32)` step inside the cast,
   `f((T *)(s32)&g->member, n, K)` (`(void *)(s32)` works too). (b049:01E032E0)
+- **In a loop, a short-lived pool-record address and the loop's strength-reduced pointer sit in each other's
+  registers (`$v1`/`$a1`), and no spelling of that statement changes it:** write the record through the same
+  pointer variable in an earlier loop as well (`(r = &pool[id])->life = 0;`), and use one counter name for every
+  loop of the function. Neither change works alone. (b444:01E03C10)
