@@ -534,3 +534,5 @@ there is a source form that gives the original.
   (b285:01E03B50, b177:01E02FC0)
 - **An outer and an inner loop counter in each other's saved registers, no declaration order swaps them:** swap the
   counter names between the loops (`j` outside, `i` inside). (b070:01E046A0)
+- **`k == 0 || k == 1` folded into one `sltiu` where the original has two compares, and the function is not -O3:**
+  write it as a `switch (k) { case 0: case 1: ... default: ... }`. (b210:01E04B10)
