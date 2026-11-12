@@ -161,36 +161,10 @@ there is a source form that gives the original.
   the copy its own struct. (b116:01E03190, b121:01E021E0, c017:01E02790, b415:01E02A90, c022:01E00F10)
 - **Spreading a `-O1`/`-O2`/`-O3` shape:** `tools/mod_spread.py` copies the typedefs and the definition but not the
   `#pragma optimization_level` lines around it, so its copies of such a shape do not match; carry the pragmas over
-  to each copy.
-- **A local packet buffer at a stack offset that is 8 mod 16, yours at 0 mod 16:** `u8 buf[0x90]
-  __attribute__((aligned(8)));` on the local. (b286:01E01520, b505:01E013F0)
-- **A `jal` to a static helper where the original has its body:** MWCC inlines only functions marked `inline`;
-  write the helper's body out at the call site. (b286:01E01520, b505:01E013F0)
-- **A `work/port.py` port scores far below what the donor's likeness suggests:** diff the port against the donor;
-  the constant swapping can rewrite an array index (`pts[1]` became `pts[0]`). (b509:01E03790)
-- **Scene manager, the draw counter `n` and the code registers swapped:** count the setup loops with `i`, keep
-  `n = 0;` at the top for the draw loop. (b636:01E01120)
-- **Two neighbouring stack vectors, the original takes `addiu tN, sp, &second` early and reads `.x` through
-  `0(tN)`:** declare them as one array, `Vec4f v[2]`. (b353:01E02660)
-- **Only scheduling differs before a loop (a float constant's `lui/ori/mtc1` late, the bounds set too early):**
-  put the loop-bound setup (`i = 0; last = n - 1;`) right before the loop; a small script that moves one statement
-  to every position, or tries every order of a few statements, finds it fast. (b353:01E02660, b734:01E03EC0)
-- **Two stores of a chain `a = b = x;` swapped:** the first store is the rightmost target; swap the targets.
-  (c017:01E01BF0)
-- **A port gives COMPILE ERROR "identifier expected" on its last lines in standalone `dk try`:** it uses types or
-  statics defined earlier in its module file; add `#include "mod/<mod>.c"` under `#include "common.h"` and use the
-  file's own type names (the accept drops `#include` lines). This is probably why `tools/mod_spread.py` fails on
-  such copies. (b481:01E05050, b516:01E03A10, b068:01E00920)
-- **One float constant passed several times to a call (`f(p, 0.15f, 0.15f, 0.15f)`) matches alone but not in its
-  file (loaded into $f13 and copied to $f12):** put it in a float local, `s = 0.15f; f(p, s, s, s);`.
-  (c024:01E00CD0)
-- **Two float constant arguments loaded in the other order (`$f13` before `$f12`), no call-site form fixes it:**
-  call through a `static inline` wrapper whose body does the pointer cast,
-  `func_001033D0((f32 *)g, target, step);`. About 30 still-asm functions make this `func_001033D0` call.
-  (c612:01E014B0)
-- **A pointer counter in a nested loop kept twice (spilled and in a register), the original keeps no integer
-  counter:** index with a counter that runs through both loops and is used anyway (`&g->obj[n]` on the draw
-  counter); a dedicated `k++` leaves a dead counter, `i * 24 + j` a multiply. (c024:01E015D0)
+  to each copy. (Fixed 26 Oct: the tool now carries the pragma lines, their resets and the comments above the
+  function.)
+- **Accepts carry your own name:** `dk accept` commits with your `git config user.name` / `user.email` (set both in
+  the repository; it stops if either is missing).
 - **A local packet buffer at a stack offset that is 8 mod 16, yours at 0 mod 16:** `u8 buf[0x90]
   __attribute__((aligned(8)));` on the local. (b286:01E01520, b505:01E013F0)
 - **A `jal` to a static helper where the original has its body:** MWCC inlines only functions marked `inline`;

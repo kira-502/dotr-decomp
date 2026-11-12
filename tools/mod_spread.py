@@ -7,6 +7,7 @@ addresses, so `dk twins` (which renames only the function) can't move it. This t
 every unfinished function with F's opcode shape, lines the two asm listings up instruction by instruction and
 renames each symbol F uses to the one the copy uses there (func_01E001A0_b000 -> func_01E00220_b081,
 D_01E06480_b000 -> ...); --consts also swaps immediates that differ (a literal that appears once in F's C).
+F's own `#pragma` lines (an -O1/-O2/-O3 function) go with it, with their `#pragma ... reset` lines after it.
 Each candidate goes through `dk try`; the ones that MATCH and fit are accepted together (`dk accept-many`,
 one build). Candidates: work/modfam/<copy>.c."""
 from __future__ import annotations
@@ -66,7 +67,25 @@ def function_c(name: str) -> str | None:
                             used.add(k)
                             need += t.group(0)
                             grew = True
-                return "".join(defs[k].group(0) + "\n" for k in sorted(used)) + body
+                # the function's own #pragma lines (an -O1/-O2/-O3 twin) and comments right above it, and the
+                # pragmas' resets after it
+                before = text[:m.start()].split("\n")[:-1]
+                lead: list[str] = []
+                while before and (not before[-1].strip() or before[-1].lstrip().startswith(("#pragma", "/*", "*"))):
+                    ln = before.pop()
+                    if not ln.rstrip().endswith(" reset"):
+                        lead.insert(0, ln)
+                while lead and not lead[0].strip():
+                    lead.pop(0)
+                prags = any(ln.startswith("#pragma") for ln in lead)
+                after = re.match(r"(?:[ \t]*\n)*((?:#pragma \w+ reset[ \t]*\n)+)", text[i + 1:].lstrip("\n") + "\n")
+                resets = after.group(1) if after and prags else ""
+                head = "".join(ln + "\n" for ln in lead)
+                # the shape's description comment, right above its first typedef
+                first = min((defs[k].start() for k in used), default=m.start())
+                note = re.search(r"(/\* shape [^\n]*(?:\n(?!\s*\*/)[^\n]*)*?\*/\n)\s*\Z", text[:first])
+                return ((note.group(1) + "\n" if note else "") + "".join(defs[k].group(0) + "\n" for k in sorted(used))
+                        + head + body + "\n" + resets)
     return None
 
 
