@@ -532,3 +532,5 @@ there is a source form that gives the original.
   -O1 build of the same source in another module; at -O1 registers and spill slots follow the declaration order
   directly, so its matching declaration list shows the real order, and that list matches the -O4 build too.
   (b285:01E03B50, b177:01E02FC0)
+- **An outer and an inner loop counter in each other's saved registers, no declaration order swaps them:** swap the
+  counter names between the loops (`j` outside, `i` inside). (b070:01E046A0)
