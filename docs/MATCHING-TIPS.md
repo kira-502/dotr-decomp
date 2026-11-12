@@ -536,3 +536,9 @@ there is a source form that gives the original.
   counter names between the loops (`j` outside, `i` inside). (b070:01E046A0)
 - **`k == 0 || k == 1` folded into one `sltiu` where the original has two compares, and the function is not -O3:**
   write it as a `switch (k) { case 0: case 1: ... default: ... }`. (b210:01E04B10)
+- **Every saved register one off (the `func_00207500` result in `$s0` where the original has `$s7`), no declaration
+  order moves it:** look for one counter name reused by two unrelated loops and give one of them its own variable.
+  (b512:01E00080)
+- **A module whose jump tables sit in the literal pool (`.word .L<VRAM>_<mod>` in `asm/data/mod/<mod>_pool.rodata.s`;
+  b512, b541, b543):** since b7dec2ad the linker script answers those labels with their addresses, so the module
+  links once the function is C; regenerate the scripts with `python3 tools/modules.py ld <mod>` if yours are older.
