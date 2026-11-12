@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(os.environ["DK_TOOLCHAIN"]) / "src/mwccgap"))
 from mwccgap.elf import Elf, TextSection  # noqa: E402
 
-JTBL_RE = re.compile(r"%hi\((jtbl_[0-9A-Fa-f]{8})\)")
+JTBL_RE = re.compile(r"%hi\((jtbl_[0-9A-Fa-f]{8}(?:_\w+)?)\)")
 R_MIPS_HI16 = 5
 SHN_ABS = 0xFFF1
 SHF_ALLOC = 0x2
@@ -125,7 +125,7 @@ for record in elf.get_relocations():
         symbol.name = original
         symbol.st_name = elf.strtab.add_symbol(original)
         symbol.st_shndx = SHN_ABS
-        symbol.st_value = int(original[5:], 16)
+        symbol.st_value = int(original[5:13], 16)
         changed = True
 if changed:
     path.write_bytes(elf.pack())
