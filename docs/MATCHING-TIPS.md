@@ -528,3 +528,7 @@ there is a source form that gives the original.
 - **Sums like `27648.0f - fx` sit inside each switch case in the original, yours are hoisted before the loop:**
   compute `fx` inside the inner loop (after its `continue`); at -O4 the compiler still hoists `fx` itself but leaves
   the expressions built from it in place. (b172:01E012E0)
+- **Two float variables of an -O4 function in each other's registers, no declaration order fixes it:** look for an
+  -O1 build of the same source in another module; at -O1 registers and spill slots follow the declaration order
+  directly, so its matching declaration list shows the real order, and that list matches the -O4 build too.
+  (b285:01E03B50, b177:01E02FC0)

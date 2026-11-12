@@ -111,10 +111,8 @@ b273:01E02450	77%	an earlier try got this far
 b275:01E02BC0	77%	an earlier try got this far
 b285:01E003A0	94.5%	an earlier try got this far
 b285:01E02120	99.2%	an earlier try got this far
-b285:01E03B50	40%	an earlier try got this far
 b351:01E003A0	94.5%	an earlier try got this far
 b351:01E02E00	99.2%	an earlier try got this far
-b351:01E05A80	40%	an earlier try got this far
 b351:01E068F0	84% (157/187)	hard: float + loop-counter colouring: orig i=s1/k=s0, dy,dz,dx div order, r/base in f26/f27 and per-i offsets f23-25; ours shifted by 2 (best draft: drafts/mod/b351_01E068F0.c)
 b355:01E030D0	71%	an earlier try got this far
 b357:01E03420	88% (234/267)	hard: three random angles: orig sext at rand, copies sext again into s32 loop angles after the size line, i=s2 / slot offset s3; ours sext twice early and loop regs s5/s6 (best draft: drafts/mod/b357_01E03420.c)
