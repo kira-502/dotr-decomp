@@ -516,3 +516,8 @@ there is a source form that gives the original.
   registers (`$v1`/`$a1`), and no spelling of that statement changes it:** write the record through the same
   pointer variable in an earlier loop as well (`(r = &pool[id])->life = 0;`), and use one counter name for every
   loop of the function. Neither change works alone. (b444:01E03C10)
+- **Module switch functions:** since 9b663245 `tools/jtbl_fix.py` takes module table names (`jtbl_<VADDR>_<mod>`),
+  so a plain C `switch` compiles and points at the module's own table; before that every module switch stopped with
+  "its asm uses 0". (b172:01E02F30)
+- **Four vertex q values, s/t reuse q from registers, the 1/d divides in an odd order:** write `v[0].q` straight
+  from its divide, then `q1`..`q3` into locals right after; of the 24 orders only that one matches. (b172:01E02F30)
