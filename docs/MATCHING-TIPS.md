@@ -525,3 +525,6 @@ there is a source form that gives the original.
   (`$a2`/`$a3`/`$t0` for your `$a0`/`$a1`/`$a2`), `$a0`/`$a1` unused:** those are the compiler's `fptoui`/`fptosi`;
   write `(u32)x`/`(s32)x` instead of calling them (the cast keeps `$a0`/`$a1` blocked up to the call).
   (b132:01E04B00, b398:01E05600)
+- **Sums like `27648.0f - fx` sit inside each switch case in the original, yours are hoisted before the loop:**
+  compute `fx` inside the inner loop (after its `continue`); at -O4 the compiler still hoists `fx` itself but leaves
+  the expressions built from it in place. (b172:01E012E0)
