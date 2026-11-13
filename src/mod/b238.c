@@ -966,7 +966,203 @@ static s32 func_01E02360_b238(Em_b238_01E02360 *arg0, s32 arg1, s32 n) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b238", func_01E026A0_b238);
+/* shape b131:01E053B0 (ShFx_Rcore), 596 insns, 3 copies (-O3,p): update and draw a pool of jittering particles (0x3C
+   bytes each): move, every (mask+1) ticks re-follow the owner and pick a new random offset, frame from the tick
+   (fade-in frames while young), project, then one textured sprite whose corners (rounded) follow the flip bits;
+   b033:01E03590's code at -O3 with the four vertex pointers set once before the loop */
+
+typedef struct Part_b131_01E053B0 {
+    u8 age;
+    u8 b1;
+    u8 life;
+    u8 mask;
+    u8 flags;
+    u8 follow;
+    u8 b6[2];
+    u8 tex;
+    u8 b9;
+    u8 bA;
+    u8 bB;
+    u8 r, g, b, a;
+    f32 size;
+    s32 range;
+    f32 pos[3];
+    f32 vel[3];
+    f32 off[3];
+} Part_b131_01E053B0;
+
+typedef struct Xyz_b131_01E053B0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+    u64 reg;
+} Xyz_b131_01E053B0;
+
+typedef struct Pk_b131_01E053B0 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b131_01E053B0 v[4];
+    u64 pad60[3];
+} Pk_b131_01E053B0;
+
+typedef struct Uvs_b131_01E053B0 {
+    u8 b0[5];
+    u8 b5;
+    u8 pad6[0x12];
+} Uvs_b131_01E053B0;
+
+typedef struct Scr_b131_01E053B0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+} Scr_b131_01E053B0;
+
+#pragma optimization_level 3
+
+/* id aligned: its spill slot, needed for the match */
+static s32 func_01E026A0_b238(Part_b131_01E053B0 *arg0, s32 id __attribute__((aligned(8))), s32 n) {
+    extern void func_001020B0();
+    extern void func_00101D20();
+    extern s32 func_00205440();
+    extern void func_00101BA0();
+    Xyz_b131_01E053B0 *q1;
+    Xyz_b131_01E053B0 *q0;
+    Xyz_b131_01E053B0 *q3;
+    Xyz_b131_01E053B0 *q2;
+    Part_b131_01E053B0 *p = arg0;
+    s32 i;
+    s32 tex;
+    s32 tick;
+    s32 frame;
+    s32 r;
+    f32 half;
+    u32 c;
+
+    f32 m[4][4];
+    Vec4f pos;
+    Vec4f tmp;
+    Uvs_b131_01E053B0 uvs;
+    Pk_b131_01E053B0 pk __attribute__((aligned(8)));
+    Scr_b131_01E053B0 scr;
+    f32 depth;
+
+    i = 0;
+    if (i < n) {
+        q3 = &pk.v[3];
+        q2 = &pk.v[2];
+        q1 = &pk.v[1];
+        q0 = &pk.v[0];
+        do {
+            if (i != 0) {
+                p++;
+            }
+            if (func_00101AF0(p) == 0) {
+                continue;
+            }
+            tex = func_00202BF0(5, p->tex);
+            p->pos[0] += p->vel[0];
+            p->pos[1] += p->vel[1];
+            p->pos[2] += p->vel[2];
+            tick = p->mask & (p->life - p->age);
+            if (tick == 0 || p->life - 1 == p->age) {
+                if (p->follow != 0) {
+                    func_00101BA0(p, &tmp);
+                    p->pos[0] = tmp.x;
+                    p->pos[1] = tmp.y;
+                    p->pos[2] = tmp.z;
+                }
+                r = p->range;
+                p->off[0] = ((func_0019A5C8() >> 4) % r - (r >> 1)) / 100.0f;
+                r = p->range;
+                p->off[1] = ((func_0019A5C8() >> 4) % r - (r >> 1)) / 100.0f;
+                r = p->range;
+                p->off[2] = ((func_0019A5C8() >> 4) % r - (r >> 1)) / 100.0f;
+            }
+            pos.x = p->pos[0] + p->off[0];
+            pos.y = p->pos[1] + p->off[1];
+            pos.z = p->pos[2] + p->off[2];
+            func_0020EB40(m);
+            ((Pk_b131_01E053B0 *)(u32)&pk)->flags = 0x24;
+            ((Pk_b131_01E053B0 *)(u32)&pk)->size = 9;
+            ((Pk_b131_01E053B0 *)(u32)&pk)->regs = ((u64)4 << 32) | 0x24242421;
+            ((Pk_b131_01E053B0 *)(u32)&pk)->pad4 = 0;
+            pk.r = p->b;
+            pk.g = p->g;
+            pk.b = p->r;
+            pk.q = 1.0f;
+            frame = tick & 7;
+            if (p->age < 4) {
+                frame = 7 - p->age;
+            }
+            if ((p->flags & 1) && frame == 0) {
+                p->flags = (p->flags & 0xC7) | (((func_0019A5C8() >> 4) & 3) << 4);
+            }
+            uvs.b5 = p->bA;
+            func_001020B0(&uvs, frame, 0);
+            func_00101D20(&pk, &uvs, tex);
+            pk.a = p->a;
+            if (!(p->flags & 0x40) && p->age < 8) {
+                pk.a = (p->a >> 3) * p->age;
+            }
+            if (func_00205440(&pos, m, &scr, &depth) == 0) {
+                continue;
+            }
+            if (func_00101600(&scr) == 0) {
+                continue;
+            }
+            half = func_001018E0(p->size, depth);
+            if (p->flags & 0x80) {
+                q0->z = q1->z = q2->z = q3->z = 0xFFFFFE;
+            } else {
+                q0->z = q1->z = q2->z = q3->z = scr.z;
+            }
+            switch (p->flags & 0x30) {
+            case 0x10:
+                c = scr.x;
+                q0->x = q1->x = (u32)(c - half);
+                q2->x = q3->x = (u32)(c + half);
+                c = scr.y;
+                pk.v[1].y = pk.v[3].y = (u32)(c - half);
+                pk.v[0].y = pk.v[2].y = (u32)(c + half);
+                break;
+            case 0x20:
+                c = scr.x;
+                q1->x = q3->x = (u32)(c - half);
+                q0->x = q2->x = (u32)(c + half);
+                c = scr.y;
+                pk.v[2].y = pk.v[3].y = (u32)(c - half);
+                pk.v[0].y = pk.v[1].y = (u32)(c + half);
+                break;
+            case 0x30:
+                c = scr.x;
+                q2->x = q3->x = (u32)(c - half);
+                q0->x = q1->x = (u32)(c + half);
+                c = scr.y;
+                pk.v[0].y = pk.v[2].y = (u32)(c - half);
+                pk.v[1].y = pk.v[3].y = (u32)(c + half);
+                break;
+            default:
+                c = scr.x;
+                q0->x = q2->x = (u32)(c - half);
+                q1->x = q3->x = (u32)(c + half);
+                c = scr.y;
+                pk.v[0].y = pk.v[1].y = (u32)(c - half);
+                pk.v[2].y = pk.v[3].y = (u32)(c + half);
+                break;
+            }
+            func_002075F0((s32)&pk, id, 0);
+        } while (++i < n);
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 /* shape b285:01E014C0 (ShFx_Mptc), 791 insns, 12 copies (-O3,p): update and draw ribbon emitters (0x58 bytes each);
    every segment is projected straight into the packet's vertex slots and widened on screen; the source of shape
