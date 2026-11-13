@@ -614,3 +614,12 @@ there is a source form that gives the original.
   module's statics by name (`func_01E02170_b516`): they don't exist in the target, so nothing compiles. Rename those
   calls to the target's statics by matching the `fn ==` handler addresses, and keep `#include "mod/<mod>.c"` so the
   file's own types are used.
+
+- **Constant-count fill loops with the counter/pointer swapped.** When a function has many identical fill loops
+  (`lwc1`/`swc1` from a stack vector, `paddub v1, zero, zero`, `a0 += 0x10`) and every loop after the first has the
+  counter and pointer registers swapped, write one `static inline` helper that walks the pointer
+  (`for (i = 0; i < 9; i++, q++)`, s32 `i`) and pass the source as a `Vec4f` local by `&p` (not `f32 p[4]` with a cast).
+  That also fixed the `li a1` / `addiu a3` order before the next call (b495:01E02140).
+- **Plain `dk try` stays near 99% when the function calls a static defined above it** in the module file (the original
+  skips reloading argument registers the static leaves alone). Check with `tools/mod_infile.sh` and `work/fulltry.sh`,
+  then `dk accept` (b495, b544).
