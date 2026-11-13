@@ -167,7 +167,204 @@ static void func_01E004D0_b266(u8 *self, Obj_b018_01E00920 *obj, Pk_b018_01E0092
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b266", func_01E00800_b266);
+/* shape b266:01E00800 (B266_W_S), 535 insns, 1 copy: B266_W_S, the scene step: colour 0x80,0,0,0, counts the frame
+   (0x2EFE); frame 1 saves two camera points (0x320, 0x330); in four frame windows it slides a point along z by
+   +-4.4/3/5.8/3 (sign from the camera angle) and starts b266:01E011C0 or two b266:01E01060 and five/six b266:01E01610
+   at it (40 ahead or behind), frame 171 four b266:01E017B0; in 90..132 and 117..155 b266:01E01480 at each point; in
+   36..40 six b266:01E018F0 at each of the two joints (0x2EE8, 0x2EEA) */
+
+typedef struct {
+    u8 pad0[0x2D0];
+    Vec4f pos;
+    u8 pad2E0[0x320 - 0x2E0];
+    Vec4f a;
+    Vec4f b;
+    u8 pad340[0x2EA4 - 0x340];
+    u8 col[4];
+    u8 pad2EA8[0x2EE8 - 0x2EA8];
+    s16 joint[2];
+    u8 pad2EEC[0x2EFA - 0x2EEC];
+    s16 kind;
+    u8 pad2EFC[2];
+    s16 t;
+} Scene_b266_01E00800;
+
+static void func_01E00800_b266(Scene_b266_01E00800 *g) {
+    extern s32 func_001F53A0(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern s32 func_001A22C0(f32);
+    extern s32 b266_01E02520();
+    extern s32 b266_01E01060();
+    extern s32 b266_01E011C0();
+    extern s32 b266_01E01480();
+    extern s32 b266_01E01610();
+    extern s32 b266_01E017B0();
+    extern s32 b266_01E018F0();
+    Vec4f p;
+    s32 r0[4];
+    s32 r1[4];
+    s32 r2[4];
+    s32 r3[4];
+    s32 r4[4];
+    s32 rot;
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    if (g->t == 1) {
+        func_001F5F90(func_001F53A0(), &g->a);
+        func_001F5F90(func_001F53A0(), &g->b);
+    }
+    if (g->t > 91 && g->t < 132) {
+        func_001F6160(func_001F53A0(), r0);
+        rot = func_001A22C0(r0[1] / 180.0f);
+        if (rot) {
+            g->a.z -= 4.4f;
+        } else {
+            g->a.z += 4.4f;
+        }
+        g->pos.x = g->a.x;
+        g->pos.y = g->a.y - 10.0f;
+        if (rot) {
+            g->pos.z = 40.0f + g->a.z;
+        } else {
+            g->pos.z = g->a.z - 40.0f;
+        }
+        g->kind = 0;
+        b266_01E02520(g, b266_01E011C0, 0);
+    }
+    if (g->t > 125 && g->t < 137) {
+        func_001F6160(func_001F53A0(), r1);
+        rot = func_001A22C0(r1[1] / 180.0f);
+        if (rot) {
+            g->a.z -= 3.0f;
+        } else {
+            g->a.z += 3.0f;
+        }
+        g->pos.x = g->a.x;
+        g->pos.y = g->a.y - 10.0f;
+        if (rot) {
+            g->pos.z = 40.0f + g->a.z;
+        } else {
+            g->pos.z = g->a.z - 40.0f;
+        }
+        g->kind = 0;
+        for (i = 0; i < 2; i++) {
+            b266_01E02520(g, b266_01E01060, 0);
+        }
+        for (i = 0; i < 5; i++) {
+            b266_01E02520(g, b266_01E01610, 0);
+        }
+        if (g->t == 171) {
+            g->kind = 0;
+            b266_01E02520(g, b266_01E017B0, 0);
+            g->kind = 1;
+            b266_01E02520(g, b266_01E017B0, 0);
+            g->kind = 2;
+            b266_01E02520(g, b266_01E017B0, 0);
+            g->kind = 3;
+            b266_01E02520(g, b266_01E017B0, 0);
+        }
+    }
+    if (g->t > 118 && g->t < 155) {
+        func_001F6160(func_001F53A0(), r2);
+        rot = func_001A22C0(r2[1] / 180.0f);
+        if (rot) {
+            g->b.z -= 5.8f;
+        } else {
+            g->b.z += 5.8f;
+        }
+        g->pos.x = g->b.x;
+        g->pos.y = g->b.y - 10.0f;
+        if (rot) {
+            g->pos.z = 40.0f + g->b.z;
+        } else {
+            g->pos.z = g->b.z - 40.0f;
+        }
+        g->kind = 1;
+        b266_01E02520(g, b266_01E011C0, 0);
+    }
+    if (g->t > 150 && g->t < 157) {
+        func_001F6160(func_001F53A0(), r3);
+        rot = func_001A22C0(r3[1] / 180.0f);
+        if (rot) {
+            g->b.z -= 3.0f;
+        } else {
+            g->b.z += 3.0f;
+        }
+        g->pos.x = g->b.x;
+        g->pos.y = g->b.y - 10.0f;
+        if (rot) {
+            g->pos.z = 40.0f + g->b.z;
+        } else {
+            g->pos.z = g->b.z - 40.0f;
+        }
+        g->kind = 0;
+        for (i = 0; i < 2; i++) {
+            b266_01E02520(g, b266_01E01060, 0);
+        }
+        for (i = 0; i < 6; i++) {
+            b266_01E02520(g, b266_01E01610, 0);
+        }
+        if (g->t == 171) {
+            g->kind = 0;
+            b266_01E02520(g, b266_01E017B0, 0);
+            g->kind = 1;
+            b266_01E02520(g, b266_01E017B0, 0);
+            g->kind = 2;
+            b266_01E02520(g, b266_01E017B0, 0);
+            g->kind = 3;
+            b266_01E02520(g, b266_01E017B0, 0);
+        }
+    }
+    func_001F6160(func_001F53A0(), r4);
+    rot = func_001A22C0(r4[1] / 180.0f);
+    if (g->t >= 90 && g->t < 133) {
+        g->pos.x = g->a.x;
+        g->pos.y = g->a.y - 10.0f;
+        if (rot) {
+            g->pos.z = 40.0f + g->a.z;
+        } else {
+            g->pos.z = g->a.z - 40.0f;
+        }
+        g->kind = 0;
+        b266_01E02520(g, b266_01E01480, 0);
+    }
+    if (g->t >= 117 && g->t < 156) {
+        g->pos.x = g->b.x;
+        g->pos.y = g->b.y - 10.0f;
+        if (rot) {
+            g->pos.z = 40.0f + g->b.z;
+        } else {
+            g->pos.z = g->b.z - 40.0f;
+        }
+        g->kind = 1;
+        b266_01E02520(g, b266_01E01480, 0);
+    }
+    if (g->t >= 36 && g->t < 41) {
+        func_001F5620(func_001F53A0(), g->joint[0], &p);
+        g->pos.x = p.x;
+        g->pos.y = p.y;
+        g->pos.z = p.z;
+        g->kind = 0;
+        for (i = 0; i < 6; i++) {
+            b266_01E02520(g, b266_01E018F0, 0);
+        }
+        func_001F5620(func_001F53A0(), g->joint[1], &p);
+        g->pos.x = p.x;
+        g->pos.y = p.y;
+        g->pos.z = p.z;
+        g->kind = 1;
+        for (i = 0; i < 6; i++) {
+            b266_01E02520(g, b266_01E018F0, 0);
+        }
+    }
+}
 
 /* shape b266:01E01060, 87 insns: on start 0x38 = 8, random rotation (0x18 -0x2000..0x1FFF, 0x14), variant 0..6; alpha grows
    by 0x50 (below 0xA0) for 2 ticks, then fades by 13 once 0x38 passes 0x14 and by 15 while the game counter at
