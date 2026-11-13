@@ -580,3 +580,7 @@ there is a source form that gives the original.
 - **`f(p, A, B, A)` where the original loads A into `$f14` and copies it with `mov.s $f12, $f14`:** assign a block
   local inside the last argument, `{ f32 r; f(p, A, B, r = A); }`; `f32 r = A;` before the call gives `$f12`.
   (b136:01E020D0)
+- **Two neighbouring stack vectors, the original reads `b.x` through the address register it built for a call
+  (`addiu s0, sp, &b`) and keeps `&a.y`/`&a.z` in saved registers:** declare them as one `f32 v[2][4]` and write
+  `v[0][k]`/`v[1][k]`; no pointer local or cast does it. Two colour buffers side by side: one `u8 c[8]` passed as
+  `c, &c[4]`. (b183:01E01480, b491:01E02370, b197:01E01A10)

@@ -125,10 +125,10 @@ static void func_01E01E40_c560(Ctx_c560_01E01E40 *g, Ent_c560_01E01E40 *o, Cam_c
     c = D_01E02F80_c560;
     c.u.w = (c.u.w & ~0xFF) | o->col0.b;
     c.u.w = (c.u.w & 0xFFFF00FF) | (o->col0.g << 8);
-    a = 0;
     pp = (Pkt_c560_01E01E40 *)(s32)&pk;
     c.u.w = (c.u.w & 0xFF00FFFF) | (o->col0.r << 16);
     pp->count = 0x34;
+    a = 0;
     pp->tag = 0xC;
     pp->regs = ((u64)0x4214 << 32) | 0x21421421;
     pp->pad = 0;
