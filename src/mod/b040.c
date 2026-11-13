@@ -1751,7 +1751,246 @@ static s32 func_01E05270_b040(Obj_b029_01E026A0 *o, s32 tex, s32 d, s32 h) {
 
 INCLUDE_ASM("asm/nonmatchings/mod/b040", func_01E05750_b040);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b040", func_01E05BD0_b040);
+/* shape b040:01E05BD0 (ShFx_LCyl2), 589 insns, 1 copy: ShFx_LCyl2, the two-radius ShFx_LCyl (b062:01E020A0): draws n
+   cone emitters (0x48 bytes each): rings of up to 36 points at radius r (grown by dr) round p0 and r2 (grown by dr2)
+   round p1, in the xy, zy or xz plane by mode, joined as textured quads, with optional backface cull, scrolling s/t,
+   blink, start and end fades */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b040_01E05BD0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    f32 s, t;
+    Xyz_b040_01E05BD0 xyz;
+} Vtx_b040_01E05BD0;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b040_01E05BD0 v[4];
+    u8 tail[0x20];
+} Pkt_b040_01E05BD0;
+
+typedef struct {
+    f32 x, y, z;
+} V3_b040_01E05BD0;
+
+typedef struct {
+    u8 b, g, r, a;
+} Col_b040_01E05BD0;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[2];
+    u8 seg;
+    u8 tex;
+    u8 pad9;
+    u8 mode;
+    u8 padB;
+    f32 usize;
+    f32 pad10;
+    f32 uscale;
+    f32 vscale;
+    f32 r;
+    f32 r2;
+    f32 dr;
+    f32 dr2;
+    V3_b040_01E05BD0 p0;
+    V3_b040_01E05BD0 p1;
+    Col_b040_01E05BD0 c;
+} Cyl_b040_01E05BD0;
+
+static s32 func_01E05BD0_b040(Cyl_b040_01E05BD0 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00101AF0(void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_00101940(void *, void *);
+    extern f32 func_0020D0E0(void *);
+    extern void func_0020EB40(void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00208CB0(void *, s32);
+    extern void func_002086D0(void *, s32);
+    extern void func_00208700(void *, void *, s32);
+    extern void func_002075F0(s32, s32, s32);
+    f32 mat[16];
+    Vec4f ring[2][37];
+    f32 pt[4];
+    f32 dir[4];
+    f32 dep[4];
+    s32 rot[4];
+    Pkt_b040_01E05BD0 pkt;
+    Cyl_b040_01E05BD0 *e;
+    s32 i;
+    s32 tex __attribute__((aligned(16)));
+    s32 cnt;
+    s32 nseg;
+    s32 j;
+    s32 on0;
+    s32 on1;
+    s32 on2;
+    s32 on3;
+    f32 a;
+    f32 cross;
+    f32 step;
+    f32 ustep;
+    f32 v0;
+    f32 u0;
+    f32 z;
+    u8 al;
+
+    e = arg0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(5, e->tex);
+        e->r += e->dr;
+        e->r2 += e->dr2;
+        nseg = e->seg > 36 ? 36 : e->seg;
+        step = 360.0f / nseg;
+        for (j = 0; j < nseg; j++) {
+            switch (e->mode & 0xC) {
+            case 4:
+                a = 3.1415927f * (step * j) / 180.0f;
+                ring[0][j].x = e->r * func_001A6898(a);
+                ring[0][j].y = e->r * func_001A6A88(a);
+                ring[0][j].z = 0.0f;
+                ring[1][j].x = e->r2 * func_001A6898(a);
+                ring[1][j].y = e->r2 * func_001A6A88(a);
+                ring[1][j].z = 0.0f;
+                break;
+            case 8:
+                a = 3.1415927f * (step * j) / 180.0f;
+                ring[0][j].z = e->r * func_001A6898(a);
+                ring[0][j].y = e->r * func_001A6A88(a);
+                ring[0][j].x = 0.0f;
+                ring[1][j].z = e->r2 * func_001A6898(a);
+                ring[1][j].y = e->r2 * func_001A6A88(a);
+                ring[1][j].x = 0.0f;
+                break;
+            default:
+                a = 3.1415927f * (step * j) / 180.0f;
+                ring[0][j].x = e->r * func_001A6898(a);
+                ring[0][j].z = e->r * func_001A6A88(a);
+                ring[0][j].y = 0.0f;
+                ring[1][j].x = e->r2 * func_001A6898(a);
+                ring[1][j].z = e->r2 * func_001A6A88(a);
+                ring[1][j].y = 0.0f;
+                break;
+            }
+        }
+        ring[0][nseg] = ring[0][0];
+        ring[1][nseg] = ring[1][0];
+        ustep = e->usize / nseg;
+        cnt = e->max - e->life;
+        u0 = e->uscale * cnt;
+        if (!(u0 <= 1.0f)) {
+            u0 -= (s32)u0;
+        }
+        v0 = e->vscale * cnt;
+        if (!(v0 <= 1.0f)) {
+            v0 -= (s32)v0;
+        }
+        ((Pkt_b040_01E05BD0 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b040_01E05BD0 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b040_01E05BD0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b040_01E05BD0 *)(s32)&pkt)->pad = 0;
+        dir[0] = e->p1.x - e->p0.x;
+        dir[1] = e->p1.y - e->p0.y;
+        dir[2] = e->p1.z - e->p0.z;
+        func_00101940(dir, rot);
+        func_0020D0E0(dir);
+        func_0020EB40(mat);
+        for (j = 0; j < nseg; j++) {
+            pt[0] = e->p0.x + ring[0][j].x;
+            pt[1] = e->p0.y + ring[0][j].y;
+            pt[2] = e->p0.z + ring[0][j].z;
+            on0 = func_00205440(pt, mat, &pkt.v[0].xyz, &dep[0]);
+            pt[0] = e->p0.x + ring[0][j + 1].x;
+            pt[1] = e->p0.y + ring[0][j + 1].y;
+            pt[2] = e->p0.z + ring[0][j + 1].z;
+            on1 = func_00205440(pt, mat, &pkt.v[1].xyz, &dep[1]);
+            pt[0] = e->p1.x + ring[1][j].x;
+            pt[1] = e->p1.y + ring[1][j].y;
+            pt[2] = e->p1.z + ring[1][j].z;
+            on2 = func_00205440(pt, mat, &pkt.v[2].xyz, &dep[2]);
+            pt[0] = e->p1.x + ring[1][j + 1].x;
+            pt[1] = e->p1.y + ring[1][j + 1].y;
+            pt[2] = e->p1.z + ring[1][j + 1].z;
+            on3 = func_00205440(pt, mat, &pkt.v[3].xyz, &dep[3]);
+            if (on0 == 0 || on1 == 0 || on2 == 0 || on3 == 0) {
+                continue;
+            }
+            if (e->mode & 1) {
+                cross = (pkt.v[0].xyz.x - pkt.v[2].xyz.x) * (pkt.v[3].xyz.y - pkt.v[2].xyz.y) -
+                        (pkt.v[3].xyz.x - pkt.v[2].xyz.x) * (pkt.v[0].xyz.y - pkt.v[2].xyz.y);
+                if (!(cross <= 0.0f)) {
+                    break;
+                }
+            }
+            pkt.v[0].q = 1.0f / dep[0];
+            pkt.v[1].q = 1.0f / dep[1];
+            pkt.v[2].q = 1.0f / dep[2];
+            pkt.v[3].q = 1.0f / dep[3];
+            pkt.v[0].s = (u0 + ustep * j) / dep[0];
+            pkt.v[0].t = (1.0f + v0) / dep[0];
+            pkt.v[1].s = (u0 + ustep * (j + 1)) / dep[1];
+            pkt.v[1].t = (1.0f + v0) / dep[1];
+            pkt.v[2].s = (u0 + ustep * j) / dep[2];
+            pkt.v[2].t = v0 / dep[2];
+            pkt.v[3].s = (u0 + ustep * (j + 1)) / dep[3];
+            pkt.v[3].t = v0 / dep[3];
+            func_00208CB0(&pkt, 0);
+            func_002086D0(&pkt, 0x48);
+            {
+                s32 d = e->max - e->life;
+                al = e->c.a;
+                if ((e->mode & 0x10) && d < 16) {
+                    al = d * (e->c.a >> 4);
+                }
+            }
+            if (!(e->flags & 0x40) && e->life < 8) {
+                al = (e->c.a >> 3) * e->life;
+            }
+            if ((e->mode & 2) && (e->life & 1)) {
+                pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = 0;
+            } else {
+                pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = al;
+            }
+            if (e->mode & 0x20) {
+                pkt.v[2].a = pkt.v[3].a = 0;
+            }
+            pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->c.r;
+            pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->c.g;
+            pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->c.b;
+            pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+            func_00208700(&pkt, (void *)tex, 1);
+            if (e->flags & 0x80) {
+                z = 0.0f;
+            } else {
+                z = (u32)((dep[0] + dep[1] + dep[2] + dep[3]) / 4.0f);
+            }
+            func_002075F0((s32)&pkt, ot, (u32)z);
+        }
+    }
+    return 1;
+}
 
 /* shape b601:01E003A0 (ShFx_Gus2), 579 insns, 30 copies (-O3,p): moves and draws n spark emitters (0x44 bytes each):
    velocity, gravity, floor bounce, size growth, optional follow; each live one is one camera-facing square of its
