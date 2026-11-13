@@ -536,7 +536,203 @@ static s32 func_01E00CF0_c516(s32 id, Model_b013_01E004E0 *m, Fx_b013_01E004E0 *
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c516", func_01E018D0_c516);
+/* shape c516:01E018D0 (LkSortAfterImage), 592 insns, 1 copy: draws an after-image trail: shifts the trail positions,
+   then one textured quad per trail point with the alpha divided by its index and the UV cell from the point's frame
+   byte */
+
+typedef struct Src_c516_01E018D0 {
+    u8 b, g, r, a;
+} Src_c516_01E018D0;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_c516_01E018D0;
+
+typedef struct {
+    u16 s : 14;
+    u16 s_pad : 2;
+    u16 t : 14;
+    u16 t_pad : 2;
+    u32 pad;
+} Uv_c516_01E018D0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_c516_01E018D0 st;
+    Xyz_c516_01E018D0 xyz;
+} Vtx_c516_01E018D0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_c516_01E018D0 v[4];
+    u8 tail[0x20];
+} Pkt_c516_01E018D0;
+
+typedef struct {
+    f32 x, y, z;
+} Vec3_c516_01E018D0;
+
+typedef struct {
+    Vec3_c516_01E018D0 p;
+    u8 a;
+    u8 frame;
+    u8 pad[2];
+} Trail_c516_01E018D0;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_c516_01E018D0 color;
+    f32 scale;
+    f32 x, y, z;
+    u8 pad1C[4];
+    s16 u, v, w, h;
+    union {
+        struct {
+            f32 fw, fh;
+        } f;
+        struct {
+            s16 u0, v0, cols, pad;
+        } i;
+    } d;
+    Trail_c516_01E018D0 t[4];
+    f32 sx, sy;
+    u8 pad78[0x12];
+    s16 count;
+} Spr_c516_01E018D0;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[1];
+} Cam_c516_01E018D0;
+
+static s32 func_01E018D0_c516(s32 obj, Spr_c516_01E018D0 *s, Cam_c516_01E018D0 *cam) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void c516_01E00080(void *, Src_c516_01E018D0 *);
+    f32 depth[4];
+    Vec4f c;
+    Pkt_c516_01E018D0 pkt;
+    s32 i;
+    f32 kx;
+    f32 ky;
+
+    if (s->count < 1) {
+        s->count = 1;
+    }
+    for (i = s->count - 1; i > -1; i--) {
+        s->t[i + 1].p = s->t[i].p;
+        if (i == 0) {
+            s->t[i].p.x = s->x;
+            s->t[i].p.y = s->y;
+            s->t[i].p.z = s->z;
+        }
+    }
+    ((Pkt_c516_01E018D0 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_c516_01E018D0 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_c516_01E018D0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_c516_01E018D0 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(s->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(s->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    if (func_00104520(s->flags, 0) != 0) {
+        if (s->w > s->h) {
+            kx = 1.0f;
+            ky = (f32)s->h / (f32)s->w;
+        } else if (s->w < s->h) {
+            kx = (f32)s->w / (f32)s->h;
+            ky = 1.0f;
+        } else {
+            ky = 1.0f;
+            kx = 1.0f;
+        }
+    } else {
+        if (s->d.f.fw > s->d.f.fh) {
+            ky = s->d.f.fh / s->d.f.fw;
+            kx = 1.0f;
+        } else if (s->d.f.fw < s->d.f.fh) {
+            kx = s->d.f.fw / s->d.f.fh;
+            ky = 1.0f;
+        } else {
+            ky = 1.0f;
+            kx = 1.0f;
+        }
+    }
+    for (i = 0; i < s->count + 1; i++) {
+        c516_01E00080(&pkt, &s->color);
+        if (s->color.a == 0) {
+            s->t[i].a = 0;
+        } else {
+            s->t[i].a = s->color.a / (i + 1);
+        }
+        pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = s->t[i].a;
+        s->u = s->d.i.u0 + s->w * (s->t[i].frame % (s->d.i.cols / s->w));
+        s->v = s->d.i.v0 + s->h * (s->t[i].frame / (s->d.i.cols / s->w));
+        ((Pkt_c516_01E018D0 *)(s32)&pkt)->count |= 0x800;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[0].st)->s = s->u << 4;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[0].st)->t = s->v << 4;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[1].st)->s = (s->u + s->w - 1) << 4;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[1].st)->t = s->v << 4;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[2].st)->s = s->u << 4;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[2].st)->t = (s->v + s->h - 1) << 4;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[3].st)->s = (s->u + s->w - 1) << 4;
+        ((Uv_c516_01E018D0 *)(s32)&pkt.v[3].st)->t = (s->v + s->h - 1) << 4;
+        c.x = s->t[i].p.x - kx * (s->scale * s->sx);
+        c.y = s->t[i].p.y + ky * (s->scale * s->sy);
+        c.z = s->t[i].p.z;
+        if (func_00205440(&c, cam->view, &pkt.v[0].xyz, &depth[0]) != 0) {
+            s->flags |= 0x100000;
+        }
+        c.x = s->t[i].p.x + kx * (s->scale * s->sx);
+        c.y = s->t[i].p.y + ky * (s->scale * s->sy);
+        if (func_00205440(&c, cam->view, &pkt.v[1].xyz, &depth[1]) != 0) {
+            s->flags |= 0x200000;
+        }
+        c.x = s->t[i].p.x - kx * (s->scale * s->sx);
+        c.y = s->t[i].p.y - ky * (s->scale * s->sy);
+        if (func_00205440(&c, cam->view, &pkt.v[2].xyz, &depth[2]) != 0) {
+            s->flags |= 0x400000;
+        }
+        c.x = s->t[i].p.x + kx * (s->scale * s->sx);
+        c.y = s->t[i].p.y - ky * (s->scale * s->sy);
+        if (func_00205440(&c, cam->view, &pkt.v[3].xyz, &depth[3]) != 0) {
+            s->flags |= 0x800000;
+        }
+        if (func_00104520(s->flags, 0x18) != 0) {
+            func_00208700(&pkt, s->texture, 0);
+        } else {
+            if (func_00104520(s->flags, 0) != 0) {
+                func_00208CB0(&pkt, (u64)0xA | ((u64)s->u << 4) | ((u64)(s->u + s->w - 1) << 14) |
+                                        ((u64)s->v << 24) | ((u64)(s->v + s->h - 1) << 34));
+            }
+            func_00208700(&pkt, s->texture, 1);
+        }
+        if (func_00104520(s->flags, 0x14) != 0 && func_00104520(s->flags, 0x15) != 0 &&
+            func_00104520(s->flags, 0x16) != 0 && func_00104520(s->flags, 0x17) != 0) {
+            if (func_00104520(s->flags, 0x13) != 0) {
+                pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFF;
+                if (s->t[i].frame != 0xFF) {
+                    func_002075F0(&pkt, obj, 0);
+                }
+            } else if (s->t[i].frame != 0xFF) {
+                func_002075F0(&pkt, obj, (u32)((depth[0] + depth[1] + depth[2] + depth[3]) / 4.0f));
+            }
+        }
+        s->flags &= 0xFF0FFFFF;
+    }
+    return 0;
+}
 
 typedef struct {
     f32 x, y, z, w;
