@@ -794,7 +794,203 @@ static s32 func_01E015A0_b109(Obj_b035_01E00410 *obj, s32 tex, s32 n) {
 
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b109", func_01E02120_b109);
+/* shape b213:01E00F90 (ShFx_Core01), 644 insns, 28 copies (-O2,p): update and draw spinning 2-D beams (0x50 bytes
+   each): move, project, and draw each as two quads per half-turn, alpha and length fading in and out */
+
+#define ABS_b213_01E00F90(x) ((x) >= 0.0f ? (x) : -(x))
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b213_01E00F90;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b213_01E00F90;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b213_01E00F90 p;
+} Vtx_b213_01E00F90;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b213_01E00F90 v[4];
+    u8 tail[0x20];
+} Pkt_b213_01E00F90;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 pad05[0x13];
+} Tex_b213_01E00F90;
+
+typedef struct {
+    u8 life;
+    u8 pad01;
+    u8 total;
+    u8 pad03;
+    u8 flags;
+    u8 pad05[3];
+    u8 b, g, r;
+    u8 pad0B;
+    u8 b2, g2, r2, a;
+    f32 len;
+    f32 width;
+    f32 angle;
+    f32 spin;
+    Vec_b213_01E00F90 pos;
+    Vec_b213_01E00F90 vel;
+    Vec_b213_01E00F90 point;
+} Beam_b213_01E00F90;
+
+#pragma optimization_level 2
+
+static s32 func_01E02120_b109(void *p, s32 target, s32 count) {
+    extern Tex_b213_01E00F90 D_01E068A0_b109;
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, s32, s32, void *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00101EE0(void *, void *, s32);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern f32 func_001018E0(f32, f32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Beam_b213_01E00F90 *o = p;
+    s32 i;
+    s32 h __attribute__((aligned(16)));
+    s32 j;
+    u8 k;
+    u8 a;
+    s32 s;
+    f32 zd;
+    f32 dx;
+    f32 ady;
+    f32 dy;
+    f32 len;
+    f32 r1;
+    f32 w;
+    f32 t;
+    f32 m2[16];
+    f32 m1[16];
+    Vec_b213_01E00F90 pt;
+    Tex_b213_01E00F90 tex;
+    Xyz_b213_01E00F90 q;
+    Pkt_b213_01E00F90 pkt __attribute__((aligned(8)));
+    f32 dep;
+
+    tex = D_01E068A0_b109;
+    h = func_00202BF0(tex.id, tex.kind);
+    for (i = 0; i < count; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        o->pos.x += o->vel.x;
+        o->pos.y += o->vel.y;
+        o->pos.z += o->vel.z;
+        o->angle += o->spin;
+        pt = o->point;
+        func_00101BA0(o, &o->pos);
+        func_0020EB40(m1);
+        func_0020C940(m2, 0, 0, &o->pos);
+        func_0020BC00(m1, m2);
+        ((Pkt_b213_01E00F90 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b213_01E00F90 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b213_01E00F90 *)(s32)&pkt)->regs = 0x421421421421LL;
+        ((Pkt_b213_01E00F90 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = 0;
+        pkt.v[1].r = pkt.v[2].r = o->r;
+        pkt.v[0].g = 0;
+        pkt.v[1].g = pkt.v[2].g = o->g;
+        pkt.v[0].b = 0;
+        pkt.v[1].b = pkt.v[2].b = o->b;
+        pkt.v[3].r = o->r2;
+        pkt.v[3].g = o->g2;
+        pkt.v[3].b = o->b2;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        func_00101EE0(&pkt, &tex, h);
+        a = o->a;
+        s = a >> 3;
+        if (o->life >= 8 || (o->flags & 0x40)) {
+            pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = a;
+        } else {
+            pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = s * o->life;
+        }
+        pkt.v[0].a = 0;
+        if (func_00205440(&pt, m1, &q, &dep) == 0 || func_00101600(&q) == 0) {
+            continue;
+        }
+        r1 = func_001018E0(o->len, dep);
+        w = func_001018E0(o->width, dep);
+        if (o->flags & 0x80) {
+            q.z = 0xFFFFFE;
+            zd = 0.0f;
+        } else {
+            zd = dep;
+        }
+        pkt.v[0].p.z = pkt.v[1].p.z = pkt.v[2].p.z = pkt.v[3].p.z = q.z;
+        pkt.v[0].p.f = pkt.v[1].p.f = pkt.v[2].p.f = pkt.v[3].p.f = 1;
+        len = r1;
+        if (!(o->flags & 0x40)) {
+            if (!(o->flags & 1)) {
+                k = o->total - o->life;
+                if (k < 8) {
+                    len = r1 * (0.125f * k);
+                }
+            }
+            if (o->life < 8) {
+                len = r1 * (0.125f * o->life);
+            }
+        }
+        for (j = 0; j < 2; j++) {
+            t = 180.0f * j;
+            dx = len * func_001A6898(3.1415927f * (o->angle + t) / 180.0f);
+            dy = len * func_001A6A88(3.1415927f * (o->angle + t) / 180.0f);
+            ady = ABS_b213_01E00F90(dy);
+            if (!(ABS_b213_01E00F90(dx) <= ady)) {
+                pkt.v[0].p.x = pkt.v[2].p.x = (u32)(q.x + dx);
+                pkt.v[1].p.x = pkt.v[3].p.x = q.x;
+                pkt.v[0].p.y = (u32)(q.y + dy - w);
+                pkt.v[1].p.y = (u32)(q.y - w);
+                pkt.v[2].p.y = (u32)(q.y + dy);
+                pkt.v[3].p.y = q.y;
+                func_002075F0(&pkt, target, (u32)zd);
+                pkt.v[0].p.y = (u32)(w + (q.y + dy));
+                pkt.v[1].p.y = (u32)(q.y + w);
+                func_002075F0(&pkt, target, (u32)zd);
+            } else {
+                pkt.v[0].p.y = pkt.v[2].p.y = (u32)(q.y + dy);
+                pkt.v[1].p.y = pkt.v[3].p.y = q.y;
+                pkt.v[0].p.x = (u32)(q.x + dx - w);
+                pkt.v[1].p.x = (u32)(q.x - w);
+                pkt.v[2].p.x = (u32)(q.x + dx);
+                pkt.v[3].p.x = q.x;
+                func_002075F0(&pkt, target, (u32)zd);
+                pkt.v[0].p.x = (u32)(w + (q.x + dx));
+                pkt.v[1].p.x = (u32)(q.x + w);
+                func_002075F0(&pkt, target, (u32)zd);
+            }
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* shape b091:01E00410 (ShFx_Blade), 1182 insns, 43 copies (-O2,p): draws n blade ribbons (0x60 bytes each): shifts
    the two trail-point lists, spawns this frame's points, splines both edges and draws each segment as a quad lerped
