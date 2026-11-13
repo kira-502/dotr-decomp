@@ -679,3 +679,7 @@ there is a source form that gives the original.
   set the vertex pointers between an explicit guard and a do-while: `i = 0; if (i < n) { q3 = &pk.v[3]; ...;
   do { ... } while (++i < n); }`. Set before a `for`, they land before its test; inside the loop they become compiler
   temporaries. Use `i < n` (`n > 0` gives `blez`) (b131:01E053B0, ShFx_Rcore).
+
+- **Two equal float constants in the last two arguments of a module static, the original loading the last first
+  (`mtc1 $zero, $f15; mov.s $f14, $f15`):** call it through a prototyped alias
+  (`extern s32 b719_01E01ED0(void *, s32, f32, f32, f32, f32);`) instead of its static name (b719:01E02DF0).
