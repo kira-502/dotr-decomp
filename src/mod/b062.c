@@ -774,7 +774,236 @@ static s32 func_01E01660_b062(Lbb_b005_01E012D0 *arg0, s32 ot __attribute__((ali
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b062", func_01E020A0_b062);
+/* shape b062:01E020A0 (ShFx_LCyl), 601 insns, 6 copies: draws n cylinder emitters (0x2C bytes each): a ring of up to
+   36 points (radius r grown by dr, in the xy, zy or xz plane by mode) swept along each segment of e->pts as textured
+   quads, with optional backface cull, scrolling s/t, blink and end fades */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b062_01E020A0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    f32 s, t;
+    Xyz_b062_01E020A0 xyz;
+} Vtx_b062_01E020A0;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b062_01E020A0 v[4];
+    u8 tail[0x20];
+} Pkt_b062_01E020A0;
+
+typedef struct {
+    f32 x, y, z;
+} V3_b062_01E020A0;
+
+typedef struct {
+    u8 b, g, r, a;
+} Col_b062_01E020A0;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[2];
+    u8 seg;
+    u8 cnt;
+    u8 tex;
+    u8 padA;
+    u8 mode;
+    V3_b062_01E020A0 *pts;
+    f32 usize;
+    f32 pad14;
+    f32 uscale;
+    f32 vscale;
+    f32 r;
+    f32 dr;
+    Col_b062_01E020A0 c;
+} Cyl_b062_01E020A0;
+
+/* the ?: clamp of nseg and cnt reused for the life span (before it is the count) give the original's spill slots */
+
+static s32 func_01E020A0_b062(Cyl_b062_01E020A0 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00101AF0(void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_00101940(void *, void *);
+    extern f32 func_0020D0E0(void *);
+    extern void func_0020EB40(void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00208CB0(void *, s32);
+    extern void func_002086D0(void *, s32);
+    extern void func_00208700(void *, void *, s32);
+    extern void func_002075F0(s32, s32, s32);
+    f32 mat[16];
+    Vec4f ring[37];
+    f32 pt[4];
+    f32 dir[4];
+    f32 dep[4];
+    s32 rot[4];
+    Pkt_b062_01E020A0 pkt;
+    Cyl_b062_01E020A0 *e;
+    s32 i;
+    s32 tex __attribute__((aligned(16)));
+    s32 k;
+    s32 cnt;
+    s32 nseg;
+    s32 j;
+    s32 on0;
+    s32 on1;
+    s32 on2;
+    s32 on3;
+    f32 a;
+    f32 cross;
+    f32 step;
+    f32 ustep;
+    f32 v0;
+    f32 u0;
+    f32 z;
+    u8 al;
+
+    e = arg0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(5, e->tex);
+        e->r += e->dr;
+        nseg = e->seg;
+        nseg = nseg > 36 ? 36 : nseg;
+        step = 360.0f / nseg;
+        for (j = 0; j < nseg; j++) {
+            switch (e->mode & 0x18) {
+            case 8:
+                a = 3.1415927f * (step * j) / 180.0f;
+                ring[j].x = e->r * func_001A6898(a);
+                ring[j].y = e->r * func_001A6A88(a);
+                ring[j].z = 0.0f;
+                break;
+            case 0x10:
+                a = 3.1415927f * (step * j) / 180.0f;
+                ring[j].z = e->r * func_001A6898(a);
+                ring[j].y = e->r * func_001A6A88(a);
+                ring[j].x = 0.0f;
+                break;
+            default:
+                a = 3.1415927f * (step * j) / 180.0f;
+                ring[j].x = e->r * func_001A6898(a);
+                ring[j].z = e->r * func_001A6A88(a);
+                ring[j].y = 0.0f;
+                break;
+            }
+        }
+        ring[nseg] = ring[0];
+        ustep = e->usize / nseg;
+        cnt = e->max - e->life;
+        u0 = e->uscale * cnt;
+        if (!(u0 <= 1.0f)) {
+            u0 -= (s32)u0;
+        }
+        v0 = e->vscale * cnt;
+        if (!(v0 <= 1.0f)) {
+            v0 -= (s32)v0;
+        }
+        ((Pkt_b062_01E020A0 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b062_01E020A0 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b062_01E020A0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b062_01E020A0 *)(s32)&pkt)->pad = 0;
+        cnt = e->cnt;
+        if ((e->mode & 0x20) && e->max - e->life < cnt) {
+            cnt = e->max - e->life;
+        }
+        for (k = 0; k < cnt; k++) {
+            dir[0] = e->pts[k + 1].x - e->pts[k].x;
+            dir[1] = e->pts[k + 1].y - e->pts[k].y;
+            dir[2] = e->pts[k + 1].z - e->pts[k].z;
+            func_00101940(dir, rot);
+            func_0020D0E0(dir);
+            func_0020EB40(mat);
+            for (j = 0; j < nseg; j++) {
+                pt[0] = e->pts[k].x + ring[j].x;
+                pt[1] = e->pts[k].y + ring[j].y;
+                pt[2] = e->pts[k].z + ring[j].z;
+                on0 = func_00205440(pt, mat, &pkt.v[0].xyz, &dep[0]);
+                pt[0] = e->pts[k].x + ring[j + 1].x;
+                pt[1] = e->pts[k].y + ring[j + 1].y;
+                pt[2] = e->pts[k].z + ring[j + 1].z;
+                on1 = func_00205440(pt, mat, &pkt.v[1].xyz, &dep[1]);
+                pt[0] = e->pts[k + 1].x + ring[j].x;
+                pt[1] = e->pts[k + 1].y + ring[j].y;
+                pt[2] = e->pts[k + 1].z + ring[j].z;
+                on2 = func_00205440(pt, mat, &pkt.v[2].xyz, &dep[2]);
+                pt[0] = e->pts[k + 1].x + ring[j + 1].x;
+                pt[1] = e->pts[k + 1].y + ring[j + 1].y;
+                pt[2] = e->pts[k + 1].z + ring[j + 1].z;
+                on3 = func_00205440(pt, mat, &pkt.v[3].xyz, &dep[3]);
+                if (on0 == 0 || on1 == 0 || on2 == 0 || on3 == 0) {
+                    continue;
+                }
+                if (e->mode & 1) {
+                    cross = (pkt.v[0].xyz.x - pkt.v[2].xyz.x) * (pkt.v[3].xyz.y - pkt.v[2].xyz.y) -
+                            (pkt.v[3].xyz.x - pkt.v[2].xyz.x) * (pkt.v[0].xyz.y - pkt.v[2].xyz.y);
+                    if (!(cross <= 0.0f)) {
+                        break;
+                    }
+                }
+                pkt.v[0].q = 1.0f / dep[0];
+                pkt.v[1].q = 1.0f / dep[1];
+                pkt.v[2].q = 1.0f / dep[2];
+                pkt.v[3].q = 1.0f / dep[3];
+                pkt.v[0].s = (u0 + ustep * j) / dep[0];
+                pkt.v[0].t = (1.0f + v0) / dep[0];
+                pkt.v[1].s = (u0 + ustep * (j + 1)) / dep[1];
+                pkt.v[1].t = (1.0f + v0) / dep[1];
+                pkt.v[2].s = (u0 + ustep * j) / dep[2];
+                pkt.v[2].t = v0 / dep[2];
+                pkt.v[3].s = (u0 + ustep * (j + 1)) / dep[3];
+                pkt.v[3].t = v0 / dep[3];
+                func_00208CB0(&pkt, 0);
+                func_002086D0(&pkt, 0x48);
+                if (!(e->flags & 0x40) && e->life < 8) {
+                    al = (e->c.a >> 3) * e->life;
+                } else {
+                    al = e->c.a;
+                }
+                if ((e->mode & 2) && (e->life & 1)) {
+                    pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = 0;
+                } else {
+                    pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = al;
+                }
+                if (e->mode & 0x40) {
+                    pkt.v[2].a = pkt.v[3].a = 0;
+                }
+                pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->c.r;
+                pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->c.g;
+                pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->c.b;
+                pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+                func_00208700(&pkt, (void *)tex, 1);
+                if (e->flags & 0x80) {
+                    z = 0.0f;
+                } else {
+                    z = (u32)((dep[0] + dep[1] + dep[2] + dep[3]) / 4.0f);
+                }
+                func_002075F0((s32)&pkt, ot, (u32)z);
+            }
+        }
+    }
+    return 1;
+}
 
 /* OVL_WARM: compile warm (DK_WARM=1, after a runtime-helper call as in the original many-files-per-run build).
    Its float -> int casts are MWCC runtime calls: fptosi = 0x001A22C0, fptoui = 0x001A23B0 (link names). */
