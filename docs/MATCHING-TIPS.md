@@ -696,3 +696,5 @@ there is a source form that gives the original.
   (b494:01E01A90).
 - **The parameter-copy trick (b035) works at -O4 too:** copy the parameters into locals under
   `#pragma opt_propagation off`, then re-run a declaration-order search (b494:01E01A90 went 458 → 603/603).
+  Under that pragma every constant-bound `for` gets an entry guard (`slti`/`beqz`), so the trick doesn't suit
+  functions with setup loops whose original has no guard (b594:01E02EC0).
