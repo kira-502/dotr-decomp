@@ -663,3 +663,7 @@ there is a source form that gives the original.
 - **`#include "mod/<mod>.c"` in a work file can hide a real-file clash:** statics defined below the function become
   visible, so the standalone try matches but the in-file build reports CLASH / "redeclared". Call those through
   `<mod>_<VADDR>` aliases (b770, b089).
+
+- **An int → float conversion the original delays (`mtc1` early, `cvt.s.w` + `div.s` late) with permuted float
+  registers:** declare the values `f32` and divide each in its own statement (`x /= 20.0f; y /= 20.0f;`) before use;
+  `(f32)y / 20.0f` in the expression stays off (b493:01E02200).
