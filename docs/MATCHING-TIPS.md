@@ -586,3 +586,7 @@ there is a source form that gives the original.
   `c, &c[4]`. (b183:01E01480, b491:01E02370, b197:01E01A10)
 - **An s16 field tested `x == 0 || x == 1`, the original `beqz` on the loaded value, then re-extends it
   (`dsll32`/`dsra32`) before the compare with 1:** write `if (!g->mode || g->mode == 1)`. (c062:01E03BE0)
+- **An s16 counter tested after its loop comes out `dsll32`/`dsra32` + `beqz` where the original has a bare `beqz`:**
+  write `if (j)`, not `if (j != 0)`. (b734:01E033C0)
+- **`dk try` differs only in a relocation name inside a module table (`D_..B4` where yours is `D_..B0[k].field`):**
+  the bytes are the same; check with `work/fulltry.sh` / `dk accept`. (b133:01E00BA0)
