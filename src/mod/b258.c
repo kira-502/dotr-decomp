@@ -601,7 +601,181 @@ static void func_01E01510_b258(Obj_b003_01E00EA0 *obj, Def_b003_01E00EA0 *def, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b258", func_01E01A70_b258);
+/* shape b258:01E01A70 (B258_W_S), 576 insns, 1 copy: B258_W_S, the scene step: colour 0x80,0,0,0, counts the frame
+   (0x89CA), frame 1 0x1E03830; keeps the two unit points, the four 0x2960 points and four copies of the first; tracks
+   joints 0x8998..0x899E until 178, sinks them by the unit step until 240, then eases them to fixed targets set at
+   240; frame 1 and 280 bursts of four kinds, from 290 every third frame up to 30 bolts 0x1E02F40/0x1E032B0 with three
+   0x1E02A60, then drifts the bolts toward joint 0x89A8 */
+
+typedef struct {
+    u8 pad0[0x250];
+    f32 pos[3];
+    u8 pad25C[0x28A0 - 0x25C];
+    Vec4f p[4];
+    Vec4f q[4];
+    Vec4f tgt[4];
+    Vec4f w[4];
+    Vec4f d[30];
+    u8 pad2B80[0x8974 - 0x2B80];
+    u8 col[4];
+    u8 pad8978[0x8998 - 0x8978];
+    s16 j[4];
+    u8 pad89A0[0x89A8 - 0x89A0];
+    s16 jx;
+    u8 pad89AA[0x89B8 - 0x89AA];
+    s16 n;
+    u8 pad89BA[0x89C4 - 0x89BA];
+    s16 kind;
+    s16 flag;
+    u8 pad89C8[2];
+    s16 t;
+} Scene_b258_01E01A70;
+
+static void func_01E01A70_b258(Scene_b258_01E01A70 *g) {
+    extern void b258_01E04E70();
+    extern void func_01E02370_b258();
+    extern void func_01E02500_b258();
+    extern void func_01E02650_b258();
+    extern void func_01E02A60_b258();
+    extern void func_01E02F40_b258();
+    extern void func_01E032B0_b258();
+    extern void func_01E034A0_b258();
+    extern void func_01E03830_b258();
+    extern void func_001F7260(s32);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    f32 v[2][4];
+    s32 k;
+    f32 f;
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    func_001F7260(0);
+    if (g->t == 1) {
+        b258_01E04E70(g, func_01E03830_b258, 0);
+    }
+    func_001F5F90(func_001F5380(), v[0]);
+    func_001F5F90(func_001F53A0(), v[1]);
+    func_001F5F90(func_001F53A0(), &g->w[0]);
+    func_001F5F90(func_001F53A0(), &g->w[1]);
+    func_001F5F90(func_001F53A0(), &g->w[2]);
+    func_001F5F90(func_001F53A0(), &g->w[3]);
+    g->q[0] = *(Vec4f *)v[0];
+    g->q[1] = *(Vec4f *)v[0];
+    g->q[2] = *(Vec4f *)v[0];
+    g->q[3] = *(Vec4f *)v[0];
+    v[0][0] = (v[1][0] - v[0][0]) / 73.0f;
+    v[0][1] = (v[1][1] - v[0][1]) / 73.0f;
+    v[0][2] = (v[1][2] - v[0][2]) / 73.0f;
+    if (g->t < 0xB2) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->p[0]);
+        func_001F5620(func_001F53A0(), g->j[1], &g->p[1]);
+        func_001F5620(func_001F53A0(), g->j[2], &g->p[2]);
+        func_001F5620(func_001F53A0(), g->j[3], &g->p[3]);
+    } else if (g->t < 0xF0) {
+        if (g->flag != 0) {
+            for (i = 0; i < 4; i++) {
+                g->p[i].z -= v[0][2];
+            }
+        } else {
+            for (i = 0; i < 4; i++) {
+                g->p[i].z -= v[0][2];
+            }
+        }
+    } else {
+        if (g->t == 0xF0) {
+            func_001F5F90(func_001F5380(), v[0]);
+            for (i = 0; i < 4; i++) {
+                g->tgt[i] = *(Vec4f *)v[0];
+            }
+            g->tgt[0].x = 15.0f;
+            g->tgt[1].x = -15.0f;
+            g->tgt[2].x = 15.0f;
+            g->tgt[3].x = -15.0f;
+            g->tgt[0].y = 80.0f;
+            g->tgt[1].y = 80.0f;
+            g->tgt[2].y = 50.0f;
+            g->tgt[3].y = 50.0f;
+        }
+        for (i = 0; i < 4; i++) {
+            g->p[i].x += (g->tgt[i].x - g->p[i].x) / 30.0f;
+            g->p[i].y += (g->tgt[i].y - g->p[i].y) / 30.0f;
+        }
+    }
+    if (g->t < 2) {
+        g->kind = 2;
+        b258_01E04E70(g, func_01E02650_b258, 0);
+        b258_01E04E70(g, func_01E02500_b258, 0);
+        b258_01E04E70(g, func_01E02370_b258, 0);
+        g->kind = 3;
+        b258_01E04E70(g, func_01E02650_b258, 0);
+        b258_01E04E70(g, func_01E02500_b258, 0);
+        b258_01E04E70(g, func_01E02370_b258, 0);
+        g->kind = 0;
+        b258_01E04E70(g, func_01E02650_b258, 0);
+        b258_01E04E70(g, func_01E02500_b258, 0);
+        b258_01E04E70(g, func_01E02370_b258, 0);
+        g->kind = 1;
+        b258_01E04E70(g, func_01E02650_b258, 0);
+        b258_01E04E70(g, func_01E02500_b258, 0);
+        b258_01E04E70(g, func_01E02370_b258, 0);
+    }
+    if (g->t == 0x118) {
+        g->kind = 2;
+        b258_01E04E70(g, func_01E034A0_b258, 0);
+        g->kind = 3;
+        b258_01E04E70(g, func_01E034A0_b258, 0);
+        g->kind = 0;
+        b258_01E04E70(g, func_01E034A0_b258, 0);
+        g->kind = 1;
+        b258_01E04E70(g, func_01E034A0_b258, 0);
+    }
+    if (g->t < 0x187) {
+        g->pos[0] = g->p[0].x;
+        g->pos[1] = g->p[0].y;
+        g->pos[2] = g->p[0].z;
+        g->pos[0] = g->p[1].x;
+        g->pos[1] = g->p[1].y;
+        g->pos[2] = g->p[1].z;
+        g->pos[0] = g->p[2].x;
+        g->pos[1] = g->p[2].y;
+        g->pos[2] = g->p[2].z;
+        g->pos[0] = g->p[3].x;
+        g->pos[1] = g->p[3].y;
+        g->pos[2] = g->p[3].z;
+    }
+    if (g->t >= 0x122) {
+        if (g->n < 30 && g->t % 3 == 1) {
+            g->kind = g->n;
+            b258_01E04E70(g, func_01E02F40_b258, 0);
+            b258_01E04E70(g, func_01E032B0_b258, 0);
+            k = g->n % 4;
+            g->pos[0] = g->p[k].x;
+            g->pos[1] = g->p[k].y;
+            g->pos[2] = g->p[k].z;
+            b258_01E04E70(g, func_01E02A60_b258, 0);
+            b258_01E04E70(g, func_01E02A60_b258, 0);
+            b258_01E04E70(g, func_01E02A60_b258, 0);
+            g->n++;
+        }
+    }
+    if (g->t > 0x122) {
+        func_001F5620(func_001F5380(), g->jx, v[0]);
+        for (i = 0; i < g->n; i++) {
+            k = i % 4;
+            f = (v[0][0] - g->p[k].x) / 6.0f;
+            g->d[i].x += f + func_0019A5C8() % 16 - 8.0f;
+            g->d[i].y += (v[0][1] - g->p[k].y) / 6.0f + func_0019A5C8() % 16 - 8.0f;
+            g->d[i].z += (v[0][2] - g->p[k].z) / 6.0f;
+        }
+    }
+}
 
 /* shape b258:01E02370, 99 insns: on start 0x38 = 50, colours (0xC0, 0x70, 0) / (0x20, 0x10, 0), random 0x3A, variant
    0..7; 0x6 = 0 each tick; alpha 0x80 on the first tick, flickering 0x80/0x70 while the game step 0x89CA is below 0x186, then
