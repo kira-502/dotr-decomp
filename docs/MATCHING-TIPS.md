@@ -667,3 +667,10 @@ there is a source form that gives the original.
 - **An int → float conversion the original delays (`mtc1` early, `cvt.s.w` + `div.s` late) with permuted float
   registers:** declare the values `f32` and divide each in its own statement (`x /= 20.0f; y /= 20.0f;`) before use;
   `(f32)y / 20.0f` in the expression stays off (b493:01E02200).
+
+- **Down-counting loop with `slti $at, i, 0` where yours has `bltz`/`bgez`:** write `i > -1`, not `i >= 0`
+  (c516:01E018D0).
+- **Three float loads then three stores, where yours alternates:** copy the three fields as one struct
+  (`s->t[i + 1].p = s->t[i].p` with a Vec3 member); float locals schedule it wrongly (c516:01E018D0).
+- **-O1 setup-loop counter wanting `ot`'s register:** give the setup loop its own counter; `ot` is dead in that
+  branch, but a counter shared with a later loop can't take its register (b011:01E050B0).
