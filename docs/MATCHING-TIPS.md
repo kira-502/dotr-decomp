@@ -550,3 +550,8 @@ there is a source form that gives the original.
 - **Before a call to a module static, the address argument (`addiu a3`) loads one instruction ahead of a constant
   (`li a2`), and no statement order fixes it:** call it through a block-scope no-prototype `extern void f();` with no
   casts on the arguments. (b256:01E04090, b264:01E03E00)
+- **`func_001031C0(g->wv, g->t)`: your `lhu $a1` (the counter) comes before the original's `addiu $a0`:** declare it
+  `extern void func_001031C0(void *, u16);`. (b190:01E037A0, b126:01E04FE0)
+- **An -O1 struct copy into an array element gives `addu $v1, $s3, $v0` where the original has `$v0, $s3`:** do not
+  cast an `f32 pos[3]` member to `Vec4f *`; give the element a local type with a real `Vec4f pos` and cast the pool
+  where it is passed on. (b126:01E04FE0)
