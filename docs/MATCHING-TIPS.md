@@ -683,3 +683,10 @@ there is a source form that gives the original.
 - **Two equal float constants in the last two arguments of a module static, the original loading the last first
   (`mtc1 $zero, $f15; mov.s $f14, $f15`):** call it through a prototyped alias
   (`extern s32 b719_01E01ED0(void *, s32, f32, f32, f32, f32);`) instead of its static name (b719:01E02DF0).
+
+- **`f(p, 2.0f, 0.1f)` with `$f13` loaded first, where a local for the first argument doesn't help:** put the last
+  argument in a nested block local, `{ f32 q = 0.1f; f(p, 2.0f, q); }` (b015:01E03460).
+- **An int field plus a float with `add.s` operands swapped:** write the compound assignment `o->ang += 8.0f;`
+  (b089:01E00A30).
+- **An s32 field reloaded narrow (`lwc1` to convert, `lh` for `% 360`) where yours CSEs into one `lw`:** read the
+  narrow use through an s16 union member, `o->a.i = (f32)(s16)(o->a.h % 360);` (b089:01E00A30).
