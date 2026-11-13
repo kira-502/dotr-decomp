@@ -567,7 +567,261 @@ static s32 func_01E01940_b494(Scene_b494_01E01940 *g, s32 a1, s32 a2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b494", func_01E01A90_b494);
+/* shape b494:01E01A90 (IW494MagicCircleGT4_1), 603 insns, 1 copy: b065:01E012B0's camera-facing ring with the alpha
+   ramped over the first and last six segments, parameters copied to locals with opt_propagation off */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b494_01E01A90;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Col_b494_01E01A90;
+
+typedef struct {
+    u8 r, g, b, a;
+} Rgba_b494_01E01A90;
+
+typedef struct {
+    Col_b494_01E01A90 c;
+    u64 st;
+    u64 xyz;
+} Vtx_b494_01E01A90;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b494_01E01A90 v[4];
+    u8 tail[0x20];
+} Pkt_b494_01E01A90;
+
+typedef struct {
+    u64 dma;
+    Pkt_b494_01E01A90 gif;
+} Buf_b494_01E01A90;
+
+typedef struct {
+    u8 pad00[0x20];
+    u8 rot[0x14];
+    f32 y;
+    u8 pad38[0x10];
+    f32 w0;
+    f32 w1;
+    u8 pad50[0xA];
+    s16 step;
+    s16 width;
+    u8 pad5E[2];
+    Rgba_b494_01E01A90 col0;
+    Rgba_b494_01E01A90 col1;
+} Anim_b494_01E01A90;
+
+typedef struct {
+    u8 pad00[0x80];
+    s32 target;
+    u8 pad84[4];
+    s32 texture;
+    u8 pad8C[8];
+    u8 b94[0x24];
+    s16 count;
+    u8 padBA[4];
+    s16 hBE;
+    u8 padC0[0x18];
+    u8 bD8[1];
+} Obj_b494_01E01A90;
+
+#pragma opt_propagation off
+
+static void func_01E01A90_b494(Obj_b494_01E01A90 *arg0, Anim_b494_01E01A90 *arg1, s32 arg2, Vec_b494_01E01A90 pos) {
+    extern void func_00107990(void *, void *, s32);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00107740(void *, void *);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_00109380(void *, s32);
+    extern void func_002075F0(void *, s32, s32);
+    Anim_b494_01E01A90 *an = arg1;
+    Obj_b494_01E01A90 *o = arg0;
+    Vec_b494_01E01A90 quad[4];
+    Vec_b494_01E01A90 at;
+    Vec_b494_01E01A90 scale;
+    f32 m[16];
+    f32 depth __attribute__((aligned(16)));
+    Buf_b494_01E01A90 pkt;
+    Col_b494_01E01A90 c0;
+    Col_b494_01E01A90 c1;
+    Col_b494_01E01A90 c2;
+    Col_b494_01E01A90 c3;
+    Col_b494_01E01A90 c4;
+    Col_b494_01E01A90 c5;
+    Col_b494_01E01A90 c6;
+    Col_b494_01E01A90 c7;
+    Col_b494_01E01A90 c8;
+    Col_b494_01E01A90 c9;
+    Col_b494_01E01A90 c10;
+    Col_b494_01E01A90 c11;
+    Col_b494_01E01A90 c12;
+    Col_b494_01E01A90 c13;
+    Col_b494_01E01A90 c14;
+    Col_b494_01E01A90 c15;
+    Rgba_b494_01E01A90 c;
+    s32 i;
+    s16 blend;
+    s16 j;
+    s16 wd;
+    Pkt_b494_01E01A90 *p;
+    s32 mode = arg2;
+    s32 a;
+    s32 width;
+    f32 w0;
+    f32 w1;
+
+    p = &pkt.gif;
+    width = an->width;
+    j = 0;
+    func_00107990(p, &an->col0, 2);
+    func_00107990(p, &an->col1, 1);
+    blend = mode >> 4;
+    func_00109270(p, 0, 0);
+    func_00107790(p, &an->col0, 0);
+    if (blend == 0) {
+        func_002086D0(p, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(p, ((u64)blend << 2) | ((u64)0x80 << 32) | 0x40);
+    }
+    func_00108500(p, o->b94, o->hBE);
+    func_00208700(p, o->texture, 1);
+    func_00107740(&c0, &an->col0);
+    p->v[0].c = c0;
+    func_00107740(&c1, &an->col1);
+    p->v[2].c = c1;
+    func_00107740(&c2, &an->col0);
+    p->v[1].c = c2;
+    func_00107740(&c3, &an->col1);
+    p->v[3].c = c3;
+    scale.x = 0.1f;
+    scale.y = 0.1f;
+    scale.z = 0.1f;
+    at.x = pos.x;
+    at.y = pos.y;
+    at.z = pos.z;
+    func_00108EF0(m, &scale, an->rot, &at);
+    quad[0].y = 0.0f;
+    quad[1].y = 0.0f;
+    quad[2].y = 0.0f;
+    quad[3].y = 0.0f;
+    w0 = an->w0;
+    w1 = an->w1;
+    wd = width;
+    mode &= 0xF;
+    for (i = 0; i < o->count; i++) {
+        if (i < 6) {
+            c = an->col0;
+            if (i == 0) {
+                c.a = 0;
+            }
+            if (i > 0) {
+                c.a = an->col0.a / 6 * i;
+            }
+            func_00107740(&c4, &c);
+            p->v[0].c = c4;
+            func_00107740(&c5, &c);
+            p->v[2].c = c5;
+            c = an->col0;
+            if (i >= 0) {
+                c.a = an->col0.a / 6 * (i + 1);
+            }
+            func_00107740(&c6, &c);
+            p->v[1].c = c6;
+            func_00107740(&c7, &c);
+            p->v[3].c = c7;
+        } else if (i >= o->count - 6) {
+            c = an->col0;
+            if (i == o->count - 6) {
+                c.a = an->col0.a / 6 * 6;
+            }
+            if (i == o->count - 5) {
+                c.a = an->col0.a / 6 * 5;
+            }
+            if (i == o->count - 4) {
+                c.a = an->col0.a / 6 * 4;
+            }
+            if (i == o->count - 3) {
+                c.a = an->col0.a / 6 * 3;
+            }
+            if (i == o->count - 2) {
+                c.a = an->col0.a / 6 * 2;
+            }
+            if (i == o->count - 1) {
+                c.a = an->col0.a / 6;
+            }
+            func_00107740(&c8, &c);
+            p->v[0].c = c8;
+            func_00107740(&c9, &c);
+            p->v[2].c = c9;
+            c = an->col0;
+            if (i == o->count - 6) {
+                c.a = an->col0.a / 6 * 5;
+            }
+            if (i == o->count - 5) {
+                c.a = an->col0.a / 6 * 4;
+            }
+            if (i == o->count - 4) {
+                c.a = an->col0.a / 6 * 3;
+            }
+            if (i == o->count - 3) {
+                c.a = an->col0.a / 6 * 2;
+            }
+            if (i == o->count - 2) {
+                c.a = an->col0.a / 6;
+            }
+            if (i == o->count - 1) {
+                c.a = 0;
+            }
+            func_00107740(&c10, &c);
+            p->v[1].c = c10;
+            func_00107740(&c11, &c);
+            p->v[3].c = c11;
+        } else {
+            func_00107740(&c12, &an->col0);
+            p->v[0].c = c12;
+            func_00107740(&c13, &an->col0);
+            p->v[1].c = c13;
+            func_00107740(&c14, &an->col1);
+            p->v[2].c = c14;
+            func_00107740(&c15, &an->col1);
+            p->v[3].c = c15;
+        }
+        a = j;
+        quad[0].x = w0 * func_00108030(o->bD8, a, 1);
+        quad[0].z = w0 * func_00108030(o->bD8, a, 0);
+        quad[2].x = w1 * func_00108030(o->bD8, a, 1);
+        quad[2].z = w1 * func_00108030(o->bD8, a, 0);
+        a = wd + j;
+        quad[1].x = w0 * func_00108030(o->bD8, a, 1);
+        quad[1].z = w0 * func_00108030(o->bD8, a, 0);
+        quad[3].x = w1 * func_00108030(o->bD8, a, 1);
+        quad[3].z = w1 * func_00108030(o->bD8, a, 0);
+        if (mode == 0) {
+            if (func_00205630(quad, 0x70000000, m, p, &depth) != 0) {
+                func_002075F0(p, o->target, (u32)depth);
+            }
+        } else if (mode == 1) {
+            if (func_00205630(quad, 0x70000000, m, p, &depth) != 0) {
+                func_00109380(p, 1);
+                func_002075F0(p, o->target, 0);
+            }
+        }
+        j += an->step;
+    }
+}
+#pragma opt_propagation reset
 
 /* func_00108030 really takes an s16 angle (functions.h says s32): hide that prototype */
 
