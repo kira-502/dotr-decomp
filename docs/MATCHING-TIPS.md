@@ -609,3 +609,8 @@ there is a source form that gives the original.
 - **A module global sits at an address splat labelled as a function (a `piece` after the code, or a stale epilogue
   slot):** declare it under that label, `extern T *func_01E02900_b296;`; no `D_` label exists there.
   (b296:01E01FD0, b723:01E053E0)
+
+- **Porting a scene manager with work/port.py.** `port.py try` reports -1/0 at every level when the donor calls its own
+  module's statics by name (`func_01E02170_b516`): they don't exist in the target, so nothing compiles. Rename those
+  calls to the target's statics by matching the `fn ==` handler addresses, and keep `#include "mod/<mod>.c"` so the
+  file's own types are used.
