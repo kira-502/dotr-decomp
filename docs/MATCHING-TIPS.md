@@ -623,3 +623,7 @@ there is a source form that gives the original.
 - **Plain `dk try` stays near 99% when the function calls a static defined above it** in the module file (the original
   skips reloading argument registers the static leaves alone). Check with `tools/mod_infile.sh` and `work/fulltry.sh`,
   then `dk accept` (b495, b544).
+
+- **`p[k % 4]` in a loop:** when the original computes `g + (k%4)*16` once and reads at fixed offsets from it, index
+  the array with an s32 temp (`k = i % 4; g->p[k].x ...`). A `Vec4f *s = &g->p[i % 4]` pointer adds an `addiu` and
+  swaps the `addu` operands (b258:01E01A70).
