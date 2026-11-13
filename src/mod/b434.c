@@ -386,7 +386,135 @@ static void func_01E00ED0_b434(Obj_b016_01E00ED0 *obj, Cam_b016_01E00ED0 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b434", func_01E01190_b434);
+/* shape b434:01E01190 (B434_W_S), 558 insns, 1 copy: B434_W_S, the scene step: counts the frame (0xB2B8) and reads
+   joint 0xB244 into v; in 151..351 zeroes v.x and copies it to pos; three gas bursts at x 0 +-1.25, y 60 +-1.25, z
+   -+5/6 by flag 0xB2B4 (b434:01E01A50 in 91..119 with two unused jitters, 01E02210 on odd frames in 209..259, three
+   01E01D30 in 221..319); in 261..360 three sparks 01E02060 at joint 0xB254 jittered +-10 on frames %5 == 1; 01E023A0
+   at 86 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xB1D0 - 0x260];
+    Vec4f v;
+    u8 padB1E0[0xB244 - 0xB1E0];
+    s16 joint;
+    u8 padB246[0xB254 - 0xB246];
+    s16 jC;
+    u8 padB256[0xB2B4 - 0xB256];
+    s16 flag;
+    u8 padB2B6[2];
+    s16 t;
+} Scene_b434_01E01190;
+
+static void func_01E01190_b434(Scene_b434_01E01190 *g) {
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern s32 b434_01E02C80();
+    extern s32 b434_01E01A50();
+    extern s32 b434_01E01D30();
+    extern s32 b434_01E02060();
+    extern s32 b434_01E02210();
+    extern s32 b434_01E023A0();
+    f32 a;
+    f32 b;
+
+    g->t++;
+    func_001F5620(func_001F53A0(), g->joint, &g->v);
+    if (g->t > 150 && g->t < 352) {
+        g->v.x = 0.0f;
+        g->pos = g->v;
+    }
+    if (g->t > 90 && g->t < 120) {
+        g->pos = g->v;
+        a = func_0019A5C8() % 50 - 25;
+        b = func_0019A5C8() % 50 - 25;
+        a /= 20.0f;
+        b /= 20.0f;
+        g->pos.y = 60.0f;
+        g->pos.x = 0.0f;
+        g->pos.x += a;
+        g->pos.y += b;
+        if (g->flag) {
+            g->pos.z -= 5.0f;
+        } else {
+            g->pos.z += 5.0f;
+        }
+        b434_01E02C80(g, b434_01E01A50, 0);
+        g->pos = g->v;
+        g->pos.x += func_0019A5C8() % 30 - 15;
+        g->pos.y += func_0019A5C8() % 30 - 15;
+        g->pos = g->v;
+        g->pos.y = 50.0f;
+        g->pos.x += func_0019A5C8() % 30 - 15;
+        g->pos.y += func_0019A5C8() % 30 - 15;
+    }
+    if (g->t > 208 && g->t < 260) {
+        g->pos = g->v;
+        a = func_0019A5C8() % 50 - 25;
+        b = func_0019A5C8() % 50 - 25;
+        a /= 20.0f;
+        b /= 20.0f;
+        g->pos.y = 60.0f;
+        g->pos.x = 0.0f;
+        g->pos.x += a;
+        g->pos.y += b;
+        if (g->flag) {
+            g->pos.z -= 6.0f;
+        } else {
+            g->pos.z += 6.0f;
+        }
+        if (g->t % 2 == 1) {
+        b434_01E02C80(g, b434_01E02210, 0);
+        }
+    }
+    if (g->t > 220 && g->t < 320) {
+        g->pos = g->v;
+        a = func_0019A5C8() % 50 - 25;
+        b = func_0019A5C8() % 50 - 25;
+        a /= 20.0f;
+        b /= 20.0f;
+        g->pos.y = 60.0f;
+        g->pos.x = 0.0f;
+        g->pos.x += a;
+        g->pos.y += b;
+        if (g->flag) {
+            g->pos.z -= 6.0f;
+        } else {
+            g->pos.z += 6.0f;
+        }
+        b434_01E02C80(g, b434_01E01D30, 0);
+        b434_01E02C80(g, b434_01E01D30, 0);
+        b434_01E02C80(g, b434_01E01D30, 0);
+    }
+    if (g->t > 260 && g->t < 360) {
+        func_001F5620(func_001F5380(), g->jC, &g->pos);
+        g->pos.x += func_0019A5C8() % 20 - 10;
+        g->pos.y += func_0019A5C8() % 20 - 10;
+            g->pos.z += func_0019A5C8() % 20 - 10;
+        if (g->t % 5 == 1) {
+            b434_01E02C80(g, b434_01E02060, 0);
+        }
+        func_001F5620(func_001F5380(), g->jC, &g->pos);
+        g->pos.x += func_0019A5C8() % 20 - 10;
+        g->pos.y += func_0019A5C8() % 20 - 10;
+            g->pos.z += func_0019A5C8() % 20 - 10;
+        if (g->t % 5 == 1) {
+            b434_01E02C80(g, b434_01E02060, 0);
+        }
+        func_001F5620(func_001F5380(), g->jC, &g->pos);
+        g->pos.x += func_0019A5C8() % 20 - 10;
+        g->pos.y += func_0019A5C8() % 20 - 10;
+            g->pos.z += func_0019A5C8() % 20 - 10;
+        if (g->t % 5 == 1) {
+            b434_01E02C80(g, b434_01E02060, 0);
+        }
+    }
+    if (g->t == 86) {
+        b434_01E02C80(g, b434_01E023A0, 0);
+    }
+}
 
 /* shape b434:01E01A50, 183 insns: a grey (0x80 / 0x70 flicker) flake 2..7 growing to 16 every third tick, frame cycling 0..7, angle 0..359, drift (-25..24)/55 and /80 in z, f52 25 falling to 5 once the scene count (ctx+0xB2B8) passes 186; alpha up by 12 to 0x80 for 190 ticks, then down by 9 */
 
