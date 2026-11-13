@@ -674,3 +674,8 @@ there is a source form that gives the original.
   (`s->t[i + 1].p = s->t[i].p` with a Vec3 member); float locals schedule it wrongly (c516:01E018D0).
 - **-O1 setup-loop counter wanting `ot`'s register:** give the setup loop its own counter; `ot` is dead in that
   branch, but a counter shared with a later loop can't take its register (b011:01E050B0).
+
+- **Hoisted packet-vertex addresses in `s0..s3` after the loop test, the loop pointer and counter pushed to `s4/s5`:**
+  set the vertex pointers between an explicit guard and a do-while: `i = 0; if (i < n) { q3 = &pk.v[3]; ...;
+  do { ... } while (++i < n); }`. Set before a `for`, they land before its test; inside the loop they become compiler
+  temporaries. Use `i < n` (`n > 0` gives `blez`) (b131:01E053B0, ShFx_Rcore).
