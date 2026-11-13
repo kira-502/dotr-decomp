@@ -1393,7 +1393,179 @@ static s32 func_01E03A30_b000(Obj_b000_01E03A30 *obj, Pt_b000_01E03A30 *pts, f32
 
 INCLUDE_ASM("asm/nonmatchings/mod/b000", func_01E03B80_b000);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b000", func_01E04540_b000);
+/* shape b000:01E04540 (LkEff_SortElectr), 608 insns, 1 copy (-O3,p): draws a lightning bolt between two points: the
+   line is cut into n pieces (at most 16), each inner point shaken by a random jitter, all projected; then each piece
+   is one textured quad (random texture corner) as wide as its screen length / 3 (or a fixed width), drawn only when
+   both ends are visible and the piece is not past the moving head. Calls the module's colour helper (shape
+   b000:01E00100). The spilled ot parameter is aligned(8): that puts its home at 0xB8 like the original (plain s32
+   gives 0xBC). The depth goes through an explicit func_001A23B0 call, not a (u32) cast: b021's twins' cast lets
+   the compiler keep &pkt / ot in $a0 / $a1 across the helper, which pushes the z stores' temps to $a2 / $a3. */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b000_01E04540;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 uv;
+    Xyz_b000_01E04540 xyz;
+} Vtx_b000_01E04540;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b000_01E04540 v[4];
+    u8 tail[0x20];
+} Pkt_b000_01E04540;
+
+typedef struct {
+    s16 u, v, w, h;
+} Rect_b000_01E04540;
+
+typedef struct {
+    void *texture;
+    s32 flags;
+    Src_b000_01E00100 color;
+    s16 n;
+    s16 jitter;
+    Rect_b000_01E04540 rect;
+    u8 pad18[0x10];
+    s16 head;
+    u8 pad2A[2];
+    f32 width;
+} Bolt_b000_01E04540;
+
+typedef struct {
+    u8 pad[0x30];
+    f32 view[1];
+} Cam_b000_01E04540;
+
+#pragma optimization_level 3
+
+static s32 func_01E04540_b000(s32 ot __attribute__((aligned(8))), Bolt_b000_01E04540 *b, Cam_b000_01E04540 *cam, Vec4f *p1, Vec4f *p2) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern s32 func_00104540(void *, void *, s32);
+    extern void func_002075F0(void *, s32, s32);
+    extern s32 func_00208CB0(void *, u64);
+    Xyz_b000_01E04540 s[17];
+    Vec4f mid;
+    f32 depth[17];
+    Pkt_b000_01E04540 pkt;
+    f32 t;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 w;
+    f32 len;
+    s32 vis;
+    s32 k;
+    s32 r;
+
+    vis = 0;
+    if (b->n > 16) {
+        b->n = 16;
+    }
+    ((Pkt_b000_01E04540 *)(s32)&pkt)->count = 0x34;
+    ((Pkt_b000_01E04540 *)(s32)&pkt)->tag = 0xC;
+    ((Pkt_b000_01E04540 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+    ((Pkt_b000_01E04540 *)(s32)&pkt)->pad = 0;
+    func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    func_01E00100_b000((Vtx_b000_01E00100 *)&pkt, &b->color);
+    dx = p2->x - p1->x;
+    dy = p2->y - p1->y;
+    dz = p2->z - p1->z;
+    if (func_00205440(p1, cam->view, &s[0], &depth[0]) != 0) {
+        if (func_00101600(&s[0]) != 0) {
+            vis |= 1;
+        }
+    }
+    for (k = 1; k < b->n; k++) {
+        t = (f32)k / b->n;
+        if (b->jitter != 0) {
+            mid.x = p1->x + dx * t + 0.1f * (func_0019A5C8() % (b->jitter * 2) - b->jitter);
+            mid.y = p1->y + dy * t + 0.1f * (func_0019A5C8() % (b->jitter * 2) - b->jitter);
+            mid.z = p1->z + dz * t + 0.1f * (func_0019A5C8() % (b->jitter * 2) - b->jitter);
+        } else {
+            mid.x = p1->x + dx * t;
+            mid.y = p1->y + dy * t;
+            mid.z = p1->z + dz * t;
+        }
+        if (func_00205440(&mid, cam->view, &s[k], &depth[k]) != 0) {
+            if (func_00101600(&s[k]) != 0) {
+                vis |= 1 << k;
+            }
+        }
+    }
+    if (func_00205440(p2, cam->view, &s[b->n], &depth[b->n]) != 0) {
+        if (func_00101600(&s[b->n]) != 0) {
+            vis |= 1 << b->n;
+        }
+    }
+    for (k = 0; k < b->n; k++) {
+        if (func_00104520(b->flags, 0x1A) != 0 || k <= b->head) {
+            r = func_0019A5C8() % 4;
+            if (r == 0) {
+                func_00104540(&pkt, &b->rect, 1);
+            } else if (r == 1) {
+                func_00104540(&pkt, &b->rect, 2);
+            } else if (r == 2) {
+                func_00104540(&pkt, &b->rect, 5);
+            } else {
+                func_00104540(&pkt, &b->rect, 7);
+            }
+            dx = func_001A6970((s32)(s[k].x - s[k + 1].x));
+            dy = func_001A6970((s32)(s[k].y - s[k + 1].y));
+            len = func_001A6C60(dx * dx + dy * dy);
+            if (func_00104520(b->flags, 0x1B) != 0) {
+                w = b->width;
+            } else {
+                w = len / 3.0f;
+            }
+            if (dx > dy) {
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = s[k].x;
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = s[k + 1].x;
+                pkt.v[0].xyz.y = s[k].y - w;
+                pkt.v[1].xyz.y = s[k + 1].y - w;
+                pkt.v[2].xyz.y = w + s[k].y;
+                pkt.v[3].xyz.y = w + s[k + 1].y;
+            } else {
+                pkt.v[0].xyz.x = s[k].x - w;
+                pkt.v[1].xyz.x = s[k + 1].x - w;
+                pkt.v[2].xyz.x = w + s[k].x;
+                pkt.v[3].xyz.x = w + s[k + 1].x;
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = s[k].y;
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = s[k + 1].y;
+            }
+            func_00208CB0(&pkt, 2 | (2 << 2) | ((u64)b->rect.u << 4) | ((u64)(b->rect.u + b->rect.w - 1) << 14) |
+                                    ((u64)b->rect.v << 24) | ((u64)(b->rect.v + b->rect.h - 1) << 34));
+            func_00208700(&pkt, b->texture, 1);
+            if (func_00104520(vis, k) != 0 && func_00104520(vis, k + 1) != 0) {
+                if (func_00104520(b->flags, 0x13) != 0) {
+                    pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFF;
+                    func_002075F0(&pkt, ot, 0);
+                } else {
+                    pkt.v[0].xyz.z = pkt.v[2].xyz.z = s[k].z;
+                    pkt.v[1].xyz.z = pkt.v[3].xyz.z = s[k + 1].z;
+                    func_002075F0(&pkt, ot, func_001A23B0((depth[k] + depth[k + 1]) / 2.0f));
+                }
+            }
+        }
+    }
+    b->head++;
+    if (b->head > b->n) {
+        b->head = 0;
+    }
+    return 0;
+}
+
+#pragma optimization_level reset
 
 /* shape b000:01E04EC0, 148 insns, 12 copies: seed n points with random positions: flag 0x1D set and v < 0:
    +-50 / +-50 / 0..50, flag set and v >= 0: +-240 / +-240 / 240..480, flag clear: tenths of +-240 / 0..240 */
