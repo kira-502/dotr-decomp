@@ -654,3 +654,12 @@ there is a source form that gives the original.
   `{ s32 d = e->max - e->life; ... d * (e->c.a >> 4) ... }`; reusing a local doesn't work (b040:01E05BD0).
 - **`t == 0x75 || t == 0x76 || t == 0x77` folded into `addiu` + `sltiu` at -O4 where the original has `bne` chains:**
   a `switch` gives `beq` + `b`; build the function at -O3 instead (b060:01E00080).
+
+- **-O2 loads in a different order from the expression's operands** (`len`, then `rad`, then `h` for
+  `rad*rad*(1 - h*h/(len*len))`): put the fields in block locals in load order,
+  `{ f32 l = e->len; f32 q = e->rad; f32 hh = e->h; r = q*q*(1.0f - hh*hh/(l*l)); }` (b176:01E02820).
+- **A masked byte difference with an `andi 0xFF` into a temp before the `and`:** use a block-local u8,
+  `{ u8 t = e->max - e->life; age = t & e->mask; }`; casts in one expression never give the first `andi` (b176:01E02820).
+- **`#include "mod/<mod>.c"` in a work file can hide a real-file clash:** statics defined below the function become
+  visible, so the standalone try matches but the in-file build reports CLASH / "redeclared". Call those through
+  `<mod>_<VADDR>` aliases (b770, b089).
