@@ -168,10 +168,7 @@ b743:01E01C70	96%	hard: 2nd spawn count `n = clock < 100 ? 2 : 2`: original sign
 b756:01E02360		hard: OBJ_MOVE_3: self-copies (w.x = w.x) and `c.eq.s v.x, 0` with both arms loading the same field (macro-like ternaries); not attempted past reading
 b758:01E03700	99%	an earlier try got this far
 b767:01E003A0	99.2%	an earlier try got this far
-b774:01E00080	99.7% (593/595)	hard: W_S; first drift line (p.y += (a.y - r.y) / 200.0f): orig quotient in f2 (dividend), ours f1 (divisor); tried temp, *1/200, reorder (best draft: drafts/mod/b774_01E00080.c)
-c017:01E009E0	99% (218/220)	hard: c017:01E006B0's source at -O3; only the scene floor's load (lh 0x399A) takes $a0 where the original has $a2; a (void *) cast on g->v fixed the in-file func_00106DD0 float order; floor position, locals, declaration orders, prototypes, typed vs s32 parameter and the permuter do not move it (best draft: drafts/mod/c017_01E009E0.c)
 c020:01E003C0	83% (169/203)	hard: saved-register colouring only (loop counters/pointer temps); chatF tried 120 orders (best draft: drafts/mod/c020_01E003C0.c)
-c021:01E016C0	98% (347/355)	hard: left: andi 0xFF after the float->u8 radius shrink (x2) and the 0.0f arg built in f14 first for func_00106DD0 (best draft: drafts/mod/c021_01E016C0.c)
 c027:01E00660	67%	an earlier try got this far
 c030:01E01510	69% (161/233)	hard: colouring fixed with `T *g = (T *)arg0;` + a separate init counter k; left: 12 unfilled delay-slot nops the original keeps (cmov/jump-threading "give up"?), slot loops want counter s3/pointer s2, pragmas no help (best draft: drafts/mod/c030_01E01510.c)
 c031:01E006E0	67%	an earlier try got this far
@@ -182,7 +179,6 @@ c061:01E01100	70% (174/249)	hard: s-register colouring only; probe search: no si
 c061:01E03D80	76%	an earlier try got this far
 c404:01E00080		hard: not tried past reading: whole-module draw (64 slots x 8 quads, GS packet header + 14-bit UV bitfields kept in s5/fp/s6, spills); needs a long session
 c501:01E00910	96%	hard: g must take s0 over ot: local copy + opt_propagation off fixes it but then the quad loop gets a top test and dst as addiu base (index loop wants propagation on) (best draft: drafts/mod/c501_01E00910.c)
-c507:01E01540	99.7% (306/307)	hard: one store order: `g->texE0 = tex[0]` must load early (after h14C) but store after fE8; every statement position tried (best draft: drafts/mod/c507_01E01540.c)
 c514:01E01040	98%	an earlier try got this far
 c534:01E027F0	86% (345/399, ours 395)	hard: logic decoded (LkSortRing idioms); left: UV writes go through pointers to the vertex uv words (orig a0/a1/a2/v1 = &pkt.v[k].uv) and the obj arg spill slot (0xA8 vs 0xAC) (best draft: drafts/mod/c534_01E027F0.c)
 c541:01E02C40	84%	an earlier try got this far
