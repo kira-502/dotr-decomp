@@ -1787,7 +1787,230 @@ static void func_01E039E0_c062(Scene_c062_01E039E0 *g) {
 }
 
 
-INCLUDE_ASM("asm/nonmatchings/mod/c062", func_01E03BE0_c062);
+/* shape c062:01E03BE0, 546 insns, 1 copy: a body's move step (state in e+0x64): turn upright, glide to its target
+   slot over 28 ticks while a sway amplitude fades and grows, wait for the scene step, glide again; adds the sway on a
+   turning angle and places the model; after tick 873 sets it down */
+
+typedef struct {
+    Vec4f pos;
+    Vec4f off;
+    u8 pad20[4];
+    s32 turn;
+    u8 pad28[8];
+    s32 rot[4];
+    Vec4f scale;
+    Vec4f vel;
+    u8 col[4];
+    s32 state;
+    u8 pad68[8];
+} Ent_c062_01E03BE0;
+
+typedef struct {
+    u8 pad0[0x67B0];
+    Vec4f tgt[5];
+    u8 pad6800[0x7C];
+    s32 ids[5];
+    u8 pad6890[0xC];
+    s32 cnt[5];
+    u8 pad68B0[0xC];
+    f32 amp[5];
+    u8 pad68D0[0x2C];
+    s32 step;
+    u8 pad6900[0x24];
+    s16 stop;
+    u8 pad6926[0x14];
+    s16 mode;
+    s16 t;
+    u8 pad693E[0x202];
+    u8 sin[1];
+} Scene_c062_01E03BE0;
+
+static s32 func_01E03BE0_c062(Scene_c062_01E03BE0 *g, Ent_c062_01E03BE0 *e, s32 i) {
+    extern s32 func_001F5AF0(s32);
+    extern void func_00107130(void *, void *, s32);
+    extern f32 func_001A6C60(f32);
+    extern void func_001F5CA0(s32, void *);
+    extern void func_001F5C40(s32, void *);
+    extern void func_001F5D10(s32, void *);
+    extern void func_001F5B70(s32, void *);
+    extern void func_001F5DE0(s32, void *);
+    extern void func_00106B50(void *, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    extern Vec4f func_001099E0(Vec4f *, void *, f32);
+    s32 id;
+    s16 n;
+    f32 dx;
+    f32 dz;
+    f32 dy;
+    f32 ax;
+    f32 az;
+    f32 ay;
+    f32 bx;
+    f32 bz;
+    s32 r[4];
+    Vec4f p;
+    Vec4f q;
+
+    id = g->ids[i];
+    n = 0;
+    if (g->stop != 0) {
+        return 0;
+    }
+    if (func_001F5AF0(id) != 0) {
+        func_00107130(e, &p, 1);
+        dx = g->tgt[i].x - (e->pos.x + e->off.x);
+        dz = g->tgt[i].z - (e->pos.z + e->off.z);
+        dy = g->tgt[i].y - (e->pos.y + e->off.y);
+        ax = bx = func_001A6C60(dx * dx);
+        az = bz = func_001A6C60(dz * dz);
+        ay = func_001A6C60(dy * dy);
+        if (e->state == 0) {
+            func_001F5CA0(id, e->rot);
+            if (g->mode == 0) {
+                if (e->rot[0] > 0x800) {
+                    e->rot[0] -= 0x700;
+                } else {
+                    e->rot[0] = 0;
+                    n++;
+                }
+            } else {
+                if (e->rot[0] > 0x800) {
+                    e->rot[0] -= 0x700;
+                } else {
+                    e->rot[0] = 0;
+                    n++;
+                }
+            }
+            if (g->mode == 0) {
+                if (e->rot[1] < 0x7800) {
+                    e->rot[1] += 0x700;
+                } else if (e->rot[1] > 0x8800) {
+                    e->rot[1] -= 0x700;
+                } else {
+                    e->rot[1] = 0x8000;
+                    n++;
+                }
+            } else {
+                if (e->rot[1] > 0x8000 && e->rot[1] < 0xF800) {
+                    e->rot[1] += 0x700;
+                } else if (e->rot[1] < 0x8000 && e->rot[1] > 0x800) {
+                    e->rot[1] -= 0x700;
+                } else {
+                    e->rot[1] = 0;
+                    n++;
+                }
+            }
+            if (!g->mode || g->mode == 1) {
+                if (e->rot[2] > 0x8000 && e->rot[2] < 0xF800) {
+                    e->rot[2] += 0x700;
+                } else if (e->rot[2] < 0x8000 && e->rot[2] > 0x800) {
+                    e->rot[2] -= 0x700;
+                } else {
+                    e->rot[2] = 0;
+                    n++;
+                }
+            }
+            func_001F5C40(id, e->rot);
+            if (n == 3) {
+                e->state++;
+                g->step++;
+                e->vel.x = (g->tgt[i].x - e->pos.x) / 28.0f;
+                e->vel.z = (g->tgt[i].z - e->pos.z) / 28.0f;
+                e->vel.y = (g->tgt[i].y - e->pos.y) / 28.0f;
+            }
+        } else if (e->state == 2) {
+            if (ax > 2.0f) {
+                e->off.x += e->vel.x;
+            } else {
+                n++;
+            }
+            if (az > 2.0f) {
+                e->off.z += e->vel.z;
+            } else {
+                n++;
+            }
+            if (ay > 2.0f) {
+                e->off.y += e->vel.y;
+            } else if (n == 2) {
+                n = 3;
+                if (g->amp[i] > 0.0f) {
+                    g->amp[i] -= 0.5f;
+                } else {
+                    g->amp[i] = 0.0f;
+                    g->step++;
+                    e->state = 3;
+                    e->off.x = g->tgt[i].x - e->pos.x;
+                    e->off.y = g->tgt[i].y - e->pos.y;
+                    e->off.z = g->tgt[i].z - e->pos.z;
+                }
+            }
+            if (n != 3) {
+                g->amp[i] += 0.8f;
+            }
+        } else if (e->state == 3) {
+            if (g->step == 12) {
+                e->vel = func_001099E0(&g->tgt[i], e, 28.0f);
+                e->state++;
+            }
+        } else if (e->state == 4) {
+            if (ax > 2.0f) {
+                e->off.x += e->vel.x;
+            } else {
+                n++;
+            }
+            if (az > 2.0f) {
+                e->off.z += e->vel.z;
+            } else {
+                n++;
+            }
+            if (ay > 2.0f) {
+                e->off.y += e->vel.y;
+            } else if (n == 2) {
+                g->amp[i] = 0.0f;
+                g->step++;
+                e->state++;
+            }
+        } else if (e->state == 5) {
+            if (g->step == 62) {
+                e->vel = func_001099E0(&g->tgt[i], e, 28.0f);
+                e->state++;
+            }
+        } else if (e->state == 6) {
+            if (bx > 2.0f) {
+                e->off.x += e->vel.x;
+            }
+            if (bz > 2.0f) {
+                e->off.z += e->vel.z;
+            }
+            if (ay > 2.0f) {
+                e->off.y += e->vel.y;
+            }
+        }
+        if (g->t == 0x127) {
+            e->scale.x = 0.0f;
+            e->scale.y = 0.0f;
+            e->scale.z = 0.0f;
+            func_001F5D10(id, &e->scale);
+        }
+        func_00106B50(&p, &e->off);
+        n = e->turn += g->cnt[i];
+        p.x += g->amp[i] * func_00108030(g->sin, n, 1);
+        p.y += g->amp[i] * func_00108030(g->sin, n, 0);
+        func_00107130(&q, &p, 0);
+        func_001F5B70(id, &q);
+    }
+    if (g->t >= 0x369) {
+        e->pos.y = 0.0f;
+        func_001F5B70(id, e);
+        e->col[3] = 0x80;
+        func_001F5DE0(id, e->col);
+        r[0] = 0x4000;
+        r[1] = 0;
+        r[2] = 0;
+        func_001F5C40(id, r);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/mod/c062", func_01E04470_c062);
 
