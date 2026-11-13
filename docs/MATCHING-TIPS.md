@@ -574,3 +574,6 @@ there is a source form that gives the original.
 - **An -O3 port misses a block-end `nop` or two (end of an else arm, end of a later `if (k == 0)` block):** turn the
   `?:` into an if/else assigning the undivided value and write the divide at each use,
   `(u32)(a / (f32)segs * (f32)(segs - k))`; the compiler hoists the shared divide itself. (b285:01E003A0)
+- **A clamp's branch keeps a `nop` delay slot where your `if` fills it:** write it as `?:` (`n = n > 36 ? 36 : n;`).
+  If that swaps the variable's spill slot with another spilled local, reuse the other local for an earlier
+  short-lived value so it becomes a split web with a later slot. (b062:01E020A0)
