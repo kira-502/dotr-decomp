@@ -547,3 +547,6 @@ there is a source form that gives the original.
 - **A shifted difference used twice (`d = (w1 - w0) >> 1; w0 += d - 1; w1 -= d - 1;`) with it and the address temps
   around it in permuted registers:** keep the unshifted difference in the local and shift at each use,
   `k = w1 - w0; w0 = w0 + (k >> 1) - 1; ...`. (b062:01E00DF0)
+- **Before a call to a module static, the address argument (`addiu a3`) loads one instruction ahead of a constant
+  (`li a2`), and no statement order fixes it:** call it through a block-scope no-prototype `extern void f();` with no
+  casts on the arguments. (b256:01E04090, b264:01E03E00)
