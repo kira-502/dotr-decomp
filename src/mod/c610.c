@@ -458,4 +458,307 @@ static s32 func_01E00A20_c610(Obj_c610_01E00A20 *o, Cam_c610_01E00A20 *cam, Grid
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c610", func_01E01180_c610);
+/* shape c610:01E01180 (c610), 552 insns, 1 copy: two-unit scene: setup copies both duel units, aims each at a side
+   point and fills a frame and a 24-row card strip; else steps the units in, waves the strip by a growing sine, then
+   fades the frame and sends unit B back; returns 8 when the timer runs out */
+
+typedef struct {
+    f32 pos[3];
+    u8 padC[4];
+    s32 a[3];
+    u8 pad1C[4];
+    s32 b[3];
+    u8 pad2C[4];
+    f32 f30;
+    f32 f34;
+    u8 pad38[0xB];
+    u8 f43;
+    u8 pad44[0x3D];
+    s8 lo : 5;
+    s8 b5 : 1;
+    s8 b6 : 1;
+    s8 b7 : 1;
+    u8 pad82[0x1E];
+} __attribute__((aligned(16))) Unit_c610_01E01180;
+
+typedef struct {
+    f32 pos[3];
+    u8 padC[4];
+    s32 a[3];
+    u8 pad1C[4];
+    s32 b[3];
+    u8 pad2C[4];
+    f32 f30;
+    f32 f34;
+    u8 pad38[8];
+    f32 x;
+    f32 y;
+    s32 steps;
+    u8 pad4C[4];
+} Ctl_c610_01E01180;
+
+typedef struct {
+    f32 x, y, z;
+} Pt_c610_01E01180;
+
+typedef struct {
+    u8 pad0[4];
+    s32 flags;
+    f32 half;
+    u8 b, g, r, a;
+    s16 u, v;
+    s16 tw, th;
+    s16 u0, v0;
+    u8 pad1C[4];
+    Pt_c610_01E01180 pos[24][16];
+} Grid_c610_01E01180;
+
+typedef struct {
+    u8 pad0[4];
+    s32 flags;
+    u8 b, g, r, a;
+    u8 padC[4];
+    Vec4f pts[4];
+} Frame_c610_01E01180;
+
+typedef struct {
+    Vec4f v[4];
+} Tbl_c610_01E01180;
+
+typedef struct {
+    u8 cam0[0x70];
+    Frame_c610_01E01180 frame;
+    u8 padC0[0x40];
+    u8 cam1[0x70];
+    Grid_c610_01E01180 grid;
+    u8 pad1390[0x600];
+    u8 al[24][16];
+    u8 pad1B10[0x80];
+    Unit_c610_01E01180 a;
+    Unit_c610_01E01180 b;
+    Ctl_c610_01E01180 ctl[2];
+    s32 timer;
+    f32 dist;
+    s32 alpha;
+    s32 code;
+    s32 tick;
+    s32 flags;
+    u8 pad1D88[4];
+    s32 ph;
+    s32 dph;
+    f32 off;
+    f32 amp;
+    u8 pad1D9C[4];
+} Scene_c610_01E01180;
+
+static s32 func_01E01180_c610(s32 arg0, s32 code) {
+    Scene_c610_01E01180 *g = (Scene_c610_01E01180 *)arg0;
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_00195108();
+    extern void func_00205C40();
+    extern s32 c610_01E00700();
+    extern s32 c610_01E00910();
+    extern s32 c610_01E00A20();
+    extern s32 c610_01E00120();
+    extern Tbl_c610_01E01180 D_01E01A80_c610;
+    Tbl_c610_01E01180 c;
+    s32 otm;
+    s32 idA;
+    s32 idB;
+    Unit_c610_01E01180 *a;
+    Unit_c610_01E01180 *b;
+    s32 ot;
+    s32 rv;
+    s32 k;
+    s32 j;
+
+    otm = (s32)func_00207500();
+    idA = func_001F53A0();
+    idB = func_001F5380();
+    a = (Unit_c610_01E01180 *)func_001F5B30(idA);
+    b = (Unit_c610_01E01180 *)func_001F5B30(idB);
+    rv = 0;
+    if (a == NULL || b == NULL) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00195108(g, 0x1DA0);
+        func_00103890(g->cam0);
+        func_00103890(g->cam1);
+        g->a = *a;
+        if (b) {
+            g->b = *b;
+        }
+        func_001F5970(idA, 1);
+        g->a.b6 = 1;
+        g->a.b5 = 1;
+        func_001F5970(idB, 1);
+        g->b.b6 = 1;
+        g->b.b5 = 1;
+        g->flags = 0;
+        g->tick = 0;
+        g->code = code >> 16;
+        g->dist = -150.0f;
+        a->f43 = 0;
+        b->f43 = 0;
+        g->alpha = 0x80;
+        g->ctl[0].steps = 20;
+        g->ctl[0].x = -150.0f;
+        g->ctl[0].y = 0.0f;
+        func_00205CB0(&g->ctl[0], g->ctl[0].x, g->ctl[0].y);
+        func_00205C40(g->ctl[0].b);
+        g->ctl[0].b[0] -= g->a.b[0];
+        g->ctl[0].b[1] -= g->a.b[1];
+        g->ctl[0].b[2] -= g->a.b[2];
+        g->ctl[0].a[0] = 0;
+        g->ctl[0].a[1] = 0x10000;
+        g->ctl[0].a[2] = 0x10000;
+        g->ctl[0].f30 = g->ctl[0].f34 = 1.0f;
+        g->ctl[1].steps = 20;
+        g->ctl[1].x = 150.0f;
+        g->ctl[1].y = 0.0f;
+        func_00205CB0(&g->ctl[1], g->ctl[1].x, g->ctl[1].y);
+        func_00205C40(g->ctl[1].b);
+        g->ctl[1].b[0] -= g->b.b[0];
+        g->ctl[1].b[1] -= g->b.b[1];
+        g->ctl[1].b[2] -= g->b.b[2];
+        g->ctl[1].a[0] = 0;
+        g->ctl[1].a[1] = 0x10000;
+        g->ctl[1].a[2] = 0x10000;
+        g->ctl[1].f30 = g->ctl[1].f34 = 1.0f;
+        g->timer = 0x113;
+        g->frame.flags = 0x80000;
+        g->frame.r = 0x80;
+        g->frame.g = 0x30;
+        g->frame.b = 0x60;
+        g->frame.a = 0xFF;
+        c = D_01E01A80_c610;
+        c.v[0].x = -128.0f;
+        c.v[0].y = 184.0f;
+        c.v[0].z = 0.0f;
+        c.v[1].x = 128.0f;
+        c.v[1].y = 184.0f;
+        c.v[1].z = 0.0f;
+        c.v[2].x = 128.0f;
+        c.v[2].y = -184.0f;
+        c.v[2].z = -0.0f;
+        c.v[3].x = -128.0f;
+        c.v[3].y = -184.0f;
+        c.v[3].z = -0.0f;
+        for (k = 0; k < 4; k++) {
+            g->frame.pts[k].x = c.v[k].x;
+            g->frame.pts[k].y = c.v[k].y;
+            g->frame.pts[k].z = c.v[k].z;
+        }
+        g->grid.flags = 0x80801;
+        g->grid.half = 8.0f;
+        g->grid.u = 0;
+        g->grid.v = 0;
+        g->grid.u0 = 0;
+        g->grid.v0 = 0;
+        g->grid.tw = 0x100;
+        g->grid.th = 0x170;
+        g->grid.a = g->grid.b = g->grid.g = g->grid.r = 0x80;
+        for (j = 0; j < 24; j++) {
+            g->grid.pos[j][0].z = 0.0f;
+            g->grid.pos[j][0].x = 0.0f;
+            g->grid.pos[j][0].y = 184.0f + -2.0f * g->grid.half * j;
+            g->al[j][0] = 0x80;
+        }
+        return 0;
+    }
+    {
+        f32 x = 150.0f;
+        f32 h = 0.0f;
+        func_00103920(g->cam0, x, h);
+    }
+    func_00103920(g->cam1, g->dist, 0.0f);
+    ot = func_00207F60();
+    func_001D99F0();
+    if (func_00104520(g->flags, 0) && func_00104520(g->flags, 1)) {
+        if (!func_00104520(g->flags, 0x1F)) {
+            c610_01E00910(&g->b, g->alpha, &g->ctl[1].x);
+        } else if (!func_00104520(g->flags, 0x1E)) {
+            if (!c610_01E00700(&g->b, &g->ctl[1])) {
+                g->flags |= 0x40000000;
+                g->b.a[0] = b->a[0];
+                g->b.a[1] = b->a[1];
+                g->b.a[2] = b->a[2];
+                func_001F5970(idB, 0);
+            }
+            c610_01E00910(&g->b, g->alpha, NULL);
+        }
+        if (!func_00104520(g->flags, 0x1C)) {
+            c610_01E00A20(&g->a, g->cam1, &g->grid);
+            for (k = 0; k < 24; k++) {
+                g->grid.pos[k][0].x = 20.0f * func_0020B550(g->ph + g->dph * k);
+                g->off = g->amp * (k * k);
+                g->grid.pos[k][0].x += g->off;
+            }
+            g->ph += g->dph;
+            if (!func_00104520(g->flags, 0x1D)) {
+                if (!func_00103350(&g->dph, 0x1000, 0x100)) {
+                    if (!func_00103390(&g->amp, 0.52083f, 0.01f)) {
+                        g->flags |= 0x20000000;
+                        g->grid.flags &= ~0x800;
+                    }
+                }
+            } else {
+                func_00103540(&g->amp, 0.0f, 0.01f);
+                if (!func_00103390(&g->dist, 150.0f, 5.0f)) {
+                    func_00103500(&g->dph, 0, 0x40);
+                }
+                if (!func_00103470(&g->grid.a, 0, 1)) {
+                    g->flags |= 0x10000000;
+                }
+            }
+        }
+    } else {
+        if (!func_00104520(g->flags, 0)) {
+            if (!c610_01E00700(&g->a, &g->ctl[0])) {
+                g->flags |= 1;
+                g->a.a[0] = 0;
+                g->a.a[1] = 0;
+                g->a.a[2] = 0;
+            }
+            c610_01E00910(&g->a, g->alpha, NULL);
+        }
+        if (!func_00104520(g->flags, 1)) {
+            if (!c610_01E00700(&g->b, &g->ctl[1])) {
+                g->flags |= 2;
+                g->b.a[0] = 0;
+                g->b.a[1] = 0;
+                g->b.a[2] = 0;
+            }
+            c610_01E00910(&g->b, g->alpha, NULL);
+        }
+    }
+    func_001D9DD0();
+    func_00207FD0(ot, (s32)func_00207500(), 0);
+    if (!func_00104520(g->flags, 0x1F) && func_00104520(g->flags, 0x1C)) {
+        c610_01E00120(otm, &g->frame, g->cam0);
+        if (!func_00103470(&g->frame.a, 0, 8)) {
+            g->flags |= 0x80000000;
+            g->ctl[1].steps = 20;
+            g->ctl[1].x = 150.0f;
+            g->ctl[1].y = 0.0f;
+            func_00205CB0(&g->b, g->ctl[1].x, g->ctl[1].y);
+            *(Vec4f *)g->ctl[1].pos = *(Vec4f *)b->pos;
+            func_00205C40(g->b.b);
+            g->ctl[1].b[0] = g->ctl[1].b[1] = g->ctl[1].b[2] = 0;
+            g->b.a[0] = 0;
+            g->b.a[1] = 0x10000;
+            g->b.a[2] = 0x10000;
+            *(Vec4f *)g->ctl[1].a = *(Vec4f *)b->a;
+            g->ctl[1].f30 = g->ctl[1].f34 = 0.1f;
+            g->b.f30 = g->b.f34 = 1.0f;
+        }
+    }
+    g->tick++;
+    if (--g->timer == 0) {
+        func_001F5970(idB, 0);
+        rv = 8;
+    }
+    return rv;
+}
