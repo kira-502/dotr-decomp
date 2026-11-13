@@ -1177,7 +1177,364 @@ static s32 func_01E02B80_b029(Rib_b029_01E02B80 *arg0, s32 id __attribute__((ali
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b029", func_01E03660_b029);
+/* shape b285:01E003A0 (ShFx_Blade), 1096 insns, 11 copies (-O3,p): ShFx_Blade variant, -O3 build of b091:01E00410's
+   source; the glow quad's alpha as an if/else, divided by segs at each use */
+
+typedef struct Pool_b285_01E003A0 {
+    u8 kind;
+    u8 pad1[3];
+    f32 x, y, z;
+} Pool_b285_01E003A0;
+
+typedef struct Spl_b285_01E003A0 {
+    s32 n;
+    f32 x[8];
+    f32 y[8];
+    f32 z[8];
+    Vec4f out[28];
+} Spl_b285_01E003A0;
+
+typedef struct Rib_b285_01E003A0 {
+    u8 kind;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 b6;
+    u8 pad7;
+    Pool_b285_01E003A0 *pool;
+    s16 idx[2][9];
+    u8 slot;
+    u8 count;
+    u8 selA;
+    u8 selB;
+    u8 type;
+    u8 pad35;
+    s16 vset;
+    f32 t1;
+    f32 t2;
+    f32 width;
+    u8 b1, g1, r1, a1;
+    u8 b2, g2, r2, a2;
+    u8 b3, g3, r3, a3;
+    f32 dx;
+    f32 dy;
+    u8 pad58[8];
+} Rib_b285_01E003A0;
+
+typedef struct Uvs_b285_01E003A0 {
+    s32 kind;
+    u8 tex;
+    u8 b5;
+    u16 pad6;
+    s32 u0, v0, u1, v1;
+} Uvs_b285_01E003A0;
+
+typedef struct Tbl_b285_01E003A0 {
+    Uvs_b285_01E003A0 v[3];
+} Tbl_b285_01E003A0;
+
+typedef struct Xyz_b285_01E003A0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+} Xyz_b285_01E003A0;
+
+typedef struct Vtx_b285_01E003A0 {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b285_01E003A0 xyz;
+} Vtx_b285_01E003A0;
+
+typedef struct Pk_b285_01E003A0 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    Vtx_b285_01E003A0 v[4];
+    u64 pad70[3];
+    u64 b0 : 2;
+    u64 abe : 2;
+    u64 b4 : 20;
+    u64 fix : 10;
+    u64 ref : 10;
+    u64 b44 : 20;
+} Pk_b285_01E003A0;
+
+#pragma optimization_level 3
+
+static s32 func_01E03660_b029(Rib_b285_01E003A0 *arg0, s32 id, s32 n) {
+    extern s32 func_00101AF0();
+    extern void func_0020EB40();
+    extern void func_00101BA0();
+    extern s32 func_00101C30();
+    extern void func_00101B40(void *, u8, u8);
+    extern s32 func_00102550();
+    extern s32 func_00202BF0();
+    extern s32 func_00205440();
+    extern s32 func_00101600();
+    extern void func_00101EE0();
+    extern void func_002075F0();
+    Rib_b285_01E003A0 *rib = arg0;
+    Pool_b285_01E003A0 *pool = arg0->pool;
+    Pool_b285_01E003A0 *pt;
+    s32 i __attribute__((aligned(16)));
+    s32 j;
+    s32 k;
+    s32 idx;
+    s32 tex0 __attribute__((aligned(16)));
+    s32 tex1 __attribute__((aligned(16)));
+    s32 tex2 __attribute__((aligned(16)));
+    s32 segs __attribute__((aligned(16)));
+    s32 cnt __attribute__((aligned(16)));
+    f32 a;
+    f32 h0;
+    f32 h1;
+    f32 m[4][4];
+    Spl_b285_01E003A0 spl[2];
+    Vec4f pos[2];
+    Vec4f v[5];
+    Vec4f q[2];
+    Xyz_b285_01E003A0 s[2];
+    f32 depth[4];
+    extern Tbl_b285_01E003A0 D_01E06940_b029;
+    Tbl_b285_01E003A0 tbl = D_01E06940_b029;
+    extern Uvs_b285_01E003A0 D_01E06990_b029;
+    Uvs_b285_01E003A0 tbl1 = D_01E06990_b029;
+    extern Uvs_b285_01E003A0 D_01E069B0_b029;
+    Uvs_b285_01E003A0 tbl2 = D_01E069B0_b029;
+    Uvs_b285_01E003A0 uvs;
+    Pk_b285_01E003A0 pk;
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            rib++;
+        }
+        if (func_00101AF0(rib) == 0) {
+            continue;
+        }
+        func_0020EB40(m);
+        rib->b5 = 1;
+        rib->b6 = rib->selA;
+        func_00101BA0(rib, &pos[0]);
+        rib->b6 = rib->selB;
+        func_00101BA0(rib, &pos[1]);
+        for (j = 0; j < 2; j++) {
+            for (k = rib->count; k > 0; k--) {
+                if (rib->idx[j][k - 1] >= 0) {
+                    pt = &pool[rib->idx[j][k - 1]];
+                    pt->kind = rib->kind;
+                }
+                rib->idx[j][k] = rib->idx[j][k - 1];
+            }
+            if (rib->idx[j][rib->count] >= 0) {
+                pt = &pool[rib->idx[j][rib->count]];
+                pt->kind = 0;
+                rib->idx[j][rib->count] = -1;
+            }
+        }
+        if (rib->kind == 0) {
+            continue;
+        }
+        idx = func_00101C30(pool, 0x10, rib->slot);
+        if (idx >= 0) {
+            rib->idx[0][0] = idx;
+            pt = &pool[rib->idx[0][0]];
+            func_00101B40(pt, rib->kind, 0);
+            pt->x = pos[0].x;
+            pt->y = pos[0].y;
+            pt->z = pos[0].z;
+        } else {
+            rib->idx[0][0] = -1;
+        }
+        idx = func_00101C30(pool, 0x10, rib->slot);
+        if (idx >= 0) {
+            rib->idx[1][0] = idx;
+            pt = &pool[rib->idx[1][0]];
+            func_00101B40(pt, rib->kind, 0);
+            pt->x = pos[1].x;
+            pt->y = pos[1].y;
+            pt->z = pos[1].z;
+        } else {
+            rib->idx[1][0] = -1;
+        }
+        for (j = 0; j < 2; j++) {
+            spl[j].n = 0;
+            for (k = 0; k < rib->count; k++) {
+                if (rib->idx[j][k] >= 0) {
+                    pt = &pool[rib->idx[j][k]];
+                    spl[j].x[spl[j].n] = pt->x;
+                    spl[j].y[spl[j].n] = pt->y;
+                    spl[j].z[spl[j].n] = pt->z;
+                    spl[j].n++;
+                }
+            }
+        }
+        if (spl[0].n != spl[1].n || func_00102550(&spl[0]) == 0 || func_00102550(&spl[1]) == 0) {
+            continue;
+        }
+        segs = (spl[0].n - 1) * 4;
+        tex0 = func_00202BF0(tbl.v[rib->type].kind, tbl.v[rib->type].tex);
+        tex1 = func_00202BF0(tbl1.kind, tbl1.tex);
+        tex2 = func_00202BF0(tbl2.kind, tbl2.tex);
+        ((Pk_b285_01E003A0 *)(u32)&pk)->flags = 0x34;
+        ((Pk_b285_01E003A0 *)(u32)&pk)->size = 0xC;
+        ((Pk_b285_01E003A0 *)(u32)&pk)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pk_b285_01E003A0 *)(u32)&pk)->pad4 = 0;
+        for (k = 0; k < segs - 1; k++) {
+            v[0].x = spl[1].out[k].x + rib->t1 * (spl[0].out[k].x - spl[1].out[k].x);
+            v[0].y = spl[1].out[k].y + rib->t1 * (spl[0].out[k].y - spl[1].out[k].y);
+            v[0].z = spl[1].out[k].z + rib->t1 * (spl[0].out[k].z - spl[1].out[k].z);
+            v[1].x = spl[1].out[k + 1].x + rib->t1 * (spl[0].out[k + 1].x - spl[1].out[k + 1].x);
+            v[1].y = spl[1].out[k + 1].y + rib->t1 * (spl[0].out[k + 1].y - spl[1].out[k + 1].y);
+            v[1].z = spl[1].out[k + 1].z + rib->t1 * (spl[0].out[k + 1].z - spl[1].out[k + 1].z);
+            v[2] = spl[1].out[k];
+            v[3] = spl[1].out[k + 1];
+            v[4].x = v[0].x + rib->t2 * (v[1].x - v[0].x);
+            v[4].y = v[0].y + rib->t2 * (v[1].y - v[0].y);
+            v[4].z = v[0].z + rib->t2 * (v[1].z - v[0].z);
+            while (rib->flags & 1) {
+                if (func_00205440(&v[0], m, &pk.v[0].xyz, &depth[0]) == 0) {
+                    break;
+                }
+                if (func_00101600(&pk.v[0].xyz) == 0) {
+                    break;
+                }
+                if (func_00205440(&v[1], m, &pk.v[1].xyz, &depth[1]) == 0) {
+                    break;
+                }
+                if (func_00101600(&pk.v[1].xyz) == 0) {
+                    break;
+                }
+                if (func_00205440(&v[2], m, &pk.v[2].xyz, &depth[2]) == 0) {
+                    break;
+                }
+                if (func_00101600(&pk.v[2].xyz) == 0) {
+                    break;
+                }
+                if (func_00205440(&v[3], m, &pk.v[3].xyz, &depth[3]) == 0) {
+                    break;
+                }
+                if (func_00101600(&pk.v[3].xyz) == 0) {
+                    break;
+                }
+                pk.v[0].r = pk.v[1].r = rib->r1;
+                pk.v[2].r = pk.v[3].r = rib->r2;
+                pk.v[0].g = pk.v[1].g = rib->g1;
+                pk.v[2].g = pk.v[3].g = rib->g2;
+                pk.v[0].b = pk.v[1].b = rib->b1;
+                pk.v[2].b = pk.v[3].b = rib->b2;
+                pk.v[0].q = pk.v[1].q = pk.v[2].q = pk.v[3].q = 1.0f;
+                pk.v[0].xyz.fog = pk.v[1].xyz.fog = pk.v[2].xyz.fog = pk.v[3].xyz.fog = 0;
+                uvs = tbl.v[rib->type];
+                if (rib->type != 0 && rib->vset != 0) {
+                    uvs.v1 = rib->vset;
+                }
+                func_00101EE0(&pk, &uvs, tex0);
+                switch (rib->type) {
+                case 1:
+                    pk.abe = 3;
+                    pk.fix = 7;
+                    pk.ref = 0x80;
+                    break;
+                case 2:
+                    pk.abe = 3;
+                    pk.fix = 3;
+                    pk.ref = 0x84;
+                    break;
+                }
+                a = (rib->kind < 8 ? (f32)rib->kind * (f32)(u32)rib->a1 / 8.0f : (f32)(u32)rib->a1) / (f32)segs;
+                pk.v[2].a = pk.v[3].a = 0;
+                pk.v[0].a = (u32)(a * (f32)(segs - k));
+                pk.v[1].a = (u32)(a * (f32)(segs - k - 1));
+                func_002075F0((s32)&pk, id, 0);
+                break;
+            }
+            cnt = 0;
+            if (rib->flags & 2) {
+                cnt = 1;
+            }
+            if (rib->flags & 4) {
+                cnt = 3;
+            }
+            for (j = 0; j < cnt; j++) {
+                q[0] = v[0];
+                if (rib->flags & 8) {
+                    q[1] = v[4];
+                } else {
+                    q[1] = v[1];
+                }
+                switch (j) {
+                case 1:
+                    q[0].x += rib->dx;
+                    q[0].y += rib->dy;
+                    q[1].x += rib->dx;
+                    q[1].y += rib->dy;
+                    break;
+                case 2:
+                    q[0].x -= rib->dx;
+                    q[0].y -= rib->dy;
+                    q[1].x -= rib->dx;
+                    q[1].y -= rib->dy;
+                    break;
+                }
+                if (func_00205440(&q[0], m, &s[0], &depth[0]) == 0) {
+                    continue;
+                }
+                if (func_00101600(&s[0]) == 0) {
+                    continue;
+                }
+                if (func_00205440(&q[1], m, &s[1], &depth[1]) == 0) {
+                    continue;
+                }
+                if (func_00101600(&s[1]) == 0) {
+                    continue;
+                }
+                h0 = h1 = rib->width / (depth[0] / 256.0f);
+                if (rib->flags & 8) {
+                    h1 = 0.0f;
+                    func_00101EE0(&pk, &tbl2, tex2);
+                } else {
+                    func_00101EE0(&pk, &tbl1, tex1);
+                }
+                pk.v[0].r = pk.v[2].r = pk.v[1].r = pk.v[3].r = rib->r3;
+                pk.v[0].g = pk.v[2].g = pk.v[1].g = pk.v[3].g = rib->g3;
+                pk.v[0].b = pk.v[2].b = pk.v[1].b = pk.v[3].b = rib->b3;
+                pk.v[0].q = pk.v[1].q = pk.v[2].q = pk.v[3].q = 1.0f;
+                pk.v[0].xyz.fog = pk.v[1].xyz.fog = pk.v[2].xyz.fog = pk.v[3].xyz.fog = 0;
+                if (rib->kind < 8) {
+                    a = (f32)rib->kind * (f32)(u32)rib->a3 / 8.0f;
+                } else {
+                    a = (f32)(u32)rib->a3;
+                }
+                pk.v[0].a = pk.v[1].a = (u32)(a / (f32)segs * (f32)(segs - k));
+                pk.v[2].a = pk.v[3].a = (u32)(a / (f32)segs * (f32)(segs - k - 1));
+                if (k == 0) {
+                    pk.v[0].a = pk.v[1].a = 0;
+                }
+                pk.v[0].xyz.z = pk.v[1].xyz.z = s[0].z;
+                pk.v[2].xyz.z = pk.v[3].xyz.z = s[1].z;
+                pk.v[0].xyz.y = (u32)(s[0].y + h0);
+                pk.v[1].xyz.y = (u32)(s[0].y - h0);
+                pk.v[2].xyz.y = (u32)(s[1].y + h1);
+                pk.v[3].xyz.y = (u32)(s[1].y - h1);
+                pk.v[0].xyz.x = pk.v[1].xyz.x = s[0].x;
+                pk.v[2].xyz.x = pk.v[3].xyz.x = s[1].x;
+                func_002075F0((s32)&pk, id, 0);
+                pk.v[0].xyz.x = (u32)(s[0].x - h0);
+                pk.v[1].xyz.x = (u32)(s[0].x + h0);
+                pk.v[2].xyz.x = (u32)(s[1].x - h1);
+                pk.v[3].xyz.x = (u32)(s[1].x + h1);
+                pk.v[0].xyz.y = pk.v[1].xyz.y = s[0].y;
+                pk.v[2].xyz.y = pk.v[3].xyz.y = s[1].y;
+                func_002075F0((s32)&pk, id, 0);
+            }
+        }
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 /* OVL_WARM: compile warm (its (u32) cast is jal fptoui, func_001A23B0) */
 
