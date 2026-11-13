@@ -574,7 +574,179 @@ static void func_01E01040_b721(Obj_b279_01E00920 *o, Anim_b279_01E00920 *an, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b721", func_01E01490_b721);
+/* shape b721:01E01490 (B721_W_S), 575 insns, 1 copy: B721_W_S, the scene step: counts the frame (0x9868); frame 1
+   spawns 0x1E03800/0x1E03720/0x1E03590, 0x1E02FA0 at 60/65/68, 0x1E03400 pairs at 173/320/450; until 173 tracks joint
+   0x97F4 extended away from 0x97F6, then drifts it from 236; 0x1E023D0 at 55..85, 0x1E020D0 three sides at 62,
+   0x1E02720 sparks (3 a frame 62..115, 1-2 a frame 181..470), 0x1E01F20/0x1E01D90/0x1E02D30/0x1E025B0/0x1E03270
+   windows, radius 0x97D8 grows to 300 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x9790 - 0x260];
+    Vec4f a;
+    u8 pad97A0[0x97D8 - 0x97A0];
+    f32 r;
+    u8 pad97DC[0x97F4 - 0x97DC];
+    s16 ja;
+    s16 jb;
+    u8 pad97F8[0x9856 - 0x97F8];
+    s16 k;
+    u8 pad9858[2];
+    s16 h985A;
+    u8 pad985C[4];
+    s16 side;
+    u8 pad9862[2];
+    s16 up;
+    u8 pad9866[2];
+    s16 t;
+} Scene_b721_01E01490;
+
+static void func_01E01490_b721(Scene_b721_01E01490 *g) {
+    extern void b721_01E01D90(void);
+    extern void b721_01E01F20(void);
+    extern void b721_01E020D0(void);
+    extern void b721_01E023D0(void);
+    extern void b721_01E025B0(void);
+    extern void b721_01E02720(void);
+    extern void b721_01E02D30(void);
+    extern void b721_01E02FA0(void);
+    extern void b721_01E03270(void);
+    extern void b721_01E03400(void);
+    extern void b721_01E03590(void);
+    extern void b721_01E03720(void);
+    extern void b721_01E03800(void);
+    extern void b721_01E044D0(Scene_b721_01E01490 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    Vec4f v[2];
+    s16 i;
+    s16 n;
+
+    g->t++;
+    if (g->t == 1) {
+        b721_01E044D0(g, b721_01E03800, 0);
+    }
+    if (g->t == 1) {
+        b721_01E044D0(g, b721_01E03720, 0);
+    }
+    if (g->t == 1) {
+        b721_01E044D0(g, b721_01E03590, 0);
+    }
+    if (g->t == 65) {
+        g->side = 0;
+        b721_01E044D0(g, b721_01E02FA0, 0);
+    }
+    if (g->t == 60) {
+        g->side = 1;
+        b721_01E044D0(g, b721_01E02FA0, 0);
+    }
+    if (g->t == 68) {
+        g->side = 0;
+        b721_01E044D0(g, b721_01E02FA0, 0);
+    }
+    if (g->t == 173 || g->t == 320) {
+        g->side = 0;
+        b721_01E044D0(g, b721_01E03400, 0);
+        g->side = 1;
+        b721_01E044D0(g, b721_01E03400, 0);
+    }
+    if (g->t == 450) {
+        g->side = 0;
+        b721_01E044D0(g, b721_01E03400, 0);
+        g->side = 2;
+        b721_01E044D0(g, b721_01E03400, 0);
+    }
+    if (g->t < 173) {
+        func_001F5620(func_001F53A0(), g->ja, &g->a);
+        func_001F5620(func_001F53A0(), g->jb, v);
+        g->a.x += g->a.x - v[0].x;
+        g->a.y += g->a.y - v[0].y;
+        g->a.z += g->a.z - v[0].z;
+    } else if (g->t < 320) {
+        if (g->t > 235) {
+            if (g->up) {
+                g->a.z -= 1.72f;
+            } else {
+                g->a.z += 1.71f;
+            }
+            if (!(g->a.y <= 44.0f)) {
+                g->a.y -= 0.3f;
+            }
+        }
+    }
+    if (g->t == 320) {
+        g->a.y = 44.0f;
+    }
+    if (g->t >= 55 && g->t < 86) {
+        g->pos = g->a;
+        b721_01E044D0(g, b721_01E023D0, 0);
+    }
+    if (g->t == 62) {
+        g->pos = g->a;
+        g->pos.y += 5.0f;
+        g->side = 0;
+        b721_01E044D0(g, b721_01E020D0, 0);
+        g->side = 1;
+        b721_01E044D0(g, b721_01E020D0, 0);
+        g->side = 2;
+        b721_01E044D0(g, b721_01E020D0, 0);
+    }
+    if (g->t >= 62 && g->t < 116) {
+        for (i = 0; i < 3; i++) {
+            g->side = g->k;
+            b721_01E044D0(g, b721_01E02720, 0);
+            g->k++;
+            if (g->k >= 80) {
+                g->k = 0;
+            }
+        }
+    }
+    if (g->t >= 330) {
+        g->pos = g->a;
+        if (g->t < 456) {
+            b721_01E044D0(g, b721_01E01F20, 0);
+        }
+        if (g->t >= 345 && g->t < 456) {
+            b721_01E044D0(g, b721_01E01D90, 0);
+        }
+    }
+    if (g->t >= 65) {
+        g->side = 0;
+        if (g->t < 461) {
+            b721_01E044D0(g, b721_01E02D30, 0);
+        }
+        if (g->t < 461) {
+            b721_01E044D0(g, b721_01E025B0, 0);
+        }
+        if (g->t >= 173 && g->t < 319) {
+            b721_01E044D0(g, b721_01E03270, 0);
+        }
+        if (g->t < 101) {
+            b721_01E044D0(g, b721_01E01F20, 0);
+        }
+        if (g->r < 300.0f) {
+            g->r += 1.0f;
+        }
+        if (g->t >= 320 && g->t < 331) {
+            g->r += 10.0f;
+        }
+    }
+    if (g->t > 180 && g->t < 471) {
+        n = g->t < 330 ? 1 : 2;
+        for (i = 0; i < n; i++) {
+            g->side = g->k;
+            b721_01E044D0(g, b721_01E02720, 0);
+            g->k++;
+            if (g->k >= 80) {
+                g->k = 0;
+            }
+        }
+    }
+    if (g->t > 220) {
+        g->h985A--;
+    }
+}
 
 /* shape b721:01E01D90, 100 insns: on start f48 5..29, variant 0..7, colour white, 0x50 50..149, random 0x5A, speed
    16..35 (0xE), 0x8 0..34, hold 3..16 (0x6); alpha grows by 0x40 (below 0xC0) during the hold, then fades by 14 and
