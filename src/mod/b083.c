@@ -1315,7 +1315,177 @@ static s32 func_01E039D0_b083(Emit_b042_01E038E0 *arg0, s32 arg1, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b083", func_01E03F20_b083);
+/* shape b083:01E03F20 (ShFx_Core02), 580 insns, 1 copy (-O2,p): b083:01E02440's spinning beams in screen space:
+   0x40-byte entities, the position cast straight to screen x/y at depth 0xFFFFFE, no projection, drawn at z 0 */
+
+#define ABS_b083_01E03F20(x) ((x) >= 0.0f ? (x) : -(x))
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b083_01E03F20;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b083_01E03F20;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b083_01E03F20 p;
+} Vtx_b083_01E03F20;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b083_01E03F20 v[4];
+    u8 tail[0x20];
+} Pkt_b083_01E03F20;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 pad05[0x13];
+} Tex_b083_01E03F20;
+
+typedef struct {
+    u8 life;
+    u8 pad01;
+    u8 total;
+    u8 pad03;
+    u8 flags;
+    u8 pad05[3];
+    u8 b, g, r;
+    u8 pad0B;
+    u8 b2, g2, r2, a;
+    f32 len;
+    f32 width;
+    f32 angle;
+    f32 spin;
+    Vec_b083_01E03F20 pos;
+    Vec_b083_01E03F20 vel;
+
+} Beam_b083_01E03F20;
+
+
+#pragma optimization_level 2
+
+static s32 func_01E03F20_b083(void *p, s32 target, s32 count) {
+    extern Tex_b083_01E03F20 D_01E061B0_b083;
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101EE0(void *, void *, s32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Beam_b083_01E03F20 *o = p;
+    s32 i;
+    s32 h __attribute__((aligned(16)));
+    s32 j;
+    u8 k;
+    u8 a;
+    s32 s;
+    f32 dx;
+    f32 ady;
+    f32 dy;
+    f32 len;
+    f32 t;
+    Tex_b083_01E03F20 tex;
+    Xyz_b083_01E03F20 q;
+    Pkt_b083_01E03F20 pkt __attribute__((aligned(8)));
+
+    tex = D_01E061B0_b083;
+    h = func_00202BF0(tex.id, tex.kind);
+    for (i = 0; i < count; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        o->pos.x += o->vel.x;
+        o->pos.y += o->vel.y;
+        o->pos.z += o->vel.z;
+        o->angle += o->spin;
+        ((Pkt_b083_01E03F20 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b083_01E03F20 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b083_01E03F20 *)(s32)&pkt)->regs = 0x421421421421LL;
+        ((Pkt_b083_01E03F20 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = 0;
+        pkt.v[1].r = pkt.v[2].r = o->r;
+        pkt.v[0].g = 0;
+        pkt.v[1].g = pkt.v[2].g = o->g;
+        pkt.v[0].b = 0;
+        pkt.v[1].b = pkt.v[2].b = o->b;
+        pkt.v[3].r = o->r2;
+        pkt.v[3].g = o->g2;
+        pkt.v[3].b = o->b2;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        func_00101EE0(&pkt, &tex, h);
+        a = o->a;
+        s = a >> 3;
+        if (o->life >= 8 || (o->flags & 0x40)) {
+            pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = a;
+        } else {
+            pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = s * o->life;
+        }
+        pkt.v[0].a = 0;
+        q.x = (u32)o->pos.x;
+        q.y = (u32)o->pos.y;
+        q.z = 0xFFFFFE;
+        pkt.v[0].p.z = pkt.v[1].p.z = pkt.v[2].p.z = pkt.v[3].p.z = q.z;
+        pkt.v[0].p.f = pkt.v[1].p.f = pkt.v[2].p.f = pkt.v[3].p.f = 1;
+        len = o->len;
+        if (!(o->flags & 0x40)) {
+            if (!(o->flags & 1)) {
+                k = o->total - o->life;
+                if (k < 8) {
+                    len = o->len * (0.125f * k);
+                }
+            }
+            if (o->life < 8) {
+                len = o->len * (0.125f * o->life);
+            }
+        }
+        for (j = 0; j < 2; j++) {
+            t = 180.0f * j;
+            dx = len * func_001A6898(3.1415927f * (o->angle + t) / 180.0f);
+            dy = len * func_001A6A88(3.1415927f * (o->angle + t) / 180.0f);
+            ady = ABS_b083_01E03F20(dy);
+            if (!(ABS_b083_01E03F20(dx) <= ady)) {
+                pkt.v[0].p.x = pkt.v[2].p.x = (u32)(q.x + dx);
+                pkt.v[1].p.x = pkt.v[3].p.x = q.x;
+                pkt.v[0].p.y = (u32)(q.y + dy - o->width);
+                pkt.v[1].p.y = (u32)(q.y - o->width);
+                pkt.v[2].p.y = (u32)(q.y + dy);
+                pkt.v[3].p.y = q.y;
+                func_002075F0(&pkt, target, 0);
+                pkt.v[0].p.y = (u32)(o->width + (q.y + dy));
+                pkt.v[1].p.y = (u32)(q.y + o->width);
+                func_002075F0(&pkt, target, 0);
+            } else {
+                pkt.v[0].p.y = pkt.v[2].p.y = (u32)(q.y + dy);
+                pkt.v[1].p.y = pkt.v[3].p.y = q.y;
+                pkt.v[0].p.x = (u32)(q.x + dx - o->width);
+                pkt.v[1].p.x = (u32)(q.x - o->width);
+                pkt.v[2].p.x = (u32)(q.x + dx);
+                pkt.v[3].p.x = q.x;
+                func_002075F0(&pkt, target, 0);
+                pkt.v[0].p.x = (u32)(o->width + (q.x + dx));
+                pkt.v[1].p.x = (u32)(q.x + o->width);
+                func_002075F0(&pkt, target, 0);
+            }
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* OVL_CFLAGS: -O2,p -sdatathreshold 0 -relax_pointers */
 
