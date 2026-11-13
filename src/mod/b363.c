@@ -858,7 +858,155 @@ static void func_01E01D30_b363(Obj_b363_01E01D30 *obj, Cam_b363_01E01D30 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b363", func_01E02070_b363);
+/* shape b363:01E02070 (B363_W_S), 561 insns, 1 copy (-O3,p): B363_W_S, the scene step: counts the frame (0xDEF6) and
+   reads joint 0xDEC0 into v; frame 1 and 65 one-shots, in 208..230 two 01E046A0 at v2 and four jittered 01E03740, at
+   203 two 01E04B60, joint-driven bursts in 91..150, 100..200 and 230..300 (01E02F70, odd-frame 01E04880, jittered
+   01E02DE0), two 01E02A40 in 280..295, cycling-index 01E04090 in 92..155, 01E03A30 + 01E04880 at 206 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xDE40 - 0x260];
+    Vec4f v;
+    Vec4f v2;
+    u8 padDE60[0xDEC0 - 0xDE60];
+    s16 j0;
+    u8 padDEC2[2];
+    s16 j1;
+    s16 j2;
+    s16 j3;
+    u8 padDECA[0xDED0 - 0xDECA];
+    s16 j4;
+    u8 padDED2[0xDEE6 - 0xDED2];
+    s16 c;
+    u8 padDEE8[0xDEEE - 0xDEE8];
+    s16 f;
+    u8 padDEF0[0xDEF6 - 0xDEF0];
+    s16 t;
+} Scene_b363_01E02070;
+
+#pragma optimization_level 3
+
+static void func_01E02070_b363(Scene_b363_01E02070 *g) {
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern s32 b363_01E05C00();
+    extern s32 b363_01E04D90();
+    extern s32 b363_01E04CB0();
+    extern s32 b363_01E046A0();
+    extern s32 b363_01E03740();
+    extern s32 b363_01E04B60();
+    extern s32 b363_01E034E0();
+    extern s32 b363_01E03120();
+    extern s32 b363_01E02F70();
+    extern s32 b363_01E04880();
+    extern s32 b363_01E02DE0();
+    extern s32 b363_01E02A40();
+    extern s32 b363_01E04090();
+    extern s32 b363_01E03A30();
+    s16 i;
+    s16 n;
+
+    g->t++;
+    func_001F5620(func_001F53A0(), g->j0, &g->v);
+    if (g->t == 1) {
+        b363_01E05C00(g, b363_01E04D90, 0, 0);
+    }
+    if (g->t == 65) {
+        b363_01E05C00(g, b363_01E04CB0, 0, 0);
+    }
+    if (g->t >= 208 && g->t < 231) {
+        g->pos = g->v2;
+        b363_01E05C00(g, b363_01E046A0, 0, 0);
+        b363_01E05C00(g, b363_01E046A0, 0, 0);
+        for (i = 0; i < 4; i++) {
+            g->f = 0;
+            g->pos = g->v2;
+            g->pos.x += func_0019A5C8() % 20 - 10;
+            g->pos.y -= func_0019A5C8() % 30;
+            b363_01E05C00(g, b363_01E03740, 0, 0);
+        }
+    }
+    if (g->t == 203) {
+        g->f = 0;
+        b363_01E05C00(g, b363_01E04B60, 0, 0);
+        g->f = 1;
+        b363_01E05C00(g, b363_01E04B60, 0, 0);
+    }
+    if (g->t >= 202 && g->t < 204) {
+        func_001F5620(func_001F53A0(), g->j1, &g->pos);
+        func_001F5620(func_001F53A0(), g->j2, &g->pos);
+    }
+    if (g->t >= 91 && g->t < 151) {
+        func_001F5620(func_001F53A0(), g->j3, &g->pos);
+        g->pos.y -= 0.5f;
+        b363_01E05C00(g, b363_01E034E0, 0, 0);
+        b363_01E05C00(g, b363_01E034E0, 0, 0);
+    }
+    if (g->t >= 100 && g->t < 201) {
+        func_001F5620(func_001F53A0(), g->j0, &g->pos);
+        g->pos.y -= 0.5f;
+        b363_01E05C00(g, b363_01E03120, 0, 0);
+        b363_01E05C00(g, b363_01E03120, 0, 0);
+    }
+    if (g->t >= 230 && g->t < 301) {
+        func_001F5620(func_001F5380(), g->j4, &g->pos);
+        g->pos.y -= 5.0f;
+        g->f = 1;
+        b363_01E05C00(g, b363_01E02F70, 0, 0);
+        g->f = 2;
+        if (g->t >= 236 && g->t < 291 && g->t % 2 == 1) {
+            b363_01E05C00(g, b363_01E04880, 0, 0);
+        }
+        g->pos.x += func_0019A5C8() % 20 - 10;
+        g->pos.z += func_0019A5C8() % 20 - 10;
+        g->pos.y += func_0019A5C8() % 20 - 10;
+        b363_01E05C00(g, b363_01E02DE0, 0, 0);
+    }
+    if (g->t < 296 && g->t >= 280) {
+        for (i = 0; i < 2; i++) {
+            b363_01E05C00(g, b363_01E02A40, 0, 0);
+        }
+    }
+    if (g->t > 91 && g->t < 156) {
+        for (i = 0; i < 1; i++) {
+            func_001F5620(func_001F53A0(), g->j3, &g->pos);
+            g->f = g->c;
+            b363_01E05C00(g, b363_01E04090, 0, 0);
+            g->c++;
+            if (g->c >= 70) {
+                g->c = 0;
+            }
+        }
+    }
+    if (g->t > 1 && g->t < 201) {
+        n = g->t < 330 ? 1 : 2;
+        for (i = 0; i < n; i++) {
+            g->f = g->c;
+            g->pos = g->v;
+            g->c++;
+            if (g->c >= 70) {
+                g->c = 0;
+            }
+        }
+    }
+    if (g->t == 206) {
+        func_001F5620(func_001F53A0(), g->j0, &g->pos);
+        for (i = 0; i < 1; i++) {
+            g->f = g->c;
+            b363_01E05C00(g, b363_01E03A30, 0, 0);
+            g->c++;
+            if (g->c >= 80) {
+                g->c = 0;
+            }
+        }
+        g->f = 1;
+        b363_01E05C00(g, b363_01E04880, 0, 0);
+    }
+}
+
+#pragma optimization_level reset
 
 /* shape b363:01E02940, 63 insns: a violet-white rising flash: set up once (f48 20, f4C 58 below it, size 15x15), full
    alpha for 2 frames, then fades by 9 until it ends; f48 rises 18 a frame with f4C 30 below it */
