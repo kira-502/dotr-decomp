@@ -544,3 +544,6 @@ there is a source form that gives the original.
   links once the function is C; regenerate the scripts with `python3 tools/modules.py ld <mod>` if yours are older.
 - **Floats set from one another (`ra = e->r; rb = ra * e->k;`) and their hoisted squares in permuted registers, no
   declaration order fixes it:** read the field again instead of the variable, `rb = e->r * e->k;`. (b051:01E00DF0)
+- **A shifted difference used twice (`d = (w1 - w0) >> 1; w0 += d - 1; w1 -= d - 1;`) with it and the address temps
+  around it in permuted registers:** keep the unshifted difference in the local and shift at each use,
+  `k = w1 - w0; w0 = w0 + (k >> 1) - 1; ...`. (b062:01E00DF0)

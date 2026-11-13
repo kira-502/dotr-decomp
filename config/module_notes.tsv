@@ -40,7 +40,6 @@ b059:01E02A00	40%	an earlier try got this far
 b060:01E013C0	84% (255/305, same length)	hard: colouring: with `s32 arg0` + `Scene *g = (Scene *)arg0` first (Mod-3 c027 form) g=s0 OK; left id s1/n s2 and loop i s1/ptr s3 swapped (best draft: drafts/mod/b060_01E013C0.c)
 b061:01E01C50	40%	an earlier try got this far
 b062:01E003A0	99.2%	an earlier try got this far
-b062:01E00DF0	89%	an earlier try got this far
 b062:01E020A0	97%	an earlier try got this far
 b062:01E042E0	83%	an earlier try got this far
 b064:01E030D0	71%	an earlier try got this far
