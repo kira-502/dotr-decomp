@@ -627,3 +627,9 @@ there is a source form that gives the original.
 - **`p[k % 4]` in a loop:** when the original computes `g + (k%4)*16` once and reads at fixed offsets from it, index
   the array with an s32 temp (`k = i % 4; g->p[k].x ...`). A `Vec4f *s = &g->p[i % 4]` pointer adds an `addiu` and
   swaps the `addu` operands (b258:01E01A70).
+
+- **Two float constants loaded in the wrong order (`$f13` before `$f12`):** put only the first argument in a local in
+  its own nested block, `{ f32 r = 1.0f; f(p, r, 0.05f); }`. Declaring `r` in the enclosing block moves a later call's
+  constants instead. It only shows in the file, so check with `tools/mod_infile.sh` (b113:01E03F50).
+- **Calling an in-file static that takes a float from a standalone work file:** give its link alias a prototype
+  (`extern s32 b113_01E00280(void *, void *, s32, f32);`); a no-prototype extern promotes the float to double.
