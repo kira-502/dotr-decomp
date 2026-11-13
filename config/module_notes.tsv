@@ -46,7 +46,6 @@ b064:01E030D0	71%	an earlier try got this far
 b070:01E00E80	99.2%	an earlier try got this far
 b070:01E034D0	95%	an earlier try got this far
 b084:01E03750	73%	an earlier try got this far
-b097:01E00440	99.7%	an earlier try got this far
 b097:01E01880	40%	an earlier try got this far
 b099:01E04C30	45% (138/310)	hard: in-file; frame 0x140 vs 0x120 and 24 insns short: structure wrong early (best draft: drafts/mod/b099_01E04C30.c)
 b105:01E02190	77%	an earlier try got this far
@@ -105,7 +104,6 @@ b262:01E013F0		hard: module main (358 insns, mostly init stores); stopped on the
 b264:01E024D0	98% (318/323)	hard: last block: g->t lands in a1 and the >76 test in v1 (ours v1 / at); tried a t local and nested ifs (best draft: drafts/mod/b264_01E024D0.c)
 b273:01E02450	77%	an earlier try got this far
 b275:01E02BC0	77%	an earlier try got this far
-b285:01E003A0	94.5%	an earlier try got this far
 b285:01E02120	99.2%	an earlier try got this far
 b351:01E003A0	94.5%	an earlier try got this far
 b351:01E02E00	99.2%	an earlier try got this far

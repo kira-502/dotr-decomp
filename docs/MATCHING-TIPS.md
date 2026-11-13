@@ -571,3 +571,6 @@ there is a source form that gives the original.
 - **The module spline inlined (mula.s/madd.s weights, no `jal`):** b081:01E009A0's body as a `static inline` helper;
   weight registers in the wrong order: declare the weights in reverse (`f32 b3; f32 b2; f32 b1; f32 b0;`).
   (b847:01E00E60)
+- **An -O3 port misses a block-end `nop` or two (end of an else arm, end of a later `if (k == 0)` block):** turn the
+  `?:` into an if/else assigning the undivided value and write the divide at each use,
+  `(u32)(a / (f32)segs * (f32)(segs - k))`; the compiler hoists the shared divide itself. (b285:01E003A0)
