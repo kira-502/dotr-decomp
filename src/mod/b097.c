@@ -91,7 +91,245 @@ static void func_01E00080_b097(Obj_b002_01E00080 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/mod/b097", func_01E00440_b097);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b097", func_01E01880_b097);
+/* shape b241:01E00440 (ShFx_Flear01), 839 insns, 26 copies (-O1,p): draws each emitter of a list as a glowing ring: a
+   fan of triangles and a quad pair per segment */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b241_01E00440;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+} Hdr_b241_01E00440;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Xyz_b241_01E00440 xyz;
+} Vtx1_b241_01E00440;
+
+typedef struct {
+    Hdr_b241_01E00440 h;
+    Vtx1_b241_01E00440 v[3];
+    u8 tail[8];
+} Pkt1_b241_01E00440;
+
+typedef struct {
+    u64 st;
+    Xyz_b241_01E00440 xyz;
+} Vtx2_b241_01E00440;
+
+typedef struct {
+    Hdr_b241_01E00440 h;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx2_b241_01E00440 v[4];
+    u8 tail[0x20];
+} Pkt2_b241_01E00440;
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b241_01E00440;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 pad05[3];
+    s32 w[4];
+} Tex_b241_01E00440;
+
+typedef struct {
+    u8 cur;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[2];
+    u8 segs;
+    u8 b, g, r;
+    u8 padB;
+    u8 ib, ig, ir;
+    u8 alpha;
+    f32 radius;
+    f32 grow;
+    f32 width;
+    V4_b241_01E00440 pos;
+    V4_b241_01E00440 vel;
+    V4_b241_01E00440 org;
+} Obj_b241_01E00440;
+
+#pragma optimization_level 1
+
+static s32 func_01E01880_b097(Obj_b241_01E00440 *obj, s32 tex, s32 n) {
+    extern Tex_b241_01E00440 D_01E07190_b097;
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern f32 func_001018E0(f32, f32);
+    extern void func_002086D0(void *, u64);
+    extern void func_00101D20(void *, void *, s32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Obj_b241_01E00440 *o;
+    s32 k;
+    s32 i;
+    s32 segs;
+    s32 h;
+    f32 m0[16];
+    f32 m1[16];
+    V4_b241_01E00440 org;
+    Tex_b241_01E00440 t;
+    Xyz_b241_01E00440 scr;
+    Pkt1_b241_01E00440 p1 __attribute__((aligned(8)));
+    Pkt2_b241_01E00440 p2 __attribute__((aligned(8)));
+    f32 depth;
+    f32 zf;
+    f32 px;
+    f32 py;
+    f32 x;
+    f32 y;
+    f32 step;
+    f32 r;
+    f32 w;
+    u8 d;
+
+    o = obj;
+    t = D_01E07190_b097;
+    h = func_00202BF0(t.id, t.kind);
+    for (k = 0; k < n; k++) {
+        if (k != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        o->pos.x += o->vel.x;
+        o->pos.y += o->vel.y;
+        o->pos.z += o->vel.z;
+        o->radius += o->grow;
+        org = o->org;
+        segs = o->segs > 9 ? 9 : o->segs;
+        step = 90.0f / segs;
+        func_00101BA0(o, &o->pos);
+        func_0020EB40(m1);
+        func_0020C940(m0, NULL, NULL, &o->pos);
+        func_0020BC00(m1, m0);
+        if (func_00205440(&org, m1, &scr, &depth) == 0 || func_00101600(&scr) == 0) {
+            continue;
+        }
+        r = func_001018E0(o->radius, depth);
+        w = func_001018E0(o->width, depth);
+        if (o->flags & 0x80) {
+            scr.z = 0xFFFFFE;
+            zf = 0.0f;
+        } else {
+            zf = depth;
+        }
+        ((Hdr_b241_01E00440 *)(s32)&p1)->count = 0x13;
+        ((Hdr_b241_01E00440 *)(s32)&p1)->tag = 6;
+        ((Hdr_b241_01E00440 *)(s32)&p1)->regs = 0x414141;
+        ((Hdr_b241_01E00440 *)(s32)&p1)->pad = 0;
+        p1.v[0].r = o->ir;
+        p1.v[1].r = p1.v[2].r = o->r;
+        p1.v[0].g = o->ig;
+        p1.v[1].g = p1.v[2].g = o->g;
+        p1.v[0].b = o->ib;
+        p1.v[1].b = p1.v[2].b = o->b;
+        p1.v[0].q = p1.v[1].q = p1.v[2].q = 1.0f;
+        if (o->flags & 8) {
+            func_002086D0(&p1, 0x42);
+        } else {
+            func_002086D0(&p1, 0x48);
+        }
+        ((Hdr_b241_01E00440 *)(s32)&p2)->count = 0x24;
+        ((Hdr_b241_01E00440 *)(s32)&p2)->tag = 9;
+        ((Hdr_b241_01E00440 *)(s32)&p2)->regs = ((u64)4 << 32) | 0x24242421;
+        ((Hdr_b241_01E00440 *)(s32)&p2)->pad = 0;
+        p2.r = o->r;
+        p2.g = o->g;
+        p2.b = o->b;
+        p2.q = 1.0f;
+        func_00101D20(&p2, &t, h);
+        p1.v[0].a = o->alpha;
+        p2.a = o->alpha >> 1;
+        p1.v[1].a = p1.v[2].a = 0;
+        if (!(o->flags & 0x40)) {
+            if (o->cur < 8) {
+                p1.v[0].a = (o->alpha >> 3) * o->cur;
+                p2.a = (o->alpha >> 4) * o->cur;
+            } else {
+                d = o->max - o->cur;
+                if (d < 8) {
+                    p1.v[0].a = (o->alpha >> 3) * d;
+                    p2.a = (o->alpha >> 4) * d;
+                }
+            }
+        }
+        if (o->cur & 1) {
+            if (o->flags & 2) {
+                if (p1.v[0].a > 0x10) {
+                    p1.v[0].a -= 0x10;
+                }
+            }
+            if (o->flags & 4) {
+                if (p1.v[0].a > 0) {
+                    p1.v[0].a >>= 1;
+                }
+            }
+        }
+        x = r * func_001A6898(0.0f);
+        y = r * func_001A6A88(0.0f);
+        p2.v[0].xyz.z = p2.v[1].xyz.z = p2.v[2].xyz.z = p2.v[3].xyz.z = p1.v[0].xyz.z = p1.v[1].xyz.z =
+            p1.v[2].xyz.z = scr.z;
+        p2.v[0].xyz.f = p2.v[1].xyz.f = p2.v[2].xyz.f = p2.v[3].xyz.f = p1.v[0].xyz.f = p1.v[1].xyz.f =
+            p1.v[2].xyz.f = 1;
+        for (i = 1; i < segs * 4 + 1; i++) {
+            px = x;
+            py = y;
+            x = r * func_001A6898(3.1415927f * (step * i) / 180.0f);
+            y = r * func_001A6A88(3.1415927f * (step * i) / 180.0f);
+            p1.v[0].xyz.x = scr.x;
+            p1.v[0].xyz.y = scr.y;
+            p1.v[1].xyz.x = scr.x + px;
+            p1.v[1].xyz.y = scr.y + py;
+            p1.v[2].xyz.x = scr.x + x;
+            p1.v[2].xyz.y = scr.y + y;
+            func_002075F0(&p1, tex, (u32)zf);
+            if (o->flags & 1) {
+                continue;
+            }
+            p2.v[0].xyz.x = p2.v[2].xyz.x = scr.x + px;
+            p2.v[1].xyz.x = p2.v[3].xyz.x = scr.x + x;
+            p2.v[0].xyz.y = scr.y + py - w;
+            p2.v[2].xyz.y = w + (scr.y + py);
+            p2.v[1].xyz.y = scr.y + y - w;
+            p2.v[3].xyz.y = w + (scr.y + y);
+            func_002075F0(&p2, tex, (u32)zf);
+            p2.v[0].xyz.y = p2.v[2].xyz.y = scr.y + py;
+            p2.v[1].xyz.y = p2.v[3].xyz.y = scr.y + y;
+            p2.v[0].xyz.x = w + (scr.x + px);
+            p2.v[2].xyz.x = scr.x + px - w;
+            p2.v[1].xyz.x = w + (scr.x + x);
+            p2.v[3].xyz.x = scr.x + x - w;
+            func_002075F0(&p2, tex, (u32)zf);
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* OVL_CFLAGS: -O1,p -sdatathreshold 0 -relax_pointers */
 /* OVL_WARM: compile warm (its (u32) cast is jal fptoui, func_001A23B0) */
