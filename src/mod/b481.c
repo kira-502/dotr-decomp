@@ -1660,7 +1660,221 @@ static s32 func_01E04590_b481(Obj_b256_01E04900 *obj, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b481", func_01E04740_b481);
+/* shape b481:01E04740 (B481KPOINT_RAIN_2), 579 insns, 1 copy: b411:01E036C0's beam along the module spline from point
+   0 without the colour fade or flags: 4 steps of 0.25 per segment, untextured packet, 4 quads offset by the width in
+   +y/-y/-x/+x */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b481_01E04740;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b481_01E04740;
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_b481_01E04740;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b481_01E04740;
+
+typedef struct {
+    u8 hdr[0x10];
+    struct {
+        Rgbaq_b481_01E04740 c;
+        Xyz_b481_01E04740 p;
+    } v[4];
+    u8 tail[0x40];
+} Pkt_b481_01E04740;
+
+typedef struct {
+    u8 pad00[0x20];
+    f32 x, y, z;
+    u8 pad2C[0x5C];
+    void *texture;
+    u8 pad8C[8];
+    s16 rect[4];
+    u8 pad9C[0x22];
+    s16 mode;
+} Ctx_b481_01E04740;
+
+typedef struct {
+    u8 pad00[6];
+    s16 count;
+    u8 pad08[6];
+    s16 start;
+    u8 pad10[0x10];
+    s32 rot[4];
+    u8 pad30[0x18];
+    f32 width;
+    u8 pad4C[0x14];
+    Col_b481_01E04740 col0;
+    Col_b481_01E04740 col1;
+} Beam_b481_01E04740;
+
+static inline Vec_b481_01E04740 spline_b847_01E00E60(Vec_b481_01E04740 *p, s32 type, f32 t) {
+    Vec_b481_01E04740 r;
+    f32 b3;
+    f32 b2;
+    f32 b1;
+    f32 b0;
+
+    if (type == 0) {
+        b0 = -t * ((t - 1.0f) * (t - 2.0f)) / 6.0f;
+        b1 = (t - 2.0f) * ((1.0f + t) * (t - 1.0f)) / 2.0f;
+        b2 = -(1.0f + t) * (t * (t - 2.0f)) / 2.0f;
+        b3 = (1.0f + t) * (t * (t - 1.0f)) / 6.0f;
+    } else if (type == 1) {
+        b0 = (1.0f - t) * ((1.0f - t) * (1.0f - t)) / 6.0f;
+        b1 = 2.0f / 3.0f + ((t * (t * t)) / 2.0f - (t * t));
+        b2 = 1.0f / 6.0f + (t / 2.0f + (-(t * (t * t)) / 2.0f + (t * t) / 2.0f));
+        b3 = (t * (t * t)) / 6.0f;
+    } else if (type == 2) {
+        b0 = (1.0f - t) * ((1.0f - t) * (1.0f - t));
+        b1 = 1.75f * (t * (t * t)) - 4.5f * (t * t) + 3.0f * t;
+        b2 = -(11.0f / 12.0f * (t * (t * t))) + 1.5f * (t * t);
+        b3 = 1.0f / 6.0f * (t * (t * t));
+    } else if (type == 3) {
+        b0 = 0.25f * ((1.0f - t) * ((1.0f - t) * (1.0f - t)));
+        b1 = 7.0f / 12.0f + (7.0f / 12.0f * (t * (t * t)) - 1.25f * (t * t) + 0.25f * t);
+        b2 = 1.0f / 6.0f + (t / 2.0f + (-(0.5f * (t * (t * t))) + 0.5f * (t * t)));
+        b3 = 1.0f / 6.0f * (t * (t * t));
+    } else if (type == 4) {
+        b0 = 1.0f / 6.0f * ((1.0f - t) * ((1.0f - t) * (1.0f - t)));
+        b1 = 1.0f / 6.0f + (-0.5f * ((1.0f - t) * ((1.0f - t) * (1.0f - t))) + 0.5f * ((1.0f - t) * (1.0f - t)) + 0.5f * (1.0f - t));
+        b2 = 7.0f / 12.0f + (7.0f / 12.0f * ((1.0f - t) * ((1.0f - t) * (1.0f - t))) - 1.25f * ((1.0f - t) * (1.0f - t)) + 0.25f * (1.0f - t));
+        b3 = 0.25f * (t * (t * t));
+    } else if (type == 5) {
+        b0 = 1.0f / 6.0f * ((1.0f - t) * ((1.0f - t) * (1.0f - t)));
+        b1 = -11.0f / 12.0f * ((1.0f - t) * ((1.0f - t) * (1.0f - t))) + 1.5f * ((1.0f - t) * (1.0f - t));
+        b2 = 1.75f * ((1.0f - t) * ((1.0f - t) * (1.0f - t))) - 4.5f * ((1.0f - t) * (1.0f - t)) + 3.0f * (1.0f - t);
+        b3 = (t * (t * t));
+    } else if (type == 6) {
+        b0 = (1.0f - t) * ((1.0f - t) * (1.0f - t));
+        b1 = 3.0f * t * ((1.0f - t) * (1.0f - t));
+        b2 = (1.0f - t) * (3.0f * (t * t));
+        b3 = t * (t * t);
+    }
+    r.x = p[0].x * b0 + p[1].x * b1 + p[2].x * b2 + p[3].x * b3;
+    r.y = p[0].y * b0 + p[1].y * b1 + p[2].y * b2 + p[3].y * b3;
+    r.z = p[0].z * b0 + p[1].z * b1 + p[2].z * b2 + p[3].z * b3;
+    return r;
+}
+
+/* pts aligned: its spill slot, needed for the match */
+
+static void func_01E04740_b481(Ctx_b481_01E04740 *c, Beam_b481_01E04740 *an, Vec_b481_01E04740 *pts __attribute__((aligned(16))), void *arg3) {
+    extern s32 func_00207500(void);
+    extern void func_001092E0(void *, s32);
+    extern void func_001094F0(void *);
+    extern void func_002086D0(void *, u64);
+    extern Rgbaq_b481_01E04740 func_00107740(void *);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00109A70(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern s32 func_001A23B0(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Vec_b481_01E04740 ab[2];
+    Vec_b481_01E04740 ctrl[4];
+    Vec_b481_01E04740 prev;
+    Vec_b481_01E04740 q[4];
+    Vec_b481_01E04740 pos;
+    f32 depth[4];
+    f32 m[16];
+    Pkt_b481_01E04740 pkt __attribute__((aligned(8)));
+    s32 i;
+    s32 k;
+    s32 j;
+    s16 n;
+    Pkt_b481_01E04740 *p;
+    s32 target;
+    f32 t;
+    f32 w;
+    f32 w0;
+    f32 w1;
+
+    w = an->width;
+    target = func_00207500();
+    p = &pkt;
+    w /= 10.0f;
+    n = an->count;
+    w0 = w;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    p->v[0].c = func_00107740(&an->col0);
+    p->v[1].c = func_00107740(&an->col1);
+    p->v[2].c = func_00107740(&an->col0);
+    p->v[3].c = func_00107740(&an->col1);
+    func_002086D0(p, 0x48 | ((u64)0x80 << 32));
+    ctrl[0] = pts[0];
+    ctrl[1] = pts[0];
+    ctrl[2] = pts[1];
+    ctrl[3] = pts[2];
+    pos.x = c->x;
+    pos.y = c->y;
+    pos.z = c->z;
+    func_00108EF0(m, 0, an->rot, &pos);
+    for (i = 0; i < n - 1; i++) {
+        t = 0.0f;
+        for (j = 0; j < 4; j++) {
+            if (i != 0) {
+                if (i == 0 && j == 0) {
+                    ab[0] = spline_b847_01E00E60(&pts[(s16)i - 1], 0, t);
+                } else {
+                    ab[0] = prev;
+                }
+                t += 0.25f;
+                if (!(t < 0.9f)) {
+                    t = 1.0f;
+                }
+                ab[1] = spline_b847_01E00E60(&pts[(s16)i - 1], 0, t);
+                prev = ab[1];
+            } else {
+                if (i == 0 && j == 0) {
+                    ab[0] = spline_b847_01E00E60(ctrl, 0, t);
+                } else {
+                    ab[0] = prev;
+                }
+                t += 0.25f;
+                if (!(t < 0.9f)) {
+                    t = 1.0f;
+                }
+                ab[1] = spline_b847_01E00E60(ctrl, 0, t);
+                prev = ab[1];
+            }
+            w1 = w;
+            w -= w0 / (2.0f * n);
+            for (k = 0; k < 4; k++) {
+                func_00109A70(&q[0], &ab[0]);
+                func_00109A70(&q[1], &ab[0]);
+                func_00109A70(&q[2], &ab[1]);
+                func_00109A70(&q[3], &ab[1]);
+                if (k == 0) {
+                    q[1].y += w1;
+                    q[3].y += w1;
+                } else if (k == 1) {
+                    q[1].y -= w1;
+                    q[3].y -= w1;
+                } else if (k == 2) {
+                    q[1].x -= w1;
+                    q[3].x -= w1;
+                } else if (k == 3) {
+                    q[1].x += w1;
+                    q[3].x += w1;
+                }
+                if (func_00205630(q, 0x70000000, m, p, depth) != 0) {
+                    func_002075F0(p, target, func_001A23B0(depth[0]));
+                }
+            }
+        }
+    }
+}
 
 /* shape b481:01E05050 (B481KPOINT_RAIN_3), 335 insns, 3 copies: draws a ribbon between two point trails like
    b134:01E00820: each segment is 4 spline quads (module curve function, shape b018:01E00EE0) from the first trail to
