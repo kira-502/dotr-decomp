@@ -642,3 +642,7 @@ there is a source form that gives the original.
   declaration order fixes it. Copy the parameters into locals and keep the copies with `#pragma opt_propagation off`
   (reset after): `static s32 f(Scene *arg0, s32 arg1) { Scene *g = arg0; s32 code = arg1; ...`. Either half alone does
   nothing; copying only `g` leaves the two parameter moves swapped (b035:01E02070).
+
+- **A call-free `if (..) n = 2; else n = 2;` loop limit with a sign-extend in each arm and in the limit register:**
+  assign the arms to the previous loop's counter and copy it: `if (..) i = 2; else i = 2; cnt = i; for (i = 0; i < cnt; i++)`.
+  Arms on the limit merge the sign-extends; arms on `i` with another loop counter swap counter and limit (b433:01E01850).
