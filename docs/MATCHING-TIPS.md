@@ -568,3 +568,6 @@ there is a source form that gives the original.
 - **An -O2 port where every saved register is shuffled and the first parameter lands in `$s6` instead of `$s0`:**
   `#pragma opt_propagation off`. If an if/else's then-arm then branches straight to the following loop's test where
   the original goes through the join, compute the start into its own variable, `for (j = st; ...)`. (b110:01E01B20)
+- **The module spline inlined (mula.s/madd.s weights, no `jal`):** b081:01E009A0's body as a `static inline` helper;
+  weight registers in the wrong order: declare the weights in reverse (`f32 b3; f32 b2; f32 b1; f32 b0;`).
+  (b847:01E00E60)

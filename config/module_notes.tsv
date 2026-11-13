@@ -75,7 +75,6 @@ b149:01E02D30	72%	an earlier try got this far
 b158:01E02630	40%	an earlier try got this far
 b159:01E00CE0	85% (297/351), same length	hard: scene manager (s32 arg0 + local g, n counter, trail pointer p, b159:01E00A90 written inline): left only an s1/s2 rotation (id/p/n/loop pointers); declaration order has no effect (best draft: drafts/mod/b159_01E00CE0.c)
 b159:01E016C0	57% (161/282)	hard: fresh C (b397:01E02D10's family): ours hoists r+0.8f into f21 and pre-tests the k loop; spills like b397 (best draft: drafts/mod/b159_01E016C0.c)
-b161:01E03AA0	74%	an earlier try got this far
 b170:01E00C60	79% (212/267)	hard: g fixed with `s32 arg0` + local `g` cast (see PLAYBOOK-MODULES); left: id/i registers and the first jitter loop layout (best draft: drafts/mod/b170_01E00C60.c)
 b172:01E02F30	99%	an earlier try got this far
 b172:01E043A0	99.2%	an earlier try got this far
