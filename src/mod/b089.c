@@ -335,7 +335,188 @@ static s32 func_01E00890_b089(Game_b089_01E00890 *g, Obj_b089_01E00890 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b089", func_01E00A30_b089);
+/* shape b089:01E00A30 (B089_OBJ_MOVE_7_), 602 insns, 1 copy: a dark-blue orb on point slot of the scene's 6-point
+   ring: fades in, pulses its colour, from scene tick 0x14F flies to the camera (velocity /18) and grows to 0.3, spins
+   by 8; within 11/3 of the camera it turns red and grows, slot 0 spawning 01E022C0; bobs on the sine table and fades
+   out once the scene word 0x26E0 is under 20 */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b089_01E00A30;
+
+typedef struct {
+    u8 pad00[0x10];
+    s32 rot[1][4];
+    u8 pad20[0x1230 - 0x20];
+    Vec_b089_01E00A30 pos[6];
+    Vec_b089_01E00A30 off[6];
+    u8 pad12F0[0x1BF0 - 0x12F0];
+    Vec_b089_01E00A30 scale[6];
+    Vec_b089_01E00A30 out[6];
+    Vec_b089_01E00A30 vel[6];
+    u8 pad1D10[0x26E0 - 0x1D10];
+    s32 w26E0;
+    u8 pad26E4[0x3B68 - 0x26E4];
+    s16 flag[16];
+    s16 tick;
+    u8 pad3B8A[2];
+    u8 tbl[1];
+} Scene_b089_01E00A30;
+
+typedef struct {
+    u8 pad00[0x10];
+    union {
+        s32 i;
+        s16 h;
+    } a10, a14;
+    s32 a18;
+    u8 pad1C[0xC];
+    u8 col[4];
+    u8 pad2C[4];
+    s16 slot;
+    s16 tick;
+    s16 h34;
+    s16 mode;
+    s16 ang;
+} Obj_b089_01E00A30;
+
+static s32 func_01E00A30_b089(Scene_b089_01E00A30 *g, Obj_b089_01E00A30 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern s32 func_0019A5C8(void);
+    extern f32 func_00108030(void *, s16, s32);
+    extern f32 func_001A6C60(f32);
+    extern s32 b089_01E031D0(void *, s32, s32);
+    extern void b089_01E022C0(void);
+    f32 v[4];
+    f32 d;
+    f32 dz;
+
+    if (o->mode == 1) {
+        func_001076F0(o->col, 0x10, 0x10, 0x30);
+        o->a10.i = 0;
+        o->a14.i = 0;
+        o->a18 = 0;
+        o->h34 = 0;
+        o->ang = 0;
+        o->mode = func_0019A5C8() % 3 + 2;
+        o->col[3] = 0;
+        g->scale[o->slot].x = 0.2f;
+        g->scale[o->slot].y = 0.2f;
+        g->scale[o->slot].z = 0.2f;
+    }
+    if (o->tick < 10) {
+        if (o->col[3] < 0x80) {
+            o->col[3] += 12;
+        }
+    } else if (o->mode != 100) {
+        if (o->tick == 11) {
+            func_001076F0(o->col, 0x10, 0x10, 0x30);
+        }
+        if (o->tick == 13) {
+            func_001076F0(o->col, 0x18, 0x18, 0x38);
+        }
+        if (o->tick == 15) {
+            func_001076F0(o->col, 0x20, 0x20, 0x40);
+        }
+        if (o->tick == 17) {
+            func_001076F0(o->col, 0x28, 0x28, 0x48);
+        }
+        if (o->tick == 19) {
+            func_001076F0(o->col, 0x28, 0x28, 0x48);
+        }
+        if (o->tick == 21) {
+            func_001076F0(o->col, 0x20, 0x20, 0x40);
+        }
+        if (o->tick == 23) {
+            func_001076F0(o->col, 0x18, 0x18, 0x38);
+        }
+        if (o->tick > 23) {
+            o->tick = 11;
+        }
+    }
+    o->tick++;
+    func_001F5F90(func_001F5380(), v);
+    if (g->tick == 0x14F) {
+        g->vel[o->slot].x = v[0] - g->pos[o->slot].x + func_0019A5C8() % 14 - 7.0f;
+        g->vel[o->slot].y = v[1] - g->pos[o->slot].y + func_0019A5C8() % 30 - 15.0f;
+        g->vel[o->slot].z = v[2] - g->pos[o->slot].z;
+        g->vel[o->slot].x /= 18.0f;
+        g->vel[o->slot].y /= 18.0f;
+        g->vel[o->slot].z /= 18.0f;
+    }
+    if (g->tick > o->slot * 5 + 0x14F) {
+        if (o->mode != 100) {
+            g->pos[o->slot].x += g->vel[o->slot].x;
+            g->pos[o->slot].y += g->vel[o->slot].y;
+            g->pos[o->slot].z += g->vel[o->slot].z;
+            if (g->scale[o->slot].x < 0.3) {
+                g->scale[o->slot].x += 0.02f;
+            }
+            if (g->scale[o->slot].y < 0.3) {
+                g->scale[o->slot].y += 0.02f;
+            }
+            if (g->scale[o->slot].z < 0.3) {
+                g->scale[o->slot].z += 0.02f;
+            }
+            g->flag[o->slot] = 1;
+        }
+        o->a14.i += 8.0f;
+        if (!(o->a14.i < 360.0f)) {
+            o->a14.i = (f32)(s16)(o->a14.h % 360);
+        }
+        o->a10.i += 8.0f;
+        if (!(o->a10.i < 360.0f)) {
+            o->a10.i = (f32)(s16)(o->a10.h % 360);
+        }
+    }
+    d = v[0] - g->pos[o->slot].x;
+    dz = v[2] - g->pos[o->slot].z;
+    d = func_001A6C60(d * d);
+    if (g->flag[o->slot] == 2) {
+        g->flag[o->slot] = 3;
+    }
+    if (d < 11.0f && func_001A6C60(dz * dz) < 3.0f && o->mode != 100) {
+        o->mode = 100;
+        func_001076F0(o->col, 0x80, 0x20, 0x20);
+        g->scale[o->slot].x += 0.1f;
+        g->scale[o->slot].y += 0.1f;
+        g->scale[o->slot].z += 0.1f;
+        g->flag[o->slot] = 2;
+        if (o->slot == 0) {
+            b089_01E031D0(g, (s32)b089_01E022C0, 0);
+        }
+    }
+    if (o->ang < 0xB5) {
+        g->off[o->slot].x += 0.5f * func_00108030(g->tbl, o->slot * 60, 1);
+        g->off[o->slot].y += 0.5f * func_00108030(g->tbl, o->slot * 60, 0);
+        g->out[o->slot].x = g->pos[o->slot].x + g->off[o->slot].x;
+        g->out[o->slot].y = g->pos[o->slot].y + g->off[o->slot].y;
+        g->out[o->slot].z = g->pos[o->slot].z;
+    } else {
+        g->off[o->slot].x -= 0.5f * func_00108030(g->tbl, o->slot * 60, 1);
+        g->off[o->slot].y -= 0.5f * func_00108030(g->tbl, o->slot * 60, 0);
+        g->out[o->slot].x = g->pos[o->slot].x + g->off[o->slot].x;
+        g->out[o->slot].y = g->pos[o->slot].y + g->off[o->slot].y;
+        g->out[o->slot].z = g->pos[o->slot].z;
+    }
+    o->ang += 10;
+    if (o->ang >= 360) {
+        o->ang %= 360;
+    }
+    if (o->mode != 100) {
+        g->rot[o->slot][1] += 0x400;
+    }
+    if (g->w26E0 < 20) {
+        if (o->col[3] > 10) {
+            o->col[3] -= 9;
+        } else {
+            o->mode = 0;
+        }
+    }
+    return 0;
+}
 
 /* shape b089:01E013A0, 70 insns: a dark smoke puff (size 13) cycling frames 0..6 from a random start: in by 48 up to 0x60 for 2 ticks; out by 5 once the scene counter is under 25, then ends */
 
