@@ -690,3 +690,9 @@ there is a source form that gives the original.
   (b089:01E00A30).
 - **An s32 field reloaded narrow (`lwc1` to convert, `lh` for `% 360`) where yours CSEs into one `lw`:** read the
   narrow use through an s16 union member, `o->a.i = (f32)(s16)(o->a.h % 360);` (b089:01E00A30).
+
+- **Packet 8 bytes above where yours lands, the 8-byte gap after it instead of before:** large locals sit on 16-byte
+  boundaries, so the packet must be 8 bytes into a bigger object: `struct { u64 dma; Pkt gif; } pkt; p = &pkt.gif;`
+  (b494:01E01A90).
+- **The parameter-copy trick (b035) works at -O4 too:** copy the parameters into locals under
+  `#pragma opt_propagation off`, then re-run a declaration-order search (b494:01E01A90 went 458 → 603/603).
