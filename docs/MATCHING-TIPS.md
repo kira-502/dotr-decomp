@@ -555,3 +555,6 @@ there is a source form that gives the original.
 - **An -O1 struct copy into an array element gives `addu $v1, $s3, $v0` where the original has `$v0, $s3`:** do not
   cast an `f32 pos[3]` member to `Vec4f *`; give the element a local type with a real `Vec4f pos` and cast the pool
   where it is passed on. (b126:01E04FE0)
+- **Packet tail copies through `addiu aN, sp, X; ld/sd 0(aN)` where yours stores to sp offsets directly:** make the
+  field an 8-byte struct (`struct { u64 d; }`) and copy it as a struct. (b739:01E03220)
+- **`x * 1.0f` kept as a real `mul.s`:** `w = 1.0f; r = s * w;` with `r` an already declared float. (b739:01E03220)
