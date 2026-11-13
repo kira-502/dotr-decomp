@@ -637,3 +637,8 @@ there is a source form that gives the original.
 - **`(u32)(p + t * (f32)(q - p) / n)` at -O2 with the `mul.s` too early:** the original converts the quotient, then
   `p`, then multiplies. Put the quotient in a float local first: `d = (s32)(q - p) / n; x = (u32)(p + t * d);`
   (b299:01E03B30).
+
+- **-O2 scene manager with every saved register rotated (the parameter `g` coloured last, `$s3` not `$s0`):** no
+  declaration order fixes it. Copy the parameters into locals and keep the copies with `#pragma opt_propagation off`
+  (reset after): `static s32 f(Scene *arg0, s32 arg1) { Scene *g = arg0; s32 code = arg1; ...`. Either half alone does
+  nothing; copying only `g` leaves the two parameter moves swapped (b035:01E02070).
