@@ -565,3 +565,6 @@ there is a source form that gives the original.
   b391)
 - **An -O1 port of an -O2/-O3 twin has a frame 0x10 too big with an extra `swc1 $f28`:** the twin's float temporaries;
   write each sum out in full at every use (-O1 recomputes it anyway). (b241:01E00440)
+- **An -O2 port where every saved register is shuffled and the first parameter lands in `$s6` instead of `$s0`:**
+  `#pragma opt_propagation off`. If an if/else's then-arm then branches straight to the following loop's test where
+  the original goes through the join, compute the start into its own variable, `for (j = st; ...)`. (b110:01E01B20)
