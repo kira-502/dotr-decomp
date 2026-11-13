@@ -602,3 +602,5 @@ there is a source form that gives the original.
   pointer; one also used in a setup loop gets it after the draw counter `m`. The originals sit in between and no
   form reaches it yet (pragmas, loop forms, all decl orders, the permuter ruled out; repro in work/regswap/synbase.c
   on the original machine). Don't spend tries on counter names here.
+- **An -O4 range test gives `slti $v0` + `bnez $v0` where the original has `slti $at`, and `> K-1` alone does not
+  fix it:** nest the two bounds, `if (x > K-1) { if (x < L) ... }`, instead of `&&`. (b378:01E00970)
