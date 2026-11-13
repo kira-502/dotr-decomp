@@ -625,7 +625,134 @@ static void func_01E014F0_b482(Obj_b016_01E014F0 *o, Cam_b016_01E014F0 *cam, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b482", func_01E018F0_b482);
+/* shape b482:01E018F0 (B482_W_S), 546 insns, 1 copy: B482_W_S, the scene step: counts the frame (0xB2B8); starts
+   b482:01E030E0 / 01E031F0 / 01E02E40 at frames 1 / 50 / 47; before 174 copies the camera point and joint (0xB244)
+   point, then until 215 slides it along z by -+4 (flag 0xB2B4); bursts of b482:01E02180 / 01E023B0 sparks jittered by
+   rand%10-5 in 175..215, 01E025D0 / 01E02780 / 01E02A40 in 210..225, twenty 01E02780 at 160, one 01E02A40 a frame in
+   58..170, 01E023B0 at both joints (0xB248, 0xB24A) in 30..47 and 150..165, 01E02D10 at 156 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xB1D0 - 0x260];
+    Vec4f v;
+    u8 padB1E0[0xB244 - 0xB1E0];
+    s16 joint;
+    u8 padB246[2];
+    s16 jA;
+    s16 jB;
+    u8 padB24C[0xB2B0 - 0xB24C];
+    s16 hB0;
+    u8 padB2B2[2];
+    s16 flag;
+    u8 padB2B6[2];
+    s16 t;
+} Scene_b482_01E018F0;
+
+static void func_01E018F0_b482(Scene_b482_01E018F0 *g) {
+    extern s32 func_001F53A0(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern s32 b482_01E03C80();
+    extern s32 b482_01E02180();
+    extern s32 b482_01E023B0();
+    extern s32 b482_01E025D0();
+    extern s32 b482_01E02780();
+    extern s32 b482_01E02A40();
+    extern s32 b482_01E02C20();
+    extern s32 b482_01E02D10();
+    extern s32 b482_01E02E40();
+    extern s32 b482_01E030E0();
+    extern s32 b482_01E031F0();
+    s16 i;
+
+    g->t++;
+    if (g->t == 1) {
+        b482_01E03C80(g, b482_01E030E0, 0);
+    }
+    if (g->t == 50) {
+        b482_01E03C80(g, b482_01E031F0, 0);
+    }
+    if (g->t == 47) {
+        b482_01E03C80(g, b482_01E02E40, 0);
+    }
+    if (g->t < 174) {
+        func_001F5F90(func_001F53A0(), &g->pos);
+        func_001F5620(func_001F53A0(), g->joint, &g->v);
+        g->v.x = g->pos.x;
+    } else if (g->t < 215) {
+        if (g->flag) {
+            g->v.z -= 4.0f;
+        } else {
+            g->v.z += 4.0f;
+        }
+    }
+    if (g->t >= 175 && g->t < 216) {
+        for (i = 0; i < 4; i++) {
+            g->pos = g->v;
+            g->pos.x += func_0019A5C8() % 10 - 5;
+            g->pos.y += func_0019A5C8() % 10 - 5;
+            g->pos.z += func_0019A5C8() % 10 - 5;
+            b482_01E03C80(g, b482_01E02180, 0);
+        }
+        for (i = 0; i < 2; i++) {
+            g->pos = g->v;
+            g->pos.x += func_0019A5C8() % 10 - 5;
+            g->pos.y += func_0019A5C8() % 10 - 5;
+            g->pos.z += func_0019A5C8() % 10 - 5;
+            b482_01E03C80(g, b482_01E023B0, 0);
+        }
+    }
+    if (g->t >= 210 && g->t < 226) {
+        for (i = 0; i < 2; i++) {
+            g->pos = g->v;
+            b482_01E03C80(g, b482_01E025D0, 0);
+        }
+        g->hB0 = 0;
+        for (i = 0; i < 5; i++) {
+            g->pos = g->v;
+            b482_01E03C80(g, b482_01E02780, 0);
+        }
+        if (g->t % 2 == 1) {
+            b482_01E03C80(g, b482_01E02A40, 0);
+        }
+        if (g->t == 215) {
+            b482_01E03C80(g, b482_01E02C20, 0);
+        }
+    }
+    if (g->t == 160) {
+        for (i = 0; i < 20; i++) {
+            g->pos = g->v;
+            g->hB0 = 1;
+            b482_01E03C80(g, b482_01E02780, 0);
+        }
+    }
+    if (g->t >= 58 && g->t < 171) {
+        for (i = 0; i < 1; i++) {
+            g->pos = g->v;
+            b482_01E03C80(g, b482_01E02A40, 0);
+        }
+    }
+    if ((g->t >= 30 && g->t <= 47) || (g->t >= 150 && g->t < 166)) {
+        for (i = 0; i < 3; i++) {
+            func_001F5620(func_001F53A0(), g->jA, &g->pos);
+            g->pos.x += func_0019A5C8() % 10 - 5;
+            g->pos.y += func_0019A5C8() % 15;
+            g->pos.z += func_0019A5C8() % 10 - 5;
+            b482_01E03C80(g, b482_01E023B0, 0);
+        }
+        for (i = 0; i < 3; i++) {
+            func_001F5620(func_001F53A0(), g->jB, &g->pos);
+            g->pos.x += func_0019A5C8() % 10 - 5;
+            g->pos.y += func_0019A5C8() % 15;
+            g->pos.z += func_0019A5C8() % 10 - 5;
+            b482_01E03C80(g, b482_01E023B0, 0);
+        }
+    }
+    if (g->t == 156) {
+        b482_01E03C80(g, b482_01E02D10, 0);
+    }
+}
 
 /* shape b482:01E02180, 140 insns: b205:01E01900 family red spark (size 80, frame 2..4, random spin and drift in /60, frame f52 0..3), not moving: alpha up by 64 to 0x80 for 8 ticks, then down by 4 */
 
