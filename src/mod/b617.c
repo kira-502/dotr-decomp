@@ -838,7 +838,205 @@ static s32 func_01E03990_b617(Afx_b132_01E04B00 *arg0, s32 ot __attribute__((ali
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b617", func_01E04230_b617);
+/* shape b617:01E04230 (ShFx_Afx06), 569 insns, 1 copy: ShFx_Afx06: n beam entities (0x28 bytes each): projects a
+   point offset from the object's joint toward the camera (unless flags & 2, flipped by flags & 1) for the depth and
+   the entity for the base; one packet set up on the first live one (colour saved/restored around func_001F7060); then
+   two textured quads above and below the base whose width grows with span - life (b172:01E012E0's form) */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b617_01E04230;
+
+typedef struct {
+    u16 u : 14;
+    u16 pu : 2;
+    u16 v : 14;
+    u16 pv : 2;
+    u32 pad;
+} Uv_b617_01E04230;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b617_01E04230 uv;
+    Xyz_b617_01E04230 xyz;
+} Vtx_b617_01E04230;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b617_01E04230 v[4];
+    u8 tail[8];
+} Pkt_b617_01E04230;
+
+typedef struct {
+    f32 x, y, z;
+} V3_b617_01E04230;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 span;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[3];
+    s32 obj;
+    V3_b617_01E04230 pos;
+    u8 pad18[0x10];
+} Afx_b617_01E04230;
+
+static s32 func_01E04230_b617(Afx_b617_01E04230 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_001F7060(s32, s32, void *, void *);
+    extern Vec4f *func_001F9AD0(s32);
+    extern void func_001F53C0(s32, s32, void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_00101A00(void *, void *);
+    extern void func_0020CDD0(void *, void *, void *);
+    extern s32 func_00101770(void *);
+    extern f32 func_001F5860(s32);
+    extern void func_001F6490(s32, void *);
+    extern void func_001F63E0(s32, void *);
+    Afx_b617_01E04230 *e = arg0;
+    f32 mat[16];
+    Vec4f cam;
+    Vec4f pos;
+    Vec4f d;
+    Vec4f p;
+    f32 m2[16];
+    Xyz_b617_01E04230 xy[2];
+    struct {
+        Pkt_b617_01E04230 pk;
+        s32 a[2];
+        s32 b[2];
+    } w;
+    f32 depth[2];
+    u8 c[4];
+    s32 save;
+    s32 i;
+    s32 list;
+    s32 v;
+    s32 k;
+    s32 any;
+    f32 f;
+
+    list = func_00207F60();
+    any = 0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        func_00101BA0(e, &e->pos);
+        func_0020EB40(mat);
+        cam = *func_001F9AD0(0);
+        func_001F53C0(1, e->obj, &pos);
+        if (!(e->flags & 2)) {
+            d.x = cam.x - pos.x;
+            d.y = cam.y - pos.y;
+            d.z = cam.z - pos.z;
+            func_00101A00(&d, m2);
+            d.x = d.z = 0.0f;
+            d.y = func_001F5860(e->obj);
+            if (e->flags & 1) {
+                d.y *= -1.0f;
+            }
+            func_0020CDD0(&p, m2, &d);
+        } else {
+            p.x = p.y = p.z = 0.0f;
+        }
+        p.x += pos.x;
+        p.y += pos.y;
+        p.z += pos.z;
+        if (func_00205440(&p, mat, &xy[0], &depth[0]) == 0) {
+            continue;
+        }
+        if (func_00101770(&xy[0]) == 0) {
+            continue;
+        }
+        if (func_00205440(&e->pos, mat, &xy[1], &depth[1]) == 0) {
+            continue;
+        }
+        if (func_00101770(&xy[1]) == 0) {
+            continue;
+        }
+        v = (s32)(xy[1].y - 29184.0f);
+        if (any == 0) {
+            ((Pkt_b617_01E04230 *)(s32)&w.pk)->count = 0x34;
+            ((Pkt_b617_01E04230 *)(s32)&w.pk)->tag = 0xC;
+            ((Pkt_b617_01E04230 *)(s32)&w.pk)->regs = ((u64)0x4214 << 32) | 0x21421421;
+            ((Pkt_b617_01E04230 *)(s32)&w.pk)->pad = 0;
+            w.pk.v[0].r = w.pk.v[1].r = w.pk.v[2].r = w.pk.v[3].r = w.pk.v[0].g = w.pk.v[1].g = w.pk.v[2].g = w.pk.v[3].g =
+                w.pk.v[0].b = w.pk.v[1].b = w.pk.v[2].b = w.pk.v[3].b = 0;
+            w.pk.v[0].a = w.pk.v[1].a = w.pk.v[2].a = w.pk.v[3].a = 0x80;
+            w.pk.v[0].q = w.pk.v[1].q = w.pk.v[2].q = w.pk.v[3].q = 1.0f;
+            w.pk.v[0].xyz.z = w.pk.v[1].xyz.z = w.pk.v[2].xyz.z = w.pk.v[3].xyz.z = 0xFFFFFF;
+            w.pk.v[0].xyz.f = w.pk.v[1].xyz.f = w.pk.v[2].xyz.f = w.pk.v[3].xyz.f = 0;
+            func_001F6490(e->obj, &save);
+            c[0] = 0x80;
+            c[1] = 0x80;
+            c[2] = 0x80;
+            c[3] = 0x80;
+            func_001F63E0(e->obj, c);
+            func_00208460();
+            func_001F7060(e->obj, 0, w.a, w.b);
+            func_00208460();
+            any = 1;
+            func_001F63E0(e->obj, &save);
+        }
+        w.pk.v[0].r = w.pk.v[1].r = w.pk.v[2].r = w.pk.v[3].r = w.pk.v[0].g = w.pk.v[1].g = w.pk.v[2].g = w.pk.v[3].g =
+            w.pk.v[0].b = w.pk.v[1].b = w.pk.v[2].b = w.pk.v[3].b = 0x80;
+        w.pk.v[0].a = w.pk.v[1].a = w.pk.v[2].a = w.pk.v[3].a = 0x80;
+        w.pk.v[0].q = w.pk.v[1].q = w.pk.v[2].q = w.pk.v[3].q = 1.0f;
+        w.pk.v[0].xyz.z = w.pk.v[1].xyz.z = w.pk.v[2].xyz.z = w.pk.v[3].xyz.z = xy[0].z;
+        func_002086D0(&w.pk, 0x44);
+        ((Pkt_b617_01E04230 *)(s32)&w.pk)->count |= 0x800;
+        w.pk.v[2].xyz.x = w.pk.v[3].xyz.x = xy[0].x;
+        w.pk.v[2].xyz.y = w.pk.v[3].xyz.y = xy[1].y;
+        for (k = 0; k < 1; k++) {
+            w.pk.v[0].a = w.pk.v[1].a = w.pk.v[2].a = w.pk.v[3].a = 0x80;
+            f = (e->span - e->life) << 5;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[0].uv)->u = 0;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[0].uv)->v = 0;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[1].uv)->u = 0x2800;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[1].uv)->v = 0;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[2].uv)->u = 0;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[2].uv)->v = v;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[3].uv)->u = 0x2800;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[3].uv)->v = v;
+            w.pk.v[0].xyz.x = w.pk.v[2].xyz.x = (u32)(27648.0f - f);
+            w.pk.v[1].xyz.x = w.pk.v[3].xyz.x = (u32)(37888.0f - f);
+            w.pk.v[0].xyz.y = w.pk.v[1].xyz.y = 0x7200;
+            w.pk.v[2].xyz.y = w.pk.v[3].xyz.y = xy[1].y;
+            func_002075F0(&w.pk, 0, (u32)depth[0]);
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[0].uv)->u = 0;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[0].uv)->v = v;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[1].uv)->u = 0x2800;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[1].uv)->v = v;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[2].uv)->u = 0;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[2].uv)->v = 0x1C00;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[3].uv)->u = 0x2800;
+            ((Uv_b617_01E04230 *)(s32)&w.pk.v[3].uv)->v = 0x1C00;
+            w.pk.v[0].xyz.x = w.pk.v[2].xyz.x = (u32)(27648.0f + f);
+            w.pk.v[1].xyz.x = w.pk.v[3].xyz.x = (u32)(37888.0f + f);
+            w.pk.v[0].xyz.y = w.pk.v[1].xyz.y = xy[1].y;
+            w.pk.v[2].xyz.y = w.pk.v[3].xyz.y = 0x8E00;
+            func_002075F0(&w.pk, 0, (u32)depth[0]);
+        }
+    }
+    if (any) {
+        func_00207FD0(list, ot, (u32)depth[0]);
+    }
+    return 1;
+}
 
 /* shape b617:01E04B20 (ShFx_Core02), 520 insns, 1 copy: update and draw 2-D screen beams (0x40 bytes each): move,
    spin, fade by life, two crossed quads at the screen position */
