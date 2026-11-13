@@ -1181,7 +1181,159 @@ static s32 func_01E028B0_b299(Rib_b091_01E00410 *arg0, s32 id, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b299", func_01E03B30_b299);
+/* shape b299:01E03B30 (ShFx_FrmFx01), 582 insns, 1 copy (-O2,p): draws n frame emitters (0x24 bytes each) as screen-
+   border quads: four strips (top, bottom, left, right) stepped by the emitter's step, each quad's inner corners
+   pulled toward the projected point by (total [- life]) / total */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b299_01E03B30;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b299_01E03B30 p;
+} Vtx_b299_01E03B30;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b299_01E03B30 v[4];
+    u8 tail[0x20];
+} Pkt_b299_01E03B30;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 pad05[0x13];
+} Tex_b299_01E03B30;
+
+typedef struct {
+    u8 life;
+    u8 pad01;
+    u8 total;
+    u8 pad03;
+    u8 flags;
+    u8 pad05[3];
+    s32 step;
+    Vec4f pos;
+    u8 b2, g2, r2, a2;
+    u8 b, g, r, a;
+} Frm_b299_01E03B30;
+
+#pragma optimization_level 2
+
+static s32 func_01E03B30_b299(void *p, s32 target, s32 n) {
+    extern Tex_b299_01E03B30 D_01E066C0_b299;
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern void func_00101EE0(void *, void *, s32);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101770(void *);
+    extern void func_002075F0(void *, s32, s32);
+    Frm_b299_01E03B30 *o = p;
+    s32 i;
+    s32 h __attribute__((aligned(16)));
+    s32 j;
+    s32 step;
+    f32 t;
+    f32 d;
+    f32 m[16];
+    Tex_b299_01E03B30 tex;
+    Pkt_b299_01E03B30 pkt;
+    Xyz_b299_01E03B30 q;
+    f32 dep;
+
+    tex = D_01E066C0_b299;
+    h = func_00202BF0(tex.id, tex.kind);
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        if ((o->flags & 4) && (o->life & 1)) {
+            continue;
+        }
+        func_00101BA0(o, &o->pos);
+        func_0020EB40(m);
+        if (o->flags & 1) {
+            q.x = q.y = 0x8000;
+        } else {
+            if (func_00205440(&o->pos, m, &q, &dep) == 0) {
+                continue;
+            }
+            if (func_00101770(&q) == 0) {
+                continue;
+            }
+        }
+        ((Pkt_b299_01E03B30 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b299_01E03B30 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b299_01E03B30 *)(s32)&pkt)->regs = 0x421421421421LL;
+        ((Pkt_b299_01E03B30 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = o->r;
+        pkt.v[3].r = o->r2;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = o->g;
+        pkt.v[3].g = o->g2;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = o->b;
+        pkt.v[3].b = o->b2;
+        pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = o->a;
+        pkt.v[3].a = o->a2;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        pkt.v[0].p.z = pkt.v[1].p.z = pkt.v[2].p.z = pkt.v[3].p.z = 0xFFFFFF;
+        pkt.v[0].p.f = pkt.v[1].p.f = pkt.v[2].p.f = pkt.v[3].p.f = 0;
+        func_00101EE0(&pkt, &tex, h);
+        t = o->total;
+        if (o->flags & 2) {
+            t -= o->life;
+        }
+        step = o->step;
+        for (j = 0; j < 0x280; j += step) {
+            pkt.v[2].p.x = (u32)(27648.0f + (j << 4));
+            d = (s32)(q.x - pkt.v[2].p.x) / o->total;
+            pkt.v[0].p.x = (u32)(pkt.v[2].p.x + t * d);
+            pkt.v[3].p.x = (u32)(27648.0f + ((j + (step >> 1)) << 4));
+            d = (s32)(q.x - pkt.v[3].p.x) / o->total;
+            pkt.v[1].p.x = (u32)(pkt.v[3].p.x + t * d);
+            pkt.v[2].p.y = pkt.v[3].p.y = 0x7200;
+            d = (s32)(q.y - pkt.v[2].p.y) / o->total;
+            pkt.v[0].p.y = pkt.v[1].p.y = (u32)(pkt.v[2].p.y + t * d);
+            func_002075F0(&pkt, target, 0);
+            pkt.v[2].p.y = pkt.v[3].p.y = 0x8E00;
+            d = (s32)(q.y - pkt.v[2].p.y) / o->total;
+            pkt.v[0].p.y = pkt.v[1].p.y = (u32)(pkt.v[2].p.y + t * d);
+            func_002075F0(&pkt, target, 0);
+        }
+        for (j = 0; j < 0x1C0; j += step) {
+            pkt.v[2].p.y = (u32)(29184.0f + (j << 4));
+            d = (s32)(q.y - pkt.v[2].p.y) / o->total;
+            pkt.v[0].p.y = (u32)(pkt.v[2].p.y + t * d);
+            pkt.v[3].p.y = (u32)(29184.0f + ((j + (step >> 1)) << 4));
+            d = (s32)(q.y - pkt.v[3].p.y) / o->total;
+            pkt.v[1].p.y = (u32)(pkt.v[3].p.y + t * d);
+            pkt.v[2].p.x = pkt.v[3].p.x = 0x6C00;
+            d = (s32)(q.x - pkt.v[2].p.x) / o->total;
+            pkt.v[0].p.x = pkt.v[1].p.x = (u32)(pkt.v[2].p.x + t * d);
+            func_002075F0(&pkt, target, 0);
+            pkt.v[2].p.x = pkt.v[3].p.x = 0x9400;
+            d = (s32)(q.x - pkt.v[2].p.x) / o->total;
+            pkt.v[0].p.x = pkt.v[1].p.x = (u32)(pkt.v[2].p.x + t * d);
+            func_002075F0(&pkt, target, 0);
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* shape b010:01E00410 (ShFx_Smk01), 620 insns, 35 copies (-O2,p): n particle emitters (0x38 bytes each), each with up
    to 8 particles (0x28 bytes, indexes into a shared table): moves each live particle (gravity, floor), sizes it by
