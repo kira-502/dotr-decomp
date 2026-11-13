@@ -34,7 +34,6 @@ b043:01E03790	82%	an earlier try got this far
 b044:01E02940	90%	an earlier try got this far
 b046:01E01520	94%	hard: STQ block only: original divides t0/256 twice and keeps t1/256 in a mov.s copy; MWCC shares t0/256 under every form tried (needs opt_propagation off so 0/64/256 stay unfolded)
 b051:01E003A0	99.2%	an earlier try got this far
-b051:01E00DF0	98.5%	an earlier try got this far
 b051:01E04240	99%	an earlier try got this far
 b058:01E023F0	85% (153/179)	hard: the C matches the whole function (every instruction up to its jr $ra), but the listing also holds a stray loop tail and epilogue after the padding at text end (0x01E02680..0x01E026B8, like b717:01E03B84), which no C produces (best draft: drafts/mod/b058_01E023F0.c)
 b059:01E02A00	40%	an earlier try got this far

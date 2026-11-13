@@ -542,3 +542,5 @@ there is a source form that gives the original.
 - **A module whose jump tables sit in the literal pool (`.word .L<VRAM>_<mod>` in `asm/data/mod/<mod>_pool.rodata.s`;
   b512, b541, b543):** since b7dec2ad the linker script answers those labels with their addresses, so the module
   links once the function is C; regenerate the scripts with `python3 tools/modules.py ld <mod>` if yours are older.
+- **Floats set from one another (`ra = e->r; rb = ra * e->k;`) and their hoisted squares in permuted registers, no
+  declaration order fixes it:** read the field again instead of the variable, `rb = e->r * e->k;`. (b051:01E00DF0)
