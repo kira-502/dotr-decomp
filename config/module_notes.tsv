@@ -17,7 +17,6 @@ b015:01E008F0	97%	hard: -O3; only the prologue q.x/q.y temp regs and the packet-
 b018:01E01760	60% (in-file)	hard: frame layout off (pk at sp+0x228, trails at 0x160/0x1A0, ours 0x200/0x140), n kept s16->int spilled at 0xC0, colour copied through a pointer; 7 copies (best draft: drafts/mod/b018_01E01760.c)
 b024:01E02ED0	99.0%	an earlier try got this far
 b024:01E03A40	86%	an earlier try got this far
-b025:01E01FD0	94%	an earlier try got this far
 b029:01E003A0	63%	an earlier try got this far
 b029:01E00EF0	97% (264/273)	hard: s3/s4/s5 rotation (walker/list/bone base); calls sibling func_01E00C20_b029 now; probe search: no single/pair vreg move (best draft: drafts/mod/b029_01E00EF0.c)
 b029:01E01340	99.2%	an earlier try got this far
