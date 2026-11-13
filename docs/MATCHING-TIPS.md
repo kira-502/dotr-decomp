@@ -633,3 +633,7 @@ there is a source form that gives the original.
   constants instead. It only shows in the file, so check with `tools/mod_infile.sh` (b113:01E03F50).
 - **Calling an in-file static that takes a float from a standalone work file:** give its link alias a prototype
   (`extern s32 b113_01E00280(void *, void *, s32, f32);`); a no-prototype extern promotes the float to double.
+
+- **`(u32)(p + t * (f32)(q - p) / n)` at -O2 with the `mul.s` too early:** the original converts the quotient, then
+  `p`, then multiplies. Put the quotient in a float local first: `d = (s32)(q - p) / n; x = (u32)(p + t * d);`
+  (b299:01E03B30).
