@@ -590,3 +590,7 @@ there is a source form that gives the original.
   write `if (j)`, not `if (j != 0)`. (b734:01E033C0)
 - **`dk try` differs only in a relocation name inside a module table (`D_..B4` where yours is `D_..B0[k].field`):**
   the bytes are the same; check with `work/fulltry.sh` / `dk accept`. (b133:01E00BA0)
+- **Per call site, a module static can go through its no-prototype alias (`extern void <mod>_<VADDR>();`) or its
+  real prototype:** when one call's struct-address argument or delay-slot store is out of order, switch only that
+  call to the alias. A struct return copied out through `paddub $v0, $a0` needs the real static. (b178:01E042E0,
+  b152:01E03730)
