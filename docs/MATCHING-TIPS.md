@@ -646,3 +646,11 @@ there is a source form that gives the original.
 - **A call-free `if (..) n = 2; else n = 2;` loop limit with a sign-extend in each arm and in the limit register:**
   assign the arms to the previous loop's counter and copy it: `if (..) i = 2; else i = 2; cnt = i; for (i = 0; i < cnt; i++)`.
   Arms on the limit merge the sign-extends; arms on `i` with another loop counter swap counter and limit (b433:01E01850).
+
+- **A clamped count and a strength-reduced array pointer swapped (`$s2`/`$s3`), unmoved by declaration order or
+  counter names:** read the field twice in the `?:`, `n = e->seg > 36 ? 36 : e->seg;` (still one load), not
+  `n = e->seg; n = n > 36 ? 36 : n;` (b040:01E05BD0).
+- **Byte loads before an alpha fade landing in permuted `$a0`..`$a3`:** compute the difference into a fresh block local,
+  `{ s32 d = e->max - e->life; ... d * (e->c.a >> 4) ... }`; reusing a local doesn't work (b040:01E05BD0).
+- **`t == 0x75 || t == 0x76 || t == 0x77` folded into `addiu` + `sltiu` at -O4 where the original has `bne` chains:**
+  a `switch` gives `beq` + `b`; build the function at -O3 instead (b060:01E00080).
