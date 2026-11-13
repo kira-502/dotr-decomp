@@ -1854,7 +1854,176 @@ static void func_01E06010_b034(Scene_b034_01E06010 *g, Obj_b034_01E06010 *o, voi
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b034", func_01E06420_b034);
+/* shape b034:01E06420, 564 insns, 1 copy (-O3,p): draws a paint-rain ribbon: n - 1 segments of three spline-lerped
+   quads between the two point lists, alpha fading by col0.a / 2n per step, t stepping 0.33 */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b034_01E06420;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b034_01E06420;
+
+typedef struct {
+    Rgbaq_b034_01E06420 c;
+    u64 uv;
+    u64 xyz;
+} Vtx_b034_01E06420;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b034_01E06420 v[4];
+    u8 tail[0x20];
+} Pkt_b034_01E06420;
+
+typedef struct {
+    u8 r, g, b, a;
+} C4_b034_01E06420;
+
+typedef struct {
+    u8 pad00[6];
+    s16 n;
+    u8 pad08[0x58];
+    C4_b034_01E06420 col0;
+    C4_b034_01E06420 col1;
+} Rib_b034_01E06420;
+
+typedef struct {
+    u8 pad00[0x20];
+    f32 x, y, z;
+    u8 pad2C[0x54];
+    s32 ot;
+    u8 pad84[4];
+    void *texture;
+    u8 pad8C[8];
+    s16 rect[4];
+} Obj_b034_01E06420;
+
+static inline Vec_b034_01E06420 spline_b756_01E05530(Vec_b034_01E06420 *p, s32 type, f32 t) {
+    Vec_b034_01E06420 r;
+    f32 b3;
+    f32 b2;
+    f32 b1;
+    f32 b0;
+
+    if (type == 0) {
+        b0 = -t * ((t - 1.0f) * (t - 2.0f)) / 6.0f;
+        b1 = (t - 2.0f) * ((1.0f + t) * (t - 1.0f)) / 2.0f;
+        b2 = -(1.0f + t) * (t * (t - 2.0f)) / 2.0f;
+        b3 = (1.0f + t) * (t * (t - 1.0f)) / 6.0f;
+    }
+    r.x = p[0].x * b0 + p[1].x * b1 + p[2].x * b2 + p[3].x * b3;
+    r.y = p[0].y * b0 + p[1].y * b1 + p[2].y * b2 + p[3].y * b3;
+    r.z = p[0].z * b0 + p[1].z * b1 + p[2].z * b2 + p[3].z * b3;
+    return r;
+}
+
+#pragma optimization_level 3
+
+static void func_01E06420_b034(Obj_b034_01E06420 *o, Rib_b034_01E06420 *s, Vec_b034_01E06420 *pa, Vec_b034_01E06420 *pb) {
+    extern Rgbaq_b034_01E06420 func_00107740(void *);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, void *, s32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00109A70(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 depth[4];
+    Vec_b034_01E06420 quad[4];
+    Vec_b034_01E06420 v;
+    Vec_b034_01E06420 A[2];
+    Vec_b034_01E06420 B[2];
+    Vec_b034_01E06420 a4[4];
+    Vec_b034_01E06420 b4[4];
+    f32 m[16];
+    Pkt_b034_01E06420 pkt __attribute__((aligned(8)));
+    C4_b034_01E06420 c0;
+    C4_b034_01E06420 c1;
+    s32 k;
+    s32 j;
+    s32 i;
+    s16 n;
+    s32 x;
+    Pkt_b034_01E06420 *p;
+    f32 t;
+
+    n = s->n;
+    v.x = o->x;
+    v.y = o->y;
+    v.z = o->z;
+    func_00108EF0(m, NULL, NULL, &v);
+    p = &pkt;
+    func_00109270(p, 0, 0);
+    func_00107790(p, &s->col0, 0);
+    func_00108500(p, o->rect, 0);
+    func_00208700(p, o->texture, 1);
+    c0 = s->col0;
+    c1 = s->col1;
+    a4[0] = pa[0];
+    a4[1] = pa[0];
+    a4[2] = pa[1];
+    a4[3] = pa[2];
+    b4[0] = pb[0];
+    b4[1] = pb[0];
+    b4[2] = pb[1];
+    b4[3] = pb[2];
+    for (k = 0; k < n - 1; k++) {
+        t = 0.0f;
+        for (j = 0; j < 3; j++) {
+            c1.a = c0.a;
+            p->v[0].c = func_00107740(&c0);
+            p->v[2].c = func_00107740(&c1);
+            x = c0.a - (s16)(s->col0.a / (n * 2));
+            if (x > 0) {
+                c0.a = x;
+            } else {
+                c0.a = 0;
+            }
+            c1.a = c0.a;
+            p->v[1].c = func_00107740(&c0);
+            p->v[3].c = func_00107740(&c1);
+            if (k != 0) {
+                for (i = 0; i < 2; i++) {
+                    A[i] = spline_b756_01E05530(&pa[k - 1], 0, t);
+                    B[i] = spline_b756_01E05530(&pb[k - 1], 0, t);
+                    if (i == 0) {
+                        t += 0.33f;
+                    }
+                    if (t > 9.0f) {
+                        t = 1.0f;
+                    }
+                }
+            } else {
+                for (i = 0; i < 2; i++) {
+                    A[i] = spline_b756_01E05530(a4, 0, t);
+                    B[i] = spline_b756_01E05530(b4, 0, t);
+                    if (i == 0) {
+                        t += 0.33f;
+                    }
+                    if (t > 9.0f) {
+                        t = 1.0f;
+                    }
+                }
+            }
+            func_00109A70(&quad[0], &A[0]);
+            func_00109A70(&quad[1], &A[1]);
+            func_00109A70(&quad[2], &B[0]);
+            func_00109A70(&quad[3], &B[1]);
+            if (func_00205630(quad, 0x70000000, m, p, depth) != 0) {
+                func_002075F0(p, o->ot, (u32)depth[0]);
+            }
+        }
+    }
+}
+
+#pragma optimization_level reset
 
 /* shape b034:01E06CF0, 60 insns: lerp of a 4-float point: out = a + (b - a) / n * t (xyz) */
 
