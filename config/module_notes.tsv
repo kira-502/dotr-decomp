@@ -65,7 +65,6 @@ b131:01E053B0	93%	an earlier try got this far
 b132:01E01340	99.2%	an earlier try got this far
 b134:01E011E0	67%	hard: heavy spills (k/j/pq/n3/last on stack, pts+s params spilled); B gets a struct-return temp per call site (sp1D0/sp1E0) that A does not; cousin of b134:01E00820 (best draft: drafts/mod/b134_01E011E0.c)
 b136:01E019D0	66% (217/330), same length	hard: scene manager; b136:01E01950's body is written inline (not auto-inlined); needs `#include ""` for its D_ globals; left: g/id/n/i register rotation (best draft: drafts/mod/b136_01E019D0.c)
-b136:01E020D0	99% (202/204)	hard: block-local f32 r = 0.8f fixes the 0.8f schedule but r gets f12 (mov to f14) where orig has f14 (mov to f12); every form with the right regs schedules the load early; permuter nothing (best draft: drafts/mod/b136_01E020D0.c)
 b137:01E01340	94.5%	an earlier try got this far
 b149:01E02D30	72%	an earlier try got this far
 b158:01E02630	40%	an earlier try got this far
@@ -98,7 +97,6 @@ b238:01E003A0	99.2%	an earlier try got this far
 b256:01E04AB0	99%	an earlier try got this far
 b262:01E00F50	98% (288/294)	hard: two strand fade steps must be u8 SPILLED (sb/lbu) with the third in fp; as u8 fp goes to the first one (chatA: any decl order); as s32 extra andi/sw (best draft: drafts/mod/b262_01E00F50.c)
 b262:01E013F0		hard: module main (358 insns, mostly init stores); stopped on the owner's order before drafting; likely needs the arg0-copy trick like c507
-b264:01E024D0	98% (318/323)	hard: last block: g->t lands in a1 and the >76 test in v1 (ours v1 / at); tried a t local and nested ifs (best draft: drafts/mod/b264_01E024D0.c)
 b273:01E02450	77%	an earlier try got this far
 b275:01E02BC0	77%	an earlier try got this far
 b285:01E02120	99.2%	an earlier try got this far
@@ -144,7 +142,6 @@ b526:01E02150	99.2%	an earlier try got this far
 b531:01E01970	64%	hard: mode-1 far-plane writes (pk+0x20..0x50 bitfield RMW) get hoisted out of the loop as 4 address regs, so base spills and frame is 0x240 vs 0x200; cousin of b018:01E00920 (best draft: drafts/mod/b531_01E01970.c)
 b549:01E01700	97% (239/246)	hard: in-file; FPR swap f1/f2 around the div.s at insn 88-94 (best draft: drafts/mod/b549_01E01700.c)
 b551:01E02480	77%	an earlier try got this far
-b555:01E00EA0	98% (177/180)	hard: in-file only (c.sh); md = mode & 0xF wants a2, ours a0; tried decl order/types/switch/inline (best draft: drafts/mod/b555_01E00EA0.c)
 b558:01E003A0	99.2%	an earlier try got this far
 b572:01E01400	92%	an earlier try got this far
 b576:01E02460	77%	an earlier try got this far

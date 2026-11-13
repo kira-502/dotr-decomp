@@ -577,3 +577,6 @@ there is a source form that gives the original.
 - **A clamp's branch keeps a `nop` delay slot where your `if` fills it:** write it as `?:` (`n = n > 36 ? 36 : n;`).
   If that swaps the variable's spill slot with another spilled local, reuse the other local for an earlier
   short-lived value so it becomes a split web with a later slot. (b062:01E020A0)
+- **`f(p, A, B, A)` where the original loads A into `$f14` and copies it with `mov.s $f12, $f14`:** assign a block
+  local inside the last argument, `{ f32 r; f(p, A, B, r = A); }`; `f32 r = A;` before the call gives `$f12`.
+  (b136:01E020D0)
