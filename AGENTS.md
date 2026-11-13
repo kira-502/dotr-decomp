@@ -9,7 +9,7 @@ source that compiles to the exact bytes of the retail game.
 
 - The main executable is done: 3,463 of 3,463 functions are C.
 - The game also loads **762 code modules** from `DATA/BMODULE.MRG`, `CMODULE.MRG` and `MMODULE.MRG` (card effects,
-  battle animations, scene scripts). They hold 8,620 functions; about 7,100 are C, the rest are still assembly.
+  battle animations, scene scripts). They hold 8,620 functions; 7,860 are C, the rest are still assembly.
 - **The open goal: every module function in C that compiles to the original bytes.** The list of what is left is
   `docs/TODO-MODULES.md`; the tricks that worked so far are `docs/MATCHING-TIPS.md`.
 
@@ -62,7 +62,7 @@ You need your own copy of the game (a disc image of the US release).
    ```
    make split            # the executable's assembly into asm/
    make split-modules    # reads the three .MRG files from your disc, splits the 762 modules into asm/
-   make -j4 check
+   make -j"$(nproc)" check   # lower the number if the machine runs short of memory
    ```
    Done when the last two lines are:
    ```
@@ -87,7 +87,12 @@ Names: a module function is `func_<VADDR>_<module>`, e.g. `func_01E029E0_b211` a
 
 ## The work loop for one module function
 
-Pick the next row of `docs/TODO-MODULES.md` (kind `work`, smallest first). Then:
+Pick the next row of `docs/TODO-MODULES.md` (kind `work` or `switch`, smallest first). Then:
+
+- Kind `piece`: stray code at a module's text end that no C produces on its own. Leave these rows.
+- Kind `switch` (the function uses a jump table): write a plain C `switch` and use the same loop. Since 9b663245
+  `tools/jtbl_fix.py` points the compiled switch at the module's own table (`jtbl_<VADDR>_<module>`), so `dk try`
+  and `dk accept` work on these as on any other row (b172:01E02F30 was the first).
 
 1. **Look.**
    - `cat asm/nonmatchings/mod/<module>/<func>.s`
@@ -159,11 +164,26 @@ the draft in `drafts/mod/`, take the next one.
 - **Never edit another file's code to make yours match**, unless the asm proves it (for example a sibling that really
   takes an unused extra argument its caller passes). Then the full `make check` must still pass.
 
+## The big ones
+
+The functions left average about 1,090 instructions. A long run on one of them:
+
+- Keep the best draft so far in `drafts/mod/<module>_<VADDR>.c` and commit it with its `config/module_notes.tsv`
+  line as you go. A long run that stops halfway then loses nothing.
+- Change one thing at a time and try it; keep the change only if the count goes up.
+- Close to done (95% and up), let decomp-permuter search for the last few differences:
+  `dk perm <func> drafts/mod/<module>_<VADDR>.c --minutes 5 --jobs 2`. It prints the best version it finds, or
+  "no better version found".
+
 ## Sending work back
 
-- One pull request per batch of modules (for example "b200-b249: 31 functions"), each function accepted by `dk accept`
+- Work on your own branch in this repository. Never push to `main`.
+- One branch per batch of modules (for example "b200-b249: 31 functions"), each function accepted by `dk accept`
   (so each is its own commit), plus spreads.
-- `make -j4 check` green on both lines before you push. Paste the two OK lines into the pull request.
+- Before asking for a merge: `git fetch origin && git merge origin/main` into your branch, then
+  `make -j"$(nproc)" check` green on both lines.
+- Open a pull request from your branch to `main` and paste the two OK lines into it.
+- Without write access: fork the repository and do the same from your fork.
 - Only `src/mod/*.c` (and, when needed, `config/module_notes.tsv`, `drafts/mod/`, `docs/TODO-MODULES.md`) should
   change. No reformatting, renaming or comment edits elsewhere.
 - Commit messages: what you matched, and any trick a later reader needs (`b211: LkSetLight, table as module data`).
