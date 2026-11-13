@@ -698,3 +698,7 @@ there is a source form that gives the original.
   `#pragma opt_propagation off`, then re-run a declaration-order search (b494:01E01A90 went 458 → 603/603).
   Under that pragma every constant-bound `for` gets an entry guard (`slti`/`beqz`), so the trick doesn't suit
   functions with setup loops whose original has no guard (b594:01E02EC0).
+
+- **Temps in `$a0`/`$a1` around `jal func_001A23B0` where yours uses `$a2`/`$a3`:** call `func_001A23B0(x)` by name
+  instead of `(u32)x`. With the cast the compiler keeps the next call's arguments in `$a0`/`$a1` across the helper; a
+  real call frees them (b000:01E04540; b000's other functions call it the same way).
