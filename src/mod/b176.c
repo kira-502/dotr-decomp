@@ -901,7 +901,248 @@ static s32 func_01E015A0_b176(Rib_b091_01E00410 *arg0, s32 id, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b176", func_01E02820_b176);
+/* shape b176:01E02820 (ShFx_Bst01), 590 insns, 1 copy (-O2,p): draws n burst emitters (0x4C bytes each): unless flag
+   4, re-aims the emitter between two joints (flag 1 flips it) and sets it back along that line; a slice of a sphere
+   at height (age + 1) * dh as up to 9 fan segments per quadrant, mirrored into four quadrants as triangles (fourth
+   vertex copies the centre), alpha fading over the last 16 steps and halved on odd frames with flag 2; texture page
+   from a 4-entry module table by e->type, STQ from the page rectangle (types 1-3) or func_00101EE0; b032:01E02820's
+   ShFx_Swave01 at -O2 */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b176_01E02820;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    f32 s, t;
+    Xyz_b176_01E02820 xyz;
+} Vtx_b176_01E02820;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b176_01E02820 v[4];
+    u8 tail[0x20];
+} Pkt_b176_01E02820;
+
+typedef struct {
+    s32 id;
+    u8 sub;
+    u8 pad5[3];
+    s32 u, w, v, h;
+} Tex_b176_01E02820;
+
+typedef struct {
+    Tex_b176_01E02820 e[4];
+} Tab_b176_01E02820;
+
+typedef struct {
+    u8 b, g, r, a;
+} Col_b176_01E02820;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 mask;
+    u8 flags;
+    u8 b5;
+    u8 b6;
+    u8 seg;
+    u8 type;
+    u8 b9;
+    u8 bA;
+    u8 bB;
+    u8 bC;
+    u8 padD[3];
+    f32 rad;
+    f32 len;
+    f32 h;
+    f32 dh;
+    f32 back;
+    Col_b176_01E02820 c0;
+    Col_b176_01E02820 c1;
+    f32 pos[4];
+    s32 rot[4];
+} Emit_b176_01E02820;
+
+extern Tab_b176_01E02820 D_01E05A90_b176;
+
+#pragma optimization_level 2
+
+static s32 func_01E02820_b176(void *arg0, s32 ot, s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00101BA0(void *, void *);
+    f32 mat2[16];
+    f32 mat[16];
+    Vec4f a[10];
+    Vec4f c[4];
+    f32 depth[4];
+    Tab_b176_01E02820 tab;
+    Vec4f p;
+    Vec4f d;
+    Tex_b176_01E02820 td;
+    Pkt_b176_01E02820 pkt __attribute__((aligned(8)));
+    u8 bl[4];
+    Emit_b176_01E02820 *e;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 nseg;
+    s32 tex;
+    u8 age;
+    f32 step;
+    f32 r;
+    f32 ang;
+
+    e = arg0;
+    tab = D_01E05A90_b176;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(tab.e[e->type].id, tab.e[e->type].sub);
+        {
+            u8 t = e->max - e->life;
+
+            age = t & e->mask;
+        }
+        e->h = (age + 1) * e->dh;
+        if (!(e->flags & 4)) {
+            e->b5 = 1;
+            e->b6 = e->bB;
+            func_00101BA0(e, e->pos);
+            e->b6 = e->bC;
+            func_00101BA0(e, &p);
+            d.x = p.x - e->pos[0];
+            d.y = p.y - e->pos[1];
+            d.z = p.z - e->pos[2];
+            if (e->flags & 1) {
+                d.x *= -1.0f;
+                d.y *= -1.0f;
+                d.z *= -1.0f;
+            }
+            func_00101940((f32 *)&d, e->rot);
+            e->pos[0] = p.x - d.x * e->back;
+            e->pos[1] = p.y - d.y * e->back;
+            e->pos[2] = p.z - d.z * e->back;
+        }
+        func_0020EB40(mat);
+        func_0020C940(mat2, NULL, e->rot, e->pos);
+        func_0020BC00(mat, mat2);
+        nseg = e->seg;
+        nseg = nseg > 9 ? 9 : nseg;
+        step = 90.0f / nseg;
+        {
+            f32 l = e->len;
+            f32 q = e->rad;
+            f32 hh = e->h;
+
+            r = q * q * (1.0f - hh * hh / (l * l));
+        }
+        r = func_001A6C60(r);
+        for (j = 0; j < nseg + 1; j++) {
+            ang = 3.1415927f * (step * j) / 180.0f;
+            a[j].x = r * func_001A6898(ang);
+            a[j].z = r * func_001A6A88(ang);
+            a[j].y = -e->h;
+        }
+        ((Pkt_b176_01E02820 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b176_01E02820 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b176_01E02820 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b176_01E02820 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = e->c0.r;
+        pkt.v[2].r = pkt.v[3].r = e->c1.r;
+        pkt.v[0].g = pkt.v[1].g = e->c0.g;
+        pkt.v[2].g = pkt.v[3].g = e->c1.g;
+        pkt.v[0].b = pkt.v[1].b = e->c0.b;
+        pkt.v[2].b = pkt.v[3].b = e->c1.b;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        if (age < 16) {
+            pkt.v[0].a = pkt.v[1].a = (16 - age) * (e->c0.a >> 4);
+            pkt.v[2].a = pkt.v[3].a = (16 - age) * (e->c1.a >> 4);
+        } else {
+            pkt.v[0].a = pkt.v[1].a = e->c0.a;
+            pkt.v[2].a = pkt.v[3].a = e->c1.a;
+        }
+        if ((e->flags & 2) && (e->life & 1)) {
+            pkt.v[0].a >>= 1;
+            pkt.v[1].a >>= 1;
+            pkt.v[2].a >>= 1;
+            pkt.v[3].a >>= 1;
+        }
+        c[2].x = c[2].y = c[2].z = 0.0f;
+        for (j = 0; j < nseg; j++) {
+            for (k = 0; k < 4; k++) {
+                switch (k) {
+                case 0:
+                    c[0] = a[j];
+                    c[1] = a[j + 1];
+                    break;
+                case 1:
+                    c[0].x = -a[j].x;
+                    c[1].x = -a[j + 1].x;
+                    break;
+                case 2:
+                    c[0].z = -a[j].z;
+                    c[1].z = -a[j + 1].z;
+                    break;
+                case 3:
+                    c[0].x = a[j].x;
+                    c[1].x = a[j + 1].x;
+                    break;
+                }
+                if (func_00205440(&c[0], mat, &pkt.v[0].xyz, &depth[0]) != 0 &&
+                    func_00205440(&c[1], mat, &pkt.v[1].xyz, &depth[1]) != 0 &&
+                    func_00205440(&c[2], mat, &pkt.v[2].xyz, &depth[2]) != 0) {
+                    pkt.v[3].xyz = pkt.v[2].xyz;
+                    pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+                    td = tab.e[e->type];
+                    switch (e->type) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        func_00208CB0(&pkt, 0xB | ((u64)e->b9 << 4) | ((u64)td.u << 14) | ((u64)td.v << 24) |
+                                                ((u64)(td.h - 1) << 34));
+                        td.u = 0;
+                        td.w = e->bA;
+                        pkt.v[0].q = 1.0f / depth[0];
+                        pkt.v[1].q = 1.0f / depth[1];
+                        pkt.v[3].q = pkt.v[2].q = 1.0f / depth[2];
+                        pkt.v[0].s = td.u / 256.0f / depth[0];
+                        pkt.v[0].t = td.v / 256.0f / depth[0];
+                        pkt.v[1].s = td.w / 256.0f / depth[1];
+                        pkt.v[1].t = td.v / 256.0f / depth[1];
+                        pkt.v[2].s = td.u / 256.0f / depth[2];
+                        pkt.v[2].t = td.h / 256.0f / depth[2];
+                        pkt.v[3].s = td.w / 256.0f / depth[2];
+                        pkt.v[3].t = td.h / 256.0f / depth[2];
+                        func_00101C80(&td, bl);
+                        func_002086D0(&pkt, (u64)bl[0] | ((u64)bl[1] << 2) | ((u64)bl[2] << 4) | ((u64)bl[3] << 6));
+                        func_00208700(&pkt, (void *)tex, 1);
+                        break;
+                    default:
+                        func_00101EE0(&pkt, &td, (void *)tex);
+                        break;
+                    }
+                    func_002075F0((s32)&pkt, ot, 0);
+                }
+            }
+        }
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 /* shape b032:01E02820 (ShFx_Swave01), 538 insns, 5 copies (-O2,p): draws n ring/cone emitters (0x48 bytes each): a
    quarter ring of up to 9 segments between an inner radius at height y+dy and an outer one at y, mirrored into four
