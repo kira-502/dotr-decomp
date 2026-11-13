@@ -681,7 +681,249 @@ static void func_01E01370_b225(Obj_b046_01E00DD0 *obj, Data_b046_01E00DD0 *data,
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b225", func_01E01560_b225);
+/* shape b225:01E01560 (B225_W_S), 591 insns, 1 copy (-O3,p): b709:01E02300's two-joint scene step with other times:
+   tracks joints A/B and C/D before 220, pushes point A in z by 5 (side by flag), kicks A at 196 and C at 187..190 by
+   the camera turn; at 211 / 193 bursts on C / A; trails, sparks and the 01E01EA0 swirl from 185..217; at 130/150 and
+   121/140/160 ten embers on joints E / F */
+
+typedef struct {
+    u8 pad0[0x20];
+    Vec4f d0;
+    Vec4f d1;
+    Vec4f c0;
+    Vec4f c1;
+    u8 pad60[0x2D0 - 0x60];
+    Vec4f pos;
+    u8 pad2E0[0x320 - 0x2E0];
+    Vec4f q0;
+    Vec4f q1;
+    u8 pad340[0x31B0 - 0x340];
+    Vec4f p0;
+    Vec4f p1;
+    u8 pad31D0[0x31F0 - 0x31D0];
+    Vec4f r0;
+    Vec4f r1;
+    u8 pad3210[0x3384 - 0x3210];
+    u8 col[4];
+    u8 pad3388[0x33D0 - 0x3388];
+    s16 ja;
+    s16 jb;
+    s16 jc;
+    s16 jd;
+    u8 pad33D8[2];
+    s16 je;
+    s16 jf;
+    u8 pad33DE[4];
+    s16 side;
+    s16 flip;
+    u8 pad33E6[2];
+    s16 t;
+    u8 pad33EA[0x36EC - 0x33EA];
+    u8 trig[1];
+} Scene_b225_01E01560;
+
+#pragma optimization_level 3
+
+static void func_01E01560_b225(Scene_b225_01E01560 *g) {
+    extern s32 b225_01E01EA0(void);
+    extern s32 b225_01E02120(void);
+    extern s32 b225_01E02290(void);
+    extern s32 b225_01E023F0(void);
+    extern s32 b225_01E02540(void);
+    extern s32 b225_01E02810(void);
+    extern s32 b225_01E02A70(void);
+    extern s32 b225_01E02BF0(void);
+    extern s32 b225_01E02CD0(void);
+    extern s32 b225_01E02E70(void);
+    extern s32 b225_01E03120(void);
+    extern s32 b225_01E033B0(void);
+    extern void b225_01E04360(Scene_b225_01E01560 *, s32 (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    Vec4f v;
+    s32 a[4];
+    s32 b[4];
+    s32 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    if (g->t < 220) {
+        func_001F5620(func_001F53A0(), g->ja, &g->p0);
+    }
+    if (g->t < 220) {
+        func_001F5620(func_001F53A0(), g->jb, &g->q0);
+    }
+    if (g->t < 220) {
+        g->d0.x = g->q0.x - g->p0.x;
+        g->d0.y = g->q0.y - g->p0.y;
+        g->d0.z = g->q0.z - g->p0.z;
+    }
+    if (g->t < 220) {
+        func_001F5620(func_001F53A0(), g->jc, &g->p1);
+    }
+    if (g->t < 220) {
+        func_001F5620(func_001F53A0(), g->jd, &g->q1);
+    }
+    if (g->t < 220) {
+        g->d1.x = g->q1.x - g->p1.x;
+        g->d1.y = g->q1.y - g->p1.y;
+        g->d1.z = g->q1.z - g->p1.z;
+    }
+    if (g->flip) {
+        g->p0.z -= 5.0f;
+    } else {
+        g->p0.z += 5.0f;
+    }
+    if (g->t < 194) {
+        g->c0 = g->p0;
+    }
+    if (g->t < 212) {
+        g->c1 = g->p1;
+    }
+    if (g->t >= 196 && g->t < 197) {
+        func_001F6160(func_001F53A0(), a);
+        g->p0.z += 3.0f * -func_00108030(g->trig, (s32)(a[1] / 180.0f) - 180, 1);
+    }
+    if (g->t >= 187 && g->t < 191) {
+        func_001F6160(func_001F53A0(), b);
+        g->p1.z += 3.0f * -func_00108030(g->trig, (s32)(b[1] / 180.0f) - 180, 1);
+    }
+    if (g->t < 8) {
+        g->side = 0;
+        b225_01E04360(g, b225_01E033B0, 0);
+    }
+    if (g->t == 1) {
+        g->side = 1;
+        b225_01E04360(g, b225_01E033B0, 0);
+    }
+    if (g->t == 211) {
+        g->pos.x = g->p1.x;
+        g->pos.y = g->p1.y;
+        g->pos.z = g->p1.z;
+        b225_01E04360(g, b225_01E02E70, 0);
+        for (i = 0; i < 3; i++) {
+            b225_01E04360(g, b225_01E02A70, 0);
+        }
+        for (i = 0; i < 10; i++) {
+            b225_01E04360(g, b225_01E02CD0, 0);
+        }
+        g->side = 0;
+        for (i = 0; i < 4; i++) {
+            b225_01E04360(g, b225_01E02810, 0);
+        }
+        b225_01E04360(g, b225_01E02BF0, 0);
+    }
+    if (g->t == 193) {
+        g->pos.x = g->p0.x;
+        g->pos.y = g->p0.y;
+        g->pos.z = g->p0.z;
+        b225_01E04360(g, b225_01E02E70, 0);
+        for (i = 0; i < 3; i++) {
+            b225_01E04360(g, b225_01E02A70, 0);
+        }
+        for (i = 0; i < 10; i++) {
+            b225_01E04360(g, b225_01E02CD0, 0);
+        }
+        g->side = 1;
+        for (i = 0; i < 4; i++) {
+            b225_01E04360(g, b225_01E02810, 0);
+        }
+        b225_01E04360(g, b225_01E02BF0, 0);
+    }
+    if (g->t >= 185 && g->t < 201) {
+        func_001F5620(func_001F53A0(), g->jb, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->side = 0;
+        b225_01E04360(g, b225_01E02120, 0);
+    }
+    if (g->t >= 200 && g->t < 218) {
+        func_001F5620(func_001F53A0(), g->jd, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->side = 1;
+        b225_01E04360(g, b225_01E02120, 0);
+    }
+    if (g->t < 201 && g->t >= 192) {
+        if (g->t == 192) {
+            func_001F5620(func_001F53A0(), g->jb, &g->r0);
+        }
+        if (g->t % 2 == 0) {
+            func_001F5620(func_001F53A0(), g->jb, &v);
+            g->pos.x = v.x;
+            g->pos.y = v.y;
+            g->pos.z = v.z;
+            g->side = 0;
+            for (i = 0; i < 1; i++) {
+                b225_01E04360(g, b225_01E023F0, 0);
+            }
+            g->pos.x = g->r0.x;
+            g->pos.y = g->r0.y;
+            g->pos.z = g->r0.z;
+            for (i = 0; i < 1; i++) {
+                b225_01E04360(g, b225_01E02540, 0);
+            }
+        }
+        g->side = 0;
+        b225_01E04360(g, b225_01E01EA0, 0);
+        if (g->t == 192) {
+            b225_01E04360(g, b225_01E03120, 0);
+        }
+    }
+    if (g->t < 218 && g->t >= 210) {
+        if (g->t == 210) {
+            func_001F5620(func_001F53A0(), g->jd, &g->r1);
+        }
+        if (g->t % 2 == 1) {
+            func_001F5620(func_001F53A0(), g->jd, &v);
+            g->pos.x = v.x;
+            g->pos.y = v.y;
+            g->pos.z = v.z;
+            g->side = 1;
+            for (i = 0; i < 1; i++) {
+                b225_01E04360(g, b225_01E023F0, 0);
+            }
+            g->pos.x = g->r1.x;
+            g->pos.y = g->r1.y;
+            g->pos.z = g->r1.z;
+            for (i = 0; i < 1; i++) {
+                b225_01E04360(g, b225_01E02540, 0);
+            }
+        }
+        g->side = 1;
+        b225_01E04360(g, b225_01E01EA0, 0);
+        if (g->t == 210) {
+            b225_01E04360(g, b225_01E03120, 0);
+        }
+    }
+    if (g->t == 130 || g->t == 150) {
+        func_001F5620(func_001F53A0(), g->je, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        for (i = 0; i < 10; i++) {
+            b225_01E04360(g, b225_01E02290, 0);
+        }
+    }
+    if (g->t == 121 || g->t == 140 || g->t == 160) {
+        func_001F5620(func_001F53A0(), g->jf, &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        for (i = 0; i < 10; i++) {
+            b225_01E04360(g, b225_01E02290, 0);
+        }
+    }
+}
+
+#pragma optimization_level reset
 
 /* OVL_WARM */
 
