@@ -558,3 +558,8 @@ there is a source form that gives the original.
 - **Packet tail copies through `addiu aN, sp, X; ld/sd 0(aN)` where yours stores to sp offsets directly:** make the
   field an 8-byte struct (`struct { u64 d; }`) and copy it as a struct. (b739:01E03220)
 - **`x * 1.0f` kept as a real `mul.s`:** `w = 1.0f; r = s * w;` with `r` an already declared float. (b739:01E03220)
+- **A spread copy makes the module's scene manager (already C, further down) swap a float `mtc1` and an address
+  `addiu` before a call:** the b244 effect; assign the constant to an existing float local, `r = 3.0f` in the
+  argument list or `r = 3.0f;` just before the call (which one varies by module), and commit it with the copy. A
+  per-copy whole-module compile finds such copies before `dk accept` rejects them. (b489:01E00240 with b489, b581,
+  b391)
