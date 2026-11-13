@@ -892,7 +892,249 @@ static s32 func_01E01DB0_b609(Ray_b532_01E00080 *obj, s32 target __attribute__((
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b609", func_01E02940_b609);
+/* shape b110:01E01B20 (ShFx_Vlt02), 724 insns, 18 copies (-O2,p): draws n lightning bolts (0x40-byte emitters):
+   func_00102A50 builds the zigzag points between two ends (from func_00101BA0 or the emitter's moving ends); each
+   projected segment becomes (life & 3) + 1 quads, widened across the shorter screen axis; the corner order rotates
+   with age */
+
+typedef struct {
+    f32 x, y, z;
+} Vec3_b110_01E01B20;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b110_01E01B20;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b110_01E01B20 xyz;
+} Vtx_b110_01E01B20;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b110_01E01B20 v[4];
+    u8 tail[0x20];
+} Pkt_b110_01E01B20;
+
+typedef struct {
+    s32 k0, k1;
+    s32 u, w, v, h;
+} Tex_b110_01E01B20;
+
+typedef struct {
+    s32 n;
+    f32 jitter;
+    Vec3_b110_01E01B20 a;
+    Vec3_b110_01E01B20 b;
+    Vec3_b110_01E01B20 *pts;
+} Bolt_b110_01E01B20;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 mode;
+    u8 sel;
+    u8 pad7;
+    u8 nseg;
+    u8 sel0;
+    u8 sel1;
+    u8 texid;
+    u8 texsel;
+    u8 wdiv;
+    u8 padE[2];
+    f32 jitter;
+    f32 grow;
+    u8 b, g, r, a;
+    Vec3_b110_01E01B20 p0;
+    Vec3_b110_01E01B20 p1;
+    Vec3_b110_01E01B20 vel;
+} Emit_b110_01E01B20;
+
+typedef struct Wtmpl_b110_01E01B20 {
+    Tex_b110_01E01B20 v[2];
+} Wtmpl_b110_01E01B20;
+
+#pragma optimization_level 2
+#pragma opt_propagation off
+
+static s32 func_01E02940_b609(void *arg0, s32 ot, s32 n) {
+    extern void func_00101BA0(void *, void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00102A50(void *);
+    extern void func_00101EE0(void *, void *, void *);
+    Emit_b110_01E01B20 *e = arg0;
+    f32 mat[16];
+    Bolt_b110_01E01B20 bolt;
+    Vec3_b110_01E01B20 pts[17];
+    Xyz_b110_01E01B20 s[3];
+    Vec4f v;
+    Vec3_b110_01E01B20 ab[2];
+    extern Wtmpl_b110_01E01B20 D_01E068C0_b609;
+    Wtmpl_b110_01E01B20 tmpl_w = D_01E068C0_b609;
+    Pkt_b110_01E01B20 pkt __attribute__((aligned(8)));
+    f32 depth[2];
+    s32 i;
+    void *tex;
+    s32 j;
+    s32 st;
+    s32 end;
+    s32 k;
+    s32 dx;
+    s32 dy;
+    f32 fdx;
+    f32 fdy;
+    f32 w;
+    f32 z;
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = (void *)func_00202BF0(5, e->texid);
+        if (e->mode != 0) {
+            e->sel = e->sel0;
+            func_00101BA0(e, &v);
+            ab[0].x = v.x;
+            ab[0].y = v.y;
+            ab[0].z = v.z;
+            if (e->flags & 2) {
+                ab[1].x = ab[0].x + e->p0.x;
+                ab[1].y = ab[0].y + e->p0.y;
+                ab[1].z = ab[0].z + e->p0.z;
+            } else {
+                e->sel = e->sel1;
+                func_00101BA0(e, &v);
+                ab[1].x = v.x;
+                ab[1].y = v.y;
+                ab[1].z = v.z;
+            }
+        } else {
+            e->p0.x += e->vel.x;
+            e->p0.y += e->vel.y;
+            e->p0.z += e->vel.z;
+            e->p1.x += e->vel.x;
+            e->p1.y += e->vel.y;
+            e->p1.z += e->vel.z;
+            ab[0] = e->p0;
+            ab[1] = e->p1;
+        }
+        func_0020EB40(mat);
+        bolt.n = e->nseg;
+        bolt.jitter = e->jitter;
+        bolt.pts = pts;
+        bolt.a = ab[0];
+        bolt.b = ab[1];
+        func_00102A50(&bolt);
+        ((Pkt_b110_01E01B20 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b110_01E01B20 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b110_01E01B20 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b110_01E01B20 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->r;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->g;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->b;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = e->a;
+        func_00101EE0(&pkt, &tmpl_w.v[e->texsel], tex);
+        if (!(e->flags & 4) && e->life < bolt.n) {
+            st = bolt.n - e->life;
+        } else {
+            st = 0;
+        }
+        if ((e->flags & 1) && e->max - e->life < bolt.n) {
+            end = e->max - e->life;
+        } else {
+            end = bolt.n;
+        }
+        for (j = st; j < end; j++) {
+            if (func_00205440(&pts[j], mat, &s[0], &depth[0]) == 0 || func_00101600(&s[0]) == 0 ||
+                func_00205440(&pts[j + 1], mat, &s[1], &depth[1]) == 0 || func_00101600(&s[1]) == 0) {
+                continue;
+            }
+            dx = s[0].x - s[1].x;
+            fdx = (dx >= 0) ? dx : -dx;
+            dy = s[0].y - s[1].y;
+            fdy = (dy >= 0) ? dy : -dy;
+            w = func_001A6C60(fdx * fdx + fdy * fdy) / e->wdiv;
+            for (k = 0; k < (e->life & 3) + 1; k++) {
+                w += k * (w * e->grow);
+                if (fdx > fdy) {
+                    pkt.v[0].xyz.y = s[0].y - w;
+                    pkt.v[1].xyz.y = s[1].y - w;
+                    pkt.v[2].xyz.y = s[0].y + w;
+                    pkt.v[3].xyz.y = s[1].y + w;
+                    pkt.v[0].xyz.x = pkt.v[2].xyz.x = s[0].x;
+                    pkt.v[1].xyz.x = pkt.v[3].xyz.x = s[1].x;
+                } else {
+                    pkt.v[0].xyz.x = s[0].x - w;
+                    pkt.v[1].xyz.x = s[1].x - w;
+                    pkt.v[2].xyz.x = s[0].x + w;
+                    pkt.v[3].xyz.x = s[1].x + w;
+                    pkt.v[0].xyz.y = pkt.v[2].xyz.y = s[0].y;
+                    pkt.v[1].xyz.y = pkt.v[3].xyz.y = s[1].y;
+                }
+                if (e->flags & 0x80) {
+                    pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFE;
+                    z = 0.0f;
+                } else {
+                    pkt.v[0].xyz.z = pkt.v[1].xyz.z = s[0].z;
+                    pkt.v[2].xyz.z = pkt.v[3].xyz.z = s[1].z;
+                    if (depth[0] < depth[1]) {
+                        z = depth[0];
+                    } else {
+                        z = depth[1];
+                    }
+                }
+                pkt.v[0].xyz.f = pkt.v[1].xyz.f = 0;
+                pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+                switch ((e->life + j) & 3) {
+                case 1:
+                    s[2] = pkt.v[0].xyz;
+                    pkt.v[0].xyz = pkt.v[3].xyz;
+                    pkt.v[3].xyz = s[2];
+                    s[2] = pkt.v[1].xyz;
+                    pkt.v[1].xyz = pkt.v[2].xyz;
+                    pkt.v[2].xyz = s[2];
+                    break;
+                case 2:
+                    s[2] = pkt.v[0].xyz;
+                    pkt.v[0].xyz = pkt.v[1].xyz;
+                    pkt.v[1].xyz = s[2];
+                    s[2] = pkt.v[2].xyz;
+                    pkt.v[2].xyz = pkt.v[3].xyz;
+                    pkt.v[3].xyz = s[2];
+                    break;
+                case 3:
+                    s[2] = pkt.v[0].xyz;
+                    pkt.v[0].xyz = pkt.v[2].xyz;
+                    pkt.v[2].xyz = s[2];
+                    s[2] = pkt.v[1].xyz;
+                    pkt.v[1].xyz = pkt.v[3].xyz;
+                    pkt.v[3].xyz = s[2];
+                    break;
+                }
+                func_002075F0((s32)&pkt, ot, (u32)z);
+            }
+        }
+    }
+    return 1;
+}
+
+#pragma opt_propagation reset
+#pragma optimization_level reset
 
 /* OVL_CFLAGS: -O2,p -sdatathreshold 0 -relax_pointers */
 
