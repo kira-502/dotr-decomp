@@ -563,3 +563,5 @@ there is a source form that gives the original.
   argument list or `r = 3.0f;` just before the call (which one varies by module), and commit it with the copy. A
   per-copy whole-module compile finds such copies before `dk accept` rejects them. (b489:01E00240 with b489, b581,
   b391)
+- **An -O1 port of an -O2/-O3 twin has a frame 0x10 too big with an extra `swc1 $f28`:** the twin's float temporaries;
+  write each sum out in full at every use (-O1 recomputes it anyway). (b241:01E00440)

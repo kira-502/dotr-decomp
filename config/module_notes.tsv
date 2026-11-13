@@ -100,7 +100,6 @@ b229:01E00E80	99.2%	an earlier try got this far
 b233:01E04A70	74%	an earlier try got this far
 b235:01E02370	95%	an earlier try got this far
 b238:01E003A0	99.2%	an earlier try got this far
-b241:01E00440	40%	an earlier try got this far
 b256:01E04AB0	99%	an earlier try got this far
 b262:01E00F50	98% (288/294)	hard: two strand fade steps must be u8 SPILLED (sb/lbu) with the third in fp; as u8 fp goes to the first one (chatA: any decl order); as s32 extra andi/sw (best draft: drafts/mod/b262_01E00F50.c)
 b262:01E013F0		hard: module main (358 insns, mostly init stores); stopped on the owner's order before drafting; likely needs the arg0-copy trick like c507
