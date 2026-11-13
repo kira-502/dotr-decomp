@@ -604,3 +604,8 @@ there is a source form that gives the original.
   on the original machine). Don't spend tries on counter names here.
 - **An -O4 range test gives `slti $v0` + `bnez $v0` where the original has `slti $at`, and `> K-1` alone does not
   fix it:** nest the two bounds, `if (x > K-1) { if (x < L) ... }`, instead of `&&`. (b378:01E00970)
+- **A range test's first compare at -O3 gives `slti $v1, t, K` + `bnez` where yours has `slti $at`:** write the low
+  bound `t >= K` (the reverse of the `> K-1` tip); keep `>` where the original uses `$at` for both. (b363:01E02070)
+- **A module global sits at an address splat labelled as a function (a `piece` after the code, or a stale epilogue
+  slot):** declare it under that label, `extern T *func_01E02900_b296;`; no `D_` label exists there.
+  (b296:01E01FD0, b723:01E053E0)
