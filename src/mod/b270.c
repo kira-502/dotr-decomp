@@ -841,7 +841,151 @@ static void func_01E01C20_b270(Obj_b016_01E014F0 *o, Cam_b016_01E014F0 *cam, s32
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b270", func_01E02020_b270);
+/* shape b270:01E02020 (B270_W_S), 583 insns, 1 copy: B270_W_S, the scene step: counts the frame (0xDA94); at 300 puts
+   the three anchors at unit B, 30 up, and raises two of them from 360; 335..460 spawns three rings of 0x1E02940 per
+   frame (36 each); 360..460 orbits 0x1E02EE0 motes round the anchors (radii 40/30/20, angles 0xDA82.. +-10 a frame)
+   and 0x1E031B0; 0x1E03F10/0x1E04400 at 360, 0x1E03780/0x1E03580 to 465, 0x1E03F10 every fourth frame 380..460,
+   0x1E04340 at 1, a 0x1E03900 spark a frame 361..460, joints 0xD9C4/0xD9C6 drive 0x1E033E0/0x1E041A0 at 190..360 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xD930 - 0x260];
+    Vec4f a[3];
+    u8 padD960[0xD9C4 - 0xD960];
+    s16 ja;
+    s16 jb;
+    u8 padD9C8[0xDA76 - 0xD9C8];
+    s16 cnt;
+    u8 padDA78[2];
+    s16 ang;
+    u8 padDA7C[2];
+    s16 k;
+    u8 padDA80[2];
+    s16 rot[3];
+    u8 padDA88[4];
+    s16 side;
+    u8 padDA8E[6];
+    s16 t;
+    u8 padDA96[0xDC98 - 0xDA96];
+    u8 tbl[4];
+} Scene_b270_01E02020;
+
+static void func_01E02020_b270(Scene_b270_01E02020 *g) {
+    extern void b270_01E02940(void);
+    extern void b270_01E02EE0(void);
+    extern void b270_01E031B0(void);
+    extern void b270_01E033E0(void);
+    extern void b270_01E03580(void);
+    extern void b270_01E03780(void);
+    extern void b270_01E03900(void);
+    extern void b270_01E03F10(void);
+    extern void b270_01E041A0(void);
+    extern void b270_01E04340(void);
+    extern void b270_01E04400(void);
+    extern void b270_01E05090(Scene_b270_01E02020 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern f32 func_00108030(void *, s16, s32);
+    s16 i;
+
+    g->t++;
+    if (g->t == 300) {
+        func_001F5F90(func_001F5380(), &g->a[0]);
+        g->a[0].y = 30.0f;
+        func_001F5F90(func_001F5380(), &g->a[1]);
+        g->a[1].y = 30.0f;
+        func_001F5F90(func_001F5380(), &g->a[2]);
+        g->a[2].y = 30.0f;
+    }
+    if (g->t >= 360 && g->t < 381) {
+        g->a[1].y += 0.7f;
+    }
+    if (g->t >= 360 && g->t < 401) {
+        g->a[2].y += 0.7f;
+    }
+    if (g->t >= 335 && g->t < 461 && g->cnt < 36) {
+        g->ang = g->cnt * 10;
+        g->side = g->cnt;
+        b270_01E05090(g, b270_01E02940, 0);
+        g->ang = g->cnt * 10 + 180;
+        g->side = g->cnt + 36;
+        b270_01E05090(g, b270_01E02940, 0);
+        g->ang = g->cnt * 10;
+        g->side = g->cnt + 72;
+        b270_01E05090(g, b270_01E02940, 0);
+        g->cnt++;
+    }
+    if (g->t >= 360 && g->t < 461) {
+        g->pos = g->a[0];
+        g->side = 0;
+        b270_01E05090(g, b270_01E02EE0, 0);
+        g->side = 1;
+        g->pos = g->a[0];
+        g->pos.z += 40.0f * func_00108030(g->tbl, g->rot[0], 0);
+        g->pos.x += 40.0f * func_00108030(g->tbl, g->rot[0], 1);
+        b270_01E05090(g, b270_01E02EE0, 0);
+        g->pos = g->a[1];
+        g->pos.z += 30.0f * func_00108030(g->tbl, g->rot[1], 0);
+        g->pos.x += 30.0f * func_00108030(g->tbl, g->rot[1], 1);
+        b270_01E05090(g, b270_01E02EE0, 0);
+        g->pos = g->a[2];
+        g->pos.z += 20.0f * func_00108030(g->tbl, g->rot[2], 0);
+        g->pos.x += 20.0f * func_00108030(g->tbl, g->rot[2], 1);
+        b270_01E05090(g, b270_01E02EE0, 0);
+        g->pos = g->a[0];
+        b270_01E05090(g, b270_01E031B0, 0);
+        g->rot[0] += 10;
+        g->rot[1] -= 10;
+        g->rot[2] += 10;
+    }
+    if (g->t == 360) {
+        g->pos = g->a[0];
+        g->side = 0;
+        b270_01E05090(g, b270_01E03F10, 0);
+        g->side = 1;
+        b270_01E05090(g, b270_01E03F10, 0);
+        b270_01E05090(g, b270_01E04400, 0);
+    }
+    if (g->t >= 360 && g->t < 466) {
+        b270_01E05090(g, b270_01E03780, 0);
+        g->pos = g->a[1];
+        g->side = 1;
+        b270_01E05090(g, b270_01E03580, 0);
+    }
+    if (g->t >= 380 && g->t < 461) {
+        g->pos = g->a[0];
+        g->side = 2;
+        if (g->t % 4 == 1) {
+            b270_01E05090(g, b270_01E03F10, 0);
+        }
+    }
+    if (g->t == 1) {
+        b270_01E05090(g, b270_01E04340, 0);
+    }
+    if (g->t > 360 && g->t < 461) {
+        for (i = 0; i < 1; i++) {
+            g->side = g->k;
+            b270_01E05090(g, b270_01E03900, 0);
+            g->k++;
+            if (g->k >= 80) {
+                g->k = 0;
+            }
+        }
+    }
+    if (g->t >= 190 && g->t < 361) {
+        func_001F5620(func_001F53A0(), g->ja, &g->pos);
+        b270_01E05090(g, b270_01E033E0, 0);
+    }
+    if (g->t >= 190 && g->t < 361) {
+        func_001F5620(func_001F53A0(), g->jb, &g->pos);
+        g->pos.y += 6.0f;
+        g->side = 0;
+        b270_01E05090(g, b270_01E041A0, 0);
+    }
+}
 
 /* shape b270:01E02940, 258 insns: b529:01E01E90's grow-in effect with three start stages (by f50: 0, 2, 4), the six
    stages growing by 2.5 to 40/30/30/20/20/10, colours 0xFF on odd ticks else 0x80, fade-out after scene tick 460,
