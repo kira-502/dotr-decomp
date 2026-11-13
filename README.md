@@ -5,12 +5,12 @@ C source that compiles to the exact bytes of the retail executable and of the ga
 
 This repository contains no game data. You need your own copy of the game to build anything.
 
-## Status (30 October 2026)
+## Status (13 November 2026)
 
 | | Functions in C | Code in C |
 |---|---|---|
 | Main executable (`SLUS_205.15`) | 3,463 of 3,463 (100.0%) | 100.0% of 1.5 MB |
-| Code modules (`DATA/BMODULE.MRG`, `CMODULE.MRG`, `MMODULE.MRG`) | 7,137 of 8,620 (82.8%) | 57.6% of 11.6 MB |
+| Code modules (`DATA/BMODULE.MRG`, `CMODULE.MRG`, `MMODULE.MRG`) | 7,860 of 8,620 (91.2%) | 72.7% of 11.6 MB |
 
 - `make check` rebuilds the whole executable and all 762 module files and compares them byte for byte with the
   originals. A function counts as done only when its C is in that build and the check passes.
@@ -49,7 +49,7 @@ few paths.
 
 ## Contributing with an AI agent
 
-The code modules are the open work: 2,005 functions are still assembly. [AGENTS.md](AGENTS.md) is a complete guide
+The code modules are the open work: 760 functions are still assembly. [AGENTS.md](AGENTS.md) is a complete guide
 for an AI coding agent (setup from zero, the work loop for one function, the rules that bite, how to send work back);
 [docs/TODO-MODULES.md](docs/TODO-MODULES.md) lists what is left, smallest first, with the hard ones marked, and
 [docs/MATCHING-TIPS.md](docs/MATCHING-TIPS.md) collects the tricks that made functions match. Human contributors:
