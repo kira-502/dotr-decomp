@@ -584,3 +584,5 @@ there is a source form that gives the original.
   (`addiu s0, sp, &b`) and keeps `&a.y`/`&a.z` in saved registers:** declare them as one `f32 v[2][4]` and write
   `v[0][k]`/`v[1][k]`; no pointer local or cast does it. Two colour buffers side by side: one `u8 c[8]` passed as
   `c, &c[4]`. (b183:01E01480, b491:01E02370, b197:01E01A10)
+- **An s16 field tested `x == 0 || x == 1`, the original `beqz` on the loaded value, then re-extends it
+  (`dsll32`/`dsra32`) before the compare with 1:** write `if (!g->mode || g->mode == 1)`. (c062:01E03BE0)
