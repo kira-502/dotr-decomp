@@ -389,7 +389,201 @@ static void func_01E00C10_b064(Obj_b064_01E00C10 *o, Anim_b064_01E00C10 *an, voi
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b064", func_01E00F30_b064);
+/* shape b064:01E00F30 (B064_W_S), 556 insns, 1 copy (-O3,p): the effect scene's step: colour 0x80,0,0,0, counts the
+   frame (0x5210), follows joint 0x51FC; every 6th frame of 53..229 spawns 0x1E02020 on it, then the point drops 30
+   under it (0x1E01E80 after 130), every 3rd of 43..234 after 130 0x1E02210 + 0x1E02450; a trail of up to 15 points
+   (0x4F10, angles 0x521A) grows by 3 every 14th frame and sinks by 2.7 x the camera-heading cosine, spawning
+   0x1E01D70 above -300; 0x1E01C00 at level 31 on; frame 50 0x1E02F10; frames 110.. 0x1E02670 / 0x1E02C40 /
+   0x1E028F0 on the camera, 55..125 0x1E02A90 on the mark (b355:01E00F30's source at -O3, one more spawn) */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x4F10 - 0x260];
+    Vec4f pts[(0x5190 - 0x4F10) / 0x10];
+    Vec4f mark;
+    u8 pad51A0[0x51C0 - 0x51A0];
+    s32 level;
+    u8 col[4];
+    u8 pad51C8[0x51FC - 0x51C8];
+    s16 j;
+    u8 pad51FE[0x5206 - 0x51FE];
+    s16 spin;
+    u8 pad5208[4];
+    s16 f520C;
+    u8 pad520E[2];
+    s16 t;
+    s16 ang;
+    s16 flag;
+    u8 pad5216[2];
+    s16 n;
+    s16 arr[20];
+    u8 pad5242[0x5344 - 0x5242];
+    u8 trig[1];
+} Scene_b064_01E00F30;
+
+#pragma optimization_level 3
+
+static void func_01E00F30_b064(Scene_b064_01E00F30 *g) {
+    extern void b064_01E01C00(void);
+    extern void b064_01E01D70(void);
+    extern void b064_01E01E80(void);
+    extern void b064_01E02210(void);
+    extern void b064_01E02450(void);
+    extern void b064_01E02670(void);
+    extern void b064_01E028F0(void);
+    extern void b064_01E02A90(void);
+    extern void b064_01E02C40(void);
+    extern void b064_01E02F10(void);
+    extern void b064_01E02020(void);
+    extern void b064_01E03A20(Scene_b064_01E00F30 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_001A22C0(f32);
+    Vec4f v;
+    s32 w[4];
+    s16 i;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->t++;
+    func_001F5620(func_001F53A0(), g->j, &v);
+    if (g->t > 52 && g->t < 230 && g->t % 6 == 1) {
+        for (i = 0; i < 1; i++) {
+            g->spin = func_0019A5C8() % 360;
+            g->pos.x = v.x;
+            g->pos.y = v.y;
+            g->pos.z = v.z;
+            b064_01E03A20(g, b064_01E02020, 0);
+            g->pos.y = v.y - 30.0f;
+            if (g->t > 130) {
+                b064_01E03A20(g, b064_01E01E80, 0);
+            }
+        }
+    }
+    if (g->t > 42 && g->t < 235 && g->t % 3 == 1 && g->t > 130) {
+        b064_01E03A20(g, b064_01E02210, 0);
+        b064_01E03A20(g, b064_01E02450, 0);
+    }
+    if (g->t == 1) {
+        g->n = 0;
+        g->arr[0] = 0;
+        g->arr[1] = 20;
+        g->arr[2] = -20;
+        g->arr[3] = 0;
+        g->arr[4] = 20;
+        g->arr[5] = -20;
+        g->arr[6] = 0;
+        g->arr[7] = 20;
+        g->arr[8] = -20;
+        g->arr[9] = 0;
+        g->arr[10] = 20;
+        g->arr[11] = -20;
+        g->arr[12] = 0;
+        g->arr[13] = 20;
+        g->arr[14] = -20;
+        g->arr[15] = 0;
+        g->arr[16] = 20;
+        g->arr[17] = -20;
+        g->arr[18] = 0;
+        g->arr[19] = 20;
+    }
+    if (g->t > 32 && g->t % 14 == 1 && g->n < 15) {
+        g->n += 3;
+    }
+    if (g->t % 2 == 1) {
+        for (i = 0; i < g->n; i++) {
+            g->ang = g->arr[i];
+            g->pos.x = v.x + g->pts[i].x;
+            g->pos.y = 10.0f + g->pts[0].y;
+            g->pos.z = v.z + g->pts[i].z;
+            g->f520C = 0;
+            if (g->pts[i].z > -300.0f) {
+                b064_01E03A20(g, b064_01E01D70, 0);
+            }
+            func_001F6160(func_001F53A0(), w);
+            g->pts[i].z -= 2.7 * func_00108030((s32)g->trig, (s16)func_001A22C0(w[1] / 180.0f) - 180, 1);
+        }
+    }
+    if (g->t > 32 && g->t % 4 == 1 && g->level > 30) {
+        for (i = 0; i < 1; i++) {
+            g->pos.x = v.x + g->pts[0].x;
+            g->pos.y = 10.0f + g->pts[0].y;
+            g->pos.z = v.z + g->pts[0].z;
+            b064_01E03A20(g, b064_01E01C00, 0);
+        }
+        for (i = 0; i < 1; i++) {
+            g->pos.x = v.x + g->pts[0].x + 5.0f * g->pts[0].z * func_00108030((s32)g->trig, 20, 0) / 10.0f;
+            g->pos.y = 10.0f + g->pts[0].y;
+            g->pos.z = v.z + g->pts[0].z;
+            b064_01E03A20(g, b064_01E01C00, 0);
+        }
+        for (i = 0; i < 1; i++) {
+            g->pos.x = v.x + g->pts[0].x + 5.0f * g->pts[0].z * func_00108030((s32)g->trig, -20, 0) / 10.0f;
+            g->pos.y = 10.0f + g->pts[0].y;
+            g->pos.z = v.z + g->pts[0].z;
+            b064_01E03A20(g, b064_01E01C00, 0);
+        }
+    }
+    if (g->t == 50) {
+        b064_01E03A20(g, b064_01E02F10, 0);
+    }
+    if (g->t >= 110 && g->t < 226) {
+        func_001F5F90(func_001F5380(), &v);
+        g->pos.x = v.x;
+        g->pos.y = 40.0f;
+        g->pos.z = v.z;
+        if (g->flag != 0) {
+            g->pos.z += 5.0f;
+        } else {
+            g->pos.z -= 5.0f;
+        }
+        g->f520C = 0;
+        b064_01E03A20(g, b064_01E02670, 0);
+    }
+    if (g->t >= 110 && g->t < 221) {
+        func_001F5F90(func_001F5380(), &v);
+        g->pos.x = v.x + func_0019A5C8() % 4 - 2.0f;
+        g->pos.y = 42.0f;
+        g->pos.z = v.z;
+        if (g->flag != 0) {
+            g->pos.z += 5.0f;
+        } else {
+            g->pos.z -= 5.0f;
+        }
+        g->f520C = 0;
+        b064_01E03A20(g, b064_01E02C40, 0);
+    }
+    if (g->t >= 120 && g->t < 231) {
+        func_001F5F90(func_001F5380(), &v);
+        g->pos.x = v.x;
+        g->pos.y = v.y;
+        g->pos.z = v.z;
+        g->f520C = 0;
+        b064_01E03A20(g, b064_01E028F0, 0);
+    }
+    if (g->t >= 55 && g->t < 126) {
+        if (g->t == 55) {
+            func_001F5620(func_001F53A0(), g->j, &g->mark);
+        }
+        v.x = func_0019A5C8() % 6 - 3;
+        v.y = func_0019A5C8() % 6 - 3;
+        v.x /= 10.0f;
+        v.y /= 10.0f;
+        g->pos.x = g->mark.x + v.x;
+        g->pos.y = g->mark.y + v.y;
+        g->pos.z = g->mark.z;
+        g->f520C = 0;
+        b064_01E03A20(g, b064_01E02A90, 0);
+    }
+}
+
+#pragma optimization_level reset
 
 /* shape b064:01E017E0, 134 insns, 2 copies: a violet wisp: set up once (random heading, tilt -15..14); fades in to 0x60
    over 10 frames, then out; its size grows every other frame up to 18, its frame every third up to 7; x and z drift 10 along its heading, y 4 by
