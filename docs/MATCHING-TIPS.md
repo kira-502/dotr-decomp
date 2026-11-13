@@ -596,3 +596,9 @@ there is a source form that gives the original.
   b152:01E03730)
 - **`f(p, A, 0.0f)` loads `mtc1 $zero, $f13` before `$f12`:** both constants in block locals,
   `{ f32 x = A; f32 h = 0.0f; f(p, x, h); }` (one alone is worse). (c610:01E01180)
+- **Known wall, scene managers with a random-joint setup loop (b594:01E02EC0, b494:01E013C0, b281:01E02440): the
+  step loop's s16 counter and slot pointer swapped:** live ranges are split per loop, so counter names and
+  declaration orders give only two outcomes: a counter used only after the setup gets its register before the
+  pointer; one also used in a setup loop gets it after the draw counter `m`. The originals sit in between and no
+  form reaches it yet (pragmas, loop forms, all decl orders, the permuter ruled out; repro in work/regswap/synbase.c
+  on the original machine). Don't spend tries on counter names here.
