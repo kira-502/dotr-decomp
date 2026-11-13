@@ -1053,7 +1053,191 @@ static s32 func_01E022C0_b405(void *arg0, s32 ot, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b405", func_01E02B20_b405);
+/* shape b601:01E003A0 (ShFx_Gus2), 579 insns, 30 copies (-O3,p): moves and draws n spark emitters (0x44 bytes each):
+   velocity, gravity, floor bounce, size growth, optional follow; each live one is one camera-facing square of its
+   size around its projected point, with one of four texture corner orders picked by flags & 0x30.; the source of
+   shape b061:01E01170, built here at -O3 */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b601_01E003A0;
+
+typedef struct {
+    u64 uv;
+    Xyz_b601_01E003A0 xyz;
+} Vtx_b601_01E003A0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx_b601_01E003A0 v[4];
+    u8 tail[0x20];
+} Pkt_b601_01E003A0;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 page;
+    u8 pad06[0x12];
+} Tex_b601_01E003A0;
+
+typedef struct {
+    u8 life;
+    u8 pad01;
+    u8 max;
+    u8 pad03;
+    u8 flags;
+    u8 follow;
+    u8 pad06[2];
+    u8 texkind;
+    u8 mode;
+    u8 texmode;
+    u8 page;
+    u8 b, g, r, a;
+    f32 size;
+    f32 grow;
+    f32 gravity;
+    f32 floor;
+    f32 px, py, pz;
+    f32 vx, vy, vz;
+    f32 ax, ay, az;
+} Spark_b601_01E003A0;
+
+#pragma optimization_level 3
+
+/* ot aligned: its spill slot, needed for the match */
+
+static s32 func_01E02B20_b405(void *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern s32 func_001022D0(s32, s32);
+    extern void func_001020B0(void *, s32, s32);
+    extern void func_00101D20(void *, void *, s32);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern f32 func_001018E0(f32, f32);
+    extern void func_002075F0(void *, s32, s32);
+    f32 mat[16];
+    Vec4f pt;
+    Vec4f tmp;
+    Tex_b601_01E003A0 td;
+    Pkt_b601_01E003A0 pkt __attribute__((aligned(8)));
+    Xyz_b601_01E003A0 scr;
+    f32 depth;
+    Spark_b601_01E003A0 *e;
+    s32 i;
+    s32 tex;
+    s32 mode;
+    s32 d;
+    f32 s;
+    f32 zf;
+
+    e = arg0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e = (Spark_b601_01E003A0 *)((u8 *)e + 0x44);
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(5, e->texkind);
+        e->vx += e->ax;
+        e->vy += e->ay + e->gravity;
+        e->vz += e->az;
+        e->px += e->vx;
+        e->py += e->vy;
+        e->pz += e->vz;
+        e->size += e->grow;
+        if (e->py < e->floor) {
+            e->py = e->floor;
+            if (e->flags & 2) {
+                e->vy = -(0.7f * e->vy);
+            }
+        }
+        if (e->follow != 0) {
+            func_00101BA0(e, &tmp);
+            e->px = tmp.x;
+            e->py = tmp.y;
+            e->pz = tmp.z;
+        }
+        pt.x = e->px;
+        pt.y = e->py;
+        pt.z = e->pz;
+        func_0020EB40(mat);
+        ((Pkt_b601_01E003A0 *)(s32)&pkt)->count = 0x24;
+        ((Pkt_b601_01E003A0 *)(s32)&pkt)->tag = 9;
+        ((Pkt_b601_01E003A0 *)(s32)&pkt)->regs = ((u64)4 << 32) | 0x24242421;
+        ((Pkt_b601_01E003A0 *)(s32)&pkt)->pad = 0;
+        pkt.r = e->r;
+        pkt.g = e->g;
+        pkt.b = e->b;
+        pkt.q = 1.0f;
+        d = e->max - e->life;
+        mode = e->mode;
+        if (e->flags & 1) {
+            mode = (u8)func_001022D0(e->texmode, d);
+            if (e->flags & 4) {
+                e->flags &= 0xCF;
+                e->flags |= ((func_0019A5C8() >> 4) & 3) << 4;
+            }
+        }
+        td.page = e->page;
+        func_001020B0(&td, mode, e->texmode);
+        func_00101D20(&pkt, &td, tex);
+        pkt.a = e->a;
+        if (!(e->flags & 0x40) && e->life < 16) {
+            pkt.a = (e->a >> 4) * e->life;
+        }
+        if (func_00205440(&pt, mat, &scr, &depth) != 0 && func_00101600(&scr) != 0) {
+            s = func_001018E0(e->size, depth);
+            if (e->flags & 0x80) {
+                pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFE;
+                zf = 0.0f;
+            } else {
+                pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = scr.z;
+                zf = depth;
+            }
+            switch (e->flags & 0x30) {
+            case 0x10:
+                pkt.v[0].xyz.x = pkt.v[1].xyz.x = scr.x - s;
+                pkt.v[2].xyz.x = pkt.v[3].xyz.x = scr.x + s;
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = scr.y - s;
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = scr.y + s;
+                break;
+            case 0x20:
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = scr.x - s;
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = scr.x + s;
+                pkt.v[2].xyz.y = pkt.v[3].xyz.y = scr.y - s;
+                pkt.v[0].xyz.y = pkt.v[1].xyz.y = scr.y + s;
+                break;
+            case 0x30:
+                pkt.v[2].xyz.x = pkt.v[3].xyz.x = scr.x - s;
+                pkt.v[0].xyz.x = pkt.v[1].xyz.x = scr.x + s;
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = scr.y - s;
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = scr.y + s;
+                break;
+            default:
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = scr.x - s;
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = scr.x + s;
+                pkt.v[0].xyz.y = pkt.v[1].xyz.y = scr.y - s;
+                pkt.v[2].xyz.y = pkt.v[3].xyz.y = scr.y + s;
+                break;
+            }
+            func_002075F0(&pkt, ot, (u32)zf);
+        }
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b405", func_01E03430_b405);
 
