@@ -7,6 +7,7 @@ _dpflt = 0x0017B3D0; /* double a < b (func_0017B3D0): Metrowerks calls it for a 
 fptosi = 0x001A22C0;
 fptoui = 0x001A23B0; /* float to unsigned (func_001A23B0): Metrowerks calls it for (u32) casts in the code modules */
 _f_ulltof = 0x0017B340; /* u64 to float (func_0017B340): Metrowerks calls it for (f32) casts of u64 values in the code modules */
+_d_utod = 0x0017B380; /* u32 to double (func_0017B380): Metrowerks calls it for u8/u32 to double conversions in the code modules (c056:01E015A0) */
 __moddi3 = 0x001A0CF8; /* signed 64-bit modulo (func_001A0CF8) */
 __umoddi3 = 0x001A1908; /* unsigned 64-bit modulo (func_001A1908) */
 __udivdi3 = 0x001A1388; /* unsigned 64-bit divide (func_001A1388) */
