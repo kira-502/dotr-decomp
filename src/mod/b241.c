@@ -571,7 +571,189 @@ static s32 func_01E01160_b241(Rib_b059_01E00E10 *arg0, s32 id __attribute__((ali
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b241", func_01E02020_b241);
+/* shape b241:01E02020 (ShFx_Ptf), 738 insns, 1 copy (-O1,p): b044:01E05530's (ShFx_Pfr) particle-fan drawer
+   at -O1 without the size growth or the depth-flag branch; points away from the centre shrink with height, size
+   scaled by 256/depth */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b241_01E02020;
+
+typedef struct {
+    f32 s, t;
+    Xyz_b241_01E02020 xyz;
+} Vtx_b241_01E02020;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx_b241_01E02020 v[4];
+    u8 tail[0x20];
+} Pkt_b241_01E02020;
+
+typedef struct {
+    s32 id;
+    u8 sub;
+    u8 b5;
+    u8 pad6[2];
+    s32 u, w, v, h;
+} Tex_b241_01E02020;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[3];
+    u8 count;
+    u8 k0;
+    u8 texid;
+    u8 bB;
+    u8 bC;
+    u8 sub;
+    u8 padE[2];
+    u8 *tbl;
+    f32 hscale;
+    f32 rad;
+    f32 size;
+    u8 b, g, r, a;
+    s32 rot[4];
+    f32 x, y, z;
+} Obj_b241_01E02020;
+
+static inline f32 rad(f32 d) {
+    return 3.1415927f * d / 180.0f;
+}
+
+#pragma optimization_level 1
+
+static s32 func_01E02020_b241(Obj_b241_01E02020 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_001020B0(void *, s32, s32);
+    extern void func_00101D20(void *, void *, void *);
+    extern f32 func_001018E0(f32, f32);
+    Obj_b241_01E02020 *e;
+    s32 i;
+    s32 tex;
+    u8 k;
+    s32 d;
+    s32 j;
+    f32 mat2[16];
+    f32 mat[16];
+    Vec4f v;
+    Vec4f pos;
+    Tex_b241_01E02020 td;
+    Pkt_b241_01E02020 pkt __attribute__((aligned(8)));
+    Xyz_b241_01E02020 xyz;
+    f32 dep;
+    u32 u;
+    f32 a;
+    f32 r;
+    f32 t;
+
+    e = arg0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(5, e->texid);
+        pos.x = e->x;
+        pos.y = e->y;
+        pos.z = e->z;
+        func_00101BA0(e, &pos);
+        func_0020EB40(mat);
+        func_0020C940(mat2, NULL, e->rot, &pos);
+        func_0020BC00(mat, mat2);
+        k = e->k0;
+        d = e->max - e->life;
+        ((Pkt_b241_01E02020 *)(s32)&pkt)->count = 0x24;
+        ((Pkt_b241_01E02020 *)(s32)&pkt)->tag = 9;
+        ((Pkt_b241_01E02020 *)(s32)&pkt)->regs = ((u64)4 << 32) | 0x24242421;
+        ((Pkt_b241_01E02020 *)(s32)&pkt)->pad = 0;
+        pkt.r = e->r;
+        pkt.g = e->g;
+        pkt.b = e->b;
+        pkt.q = 1.0f;
+        td.b5 = e->bC;
+        func_001020B0(&td, e->bB, 0);
+        func_00101D20(&pkt, &td, (void *)tex);
+        if (e->life < 8 && !(e->flags & 0x40)) {
+            pkt.a = (e->a >> 3) * e->life;
+        } else {
+            pkt.a = e->a;
+        }
+        for (j = 0; j < e->count; j++) {
+            if (j == 0) {
+                v.x = v.y = v.z = 0.0f;
+                r = e->size;
+            } else {
+                a = 360.0f * (u32)e->tbl[k] / 255.0f;
+                k++;
+                v.x = e->rad * func_001A6898(rad(a));
+                v.z = e->rad * func_001A6A88(rad(a));
+                v.y = e->hscale * (f32)(d + (e->tbl[k] & 3)) * (u32)e->tbl[k] / 255.0f;
+                k++;
+                k++;
+                if ((v.y >= 0.0f ? v.y : -v.y) > e->hscale) {
+                    t = 1.0f - 0.125f * ((v.y >= 0.0f ? v.y : -v.y) / e->hscale);
+                    if (t < 0.0f) {
+                        t = 0.125f;
+                    }
+                    r = e->size * t;
+                } else {
+                    r = e->size;
+                }
+            }
+            if (func_00205440(&v, mat, &xyz, &dep) == 0 || func_00101600(&xyz) == 0) {
+                continue;
+            }
+            r /= dep / 256.0f;
+            switch (e->tbl[k++] & 0x30) {
+            case 0x10:
+                pkt.v[0].xyz.x = pkt.v[1].xyz.x = (u32)(xyz.x - r);
+                pkt.v[2].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x + r);
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y - r);
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = (u32)(xyz.y + r);
+                break;
+            case 0x20:
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x - r);
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = (u32)(xyz.x + r);
+                pkt.v[2].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y - r);
+                pkt.v[0].xyz.y = pkt.v[1].xyz.y = (u32)(xyz.y + r);
+                break;
+            case 0x30:
+                pkt.v[2].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x - r);
+                pkt.v[0].xyz.x = pkt.v[1].xyz.x = (u32)(xyz.x + r);
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = (u32)(xyz.y - r);
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y + r);
+                break;
+            default:
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = (u32)(xyz.x - r);
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x + r);
+                pkt.v[0].xyz.y = pkt.v[1].xyz.y = (u32)(xyz.y - r);
+                pkt.v[2].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y + r);
+                break;
+            }
+            pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = xyz.z;
+            pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+            func_002075F0((s32)&pkt, ot, (u32)dep);
+        }
+    }
+    return 1;
+}
 
 /* shape b241:01E02BB0, 322 insns: ShFx_Amp3, b241:01E030C0's trail emitters (0x64 bytes) riding between two model
    joints (b13 and b14, lerp by f2C): one particle at the head when b18 < 2, else b18 along a spline through the last
