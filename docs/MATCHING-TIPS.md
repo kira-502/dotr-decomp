@@ -788,3 +788,10 @@ there is a source form that gives the original.
   `for (k = 0, ang = 0; k < 4; k++)` (b273:01E02BB0).
   A second copy of such a loop in the same function wants its own block-scoped variables,
   `{ s32 n, ang2; for (n = 0, ang2 = 0; n < 4; n++) { ...; ang2 += 0x1000; } }` (b576:01E02BC0, b621, b105).
+
+- **`daddiu $v0, $zero, K; subu $v0, $v0, $sN` stepping by a constant in a loop from a constant start:** the
+  compiler's start value for a strength-reduced `i * M`, not `K - i`; write the plain product (`g->a = i * 15;`)
+  (c030:01E00080).
+- **-O2: a slot address the original rebuilds after every call where yours keeps it in a saved register:** write the
+  call's argument as raw bytes, `(u8 *)g + idx * 0x58 + 0x4D8`, so it shares no subexpression with the field stores
+  (b649:01E043A0).
