@@ -744,3 +744,12 @@ there is a source form that gives the original.
   help:** call that one site through an alias even when the static is defined above: a block-scope prototyped
   `extern s32 <mod>_<VADDR>(void *, ...);` for float arguments, a no-prototype one otherwise. Fixing one call can move
   a sibling call, so search combinations with `work/fulltry.sh` (b028:01E03CE0, b144:01E03740).
+
+- **A struct-returning static whose result the original builds straight into a stack local** (`addiu a0, sp, X`, no
+  copy after the call): declare the local with the static's return type and assign `c = f(...);`; pass array rows as
+  `&g->tr[3][0]`, not a casted `g->tr[3]` (b080:01E03090).
+- **A draw-loop index recomputed every iteration (`sll v0, i, 6; addu s2, g, v0`) with the counter reset in one
+  branch:** the original reuses the outer counter for an inner loop (`for (i = 0; i < 10; i++)` inside the slot loop)
+  (b080:01E03090).
+- **`0.1f * i` with the conversion in `$f1` and `mul.s $f0, $f0, $f1`:** `{ f32 t = i; g->f = 0.1f * t; }`
+  (b080:01E03090).
