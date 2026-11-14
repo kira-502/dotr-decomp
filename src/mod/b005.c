@@ -716,7 +716,270 @@ static s32 func_01E012D0_b005(Lbb_b005_01E012D0 *arg0, s32 ot __attribute__((ali
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b005", func_01E01D10_b005);
+/* shape b005:01E01D10 (ShFx_Ndl), 696 insns, 1 copy (-O3,p): update and draw ribbon emitters (0x68 bytes each, may
+   turn toward a target object); each segment is projected and drawn as a quad from the emitter's origin, widened on
+   screen; b029:01E02B80 built at -O3 */
+
+static inline f32 rad(f32 d) {
+    return 3.1415927f * d / 180.0f;
+}
+
+typedef struct Uvs_b005_01E01D10 {
+    s32 kind;
+    u8 tex;
+    u8 b5;
+    u16 pad6;
+    s32 u0, v0, u1, v1;
+} Uvs_b005_01E01D10;
+
+typedef struct Rib_b005_01E01D10 {
+    u8 age;
+    u8 b1;
+    u8 life;
+    u8 b3;
+    u8 flags;
+    u8 b5[3];
+    u8 count;
+    u8 k;
+    u8 idx;
+    u8 b5c;
+    u8 frame;
+    u8 hold;
+    u8 target;
+    u8 padF;
+    u8 *pts;
+    f32 scale;
+    f32 f18;
+    f32 width;
+    u8 b0, g0, r0, a0;
+    u8 b1c, g1, r1, a1;
+    f32 pos[3];
+    u8 pad34[4];
+    f32 vel[3];
+    u8 pad44[4];
+    s32 rot[3];
+    u8 pad54[4];
+    s32 drot[3];
+    u8 pad64[4];
+} Rib_b005_01E01D10;
+
+typedef struct Xyz_b005_01E01D10 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+} Xyz_b005_01E01D10;
+
+typedef struct Vtx_b005_01E01D10 {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b005_01E01D10 xyz;
+} Vtx_b005_01E01D10;
+
+typedef struct Pk_b005_01E01D10 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    Vtx_b005_01E01D10 v[4];
+    u8 pad70[0x20];
+} Pk_b005_01E01D10;
+
+static inline void b029_01E02B80_tag(Pk_b005_01E01D10 *p, s32 size, s32 flags, u64 regs) {
+    p->flags = flags;
+    p->size = size;
+    p->regs = regs;
+    p->pad4 = 0;
+}
+
+#pragma optimization_level 3
+
+static s32 func_01E01D10_b005(Rib_b005_01E01D10 *arg0, s32 id __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440();
+    extern void func_00101BA0();
+    extern void func_001020B0();
+    extern void func_00101EE0();
+    extern void func_0020C940();
+    extern void func_0020BC00();
+    extern void func_00101940();
+    extern s32 func_001F53A0();
+    extern void func_001F5620();
+    Rib_b005_01E01D10 *p = arg0;
+    s32 i __attribute__((aligned(16)));
+    s32 life __attribute__((aligned(16)));
+    s32 j __attribute__((aligned(16)));
+    s32 tex;
+    u8 k;
+    s32 dx;
+    s32 dy;
+    f32 h;
+    f32 ang;
+    f32 zf;
+    f32 x;
+    f32 lf;
+    f32 half;
+    f32 y;
+    f32 z;
+    f32 b;
+    f32 rad;
+
+    f32 m2[4][4];
+    f32 m[4][4];
+    Xyz_b005_01E01D10 s[2];
+    f32 v[4];
+    Vec4f d;
+    Vec4f tgt;
+    extern Uvs_b005_01E01D10 D_01E044A0_b005;
+    Uvs_b005_01E01D10 tbl = D_01E044A0_b005;
+    Uvs_b005_01E01D10 uvs;
+    Pk_b005_01E01D10 pk __attribute__((aligned(8)));
+    f32 depth[2];
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            p++;
+        }
+        if (func_00101AF0(p) == 0) {
+            continue;
+        }
+        if (p->flags & 4) {
+            tex = func_00202BF0(5, p->idx);
+            uvs.b5 = p->b5c;
+            func_001020B0(&uvs, p->frame, 0);
+        } else {
+            tex = func_00202BF0(tbl.kind, tbl.tex);
+            uvs = tbl;
+        }
+        if (!(p->flags & 2)) {
+            uvs.v0 -= 0x10;
+            uvs.v1 -= 0x10;
+        }
+        ang = 0.0f;
+        k = p->k;
+        if (p->age < p->hold) {
+            life = p->life - p->hold;
+        } else {
+            life = p->life - p->age;
+        }
+        p->pos[0] += p->vel[0];
+        p->pos[1] += p->vel[1];
+        p->pos[2] += p->vel[2];
+        p->rot[0] += p->drot[0];
+        p->rot[1] += p->drot[1];
+        p->rot[2] += p->drot[2];
+        func_00101BA0(p, p->pos);
+        if (p->flags & 8) {
+            func_001F5620(func_001F53A0(), p->target, &tgt);
+            d.x = tgt.x - p->pos[0];
+            d.y = tgt.y - p->pos[1];
+            d.z = tgt.z - p->pos[2];
+            func_00101940(&d, p->rot);
+        }
+        func_0020EB40(m);
+        func_0020C940(m2, 0, p->rot, p->pos);
+        func_0020BC00(m, m2);
+        b029_01E02B80_tag((Pk_b005_01E01D10 *)(u32)&pk, 0xC, 0x34, ((u64)0x4214 << 32) | 0x21421421);
+        pk.v[0].r = pk.v[1].r = p->r0;
+        pk.v[2].r = pk.v[3].r = p->r1;
+        pk.v[0].g = pk.v[1].g = p->g0;
+        pk.v[2].g = pk.v[3].g = p->g1;
+        pk.v[0].b = pk.v[1].b = p->b0;
+        pk.v[2].b = pk.v[3].b = p->b1c;
+        pk.v[0].q = pk.v[1].q = pk.v[2].q = pk.v[3].q = 1.0f;
+        if (p->age < 8 && !(p->flags & 0x40)) {
+            pk.v[0].a = pk.v[1].a = pk.v[2].a = (p->a0 >> 3) * p->age;
+            pk.v[3].a = (p->a1 >> 3) * p->age;
+        } else {
+            pk.v[0].a = pk.v[1].a = pk.v[2].a = p->a0;
+            pk.v[3].a = p->a1;
+        }
+        func_00101EE0(&pk, &uvs, tex);
+        v[0] = v[1] = v[2] = 0.0f;
+        if (func_00205440(v, m, &s[1], &depth[1]) == 0) {
+            continue;
+        }
+        if (func_00101600(&s[1]) == 0) {
+            continue;
+        }
+        for (j = 0; j < p->count; j++) {
+            if (p->flags & 1) {
+                x = p->scale * (f32)(p->pts[k] - p->pts[k + 1]) / 255.0f;
+                y = p->scale * (f32)(p->pts[k + 2] - p->pts[k + 3]) / 255.0f;
+                z = p->scale * (f32)(p->pts[k + 4] - p->pts[k + 5]) / 255.0f;
+                k += 6;
+            } else {
+                ang += 17.0f;
+                if (!(ang <= 360.0f)) {
+                    ang -= 360.0f;
+                }
+                b = p->f18 * (f32)(u32)p->pts[k++] / 255.0f;
+                rad = 3.1415927f * ang / 180.0f;
+                x = b * func_001A6898(rad);
+                z = b * func_001A6A88(rad);
+                half = p->scale / 2.0f;
+                y = half + half * ((f32)(u32)p->pts[k++] / 255.0f);
+            }
+            lf = (f32)life;
+            v[0] = x * lf;
+            v[1] = y * lf;
+            v[2] = z * lf;
+            if (func_00205440(v, m, &s[0], &depth[0]) == 0) {
+                continue;
+            }
+            if (func_00101600(&s[0]) == 0) {
+                continue;
+            }
+            h = func_001018E0(p->width, depth[0]);
+            if (p->flags & 0x80) {
+                zf = 0.0f;
+                pk.v[0].xyz.z = pk.v[1].xyz.z = pk.v[2].xyz.z = pk.v[3].xyz.z = 0xFFFFFE;
+            } else {
+                if (depth[0] < depth[1]) {
+                    zf = depth[0];
+                } else {
+                    zf = depth[1];
+                }
+                pk.v[0].xyz.z = pk.v[1].xyz.z = s[0].z;
+                pk.v[2].xyz.z = pk.v[3].xyz.z = s[1].z;
+            }
+            pk.v[0].xyz.fog = pk.v[1].xyz.fog = pk.v[2].xyz.fog = pk.v[3].xyz.fog = 0;
+            dy = s[1].y - s[0].y;
+            dy = dy >= 0 ? dy : -dy;
+            dx = s[1].x - s[0].x;
+            dx = dx >= 0 ? dx : -dx;
+            if (dy < dx) {
+                pk.v[0].xyz.y = s[0].y;
+                pk.v[1].xyz.y = s[0].y - h;
+                pk.v[2].xyz.y = s[0].y + h;
+                pk.v[3].xyz.y = s[1].y;
+                if ((s32)s[0].x < (s32)s[1].x) {
+                    pk.v[0].xyz.x = s[0].x - h;
+                } else {
+                    pk.v[0].xyz.x = s[0].x + h;
+                }
+                pk.v[1].xyz.x = pk.v[2].xyz.x = s[0].x;
+                pk.v[3].xyz.x = s[1].x;
+            } else {
+                pk.v[0].xyz.x = s[0].x;
+                pk.v[1].xyz.x = s[0].x - h;
+                pk.v[2].xyz.x = s[0].x + h;
+                pk.v[3].xyz.x = s[1].x;
+                if ((s32)s[0].y < (s32)s[1].y) {
+                    pk.v[0].xyz.y = s[0].y - h;
+                } else {
+                    pk.v[0].xyz.y = s[0].y + h;
+                }
+                pk.v[1].xyz.y = pk.v[2].xyz.y = s[0].y;
+                pk.v[3].xyz.y = s[1].y;
+            }
+            func_002075F0((s32)&pk, id, (u32)zf);
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* shape b005:01E027F0 (ShFx_RingTX), 461 insns, 1 copy (-O3,p): b715:01E003A0 (ShFx_RingTX) at -O3, compiled after
    a one-argument helper (config/mod_warm.txt: b005 1) */
