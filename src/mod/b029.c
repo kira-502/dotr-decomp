@@ -2293,7 +2293,6 @@ static s32 func_01E05F20_b029(Scene_b029_01E05F20 *g, s32 code) {
     extern s32 func_0019A5C8(void);
     extern void func_001031C0(void *, s32);
     extern void func_01E00EF0_b029();
-    extern void func_01E05AA0_b029();
     extern s32 b029_01E026A0();
     extern s16 D_01E069D8_b029[];
     extern s16 D_01E069C8_b029[];
