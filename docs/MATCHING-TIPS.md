@@ -913,3 +913,8 @@ there is a source form that gives the original.
   effect for fptoui); the reverse of the b000 tip, so try both (c401:01E00080).
 - **`li v1, 1` should come before an index load into a0:** assign the index inside the first subscript,
   `g->slot[a = g->next].used = 1;` (c401:01E00080).
+- **-O4 manager keeping `&q` in a saved register across `func_001F5F90(u, &q)` / `func_00103DB0(&q, ...)`:** assign the
+  pointer inside the first call (`func_00103DB0(pq = &q, ...)`); declare a second held pointer (`f32 *pz`) before it
+  (b753:01E020A0).
+- **A ring set-up with `addiu a0` before the last `mtc1` for two equal radii:** `r = 18.0f;` right before the call,
+  passing `r, r` (b001:01E044C0).
