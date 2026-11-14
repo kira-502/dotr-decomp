@@ -868,3 +868,9 @@ there is a source form that gives the original.
   `(flags & 0xF)` inline in the loop, not through a mode local; write `t = span + a` (c061:01E01100, b390:01E015E0).
 - **A missing `nop` after an `mtc1` in an if/else that sets a float, with a stray `addiu; sw` at the join:** reuse an
   existing float temp for the value instead of a new local (b115:01E02A10).
+- **Delay slots filled from the fall-through all over a function where the original leaves `nop`s:** look for a `?:`
+  that compiles to `movn`; written as an `if`, all the nops come back (c030:01E01510).
+- **Float argument registers swapped only in the full build:** drop a block-scope `extern` that repeats a
+  `functions.h` prototype (c030:01E01510, `func_00106DD0`).
+- **Float saved registers or divisions in the wrong order:** put a shared int subexpression (`40 - g->left`) in its own
+  s32 local (b351:01E068F0).
