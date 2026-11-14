@@ -854,3 +854,7 @@ there is a source form that gives the original.
   walker in the `for` header, `for (list = obj->frames[i]; *list > 0; list++)` (b029:01E00EF0).
 - **A family member whose "structure is wrong" may only be built at another -O level:** try all four before reworking
   (b099:01E04C30 is b029:01E05AA0's C at -O2).
+- **A u8 local spilled with `sb`/`lbu` (no `andi`) while a sibling stays in a saved register with `andi`:** give the
+  callee's parameters u8 types in its prototype (`(u8 *, u8, u8)`) (b262:01E00F50).
+- **Copy only the parameter that needs it** under `opt_propagation off`: copying a u16 parameter too adds an `andi`
+  into a saved register (b179:01E03940 copies only `obj`).

@@ -4,6 +4,10 @@
    raised by fx->h) at the object, each sector a 64-texel-wide strip of the object's texture page, drawn count + 1
    times at its average depth */
 
+/* draft, 306/325: b046:01E01520's form (opt_propagation off so 0/64/256 stay unfolded, do-while ring loop,
+   `a = 0;` first so the pad store fills the bnez delay slot). Only the STQ block differs, exactly as in b046: the
+   original divides v0 / 256 twice and keeps v1 / 256 in a mov.s copy; MWCC shares v0 / 256. */
+
 typedef struct {
     u64 x : 16;
     u64 y : 16;
@@ -59,6 +63,7 @@ typedef struct {
     u8 col2[4];
 } Fx_b193_01E01D70;
 
+#pragma opt_propagation off
 static void func_01E01D70_b193(Obj_b193_01E01D70 *o, Fx_b193_01E01D70 *fx, Pkt_b193_01E01D70 *pk, s32 mode) {
     extern s32 func_00205440(void *, void *, void *, f32 *);
     extern void func_00107790(void *, void *, s32);
@@ -77,12 +82,16 @@ static void func_01E01D70_b193(Obj_b193_01E01D70 *o, Fx_b193_01E01D70 *fx, Pkt_b
     s32 j;
     f32 v0;
     f32 v1;
+    f32 u0;
+    f32 u1;
+    f32 w;
+    f32 sb;
 
     pk->flags = 0x34;
     pk->size = 0xC;
+    a = 0;
     pk->regs = ((u64)0x4214 << 32) | 0x21421421;
     blend = mode >> 4;
-    a = 0;
     pk->pad = 0;
     if (blend == 0) {
         func_002086D0(pk, ((u64)0x80 << 32) | 0x42);
@@ -105,7 +114,8 @@ static void func_01E01D70_b193(Obj_b193_01E01D70 *o, Fx_b193_01E01D70 *fx, Pkt_b
     q[1].y = fx->height;
     q[2].y = 0.0f;
     q[3].y = 0.0f;
-    for (i = 0; i < 36; i++) {
+    i = 0;
+    do {
         k = fx->ang + a;
         q[2].x = fx->r * func_00108030(o->trig, k, 1);
         q[2].z = fx->r * func_00108030(o->trig, k, 0);
@@ -124,18 +134,23 @@ static void func_01E01D70_b193(Obj_b193_01E01D70 *o, Fx_b193_01E01D70 *fx, Pkt_b
             pk->v[2].q = 1.0f / dep[2];
             pk->v[3].q = 1.0f / dep[3];
             func_00208CB0(pk, ((u64)o->u << 14) | 0xFB | ((u64)o->v << 24) | ((u64)(o->v + o->h - 1) << 34));
-            pk->v[0].s = 0.0f / dep[0];
-            pk->v[0].t = v0 / 256.0f / dep[0];
-            pk->v[1].s = 64.0f / 256.0f / dep[1];
-            pk->v[1].t = v0 / 256.0f / dep[1];
-            pk->v[2].s = 0.0f / 256.0f / dep[2];
-            pk->v[2].t = v1 / 256.0f / dep[2];
-            pk->v[3].s = 64.0f / 256.0f / dep[3];
-            pk->v[3].t = v1 / 256.0f / dep[3];
+            w = 256.0f;
+            u0 = 0.0f;
+            u1 = 64.0f;
+            pk->v[0].s = u0 / dep[0];
+            pk->v[0].t = v0 / w / dep[0];
+            pk->v[1].s = u1 / w / dep[1];
+            pk->v[1].t = v0 / w / dep[1];
+            pk->v[2].s = u0 / w / dep[2];
+            pk->v[2].t = (sb = v1 / w) / dep[2];
+            pk->v[3].s = u1 / w / dep[3];
+            pk->v[3].t = sb / dep[3];
             for (j = 0; j < o->count + 1; j++) {
                 func_002075F0(pk, o->ot, (u32)((dep[3] + (dep[2] + (dep[0] + dep[1]))) / 4.0f));
             }
         }
         a += 10;
-    }
+        i++;
+    } while (i < 36);
 }
+#pragma opt_propagation reset
