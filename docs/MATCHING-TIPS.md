@@ -786,3 +786,5 @@ there is a source form that gives the original.
 - **An int stepping alongside a loop counter (an angle `+= 0x1000`) with counter, value and pointer in rotated saved
   registers:** give the loop its own counter, declare the stepped value last, and set it in the `for` header:
   `for (k = 0, ang = 0; k < 4; k++)` (b273:01E02BB0).
+  A second copy of such a loop in the same function wants its own block-scoped variables,
+  `{ s32 n, ang2; for (n = 0, ang2 = 0; n < 4; n++) { ...; ang2 += 0x1000; } }` (b576:01E02BC0, b621, b105).

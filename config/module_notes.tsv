@@ -42,7 +42,6 @@ b070:01E00E80	99.2%	an earlier try got this far
 b070:01E034D0	95%	an earlier try got this far
 b097:01E01880	40%	an earlier try got this far
 b099:01E04C30	45% (138/310)	hard: in-file; frame 0x140 vs 0x120 and 24 insns short: structure wrong early (best draft: drafts/mod/b099_01E04C30.c)
-b105:01E02190	77%	an earlier try got this far
 b112:01E04480	97% (231/237)	hard: (a) s64 quotient of func_001A0660: orig stores sext(q) then -q from the raw low word (paddub a0,v0; negu; dsll32/dsra32); (b) func_00208700 call keeps pk in a0 from the static helper call (best draft: drafts/mod/b112_01E04480.c)
 b114:01E01690	99.7%	an earlier try got this far
 b114:01E02AD0	40%	an earlier try got this far
@@ -113,7 +112,6 @@ b404:01E01A80	99.2%	an earlier try got this far
 b405:01E008B0	99.2%	an earlier try got this far
 b407:01E019E0	40%	an earlier try got this far
 b408:01E011B0	99.2%	an earlier try got this far
-b423:01E02450	77%	an earlier try got this far
 b439:01E00E80	99.2%	an earlier try got this far
 b443:01E01EA0	47% (137/292, structure right)	hard: one saved register short (orig s0..s7: p=s0,o=s5,g=s6,k=s7; ours 7 regs, frame 0x10 smaller); y-branch stores via addiu temps; decl order no effect (best draft: drafts/mod/b443_01E01EA0.c)
 b444:01E00E80	99.2%	an earlier try got this far
@@ -131,10 +129,8 @@ b517:01E01B10	68% (242/356)	hard: module main, same wall as b506:01E01BA0: the l
 b521:01E01BD0	78%	hard: g must colour first (s0, then n s1, id s2): `g = g0` + opt_propagation off fixes registers but un-rotates every loop (guards added); without the pragma 50% (best draft: drafts/mod/b521_01E01BD0.c)
 b526:01E02150	99.2%	an earlier try got this far
 b531:01E01970	64%	hard: mode-1 far-plane writes (pk+0x20..0x50 bitfield RMW) get hoisted out of the loop as 4 address regs, so base spills and frame is 0x240 vs 0x200; cousin of b018:01E00920 (best draft: drafts/mod/b531_01E01970.c)
-b551:01E02480	77%	an earlier try got this far
 b558:01E003A0	99.2%	an earlier try got this far
 b572:01E01400	92%	an earlier try got this far
-b576:01E02460	77%	an earlier try got this far
 b582:01E04E60	90%	an earlier try got this far
 b583:01E011B0	99.2%	an earlier try got this far
 b596:01E01A80	99.2%	an earlier try got this far
@@ -145,7 +141,6 @@ b601:01E01DD0	99.2%	an earlier try got this far
 b603:01E00440	40%	an earlier try got this far
 b605:01E00440	40%	an earlier try got this far
 b617:01E02870	94.5%	an earlier try got this far
-b621:01E02460	77%	an earlier try got this far
 b706:01E02260	99.2%	an earlier try got this far
 b706:01E050E0	81%	hard: frame 0x1D0 vs 0x1B0 (two unknown 16-byte stack slots after the packet); xyz[] copied through address regs (sp+0x110..0x128); f20/f22 (tw vs u0) and s2/s3 (tex vs k) swapped (best draft: drafts/mod/b706_01E050E0.c)
 b710:01E00440	40%	an earlier try got this far
