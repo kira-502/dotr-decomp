@@ -735,6 +735,8 @@ there is a source form that gives the original.
 - **A struct temp that belongs after the inline-return temps in the frame:** write the copy twice
   (`ca[0] = a[0]; ca[1] = a[0];`) so the CSE temp goes last; a named temp sits in declaration order. Locals with an
   explicit `aligned(N)` go after all temps (b847:01E02370).
-- **Open wall: after `func_00103290(tex, 0)` the original loads tex/flags for the next inits into `a3`/`a2`, ours
-  into `a1`/`a0`.** It blocks 12 scene managers (b157, b168, b263, b273, b289, b423, b486, b540, b551, b576, b621,
-  b637); no matched function shows the pattern yet.
+- **Temps after a call in `a3`/`a2` where yours get `a1`/`a0`, with a `jal func_001A22C0` (fptosi) later in the
+  function:** write that conversion as a plain cast, `(s32)(10.0f * e->radius)`, not an explicit `func_001A22C0(...)`
+  call. In the warm build the compiler's own fptosi call counts as reading a0/a1, so they stay live back to the last
+  call's arguments and every temp in between skips them. Dropping the then-unused extern can move float loads, so
+  try with and without it (b486:01E02E80, b540:01E03160, b157, b168, b263; small repro in work/wall/).
