@@ -753,3 +753,7 @@ there is a source form that gives the original.
   (b080:01E03090).
 - **`0.1f * i` with the conversion in `$f1` and `mul.s $f0, $f0, $f1`:** `{ f32 t = i; g->f = 0.1f * t; }`
   (b080:01E03090).
+
+- **A local table copied from module data right after the first call (`jal func_00207500` before the `lq`/`sq` copy)
+  where yours copies it in the prologue:** assign it as a statement after the call (`ot = func_00207500(); tbl = D_...;`),
+  not in its declaration, and declare it first among the stack locals (b455:01E05AA0).
