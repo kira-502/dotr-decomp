@@ -918,3 +918,7 @@ there is a source form that gives the original.
   (b753:01E020A0).
 - **A ring set-up with `addiu a0` before the last `mtc1` for two equal radii:** `r = 18.0f;` right before the call,
   passing `r, r` (b001:01E044C0).
+- **`lbu a1` before `paddub a0` for a static's arguments:** give the byte parameter a u8 type in a block prototype
+  (`(void *, u8, u8)`) (b099:01E02A90).
+- **`(r = &pool[i])->life = x;` loads the field before building the pointer:** split it, `r = &pool[i]; r->life = x;`
+  (b099:01E02A90).
