@@ -836,3 +836,13 @@ there is a source form that gives the original.
 - **Screen-UV blocks with `cvt, cvt, div, div` and no `sub.s`:** the plain split form,
   `u = 0x6BF8 - x; v = K - y; u /= -16.0f; v /= -16.0f;`; the named-zero form is only for originals that subtract a
   zero (b215:01E02660).
+- **Spill area 0x10 too big, unused float slots before the first float spill and an unused int slot between two
+  spilled ints:** put `__attribute__((aligned(8)))` on the first spilled s32 local (the `func_00207500()` result); it
+  pushes the float spills up (b847:01E02370, b073:01E03E70). Spilled parameters 4 bytes too high: `aligned(8)` on the
+  later one (b706:01E050E0).
+- **Packed xyz u64s copied with `addiu reg, sp, X; ld; addiu; sd`:** a bitfield struct type for both the local array
+  and the vertex member, copied whole (b706:01E050E0).
+- **`add.s fd, K, prod` where the original has `add.s fd, prod, K`:** put the literal in a local (`rr = 25.0f;`)
+  (b378:01E02440).
+- **An extra `nop` before the epilogue after the last loop:** the setup path is the `if` arm of an if/else, not an
+  early `return` (b378:01E02440).
