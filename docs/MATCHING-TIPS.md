@@ -702,3 +702,9 @@ there is a source form that gives the original.
 - **Temps in `$a0`/`$a1` around `jal func_001A23B0` where yours uses `$a2`/`$a3`:** call `func_001A23B0(x)` by name
   instead of `(u32)x`. With the cast the compiler keeps the next call's arguments in `$a0`/`$a1` across the helper; a
   real call frees them (b000:01E04540; b000's other functions call it the same way).
+
+- **u8 → float through the unsigned path with the constant loaded before the conversion:** put the byte in a `u32`
+  local, convert into a float local, then use it (`a = u; a = rad(360.0f * a / 255.0f);`). A product with reversed
+  operands gets its partial product in its own statement (b172:01E03670).
+- **A u8 table counter stepping by 3 with an `andi` on each index:** write three `k++` (two in the table reads, one
+  bare), not `tbl[(u8)(k + 1)]` and `k += 3` (b172:01E03670).
