@@ -1292,7 +1292,185 @@ static s32 func_01E02F30_b172(Obj_b172_01E02F30 *arg0, s32 ot __attribute__((ali
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b172", func_01E03670_b172);
+/* shape b172:01E03670 (ShFx_Pfr), 614 insns, 1 copy: n particle emitters (0x44 bytes each): count projected
+   points around a ring (angle and height from a byte table), each drawn as a textured screen quad flipped by the
+   table's flags & 0x30; far z with flags & 0x80 */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b172_01E03670;
+
+typedef struct {
+    f32 s, t;
+    Xyz_b172_01E03670 xyz;
+} Vtx_b172_01E03670;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx_b172_01E03670 v[4];
+    u8 tail[0x20];
+} Pkt_b172_01E03670;
+
+typedef struct {
+    s32 id;
+    u8 sub;
+    u8 b5;
+    u8 pad6[2];
+    s32 u, w, v, h;
+} Tex_b172_01E03670;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[3];
+    u8 count;
+    u8 k0;
+    u8 texid;
+    u8 bB;
+    u8 bC;
+    u8 sub;
+    u8 padE[2];
+    u8 *tbl;
+    f32 hscale;
+    f32 rad;
+    f32 size;
+    f32 grow;
+    u8 b, g, r, a;
+    s32 rot[4];
+    f32 x, y, z;
+} Obj_b172_01E03670;
+
+static inline f32 rad(f32 d) {
+    return 3.1415927f * d / 180.0f;
+}
+
+static s32 func_01E03670_b172(Obj_b172_01E03670 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_001020B0(void *, s32, s32);
+    extern void func_00101D20(void *, void *, void *);
+    extern f32 func_001018E0(f32, f32);
+    s32 i;
+    s32 tex;
+    f32 mat2[16];
+    f32 mat[16];
+    Vec4f v;
+    Vec4f pos;
+    Tex_b172_01E03670 td;
+    Pkt_b172_01E03670 pkt __attribute__((aligned(8)));
+    Xyz_b172_01E03670 xyz;
+    f32 dep;
+    Obj_b172_01E03670 *e;
+    s32 j;
+    u8 k;
+    s32 d;
+    u32 u;
+    f32 a;
+    f32 r;
+
+    e = arg0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(5, e->texid);
+        e->size += e->grow;
+        pos.x = e->x;
+        pos.y = e->y;
+        pos.z = e->z;
+        func_00101BA0(e, &pos);
+        func_0020EB40(mat);
+        func_0020C940(mat2, NULL, e->rot, &pos);
+        func_0020BC00(mat, mat2);
+        k = e->k0;
+        d = e->max - e->life;
+        ((Pkt_b172_01E03670 *)(s32)&pkt)->count = 0x24;
+        ((Pkt_b172_01E03670 *)(s32)&pkt)->tag = 9;
+        ((Pkt_b172_01E03670 *)(s32)&pkt)->regs = ((u64)4 << 32) | 0x24242421;
+        ((Pkt_b172_01E03670 *)(s32)&pkt)->pad = 0;
+        pkt.r = e->r;
+        pkt.g = e->g;
+        pkt.b = e->b;
+        pkt.q = 1.0f;
+        td.b5 = e->sub;
+        func_001020B0(&td, e->bC, e->bB);
+        func_00101D20(&pkt, &td, (void *)tex);
+        if (e->life < 8 && !(e->flags & 0x40)) {
+            pkt.a = (e->a >> 3) * e->life;
+        } else {
+            pkt.a = e->a;
+        }
+        for (j = 0; j < e->count; j++) {
+            if (j == 0) {
+                v.x = v.y = v.z = 0.0f;
+            } else {
+                u = e->tbl[k++];
+                a = u;
+                a = rad(360.0f * a / 255.0f);
+                v.x = e->rad * func_001A6898(a);
+                v.z = e->rad * func_001A6A88(a);
+                u = e->tbl[k++];
+                a = e->hscale * (f32)(d + (s32)(u & 3));
+                v.y = a * u / 255.0f;
+                k++;
+            }
+            if (func_00205440(&v, mat, &xyz, &dep) == 0 || func_00101600(&xyz) == 0) {
+                continue;
+            }
+            r = func_001018E0(e->size, dep);
+            switch (e->tbl[k++] & 0x30) {
+            case 0x10:
+                pkt.v[0].xyz.x = pkt.v[1].xyz.x = (u32)(xyz.x - r);
+                pkt.v[2].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x + r);
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y - r);
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = (u32)(xyz.y + r);
+                break;
+            case 0x20:
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x - r);
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = (u32)(xyz.x + r);
+                pkt.v[2].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y - r);
+                pkt.v[0].xyz.y = pkt.v[1].xyz.y = (u32)(xyz.y + r);
+                break;
+            case 0x30:
+                pkt.v[2].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x - r);
+                pkt.v[0].xyz.x = pkt.v[1].xyz.x = (u32)(xyz.x + r);
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = (u32)(xyz.y - r);
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y + r);
+                break;
+            default:
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = (u32)(xyz.x - r);
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = (u32)(xyz.x + r);
+                pkt.v[0].xyz.y = pkt.v[1].xyz.y = (u32)(xyz.y - r);
+                pkt.v[2].xyz.y = pkt.v[3].xyz.y = (u32)(xyz.y + r);
+                break;
+            }
+            if (e->flags & 0x80) {
+                pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFE;
+                dep = 0.0f;
+            } else {
+                pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = xyz.z;
+            }
+            pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+            func_002075F0((s32)&pkt, ot, (u32)dep);
+        }
+    }
+    return 1;
+}
 
 /* shape b172:01E04010, 225 insns: b131:01E03B50's trail emitters (0x5C bytes each) without the drift: follow a bone,
    then spawn particles (0x44 bytes) pointing up along the path from the last three positions (a spline of
