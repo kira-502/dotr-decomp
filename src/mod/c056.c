@@ -1413,7 +1413,260 @@ static void func_01E02E10_c056(Scene_c056_01E02E10 *g, Fx_c056_01E02E10 *o, Pkt_
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c056", func_01E03090_c056);
+/* shape c056:01E03090 (C056_W_S), 660 insns, 1 copy: C056_W_S, the scene step: counts the frame (0x44C2); at 1 sets
+   five path rings (radius 20 at 0/90/180/270/0 degrees, x/z from sin/cos of the old angle), three 0x1E04830 pieces,
+   two five-piece climber chains (0x1E04900, 0x1E04FE0), the path heights (30 apart) and ring heights, three random
+   turns, three lights (70/90/110) with 0x1E03DA0, the 0x1E04CF0 ring, three 0x1E044B0 sparks, a 17-piece 0x1E03FE0
+   chain, then 0x1E04830 and 0x1E04780; from step 21 on odd steps one more spark; 0xE4 drops by 0x100; the first piece
+   call goes through a no-prototype alias */
+
+typedef struct {
+    f32 x, y, z;
+    u8 padC[8];
+    s16 ang;
+    s16 rad;
+    u8 pad18[4];
+} Rp_c056_01E03090;
+
+typedef struct {
+    Vec4f p;
+    f32 a, b;
+} Pt_c056_01E03090;
+
+typedef struct {
+    Rp_c056_01E03090 r[8];
+    u8 padE0[0x118 - 0xE0];
+    Pt_c056_01E03090 pt[10];
+} Path_c056_01E03090;
+
+typedef struct {
+    u8 pad0[0x80];
+    Vec4f v;
+    u8 pad90[0xE4 - 0x90];
+    s32 wE4;
+    u8 padE8[0x100 - 0xE8];
+    s32 rot[3][4];
+    u8 pad130[0x4270 - 0x130];
+    Path_c056_01E03090 path;
+    s32 step;
+    u8 pad447C[4];
+    u8 rgba[4];
+    u8 pad4484[8];
+    void *owner;
+    u8 pad4490[0xC];
+    f32 f449C;
+    f32 f44A0;
+    f32 f44A4;
+    u8 pad44A8[0x10];
+    s16 h44B8;
+    s16 h44BA;
+    s16 h44BC;
+    u8 pad44BE[4];
+    s16 h44C2;
+    u8 pad44C4[4];
+    s16 h44C8;
+} Scene_c056_01E03090;
+
+static void func_01E03090_c056(Scene_c056_01E03090 *g) {
+    extern void c056_01E03AE0();
+    extern void c056_01E03DA0();
+    extern void c056_01E03FE0();
+    extern void c056_01E044B0();
+    extern void c056_01E04780();
+    extern void c056_01E04830();
+    extern void c056_01E04900();
+    extern void c056_01E04CF0();
+    extern void c056_01E04FE0();
+    extern void c056_01E011C0();
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern void func_00107EA0(void *, f32, f32, f32);
+    Path_c056_01E03090 *p;
+    s32 i;
+
+    g->h44C2++;
+    if (g->h44C2 == 1) {
+        func_01E00C10_c056((void *)g, (s32)c056_01E03AE0);
+        p = &g->path;
+        p->r[0].x = p->r[0].rad * func_001A6898(3.1415927f * p->r[0].ang / 180.0f);
+        p->r[0].z = p->r[0].rad * func_001A6A88(3.1415927f * p->r[0].ang / 180.0f);
+        p->r[0].ang = 0;
+        p->r[0].rad = 20;
+        p->r[1].x = p->r[1].rad * func_001A6898(3.1415927f * p->r[1].ang / 180.0f);
+        p->r[1].z = p->r[1].rad * func_001A6A88(3.1415927f * p->r[1].ang / 180.0f);
+        p->r[1].ang = 90;
+        p->r[1].rad = 20;
+        p->r[2].x = p->r[2].rad * func_001A6898(3.1415927f * p->r[2].ang / 180.0f);
+        p->r[2].z = p->r[2].rad * func_001A6A88(3.1415927f * p->r[2].ang / 180.0f);
+        p->r[2].ang = 180;
+        p->r[2].rad = 20;
+        p->r[3].x = p->r[3].rad * func_001A6898(3.1415927f * p->r[3].ang / 180.0f);
+        p->r[3].z = p->r[3].rad * func_001A6A88(3.1415927f * p->r[3].ang / 180.0f);
+        p->r[3].ang = 270;
+        p->r[3].rad = 20;
+        p->r[4].x = p->r[4].rad * func_001A6898(3.1415927f * p->r[4].ang / 180.0f);
+        p->r[4].z = p->r[4].rad * func_001A6A88(3.1415927f * p->r[4].ang / 180.0f);
+        p->r[4].ang = 0;
+        p->r[4].rad = 20;
+        g->h44C8 = 0;
+        g->h44BA = 0;
+        g->owner = NULL;
+        g->f44A4 = 50.0f;
+        c056_01E011C0(g, c056_01E04830);
+        g->h44C8 = 1;
+        g->h44BA = 120;
+        g->owner = NULL;
+        g->f44A4 = 40.0f;
+        func_01E011C0_c056((void *)g, (s32)c056_01E04830);
+        g->h44C8 = 2;
+        g->h44BA = 250;
+        g->owner = NULL;
+        func_01E011C0_c056((void *)g, (s32)c056_01E04830);
+        g->f449C = 30.0f;
+        g->owner = NULL;
+        for (i = 5; i > 0; i--) {
+            g->f449C = 3 * i + 3;
+            g->f44A0 = g->f449C - 3.0f;
+            if (i != 1) {
+                g->h44BC = 0;
+            } else {
+                g->h44BC = 1;
+            }
+            g->f44A4 = 25 * i;
+            g->h44C8 = 1;
+            g->v.y = 0.0f;
+            g->v.x = 0.0f;
+            g->v.z = 0.0f;
+            g->rgba[3] = 0;
+            g->h44BA = 15 * i;
+            func_01E012A0_c056((void *)g, (s32)c056_01E04900);
+        }
+        g->owner = NULL;
+        for (i = 5; i > 0; i--) {
+            g->f449C = 3 * i + 7;
+            g->f44A0 = g->f449C - 3.0f;
+            if (i != 1) {
+                g->h44BC = 0;
+            } else {
+                g->h44BC = 1;
+            }
+            g->f44A4 = 25 * i;
+            g->h44C8 = 1;
+            g->v.y = 0.0f;
+            g->v.x = 0.0f;
+            g->v.z = 0.0f;
+            g->rgba[3] = 0;
+            g->h44BA = 15 * i + 90;
+            func_01E012A0_c056((void *)g, (s32)c056_01E04FE0);
+        }
+        g->v.x = 100.0f;
+        g->v.y = 50.0f;
+        g->v.z = 0.0f;
+        g->owner = NULL;
+        g->h44C8 = 0;
+        g->h44B8 = 2;
+        g->v.x = 0.0f;
+        g->v.y = 10.0f;
+        g->v.z = 0.0f;
+        p->pt[0].p.y = 0.0f;
+        p->pt[1].p.y = 30.0f + p->pt[0].p.y;
+        p->pt[2].p.y = 30.0f + p->pt[1].p.y;
+        p->pt[3].p.y = 30.0f + p->pt[2].p.y;
+        p->pt[4].p.y = 30.0f + p->pt[3].p.y;
+        p->pt[5].p.y = 30.0f + p->pt[4].p.y;
+        p->pt[6].p.y = 30.0f + p->pt[5].p.y;
+        p->pt[7].p.y = 30.0f + p->pt[6].p.y;
+        p->pt[8].p.y = 30.0f + p->pt[7].p.y;
+        p->pt[9].p.y = 30.0f + p->pt[8].p.y;
+        p->r[0].y = 0.0f;
+        p->r[1].y = 20.0f;
+        p->r[2].y = 40.0f;
+        p->r[3].y = 60.0f;
+        p->r[4].y = 90.0f;
+        p->r[5].y = 110.0f;
+        p->r[6].y = 120.0f;
+        p->r[7].y = 140.0f;
+        g->rot[0][1] = func_0019A5C8() * 182 % 360;
+        g->rot[1][1] = func_0019A5C8() * 182 % 360;
+        g->rot[2][1] = func_0019A5C8() * 182 % 360;
+        func_001076F0(g->rgba, 0x10, 0x10, 0x10);
+        g->v.y = 40.0f;
+        g->h44B8 = 70;
+        g->h44BC = 0;
+        func_00107EA0(g, g->h44B8, g->h44B8, 5.0f);
+        func_01E00C50_c056((void *)g, (s32)c056_01E03DA0);
+        g->h44BC = 1;
+        g->v.y = 60.0f;
+        g->h44B8 = 90;
+        func_00107EA0(g, g->h44B8, g->h44B8, 5.0f);
+        func_01E00C50_c056((void *)g, (s32)c056_01E03DA0);
+        g->h44BC = 2;
+        g->v.y = 80.0f;
+        g->h44B8 = 110;
+        func_00107EA0(g, g->h44B8, g->h44B8, 5.0f);
+        func_01E00C50_c056((void *)g, (s32)c056_01E03DA0);
+        g->v.y = 70.0f;
+        g->h44B8 = 100;
+        g->owner = NULL;
+        g->h44C8 = 0;
+        g->rgba[3] = 0;
+        g->h44BA = 90;
+        g->f44A4 = 20.0f;
+        g->f44A0 = 90.0f;
+        func_00107EA0(g, 100.0f, 80.0f, 50.0f);
+        func_01E01490_c056((void *)g, (s32)c056_01E04CF0);
+        g->f44A4 = 5.0f;
+        for (i = 0; i < 3; i++) {
+            g->h44BA = func_0019A5C8() % 360;
+            g->f449C = 15.0f;
+            g->f44A0 = 15.0f;
+            g->rgba[3] = 0x20;
+            func_01E00F30_c056((void *)g, (s32)c056_01E044B0);
+        }
+        g->f449C = 10.0f;
+        g->owner = NULL;
+        func_001076F0(g->rgba, 0x30, 0x30, 0x30);
+        for (i = 17; i > 0; i--) {
+            g->f449C = 2 * i + 1;
+            g->f44A0 = i + 1;
+            if (i != 1) {
+                g->h44BC = 0;
+            } else {
+                g->h44BC = 1;
+            }
+            g->f44A4 = 13 * i;
+            g->h44C8 = 1;
+            g->v.y = 0.0f;
+            g->rgba[3] = 0;
+            if (g->h44B8 == 0) {
+                g->h44B8 = 1;
+            } else {
+                g->h44B8 = 0;
+            }
+            g->v.x = 0.0f;
+            g->v.z = 0.0f;
+            g->h44BA = 10 * i;
+            func_01E00D30_c056((void *)g, (s32)c056_01E03FE0);
+        }
+        g->f44A0 = 7.0f;
+        g->rgba[3] = 0;
+        func_01E011C0_c056((void *)g, (s32)c056_01E04830);
+        func_01E010E0_c056((void *)g, (s32)c056_01E04780);
+    }
+    if (g->step > 20 && g->step % 2 == 1) {
+        for (i = 0; i < 1; i++) {
+            g->h44BA = func_0019A5C8() % 360;
+            g->f449C = 5.0f;
+            g->f44A0 = 5.0f;
+            g->rgba[3] = 0x10;
+            if (g->step > 13) {
+                func_01E00F30_c056((void *)g, (s32)c056_01E044B0);
+            }
+        }
+    }
+    g->wE4 -= 0x100;
+}
 
 /* shape c056:01E03AE0, 175 insns: swings the six orbit arms of the scene object (ctx+0x4270, angles at +0x12C.. step 0x18) by +3/-8/+11/-12/+18/-9 a tick with radii 15 (doubled)/7/7/9/9/10, x by the sine and z by the cosine from the game table (ctx+0x44D0); clears the caller's 0xA4 while ctx+0x4478 is under 11 */
 
