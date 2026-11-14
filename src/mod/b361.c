@@ -444,7 +444,234 @@ static s32 func_01E01040_b361(s32 unused, Obj_b361_01E01040 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b361", func_01E01140_b361);
+/* shape b361:01E01140 (B361_OBJ_MOVE_202_), 559 insns, 1 copy: a grey (0x30) scrolling full-screen overlay in the
+   scene packet (0x5F54): four passes, each projects the scene point (z +-60 by side 0x5F92) onto one corner and
+   places the other three from the scroll offsets, far z, texture coords from the screen position clamped to 640 x
+   480; ends at scene frame 166. Built under opt_propagation off with the zero re-set per vertex block and the bottom
+   corners on their own s/t pair (b490:01E01260's form) */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b361_01E01140;
+
+typedef struct {
+    u64 x : 16, y : 16, z : 24, f : 8;
+} Xyz_b361_01E01140;
+
+typedef struct {
+    Rgbaq_b361_01E01140 c;
+    f32 s, t;
+    Xyz_b361_01E01140 p;
+} Vtx_b361_01E01140;
+
+typedef struct {
+    u8 hdr[0x10];
+    Vtx_b361_01E01140 v[4];
+} Pkt_b361_01E01140;
+
+typedef struct {
+    u8 pad0[0x5F10];
+    f32 pos[3];
+    u8 pad5F1C[0x5F54 - 0x5F1C];
+    Pkt_b361_01E01140 *pk;
+    u8 pad5F58[4];
+    s32 z;
+    u8 pad5F60[0x5F7C - 0x5F60];
+    s16 joint;
+    u8 pad5F7E[0x5F92 - 0x5F7E];
+    s16 flag;
+    u8 pad5F94[2];
+    s16 t;
+} Scene_b361_01E01140;
+
+typedef struct {
+    u8 pad0[8];
+    s16 x, y;
+    u8 padC[0x54 - 0xC];
+    s16 t;
+    u8 pad56[2];
+    s16 state;
+    u8 pad5A[6];
+    u8 col[4];
+} Obj_b361_01E01140;
+
+#pragma opt_propagation off
+
+static s32 func_01E01140_b361(Scene_b361_01E01140 *g, Obj_b361_01E01140 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern Rgbaq_b361_01E01140 func_00107740(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5620(s32, s32, void *);
+    extern s32 func_00205440(void *, void *, void *, void *);
+    extern void func_002075F0(s32, s32, s32);
+    extern s32 func_0019A5C8(void);
+    Vec4f d;
+    Vec4f p[4];
+    Vec4f j;
+    s16 i;
+    f32 z;
+    f32 s;
+    f32 t;
+    f32 u;
+    f32 v;
+
+    if (o->state == 1) {
+        func_001076F0(o->col, 0x30, 0x30, 0x30);
+        o->col[3] = 0x80;
+        o->x = 0;
+        o->y = 0;
+        o->state = 2;
+    }
+    g->pk->v[0].c = func_00107740(o->col);
+    g->pk->v[1].c = func_00107740(o->col);
+    g->pk->v[2].c = func_00107740(o->col);
+    g->pk->v[3].c = func_00107740(o->col);
+    p[0].x = g->pos[0];
+    p[0].y = g->pos[1];
+    p[0].z = g->pos[2];
+    if (g->flag != 0) {
+        p[0].z += 60.0f;
+    } else {
+        p[0].z -= 60.0f;
+    }
+    func_00205440(p, NULL, &g->pk->v[0].p, &g->z);
+    for (i = 0; i < 4; i++) {
+        if (i == 0) {
+            func_001F5620(func_001F53A0(), g->joint, &j);
+            p[0].x = g->pos[0];
+            p[0].y = g->pos[1];
+            p[0].z = g->pos[2];
+            func_00205440(p, NULL, &g->pk->v[0].p, &d);
+            g->pk->v[1].p.x = (o->x + 0x940) * 16 - 8;
+            g->pk->v[1].p.y = g->pk->v[0].p.y;
+            g->pk->v[2].p.x = g->pk->v[0].p.x;
+            g->pk->v[2].p.y = (o->y + 0x8E0) * 16 - 8;
+            g->pk->v[3].p.x = (o->x + 0x940) * 16 - 8;
+            g->pk->v[3].p.y = (o->y + 0x8E0) * 16 - 8;
+        }
+        if (i == 1) {
+            p[0].x = g->pos[0];
+            p[0].y = g->pos[1];
+            p[0].z = g->pos[2];
+            func_00205440(p, NULL, &g->pk->v[1].p, &d);
+            g->pk->v[0].p.x = (0x6C0 - o->x) * 16 - 8;
+            g->pk->v[0].p.y = g->pk->v[1].p.y;
+            g->pk->v[2].p.x = (0x6C0 - o->x) * 16 - 8;
+            g->pk->v[2].p.y = (o->y + 0x8E0) * 16 - 8;
+            g->pk->v[3].p.x = g->pk->v[1].p.x;
+            g->pk->v[3].p.y = (o->y + 0x8E0) * 16 - 8;
+        }
+        if (i == 2) {
+            p[0].x = g->pos[0];
+            p[0].y = g->pos[1];
+            p[0].z = g->pos[2];
+            func_00205440(p, NULL, &g->pk->v[2].p, &d);
+            g->pk->v[0].p.x = g->pk->v[2].p.x;
+            g->pk->v[0].p.y = (0x720 - o->y) * 16 - 8;
+            g->pk->v[1].p.x = (o->x + 0x940) * 16 - 8;
+            g->pk->v[1].p.y = (0x720 - o->y) * 16 - 8;
+            g->pk->v[3].p.x = (o->x + 0x940) * 16 - 8;
+            g->pk->v[3].p.y = g->pk->v[2].p.y;
+        }
+        if (i == 3) {
+            p[0].x = g->pos[0];
+            p[0].y = g->pos[1];
+            p[0].z = g->pos[2];
+            func_00205440(p, NULL, &g->pk->v[3].p, &d);
+            g->pk->v[0].p.x = (0x6C0 - o->x) * 16 - 8;
+            g->pk->v[0].p.y = (0x720 - o->y) * 16 - 8;
+            g->pk->v[1].p.x = g->pk->v[3].p.x;
+            g->pk->v[1].p.y = (0x720 - o->y) * 16 - 8;
+            g->pk->v[2].p.x = (0x6C0 - o->x) * 16 - 8;
+            g->pk->v[2].p.y = g->pk->v[3].p.y;
+        }
+        g->pk->v[0].p.z = 0xFFFFFF;
+        g->pk->v[0].p.f = 0;
+        g->pk->v[1].p.z = 0xFFFFFF;
+        g->pk->v[1].p.f = 0;
+        g->pk->v[2].p.z = 0xFFFFFF;
+        g->pk->v[2].p.f = 0;
+        g->pk->v[3].p.z = 0xFFFFFF;
+        g->pk->v[3].p.f = 0;
+        z = 0.0f;
+        s = 0x6BF8 - g->pk->v[0].p.x;
+        t = 0x71F8 - g->pk->v[0].p.y;
+        s /= -16.0f;
+        t /= -16.0f;
+        s -= z;
+        t -= z;
+        if (s < z) {
+            s = z;
+        }
+        if (t < 0.0f) {
+            t = 0.0f;
+        }
+        g->pk->v[0].s = s / 1024.0f;
+        g->pk->v[0].t = t / 512.0f;
+        z = 0.0f;
+        s = 0x6BF8 - g->pk->v[1].p.x;
+        t = 0x71F8 - g->pk->v[1].p.y;
+        s /= -16.0f;
+        t /= -16.0f;
+        s -= z;
+        t -= z;
+        if (s > 640.0f) {
+            s = 640.0f;
+        }
+        if (t < 0.0f) {
+            t = 0.0f;
+        }
+        g->pk->v[1].s = s / 1024.0f;
+        g->pk->v[1].t = t / 512.0f;
+        z = 0.0f;
+        u = 0x6BF8 - g->pk->v[2].p.x;
+        v = 0x71F8 - g->pk->v[2].p.y;
+        u /= -16.0f;
+        v /= -16.0f;
+        u -= z;
+        v -= z;
+        if (u < z) {
+            u = z;
+        }
+        if (v > 480.0f) {
+            v = 480.0f;
+        }
+        g->pk->v[2].s = u / 1024.0f;
+        g->pk->v[2].t = v / 512.0f;
+        z = 0.0f;
+        u = 0x6BF8 - g->pk->v[3].p.x;
+        v = 0x71F8 - g->pk->v[3].p.y;
+        u /= -16.0f;
+        v /= -16.0f;
+        u -= z;
+        v -= z;
+        if (u > 640.0f) {
+            u = 640.0f;
+        }
+        if (v > 480.0f) {
+            v = 480.0f;
+        }
+        g->pk->v[3].s = u / 1024.0f;
+        g->pk->v[3].t = v / 512.0f;
+        func_002075F0((s32)g->pk, 0, 0);
+    }
+    o->x += (s16)((func_0019A5C8() >> 4) % 15 + 20);
+    o->y += (s16)((func_0019A5C8() >> 4) % 15 + 20);
+    if (o->t != 0) {
+        if (o->col[3] > 20) {
+            o->col[3] -= 19;
+        } else {
+            o->state = 0;
+        }
+    }
+    if (g->t >= 166) {
+        o->state = 0;
+    }
+    o->t++;
+    return 0;
+}
+#pragma opt_propagation reset
 
 /* shape b361:01E01A00, 167 insns: a white full-screen flash written into the scene's shared packet (0x5F54): each of
    the four corners takes the flash colour, the screen corners (0x6BF8/0x93F8 by 0x71F8/0x8DF8, far depth) and the
