@@ -782,3 +782,7 @@ there is a source form that gives the original.
 - **A value used both in an argument and as a `switch` selector, its register swapped with a strength-reduced temp:**
   write the expression in both places (`(u8)(k % 3 * 2 + (k >> 2) * 4)` and `switch (k >> 2)`) and let the compiler
   share it; a named local keeps the swap (b078:01E05C90).
+
+- **An int stepping alongside a loop counter (an angle `+= 0x1000`) with counter, value and pointer in rotated saved
+  registers:** give the loop its own counter, declare the stepped value last, and set it in the `for` header:
+  `for (k = 0, ang = 0; k < 4; k++)` (b273:01E02BB0).
