@@ -1507,7 +1507,133 @@ static void func_01E03BD0_b073(Obj_b069_01E01A70 *o, Fx_b069_01E01A70 *fx, Pkt_b
 
 INCLUDE_ASM("asm/nonmatchings/mod/b073", func_01E03E70_b073);
 
-INCLUDE_ASM("asm/nonmatchings/mod/b073", func_01E04890_b073);
+/* shape b073:01E04890 (B073PAINT_RAIN21), 640 insns, 1 copy (-O3,p): b092:01E04290's ribbon between two point trails
+   with the spline inlined: 4 quads per segment, the near edge alpha 0, built at -O3 */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b073_01E04890;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b073_01E04890;
+
+typedef struct {
+    Rgbaq_b073_01E04890 c;
+    u64 xyz;
+} Vtx_b073_01E04890;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b073_01E04890 v[4];
+    u8 tail[0x40];
+} Pkt_b073_01E04890;
+
+typedef struct {
+    u8 r, g, b, a;
+} C4_b073_01E04890;
+
+typedef struct {
+    u8 pad00[6];
+    s16 n;
+    u8 pad08[0x20];
+    C4_b073_01E04890 col;
+} Rib_b073_01E04890;
+
+static inline Vec_b073_01E04890 spline_b073_01E04890(Vec_b073_01E04890 *p, s32 type, f32 t) {
+    Vec_b073_01E04890 r;
+    f32 b3;
+    f32 b2;
+    f32 b1;
+    f32 b0;
+
+    if (type == 0) {
+        b0 = -t * ((t - 1.0f) * (t - 2.0f)) / 6.0f;
+        b1 = (t - 2.0f) * ((1.0f + t) * (t - 1.0f)) / 2.0f;
+        b2 = -(1.0f + t) * (t * (t - 2.0f)) / 2.0f;
+        b3 = (1.0f + t) * (t * (t - 1.0f)) / 6.0f;
+    }
+    r.x = p[0].x * b0 + p[1].x * b1 + p[2].x * b2 + p[3].x * b3;
+    r.y = p[0].y * b0 + p[1].y * b1 + p[2].y * b2 + p[3].y * b3;
+    r.z = p[0].z * b0 + p[1].z * b1 + p[2].z * b2 + p[3].z * b3;
+    return r;
+}
+
+#pragma optimization_level 3
+
+static void func_01E04890_b073(void *o, Rib_b073_01E04890 *s, Vec_b073_01E04890 *pa, Vec_b073_01E04890 *pb) {
+    extern s32 func_00207500(void);
+    extern Rgbaq_b073_01E04890 func_00107740(void *);
+    extern void func_001092E0(void *, s32);
+    extern void func_001094F0(void *);
+    extern void func_00109A70(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 depth[4];
+    Vec_b073_01E04890 quad[4];
+    Vec_b073_01E04890 A[2];
+    Vec_b073_01E04890 B[2];
+    Vec_b073_01E04890 a4[4];
+    Vec_b073_01E04890 b4[4];
+    Pkt_b073_01E04890 pkt __attribute__((aligned(8)));
+    C4_b073_01E04890 c;
+    s32 k;
+    s32 j;
+    s16 n;
+    s32 ot;
+    Pkt_b073_01E04890 *p;
+    f32 t;
+
+    ot = func_00207500();
+    n = s->n;
+    p = &pkt;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    c = s->col;
+    a4[0] = pa[0];
+    a4[1] = pa[0];
+    a4[2] = pa[1];
+    a4[3] = pa[2];
+    b4[0] = pb[0];
+    b4[1] = pb[0];
+    b4[2] = pb[1];
+    b4[3] = pb[2];
+    p->v[2].c = func_00107740(&c);
+    p->v[3].c = func_00107740(&c);
+    c.a = 0;
+    p->v[0].c = func_00107740(&c);
+    p->v[1].c = func_00107740(&c);
+    for (k = 0; k < n - 1; k++) {
+        t = 0.0f;
+        for (j = 0; j < 4; j++) {
+            if (k != 0) {
+                A[0] = spline_b073_01E04890(&pa[k - 1], 0, t);
+                B[0] = spline_b073_01E04890(&pb[k - 1], 0, t);
+                t += 0.25f;
+                A[1] = spline_b073_01E04890(&pa[k - 1], 0, t);
+                B[1] = spline_b073_01E04890(&pb[k - 1], 0, t);
+            } else {
+                A[0] = spline_b073_01E04890(a4, 0, t);
+                B[0] = spline_b073_01E04890(b4, 0, t);
+                t += 0.25f;
+                A[1] = spline_b073_01E04890(a4, 0, t);
+                B[1] = spline_b073_01E04890(b4, 0, t);
+            }
+            func_00109A70(&quad[0], &A[0]);
+            func_00109A70(&quad[1], &A[1]);
+            func_00109A70(&quad[2], &B[0]);
+            func_00109A70(&quad[3], &B[1]);
+            if (func_00205630(quad, 0x70000000, NULL, p, depth) != 0) {
+                func_002075F0(p, ot, 0);
+            }
+        }
+    }
+}
+#pragma optimization_level reset
 
 /* shape b073:01E05290, 126 insns: b069:01E01A70's four-quad sprite at the effect's own position (s16 x/y/z) at 1/20 scale,
    turned by its 0x3A; each quad that lands on screen is sent at its depth (fptoui) */
