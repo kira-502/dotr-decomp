@@ -708,3 +708,9 @@ there is a source form that gives the original.
   operands gets its partial product in its own statement (b172:01E03670).
 - **A u8 table counter stepping by 3 with an `andi` on each index:** write three `k++` (two in the table reads, one
   bare), not `tbl[(u8)(k + 1)]` and `k += 3` (b172:01E03670).
+
+- **-O4 setup loops with counter and strength-reduced pointer swapped (s2/s3) in all but the first:** give every setup
+  loop its own counter (`i`, `j`, `k`, `m`); sharing one, or splitting only the first, stays off (c548:01E02720).
+- **`f(p, 0.0f, 0.0f)` with `mov.s $f13, $f12`:** `{ f32 r = 0.0f; f(p, r, r); }` (c548:01E02720).
+- **`rand() % 0x10000` as `andi` plus a dead `addiu x, x, 0`:** the signed modulo; keep the variable `s32` (a `u16`
+  adds an `andi`) (b103, b540).
