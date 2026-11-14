@@ -1,10 +1,13 @@
 #include "common.h"
 
-/* shape b032:01E05550 (b032), 614 insns, 1 copy (-O2,p): b032 scene manager (b085:01E04410 form, -O2, parameters
-   copied under opt_propagation off): setup, then at t 0x72 two arcs, at 0x77 two rays with six rings, two flares,
-   eight smokes and the emitter; updates and draws all, returns the phase code. 592/614: ot and the &q[i] temp swap
-   s1/s4, the smoke loop's u8 temp and offset swap s1/s2 (register-only; decl orders, counters, a named q pointer,
-   permuter tried) */
+/* shape b032:01E05550 (b032), 614 insns, 1 copy (-O2,p): b032 scene manager (b085:01E04410 form at -O2): setup,
+   then at t 0x72 two arcs, at 0x77 two rays with six rings, two flares, eight smokes and the emitter; updates and
+   draws all, returns the phase code. 592/614 (22 words in the real build): ot takes s1 where the original has s4, so
+   the &q[i] temp lands in s4 (orig s1) and the smoke loop's u8 temp / offset in s2/s4 (orig s1/s2). The parameter
+   copies, opt_propagation off and the q[1] pointer turned out not to matter (same score without them). Tried: all
+   120 orders of s/i/j/k/ot and a random search over all declarations (ot must be last; earlier gives ot s3/s4/s5 but
+   moves g), copies as statements in each order, ot as an initializer, u32 ot, code or i/j as the smoke counter,
+   q/s block-scoped in the case, s dropped, -O1/-O3 */
 
 typedef struct {
     u8 pad0[4];
@@ -176,12 +179,9 @@ typedef struct {
 } Scene_b032_01E05550;
 
 #pragma optimization_level 2
-#pragma opt_propagation off
 
 
-static s32 func_01E05550_b032(Scene_b032_01E05550 *arg0, s32 arg1) {
-    Scene_b032_01E05550 *g = arg0;
-    s32 code = arg1;
+static s32 func_01E05550_b032(Scene_b032_01E05550 *g, s32 code) {
     extern s32 func_00207500(void);
     extern void func_00198948(void *, s32, s32);
     extern s32 func_001F53A0(void);
@@ -199,7 +199,6 @@ static s32 func_01E05550_b032(Scene_b032_01E05550 *arg0, s32 arg1) {
     extern s16 D_01E060A0_b032[];
     Vec4f v;
     Vec4f q[2];
-    Vec4f *p;
     Vec4f *s;
     s32 i;
     s32 j;
@@ -273,7 +272,7 @@ static s32 func_01E05550_b032(Scene_b032_01E05550 *arg0, s32 arg1) {
         break;
     case 0x77:
         func_001F5620(g->unitA, g->m[0], &q[0]);
-        func_001F5620(g->unitA, g->m[2], p = &q[1]);
+        func_001F5620(g->unitA, g->m[2], &q[1]);
         for (i = 0; i < 2; i++) {
             func_00101AD0(&g->ray[i], 0x14, 0, 0xFF);
             g->ray[i].b4 = 0;
@@ -350,7 +349,7 @@ static s32 func_01E05550_b032(Scene_b032_01E05550 *arg0, s32 arg1) {
                 g->flear[i].b8 = 0x80;
             }
             g->flear[i].f14 = 0.0f;
-            g->flear[i].pos.x = q[0].x + (p->x - q[0].x) / 2.0f;
+            g->flear[i].pos.x = q[0].x + (q[1].x - q[0].x) / 2.0f;
             g->flear[i].pos.y = q[0].y + (q[1].y - q[0].y) / 2.0f;
             g->flear[i].pos.z = q[0].z + (q[1].z - q[0].z) / 2.0f;
         }
@@ -406,5 +405,4 @@ static s32 func_01E05550_b032(Scene_b032_01E05550 *arg0, s32 arg1) {
 }
 
 
-#pragma opt_propagation reset
 #pragma optimization_level reset

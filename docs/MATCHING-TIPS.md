@@ -896,3 +896,5 @@ there is a source form that gives the original.
   loop's counter (b379:01E046B0).
 - **A float constant stored as an int `sw` and also kept in a saved float register:** a chained assignment,
   `f = o->f34 = 50.0f;` (b756:01E02360).
+- **Check twins for each block of a hard function, not just the whole function** (c534's UV block was c560's uv
+  inline); a spilled s32 parameter 4 bytes too high takes `aligned(8)` itself (c534:01E027F0).

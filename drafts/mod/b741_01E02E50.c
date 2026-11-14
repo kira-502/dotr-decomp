@@ -1,6 +1,11 @@
 #include "common.h"
 #include "mod/b741.c"
 
+/* b741:01E02E50 best draft: 469/484 standalone; in the real build only the s4/s5 swap is left (14 words; the
+   b741_01E01A10 alias fixed the 4.0f load order). Tried: Vec4f t[3] with tex as t[2] (else path matches, but every
+   setup read of t[2] then goes through a kept address in s3), block-local tex (frame +0x10), a union/struct overlay,
+   c and an explicit &t[1] pointer at every declaration position, c assigned at other points */
+
 typedef struct {
     void *tex;
     s32 flags;
@@ -167,7 +172,7 @@ static s32 func_01E02E50_b741(s32 arg0, s32 code) {
         g->line.count = 0x80;
         g->line.b2E = 1;
         g->line.b2F = 0;
-        { f32 h = 4.0f; func_01E01A10_b741((Obj_b015_01E01620 *)&g->line, 0xC, h); }
+        { extern s32 b741_01E01A10(void *, s32, f32); b741_01E01A10(&g->line, 0xC, 4.0f); }
         for (i = 0; i < 8; i++) {
             g->yarn[i].tex = (void *)tex[0];
             g->yarn[i].flags = 0;
