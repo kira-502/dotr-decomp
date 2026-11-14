@@ -86,7 +86,7 @@ if [[ "$DK_GCC" == mwcps2-* ]]; then
         MOD="$(basename "$IN_ABS" .c)"
         case "$IN_ABS" in
             "$ROOT"/src/mod/*) ;;
-            *) MOD="$(grep -o -m1 -E '\bfunc_[0-9A-F]{8}_[bcm][0-9]{3}\b' "$IN_ABS" | head -1 | sed 's/.*_//')" ;;
+            *) MOD="$(grep -o -m1 -E '\bfunc_[0-9A-F]{8}_[bcm][0-9]{3}\b' "$IN_ABS" | head -1 | sed 's/.*_//' || true)" ;;
         esac
         LEVEL="$(awk -v m="$MOD" '{ sub(/#.*/, "") } $1 == m { print $2 }' "$MOD_WARM")"
         case "$LEVEL" in
