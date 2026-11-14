@@ -1799,7 +1799,128 @@ static s32 func_01E046A0_b500(Pool_b500_01E046A0 *o, s32 a, s32 b) {
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b500", func_01E047C0_b500);
+/* shape b500:01E047C0 (B500PAINT_RAIN13), 347 insns, 1 copy: b501:01E047C0's ribbon (4 spline quads per segment
+   between two trails) with the far-edge alpha ramping up by alpha / (2n) per quad for the first half, then down */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_b500_01E047C0;
+
+typedef struct {
+    Rgbaq_b500_01E047C0 c;
+    u64 xyz;
+} Vtx_b500_01E047C0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b500_01E047C0 v[4];
+    u8 tail[0x40];
+} Pkt_b500_01E047C0;
+
+typedef struct {
+    u8 r, g, b, a;
+} C4_b500_01E047C0;
+
+typedef struct {
+    u8 pad00[6];
+    s16 n;
+    u8 pad08[0x20];
+    C4_b500_01E047C0 col;
+} Rib_b500_01E047C0;
+
+static void func_01E047C0_b500(void *o, Rib_b500_01E047C0 *s, Vec_b018_01E00EE0 *pa __attribute__((aligned(16))), Vec_b018_01E00EE0 *pb __attribute__((aligned(16)))) {
+    extern Rgbaq_b500_01E047C0 func_00107740(void *);
+    extern void func_001092E0(void *, s32);
+    extern void func_001094F0(void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    f32 depth[4];
+    Vec_b018_01E00EE0 quad[4];
+    Vec_b018_01E00EE0 A[2];
+    Vec_b018_01E00EE0 B[2];
+    Vec_b018_01E00EE0 a4[4];
+    Vec_b018_01E00EE0 b4[4];
+    Pkt_b500_01E047C0 pkt __attribute__((aligned(8)));
+    C4_b500_01E047C0 col;
+    s32 k;
+    s32 j;
+    s16 n;
+    s16 d;
+    s32 ot __attribute__((aligned(8)));
+    Pkt_b500_01E047C0 *p;
+    f32 t;
+
+    ot = (s32)func_00207500();
+    n = s->n;
+    p = (Pkt_b500_01E047C0 *)(s32)&pkt;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    col = s->col;
+    col.a = 0;
+    a4[0] = pa[0];
+    a4[1] = pa[0];
+    a4[2] = pa[1];
+    a4[3] = pa[2];
+    b4[0] = pb[0];
+    b4[1] = pb[0];
+    b4[2] = pb[1];
+    b4[3] = pb[2];
+    for (k = 0; k < n - 1; k++) {
+        t = 0.0f;
+        for (j = 0; j < 4; j++) {
+            p->v[0].c = func_00107740(&col);
+            p->v[2].c = func_00107740(&col);
+            d = s->col.a / (n * 2);
+            if (k * 4 + j < (n * 4) >> 1) {
+                if (col.a + d < 0xFF) {
+                    col.a = col.a + d;
+                } else {
+                    col.a = 0xFF;
+                }
+            } else {
+                if (col.a - d > 0) {
+                    col.a = col.a - d;
+                } else {
+                    col.a = 0;
+                }
+            }
+            p->v[1].c = func_00107740(&col);
+            p->v[3].c = func_00107740(&col);
+            if (k != 0) {
+                A[0] = func_01E01410_b500(pa + (k - 1), 0, t);
+                B[0] = func_01E01410_b500(pb + (k - 1), 0, t);
+                t += 0.25f;
+                A[1] = func_01E01410_b500(pa + (k - 1), 0, t);
+                B[1] = func_01E01410_b500(pb + (k - 1), 0, t);
+            } else {
+                A[0] = func_01E01410_b500(a4, 0, t);
+                B[0] = func_01E01410_b500(b4, 0, t);
+                t += 0.25f;
+                A[1] = func_01E01410_b500(a4, 0, t);
+                B[1] = func_01E01410_b500(b4, 0, t);
+            }
+            quad[0].x = A[0].x;
+            quad[0].y = A[0].y;
+            quad[0].z = A[0].z;
+            quad[1].x = A[1].x;
+            quad[1].y = A[1].y;
+            quad[1].z = A[1].z;
+            quad[2].x = B[0].x;
+            quad[2].y = B[0].y;
+            quad[2].z = B[0].z;
+            quad[3].x = B[1].x;
+            quad[3].y = B[1].y;
+            quad[3].z = B[1].z;
+            if (func_00205630(quad, 0x70000000, NULL, p, depth) != 0) {
+                func_002075F0(p, ot, 0);
+            }
+        }
+    }
+}
 
 /* shape b225:01E04BF0, 220 insns, 3 copies: draws a row of thin bars (count of them) at the sprite's position into the
    caller's packet: each shaken by a per-entry table offset that grows along the row, turned by the sprite's
