@@ -812,3 +812,9 @@ there is a source form that gives the original.
   `(void *, u16)`, not `(void *, s32)` (b059:01E05540).
 - **Two stores to one field with the second in a call's delay slot:** the source writes both before the call,
   `g->hB8 = 4; g->hB8 = 0; f(...);` (b207:01E03C40).
+
+- **A stack vector's base address kept in a saved register** (`addiu sN, sp, X` used for the `.x` store and as a call
+  argument): it is element [1] or later of a `Vec4f` array (`Vec4f p[2]`, pass `&p[1]`). Element [0] and plain
+  `Vec4f` locals only get their `.y`/`.z` addresses kept; `f32 v[4]` arrays get neither (b104:01E03E30, b129:01E04B90).
+- **Two float variables in swapped registers in the second of two similar blocks:** swap which name holds which value
+  in that block (b104:01E03E30).
