@@ -928,3 +928,5 @@ there is a source form that gives the original.
   name/alias combinations across nearby calls with `work/fulltry.sh` (b401:01E02FD0). Float arguments loaded
   `$f13, $f14, a1, $f15, $f12`: declare the locals bare and assign them in reverse order before the aliased call
   (`f32 p; f32 s; s = 18.0f; p = 0.1f;`) (b013:01E04510).
+- **`f(p, 0.0f, 0.0f)` with `mtc1 $zero, $f13; mov.s $f12, $f13`:** `{ f32 x = 0.0f; f(p, x, 0.0f); }`, the opposite of
+  the c548 `(p, r, r)` case (c508:01E04B50).
