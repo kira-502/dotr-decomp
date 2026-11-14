@@ -922,3 +922,5 @@ there is a source form that gives the original.
   (`(void *, u8, u8)`) (b099:01E02A90).
 - **`(r = &pool[i])->life = x;` loads the field before building the pointer:** split it, `r = &pool[i]; r->life = x;`
   (b099:01E02A90).
+- **`slti v0, t, K; bnez v0` with `n = 2` in the delay slot, then `b join; n = 1`:** flip the test,
+  `if (t >= K) n = 1; else n = 2;` (b132:01E06AC0).
