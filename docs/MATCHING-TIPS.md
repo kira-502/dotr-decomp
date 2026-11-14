@@ -757,3 +757,6 @@ there is a source form that gives the original.
 - **A local table copied from module data right after the first call (`jal func_00207500` before the `lq`/`sq` copy)
   where yours copies it in the prologue:** assign it as a statement after the call (`ot = func_00207500(); tbl = D_...;`),
   not in its declaration, and declare it first among the stack locals (b455:01E05AA0).
+
+- **Where a prototyped alias's `extern` sits can change float argument order:** in c525:01E033D0 it matched only
+  declared inside each call's own block; one shared declaration at the top swapped the `$f12`/`$f13` loads again.
