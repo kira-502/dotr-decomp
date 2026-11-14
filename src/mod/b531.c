@@ -522,7 +522,157 @@ static void func_01E01500_b531(Obj_b046_01E01A60 *obj, Def_b046_01E01A60 *def, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b531", func_01E01970_b531);
+/* shape b531:01E01970 (PAINT_Fragment_8), 299 insns, 1 copy: b046:01E01A60's fragment strip with
+   rows 2 and 3 of the sprite matrix set to (-size/2, 0, 0) and (size/2, 0, 0) before the three joints */
+
+typedef struct {
+    u8 pad0[0x20];
+    Vec4f pos;
+    u8 pad30[0x50];
+    s32 f80;
+    u8 pad84[4];
+    void *f88;
+    u8 pad8C[8];
+    u8 f94[0x24];
+    s16 count;
+    u8 padBA[4];
+    s16 fBE;
+    u8 padC0[0x18];
+    u8 fD8[4];
+} Obj_b531_01E01970;
+
+typedef struct {
+    u8 pad0[8];
+    s16 tab;
+    u8 padA[6];
+    s32 rot[4];
+    u8 pad20[8];
+    u8 tex[8];
+    s16 scale;
+    u8 pad32[6];
+    s16 size;
+} Def_b531_01E01970;
+
+typedef struct {
+    union {
+        struct {
+            u64 x : 16;
+            u64 y : 16;
+            u64 z : 24;
+            u64 fog : 8;
+        } b;
+        struct {
+            u8 pad[7];
+            u8 fog;
+        } h;
+    } xyz;
+    u64 reg;
+} Xyz_b531_01E01970;
+
+typedef struct {
+    f32 u, v;
+} Uv_b531_01E01970;
+
+typedef struct {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    Uv_b531_01E01970 uv;
+    u64 pad18;
+    Xyz_b531_01E01970 v[4];
+    u64 pad60[6];
+} Pk_b531_01E01970;
+
+typedef struct {
+    u64 tag;
+    Pk_b531_01E01970 pk;
+} Buf_b531_01E01970;
+
+static void func_01E01970_b531(Obj_b531_01E01970 *obj, Def_b531_01E01970 *def, s32 mode, s8 *base) {
+    f32 m2[4][4];
+    Vec4f pos;
+    Vec4f s;
+    f32 out[4];
+    f32 m[4][4];
+    s32 rot[4];
+    Buf_b531_01E01970 buf;
+    Uv_b531_01E01970 uv;
+    s16 i;
+    Pk_b531_01E01970 *p;
+    s16 n;
+    s32 h;
+    s8 *t;
+    f32 f;
+    f32 r;
+    extern void func_00108EF0();
+    extern void func_00109100();
+
+    func_00207500();
+    p = &buf.pk;
+    p->flags = 0x24;
+    p->size = 9;
+    p->regs = ((u64)4 << 32) | 0x24242421;
+    p->pad4 = 0;
+    p->flags |= 0x800;
+    func_002086D0(p, ((u64)0x80 << 32) | 0x48);
+    buf.pk.uv.v = 0.0f;
+    buf.pk.v[0].xyz.h.fog = 0;
+    buf.pk.v[1].xyz.h.fog = 0;
+    buf.pk.v[2].xyz.h.fog = 0;
+    buf.pk.v[3].xyz.h.fog = 0;
+    func_00107740(&uv, def->tex);
+    buf.pk.uv = uv;
+    func_01E00100_b531((Pk_b003_01E00080 *)p, (Rect_b003_01E00080 *)obj->f94, obj->fBE);
+    func_00208700(p, obj->f88, 1);
+    n = (obj->count != 0) ? obj->count : (s16)20;
+    s.x = 0.1f;
+    s.y = 0.1f;
+    s.z = 0.1f;
+    func_00205C40((s32)rot);
+    pos.x = obj->pos.x;
+    pos.y = obj->pos.y;
+    pos.z = obj->pos.z;
+    func_00108EF0(m, &s, rot, &pos);
+    for (i = 0; i < n; i++) {
+        r = def->size;
+        func_00108CE0(m2, r, r);
+        t = base + i;
+        h = i >> 1;
+        f = t[def->tab];
+        f /= 20.0f;
+        func_00107070(m2, 0, f * (def->scale + h));
+        f = t[def->tab + 100];
+        f /= 20.0f;
+        func_00107070(m2, 1, f * (def->scale + h));
+        f = t[def->tab + 180];
+        f /= 20.0f;
+        func_00107070(m2, 2, f * (def->scale + h));
+        m2[2][1] = 0.0f;
+        m2[3][1] = 0.0f;
+        m2[2][0] = -(def->size >> 1);
+        m2[3][0] = def->size >> 1;
+        m2[2][2] = 0.0f;
+        m2[3][2] = 0.0f;
+        func_00109100(m2, def->rot, 0, obj->fD8);
+        func_00109100(m2, def->rot, 1, obj->fD8);
+        func_00109100(m2, def->rot, 2, obj->fD8);
+        if (mode == 0) {
+            if (func_00205630((s32)m2, 0x70000000, (s32)m, (s32)p, out) != 0) {
+                func_002075F0((s32)p, obj->f80, func_001A23B0(out[0]));
+            }
+        } else if (mode == 1) {
+            if (func_00205630((s32)m2, 0x70000000, (s32)m, (s32)p, out) != 0) {
+                p->v[0].xyz.b.z = p->v[1].xyz.b.z = p->v[2].xyz.b.z = p->v[3].xyz.b.z = 0xFFFFFF;
+                func_002075F0((s32)p, obj->f80, 0);
+            }
+        } else if (mode == 2) {
+            if (func_00205630((s32)m2, 0x70000000, (s32)m, (s32)p, out) != 0) {
+                func_002075F0((s32)p, obj->f80, -1);
+            }
+        }
+    }
+}
 
 /* shape b081:01E05C10 (B081PAINT_RAIN10), 517 insns, 4 copies: b121:01E033A0 beam form with a world matrix: the
    textured beam along the module spline (b081:01E009A0), 3 sub-steps per segment, each a 2-quad cross drawn through a
