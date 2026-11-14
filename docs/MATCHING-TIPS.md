@@ -902,3 +902,8 @@ there is a source form that gives the original.
   write `(i * 60 + 60) * 16`; `(i + 1) * 60 * 16` folds into `* 960` (b617:01E06210).
 - **`beqz i, A; b B` with arm A first and an extra `b`** where an if/else gives `bnez` → else: a single-case
   `switch (i) { case 0: ...; break; default: ...; break; }` (b617:01E06210).
+- **A field-by-field copy of a stack vector onto itself** (`swc1` then `lwc1`/`swc1` of the same addresses before a
+  by-value call): the source has `c.x = c.x; c.y = c.y; c.z = c.z;` (b443:01E04160).
+- **Argument registers set in the wrong order around a static call:** cast the second argument too
+  (`(Emit_b000_01E01140 *)&g->emit`) (c625:01E02DA0, b634:01E03110).
+- **An unused local can change scheduling** (b634:01E03110 keeps an unused `s32 k;`); try removing leftovers last.
