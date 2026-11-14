@@ -898,3 +898,7 @@ there is a source form that gives the original.
   `f = o->f34 = 50.0f;` (b756:01E02360).
 - **Check twins for each block of a hard function, not just the whole function** (c534's UV block was c560's uv
   inline); a spilled s32 parameter 4 bytes too high takes `aligned(8)` itself (c534:01E027F0).
+- **A stepped value with an `sll` inside the loop** (`addiu s3, zero, 0x3C ... sll v0, s3, 4 ... addiu s3, 0x3C`):
+  write `(i * 60 + 60) * 16`; `(i + 1) * 60 * 16` folds into `* 960` (b617:01E06210).
+- **`beqz i, A; b B` with arm A first and an extra `b`** where an if/else gives `bnez` → else: a single-case
+  `switch (i) { case 0: ...; break; default: ...; break; }` (b617:01E06210).
