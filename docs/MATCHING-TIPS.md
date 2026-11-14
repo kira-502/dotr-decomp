@@ -760,3 +760,7 @@ there is a source form that gives the original.
 
 - **Where a prototyped alias's `extern` sits can change float argument order:** in c525:01E033D0 it matched only
   declared inside each call's own block; one shared declaration at the top swapped the `$f12`/`$f13` loads again.
+
+- **A `?:` clamp's variable spilled after every declared local, whatever the declaration order:** the `?:` makes it a
+  compiler temp. Write `if (n > 36) { n = 36; } else { (void)n; }` (the else arm keeps the original's `b`); its slot then
+  follows declaration order (b761:01E05F70).
