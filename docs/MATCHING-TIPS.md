@@ -795,3 +795,8 @@ there is a source form that gives the original.
 - **-O2: a slot address the original rebuilds after every call where yours keeps it in a saved register:** write the
   call's argument as raw bytes, `(u8 *)g + idx * 0x58 + 0x4D8`, so it shares no subexpression with the field stores
   (b649:01E043A0).
+
+- **`beqz $s0` on an s16 counter where yours sign-extends first:** write `if (m)`, not `if (m != 0)` (b746:01E045A0).
+- **A scene manager's slot count in the last saved register, below the loop counter and the id parameter:** it is the
+  setup loops' counter reused (`k = 0;` at the top, `k++` in the draw loop); give the step and draw loops their own
+  counters (b215:01E02E50, 650 → 685).
