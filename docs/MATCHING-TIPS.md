@@ -877,3 +877,7 @@ there is a source form that gives the original.
 - **Loop angles copied with a fresh sign-extend into new saved registers:** there is no stepped variable in the
   source; pass `ra + i * 18` directly and let strength reduction make the copies (b357:01E03420).
 - **The named-local constant also fixes `mul.s` operand order** (`nx = 20.0f; ... 2.0f * o->f48 * nx`) (b215:01E01A70).
+- **Before reworking a hard draft, look for twins by its real name** (b004's B004PAINT_RAIN was b130:01E01E60's C).
+- **One angle passed to several calls in a row, kept in a saved register and sign-extended before each call:** an s32
+  local with an s16 prototype parameter (`n = o->ang + j;`); a copy sign-extended again before a divide is an s32
+  local cast at the use, `(s16)b / 160` (b443:01E01EA0).
