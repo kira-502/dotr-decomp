@@ -1086,4 +1086,353 @@ static s32 func_01E02570_c555(s32 ot, Obj_c555_01E02570 *o, Cam_c555_01E02570 *c
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c555", func_01E028C0_c555);
+/* shape c555:01E028C0 (c555), 667 insns, 1 copy: c555 scene manager (b001 family): code >= 0 clears the 0x1900 scene,
+   seven cameras, a 25-tick timer, three rings (68/56, 74/42, 80/28), a 16-entry emitter, a 60-point spark, four
+   8-point shapes from the module table scaled by 10, and four fireballs placed on a 150 circle with their 8-point
+   tails and steps toward the next one; otherwise moves each live fireball, draws its tail and shape, draws the
+   emitter, spark and rings for the first one once it has hit (growing cameras 5 and 6), flashes and marks a fireball
+   when it comes within 20 of its target; returns 2 at tick 7, 8 when the timer ends; ring 0 goes through a prototyped
+   alias with a block-local 0.1f */
+
+typedef struct {
+    u8 b, g, r, a;
+} Col_c555_01E028C0;
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_c555_01E028C0;
+
+typedef struct {
+    f32 x, y, z;
+    u8 padC[0x14];
+    Vec_c555_01E028C0 pos;
+    u8 pad30[0x40];
+} Cam_c555_01E028C0;
+
+typedef struct {
+    f32 x, y, z;
+} SPt_c555_01E028C0;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    Col_c555_01E028C0 color;
+    f32 size;
+    f32 u, v, w, h;
+    SPt_c555_01E028C0 pts[60];
+} Spark_c555_01E028C0;
+
+typedef struct {
+    Vec_c555_01E028C0 hist[8];
+    s32 flags;
+    f32 width;
+    Col_c555_01E028C0 color;
+    u8 pad8C[0x14];
+} Tail_c555_01E028C0;
+
+typedef struct {
+    f32 x, y, z;
+    s16 hC;
+    s16 hE;
+} Pt_c555_01E028C0;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    Col_c555_01E028C0 color;
+    f32 size;
+    f32 cx;
+    f32 cy;
+    f32 z0;
+    u8 pad1C[4];
+    s16 rect[8];
+    Pt_c555_01E028C0 pt[16];
+    s16 count;
+    u8 pad132[4];
+    s16 h136;
+    s16 h138;
+    s16 step;
+    s16 h13C;
+    s16 h13E;
+    s16 h140;
+    u8 pad142[0xE];
+} Emit_c555_01E028C0;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    s32 rz;
+    f32 size;
+    f32 x, y, z;
+    u8 pad1C[4];
+    Vec_c555_01E028C0 v[8];
+} Obj_c555_01E028C0;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    Col_c555_01E028C0 color;
+    u8 padC[4];
+    s16 u, v, w, h;
+    u8 pad18[0x3E8];
+} Ring_c555_01E028C0;
+
+typedef struct {
+    Vec_c555_01E028C0 v[8];
+} Tbl_c555_01E028C0;
+
+typedef struct {
+    Cam_c555_01E028C0 cam0;
+    Cam_c555_01E028C0 fb[4];
+    Cam_c555_01E028C0 c5;
+    Cam_c555_01E028C0 c6;
+    Spark_c555_01E028C0 spark;
+    Tail_c555_01E028C0 tail[4];
+    Emit_c555_01E028C0 emit;
+    Obj_c555_01E028C0 obj[4];
+    Ring_c555_01E028C0 ring0;
+    Ring_c555_01E028C0 ring1;
+    Ring_c555_01E028C0 ring2;
+    f32 sc[4];
+    Vec_c555_01E028C0 vel[4];
+    Vec_c555_01E028C0 pos[4];
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 flags;
+    Col_c555_01E028C0 color;
+    u8 pad18F4[0xC];
+} Scene_c555_01E028C0;
+
+static s32 func_01E028C0_c555(s32 arg0, s32 code) {
+    Scene_c555_01E028C0 *g = (Scene_c555_01E028C0 *)arg0;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_00103260(void *, s32);
+    extern void func_001039A0(void *);
+    extern void func_001038D0(void *);
+    extern void func_001F53B0(s32, void *);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern void func_00103EC0(void *, void *, void *, s32);
+    extern s32 func_001037C0(void *, void *, void *);
+    extern f32 func_0020D100(void *, void *);
+    extern void func_00103470(void *, s32, s32);
+    extern s32 func_0019A5C8(void);
+    extern Tbl_c555_01E028C0 D_01E03380_c555;
+    Vec_c555_01E028C0 vz;
+    s32 tex __attribute__((aligned(16)));
+    Tbl_c555_01E028C0 tbl;
+    s32 ot;
+    s32 i;
+    s32 j;
+    s32 k;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x1900);
+        g->flags = 0;
+        func_00103890(g);
+        for (k = 0; k < 4; k++) {
+            func_00103890(&g->fb[k]);
+        }
+        func_00103890(&g->c5);
+        func_00103890(&g->c6);
+        g->timer = 0x19;
+        g->code = code;
+        g->t = 0;
+        g->sc[0] = 1.1f;
+        g->sc[1] = 1.1f;
+        g->sc[2] = 1.1f;
+        g->color.r = g->color.g = g->color.b = g->color.a = 0x80;
+        func_00103260(&tex, 0xF);
+        g->ring0.flags = 0x8000;
+        g->ring0.u = 0x8E;
+        g->ring0.v = 0;
+        g->ring0.w = 0x20;
+        g->ring0.h = 0x40;
+        g->ring0.color.r = 0x80;
+        g->ring0.color.g = 0x50;
+        g->ring0.color.b = 0x50;
+        g->ring0.color.a = 0x60;
+        {
+            extern s32 c555_01E009E0(void *, s32, f32, f32, f32, f32);
+            f32 q = 0.1f;
+            c555_01E009E0(&g->ring0, tex, q, 68.0f, 0.0f, 56.0f);
+        }
+        g->ring1.flags = 0x8000;
+        g->ring1.u = 0x8E;
+        g->ring1.v = 0;
+        g->ring1.w = 0x20;
+        g->ring1.h = 0x40;
+        g->ring1.color.r = 0x80;
+        g->ring1.color.g = 0x50;
+        g->ring1.color.b = 0x50;
+        g->ring1.color.a = 0x60;
+        func_01E009E0_c555((Ring_b001_01E035A0 *)&g->ring1, tex, 0.1f, 74.0f, 0.0f, 42.0f);
+        g->ring2.flags = 0x8000;
+        g->ring2.u = 0x8E;
+        g->ring2.v = 0;
+        g->ring2.w = 0x20;
+        g->ring2.h = 0x40;
+        g->ring2.color.r = 0x80;
+        g->ring2.color.g = 0x50;
+        g->ring2.color.b = 0x50;
+        g->ring2.color.a = 0x60;
+        func_01E009E0_c555((Ring_b001_01E035A0 *)&g->ring2, tex, 0.1f, 80.0f, 0.0f, 28.0f);
+        g->emit.texture = tex;
+        g->emit.flags = 7;
+        g->emit.cx = 0.0f;
+        g->emit.cy = 0.0f;
+        g->emit.z0 = 0.0f;
+        g->emit.rect[0] = 0x80;
+        g->emit.rect[1] = 0xC0;
+        g->emit.rect[2] = 0x20;
+        g->emit.rect[3] = 0x20;
+        g->emit.rect[4] = 0x80;
+        g->emit.rect[5] = 0xC0;
+        g->emit.rect[6] = 0x80;
+        g->emit.rect[7] = 0x100;
+        g->emit.size = 20.0f;
+        g->emit.count = 16;
+        g->emit.step = 1;
+        g->emit.h13C = 0;
+        g->emit.h140 = 8;
+        g->emit.h136 = 30;
+        g->emit.h138 = -30;
+        g->emit.color.r = 0x80;
+        g->emit.color.g = 0x50;
+        g->emit.color.b = 0x50;
+        g->emit.color.a = 0x60;
+        for (k = 0; k < 8; k++) {
+            g->emit.pt[k].x = func_0019A5C8() % 60 - 30;
+            g->emit.pt[k].y = func_0019A5C8() % 30;
+            g->emit.pt[k].hE = -g->emit.step * k;
+            g->emit.pt[k].hC = 0;
+            g->emit.h13E = g->emit.h140 - 1;
+        }
+        g->spark.texture = tex;
+        g->spark.size = 2.5f;
+        for (i = 0; i < 60; i++) {
+            if (func_00104520(g->spark.flags, 0x1D)) {
+                g->spark.pts[i].x = func_0019A5C8() % 100 - 50;
+                g->spark.pts[i].z = func_0019A5C8() % 50;
+                g->spark.pts[i].y = func_0019A5C8() % 100 - 50;
+            } else {
+                g->spark.pts[i].x = func_0019A5C8() % 50 - 25;
+                g->spark.pts[i].y = func_0019A5C8() % 25;
+                g->spark.pts[i].z = func_0019A5C8() % 50 - 25;
+            }
+        }
+        g->spark.flags = 0;
+        g->spark.u = 0.8125f;
+        g->spark.v = 0.25f;
+        g->spark.w = 0.125f;
+        g->spark.h = 0.125f;
+        g->spark.color.r = 0x80;
+        g->spark.color.g = 0x50;
+        g->spark.color.b = 0x50;
+        g->spark.color.a = 0x80;
+        for (k = 0; k < 4; k++) {
+            tbl = D_01E03380_c555;
+            g->obj[k].texture = tex;
+            g->obj[k].size = 10.0f;
+            g->obj[k].x = g->obj[k].y = g->obj[k].z = 0.0f;
+            for (j = 0; j < 8; j++) {
+                g->obj[k].v[j].x = g->obj[k].size * tbl.v[j].x;
+                g->obj[k].v[j].y = g->obj[k].size * tbl.v[j].y;
+                g->obj[k].v[j].z = g->obj[k].size * tbl.v[j].z;
+            }
+        }
+        g->c5.x = g->c5.y = g->c5.z = 0.1f;
+        func_001F53B0(2, &g->cam0.pos);
+        func_001F53B0(0, &g->c5.pos);
+        func_001F53B0(0, &g->c6.pos);
+        for (i = 0; i < 4; i++) {
+            func_001F53B0(0, &g->fb[i].pos);
+            g->fb[i].pos.x += 150.0f * func_0020B480(i * 0x4000);
+            g->fb[i].pos.z += 150.0f * func_0020B550(i * 0x4000);
+            g->fb[i].pos.y += 50.0f;
+            g->tail[i].flags = 0;
+            g->tail[i].color.r = 0x80;
+            g->tail[i].color.g = 0x50;
+            g->tail[i].color.b = 0x50;
+            g->tail[i].color.a = 0x60;
+            for (j = 0; j < 8; j++) {
+                g->tail[i].hist[j].x = g->fb[i].pos.x;
+                g->tail[i].hist[j].y = g->fb[i].pos.y;
+                g->tail[i].hist[j].z = g->fb[i].pos.z;
+            }
+            g->tail[i].width = 5.0f;
+        }
+        for (i = 0; i < 4; i++) {
+            if (i != 0) {
+                g->vel[i].x = (g->fb[i - 1].pos.x - g->fb[i].pos.x) / 10.0f;
+                g->vel[i].y = (g->fb[i - 1].pos.y - g->fb[i].pos.y) / 10.0f;
+                g->vel[i].z = (g->fb[i - 1].pos.z - g->fb[i].pos.z) / 10.0f;
+            } else {
+                g->vel[i].x = (g->fb[3].pos.x - g->fb[i].pos.x) / 10.0f;
+                g->vel[i].y = (g->fb[3].pos.y - g->fb[i].pos.y) / 10.0f;
+                g->vel[i].z = (g->fb[3].pos.z - g->fb[i].pos.z) / 10.0f;
+            }
+        }
+        return 0;
+    }
+    func_001038D0(g);
+    g->c5.pos.y = 3.0f;
+    func_001039A0(&g->c5);
+    func_001038D0(&g->c6);
+    for (i = 0; i < 4; i++) {
+        func_001F53B0(0, &g->pos[i]);
+        if (func_00104520(g->flags, i + 0x14) == 0) {
+            func_00103EC0(&g->fb[i].pos, &g->pos[i], &g->vel[i], 0x800);
+        }
+        func_001039A0(&g->fb[i]);
+        if (func_00104520(g->flags, i + 0x14) == 0) {
+            func_01E01D20_c555(ot, (Tail_c555_01E01D20 *)&g->tail[i], (Cam_c555_01E01D20 *)g,
+                               (Vec_c555_01E01D20 *)&g->fb[i].pos);
+            g->obj[i].rz = func_001037C0(g, &g->tail[i], &g->tail[i].hist[1]);
+            func_01E02570_c555(ot, (Obj_c555_01E02570 *)&g->obj[i], (Cam_c555_01E02570 *)&g->fb[i]);
+        } else if (i == 0) {
+            vz.z = 0.0f;
+            vz.y = 0.0f;
+            vz.x = 0.0f;
+            func_01E01190_c555(ot, (Cam_b001_01E00A30 *)&g->fb[3], (Emit_b001_01E00A30 *)&g->emit,
+                               (Vec_b001_01E00A30 *)&vz);
+            func_00103470(&g->emit.color.a, 0, 8);
+            if (g->c5.x < 1.0f) {
+                g->c5.x = g->c5.y = g->c5.z += 0.2f;
+            }
+            func_01E00400_c555(ot, (Spark_b013_01E010C0 *)&g->spark, (Cam_b013_01E010C0 *)&g->c5, (s32)g->sc);
+            func_00103470(&g->spark.color.a, 0, 10);
+            func_01E00CA0_c555(ot, (Ring_b001_01E03860 *)&g->ring0, (Cam_b001_01E03860 *)&g->c6);
+            func_00103470(&g->ring0.color.a, 0, 8);
+            func_01E00CA0_c555(ot, (Ring_b001_01E03860 *)&g->ring1, (Cam_b001_01E03860 *)&g->c6);
+            func_00103470(&g->ring1.color.a, 0, 8);
+            func_01E00CA0_c555(ot, (Ring_b001_01E03860 *)&g->ring2, (Cam_b001_01E03860 *)&g->c6);
+            func_00103470(&g->ring2.color.a, 0, 8);
+            if (g->c6.x < 1.0f) {
+                g->c6.x = g->c6.y = g->c6.z += 0.2f;
+            } else {
+                g->c6.x = g->c6.y = g->c6.z += 0.05f;
+            }
+        }
+        func_001F53B0(0, &g->pos[i]);
+        if (func_0020D100(&g->pos[i], &g->fb[i].pos) < 20.0f) {
+            if (func_00104520(g->flags, i + 0x14) == 0) {
+                func_01E002A0_c555(ot, (Src_b000_01E00400 *)&g->color);
+            }
+            g->flags |= 1 << (i + 0x14);
+        }
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 7) {
+        return 2;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
