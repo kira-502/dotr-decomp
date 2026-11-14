@@ -151,7 +151,100 @@ static Vec_b018_01E00EE0 func_01E005A0_b383(Vec_b018_01E00EE0 *p, s32 type, f32 
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b383", func_01E009E0_b383);
+/* shape b018:01E01760 (KPOINT_RAIN_1_1), 281 insns, 7 copies: KPOINT_RAIN_1_1: draws a ribbon between two point
+   trails (n points each) as 4 quads per segment along the module's spline b018:01E00EE0, alpha fading along the
+   ribbon */
+
+typedef struct Col_b018_01E01760 {
+    u8 r, g, b, a;
+} Col_b018_01E01760;
+
+typedef struct Obj_b018_01E01760 {
+    u8 pad0[6];
+    s16 n;
+    u8 pad8[0x20];
+    Col_b018_01E01760 col;
+} Obj_b018_01E01760;
+
+static void func_01E009E0_b383(s32 arg0, Obj_b018_01E01760 *obj, Vec_b018_01E00EE0 *pa0, Vec_b018_01E00EE0 *pb0) {
+    f32 depth[4];
+    Vec_b018_01E00EE0 quad[4];
+    Vec_b018_01E00EE0 qa[2];
+    Vec_b018_01E00EE0 qb[2];
+    Vec_b018_01E00EE0 a[4];
+    Vec_b018_01E00EE0 b[4];
+    Vec_b018_01E00EE0 t0;
+    Vec_b018_01E00EE0 t1;
+    Vec_b018_01E00EE0 t2;
+    Vec_b018_01E00EE0 t3;
+    u8 pk[0x90] __attribute__((aligned(8)));
+    Col_b018_01E01760 col;
+    s16 n;
+    f32 t;
+    s32 i;
+    s32 j;
+    u8 *p;
+    s32 dst;
+    Vec_b018_01E00EE0 *pa;
+    Vec_b018_01E00EE0 *pb;
+
+    dst = (s32)func_00207500();
+    p = pk;
+    n = obj->n;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    col = obj->col;
+    a[0] = pa0[0];
+    a[1] = pa0[0];
+    a[2] = pa0[1];
+    a[3] = pa0[2];
+    b[0] = pb0[0];
+    b[1] = pb0[0];
+    b[2] = pb0[1];
+    b[3] = pb0[2];
+    for (i = 0; i < n - 1; i++) {
+        func_00107990(p, &col, 1);
+        col.a -= obj->col.a / n;
+        func_00107990(p, &col, 2);
+        t = 0.0f;
+        pa = pa0 + (i - 1);
+        pb = pb0 + (i - 1);
+        for (j = 0; j < 4; j++) {
+            if (i != 0) {
+                qa[0] = func_01E005A0_b383(pa, 0, t);
+                qb[0] = func_01E005A0_b383(pb, 0, t);
+                t += 0.25f;
+                t0 = func_01E005A0_b383(pa, 0, t);
+                qa[1] = t0;
+                t1 = func_01E005A0_b383(pb, 0, t);
+                qb[1] = t1;
+            } else {
+                qa[0] = func_01E005A0_b383(a, 0, t);
+                qb[0] = func_01E005A0_b383(b, 0, t);
+                t += 0.25f;
+                t2 = func_01E005A0_b383(a, 0, t);
+                qa[1] = t2;
+                t3 = func_01E005A0_b383(b, 0, t);
+                qb[1] = t3;
+            }
+            quad[0].x = qa[0].x;
+            quad[0].y = qa[0].y;
+            quad[0].z = qa[0].z;
+            quad[1].x = qa[1].x;
+            quad[1].y = qa[1].y;
+            quad[1].z = qa[1].z;
+            quad[2].x = qb[0].x;
+            quad[2].y = qb[0].y;
+            quad[2].z = qb[0].z;
+            quad[3].x = qb[1].x;
+            quad[3].y = qb[1].y;
+            quad[3].z = qb[1].z;
+            if (func_00205630((s32)quad, 0x70000000, 0, (s32)p, depth) != 0) {
+                func_002075F0((s32)p, dst, 0);
+            }
+        }
+    }
+}
 
 /* shape b134:01E00820, 365 insns, 5 copies: draws a ribbon between two point trails: each segment is 4 spline quads
    (module curve function, shape b018:01E00EE0) from the first trail to the second, colours from two
