@@ -1,6 +1,289 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/nonmatchings/mod/c026", func_01E00080_c026);
+/* shape c026:01E00080 (C026_W_S), 674 insns, 1 copy: C026_W_S, the scene step: colour 0x80,0,0,0, counts the frame
+   (0x1AC4); at 1 two tints and 0x1E01170 with 0x1E00B10, eight lanes at 160 and a 5x12 table of random angles (30
+   apart, the last +320); lanes drop by 5 from steps 11/21/../81; one 0x1E00BF0 spawn through 0x1E01270 at 8, 18, ..,
+   78 (the first in a one-pass loop, the rest reuse its counter); from step 29 the two tints fade */
+
+typedef struct {
+    u8 pad0[0x80];
+    s32 w80;
+    s32 w84;
+    s32 w88;
+    f32 f8C;
+    u8 pad90[0x1A44 - 0x90];
+    u8 rgba[4];
+    u8 pad1A48[8];
+    f32 f1A50;
+    u8 pad1A54[4];
+    s32 w1A58;
+    s32 w1A5C;
+    f32 f1A60;
+    u8 pad1A64[0x14];
+    f32 lane[8];
+    u8 pad1A98[0x10];
+    f32 f1AA8;
+    u8 pad1AAC[4];
+    f32 f1AB0;
+    u8 pad1AB4[2];
+    s16 h1AB6;
+    u8 pad1AB8[2];
+    s16 h1ABA;
+    u8 pad1ABC[2];
+    s16 h1ABE;
+    u8 pad1AC0[4];
+    s16 frame;
+    u8 pad1AC6[4];
+    s16 h1ACA;
+    u8 pad1ACC[2];
+    s16 h1ACE;
+    s16 h1AD0;
+    s16 tbl[5][12];
+    u8 pad1B4A[4];
+    s16 h1B4E;
+    u8 pad1B50[0x98];
+    u8 c1BE8[4];
+    u8 c1BEC[4];
+} Scene_c026_01E00080;
+
+static void func_01E00080_c026(Scene_c026_01E00080 *g) {
+    extern void c026_01E01170();
+    extern void c026_01E01270();
+    extern s32 func_01E00B10_c026();
+    extern s32 func_01E00BF0_c026();
+    extern s32 func_0019A5C8(void);
+    s32 i;
+
+    g->rgba[0] = 0x80;
+    g->rgba[1] = 0;
+    g->rgba[2] = 0;
+    g->rgba[3] = 0;
+    g->h1ACE = 20;
+    g->h1B4E = 130;
+    g->frame++;
+    i = 0;
+    if (g->frame == 1) {
+        g->h1AD0 = 0;
+        g->c1BE8[0] = 0x40;
+        g->c1BE8[1] = 0x20;
+        g->c1BE8[2] = 0x30;
+        g->c1BEC[0] = 0x80;
+        g->c1BEC[1] = 0;
+        g->c1BEC[2] = 0;
+        g->rgba[0] = 0x30;
+        g->rgba[1] = 0x30;
+        g->rgba[2] = 0x30;
+        c026_01E01170(g, func_01E00B10_c026);
+        g->rgba[0] = 0x80;
+        g->rgba[1] = 0;
+        g->rgba[2] = 0;
+        for (i = 0; i < 8; i++) {
+            g->lane[i] = 160.0f;
+        }
+        for (i = 0; i < 5; i++) {
+            g->tbl[i][0] = func_0019A5C8() % 20 + 30;
+            g->tbl[i][1] = func_0019A5C8() % 20 + 60;
+            g->tbl[i][2] = func_0019A5C8() % 20 + 90;
+            g->tbl[i][3] = func_0019A5C8() % 20 + 120;
+            g->tbl[i][4] = func_0019A5C8() % 20 + 150;
+            g->tbl[i][5] = func_0019A5C8() % 20 + 180;
+            g->tbl[i][6] = func_0019A5C8() % 20 + 210;
+            g->tbl[i][7] = func_0019A5C8() % 20 + 240;
+            g->tbl[i][8] = func_0019A5C8() % 20 + 270;
+            g->tbl[i][9] = func_0019A5C8() % 20 + 300;
+            g->tbl[i][10] = func_0019A5C8() % 20 + 330;
+            g->tbl[i][11] = func_0019A5C8() % 20 + 320;
+        }
+    }
+    if (g->frame > 10) {
+        g->lane[0] -= 5.0f;
+    }
+    if (g->frame > 20) {
+        g->lane[1] -= 5.0f;
+    }
+    if (g->frame > 30) {
+        g->lane[2] -= 5.0f;
+    }
+    if (g->frame > 40) {
+        g->lane[3] -= 5.0f;
+    }
+    if (g->frame > 50) {
+        g->lane[4] -= 5.0f;
+    }
+    if (g->frame > 60) {
+        g->lane[5] -= 5.0f;
+    }
+    if (g->frame > 70) {
+        g->lane[6] -= 5.0f;
+    }
+    if (g->frame > 80) {
+        g->lane[7] -= 5.0f;
+    }
+    if (g->frame == 8) {
+        g->f1A50 = 0.0f;
+        g->f1AB0 = 0.0f;
+        for (i = 0; i < 1; i++) {
+            g->w1A58 = 0;
+            g->w1A5C = 0;
+            g->h1ABA = 1;
+            g->f1A60 = i * 25;
+            g->h1ABE = 1;
+            g->w84 = 0;
+            g->w80 = 0;
+            g->w88 = 0;
+            g->f8C = func_0019A5C8() % 5;
+            g->rgba[3] = 0;
+            g->h1AB6 = func_0019A5C8() % 360;
+            g->h1ACA = 7;
+            c026_01E01270(g, func_01E00BF0_c026);
+        }
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame == 18) {
+        g->f1AB0 = 1.0f;
+        g->f1A50 = 0.0f;
+        g->w1A58 = 0;
+        g->w1A5C = 0;
+        g->h1ABA = 1;
+        g->f1A60 = i * 25;
+        g->h1ABE = 1;
+        g->w84 = 0;
+        g->w80 = 0;
+        g->w88 = 0;
+        g->f8C = func_0019A5C8() % 5;
+        g->rgba[3] = 0;
+        g->h1AB6 = func_0019A5C8() % 360;
+        g->h1ACA = 7;
+        c026_01E01270(g, func_01E00BF0_c026);
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame == 28) {
+        g->f1AB0 = 2.0f;
+        g->f1A50 = 0.0f;
+        g->w1A58 = 0;
+        g->w1A5C = 0;
+        g->h1ABA = 1;
+        g->f1A60 = i * 25;
+        g->h1ABE = 1;
+        g->w84 = 0;
+        g->w80 = 0;
+        g->w88 = 0;
+        g->f8C = func_0019A5C8() % 5;
+        g->rgba[3] = 0;
+        g->h1AB6 = func_0019A5C8() % 360;
+        g->h1ACA = 7;
+        c026_01E01270(g, func_01E00BF0_c026);
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame == 38) {
+        g->f1AB0 = 3.0f;
+        g->f1A50 = 0.0f;
+        g->w1A58 = 0;
+        g->w1A5C = 0;
+        g->h1ABA = 1;
+        g->f1A60 = i * 25;
+        g->h1ABE = 1;
+        g->w84 = 0;
+        g->w80 = 0;
+        g->w88 = 0;
+        g->f8C = func_0019A5C8() % 5;
+        g->rgba[3] = 0;
+        g->h1AB6 = func_0019A5C8() % 360;
+        g->h1ACA = 7;
+        c026_01E01270(g, func_01E00BF0_c026);
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame == 48) {
+        g->f1AB0 = 4.0f;
+        g->f1A50 = 0.0f;
+        g->w1A58 = 0;
+        g->w1A5C = 0;
+        g->h1ABA = 1;
+        g->f1A60 = i * 25;
+        g->h1ABE = 1;
+        g->w84 = 0;
+        g->w80 = 0;
+        g->w88 = 0;
+        g->f8C = func_0019A5C8() % 5;
+        g->rgba[3] = 0;
+        g->h1AB6 = func_0019A5C8() % 360;
+        g->h1ACA = 7;
+        c026_01E01270(g, func_01E00BF0_c026);
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame == 58) {
+        g->f1AB0 = 5.0f;
+        g->f1A50 = 0.0f;
+        g->w1A58 = 0;
+        g->w1A5C = 0;
+        g->h1ABA = 1;
+        g->f1A60 = i * 25;
+        g->h1ABE = 1;
+        g->w84 = 0;
+        g->w80 = 0;
+        g->w88 = 0;
+        g->f8C = func_0019A5C8() % 5;
+        g->rgba[3] = 0;
+        g->h1AB6 = func_0019A5C8() % 360;
+        g->h1ACA = 7;
+        c026_01E01270(g, func_01E00BF0_c026);
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame == 68) {
+        g->f1AB0 = 6.0f;
+        g->f1A50 = 0.0f;
+        g->w1A58 = 0;
+        g->w1A5C = 0;
+        g->h1ABA = 1;
+        g->f1A60 = i * 25;
+        g->h1ABE = 1;
+        g->w84 = 0;
+        g->w80 = 0;
+        g->w88 = 0;
+        g->f8C = func_0019A5C8() % 5;
+        g->rgba[3] = 0;
+        g->h1AB6 = func_0019A5C8() % 360;
+        g->h1ACA = 7;
+        c026_01E01270(g, func_01E00BF0_c026);
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame == 78) {
+        g->f1AB0 = 7.0f;
+        g->f1A50 = 0.0f;
+        g->w1A58 = 0;
+        g->w1A5C = 0;
+        g->h1ABA = 1;
+        g->f1A60 = i * 25;
+        g->h1ABE = 1;
+        g->w84 = 0;
+        g->w80 = 0;
+        g->w88 = 0;
+        g->f8C = func_0019A5C8() % 5;
+        g->rgba[3] = 0;
+        g->h1AB6 = func_0019A5C8() % 360;
+        g->h1ACA = 7;
+        c026_01E01270(g, func_01E00BF0_c026);
+        g->f1AA8 += 1.0f;
+    }
+    if (g->frame > 28) {
+        if (g->h1AD0 == 0) {
+            if (g->c1BE8[0] > 20) {
+                g->c1BE8[0]--;
+            }
+            if (g->c1BE8[2] < 0xC0) {
+                g->c1BE8[2] += 2;
+            } else {
+                g->h1AD0 = 1;
+            }
+        }
+        if (g->c1BEC[0] > 20) {
+            g->c1BEC[0] -= 2;
+        }
+        if (g->c1BEC[2] < 0xC0) {
+            g->c1BEC[2] += 2;
+        }
+    }
+}
 
 /* shape c026:01E00B10, 54 insns: fades two alphas by the game timer: up 8 to 0x80 for 13 frames, then down 16 to 0x10
    while the phase is below 6, then up 8 to 0xB0; clears the flag below phase 2 */
