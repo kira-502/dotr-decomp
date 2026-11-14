@@ -909,3 +909,7 @@ there is a source form that gives the original.
 - **An unused local can change scheduling** (b634:01E03110 keeps an unused `s32 k;`); try removing leftovers last.
 - **A beam with no `jal func_00109A70`, only `lwc1`/`swc1` x/y/z copies:** write the vector copies field by field
   instead of calling the copy helper (b108:01E03430).
+- **Temps after a call skip a0/a1 before a `jal func_001A23B0`:** the conversion is a plain `(u32)` cast (the b486
+  effect for fptoui); the reverse of the b000 tip, so try both (c401:01E00080).
+- **`li v1, 1` should come before an index load into a0:** assign the index inside the first subscript,
+  `g->slot[a = g->next].used = 1;` (c401:01E00080).
