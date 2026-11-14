@@ -1518,7 +1518,221 @@ static s32 func_01E039D0_b176(void *arg0, s32 ot, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b176", func_01E03EF0_b176);
+/* shape b176:01E03EF0 (ShFx_Anm32), 681 insns, 1 copy (-O2,p): draw a pool of animated sprites: each emitter walks
+   its kid list (s16 ids, -1 = free), moves each kid, offsets it, picks a frame from its age and mask, projects and
+   draws one flipped textured quad */
+
+typedef struct Kid_b176_01E03EF0 {
+    u8 age;
+    u8 b1;
+    u8 max;
+    u8 flags;
+    f32 pos[3];
+    f32 vel[3];
+    f32 acc[3];
+} Kid_b176_01E03EF0;
+
+typedef struct Anm_b176_01E03EF0 {
+    u8 state;
+    u8 b1;
+    u8 b2;
+    u8 mask;
+    u8 flags;
+    u8 b5[3];
+    Kid_b176_01E03EF0 *kids;
+    s16 idx[8];
+    u8 b1C;
+    u8 count;
+    u8 bB;
+    u8 tex;
+    u8 shift;
+    u8 b21[3];
+    u8 r, g, b, a;
+    f32 size;
+    f32 grow;
+    f32 off[3];
+    u8 pad3C[4];
+} Anm_b176_01E03EF0;
+
+typedef struct Xyz_b176_01E03EF0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+    u64 reg;
+} Xyz_b176_01E03EF0;
+
+typedef struct Pk_b176_01E03EF0 {
+    u16 size;
+    u16 flags;
+    s32 pad4;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b176_01E03EF0 v[4];
+    u64 pad60[3];
+} Pk_b176_01E03EF0;
+
+typedef struct Uvs_b176_01E03EF0 {
+    u8 b0[5];
+    u8 b5;
+    u8 pad6[0x12];
+} Uvs_b176_01E03EF0;
+
+typedef struct Scr_b176_01E03EF0 {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 fog : 8;
+} Scr_b176_01E03EF0;
+
+#pragma optimization_level 2
+
+static s32 func_01E03EF0_b176(Anm_b176_01E03EF0 *arg0, s32 id, s32 n) {
+    extern void func_001020B0();
+    extern void func_00101D20();
+    extern s32 func_00205440();
+    extern void func_00101BA0();
+    Anm_b176_01E03EF0 *p = arg0;
+    Kid_b176_01E03EF0 *kids = arg0->kids;
+    Kid_b176_01E03EF0 *k;
+    s32 i;
+    s32 j;
+    s32 tex;
+    s32 frame;
+    s32 am;
+    s32 mask;
+    s32 age;
+    s32 t;
+    f32 half;
+    u32 c;
+
+    f32 m[4][4];
+    Vec4f pos;
+    Uvs_b176_01E03EF0 uvs;
+    Pk_b176_01E03EF0 pk __attribute__((aligned(8)));
+    Scr_b176_01E03EF0 scr;
+    f32 depth;
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            p++;
+        }
+        if (func_00101AF0(p) == 0) {
+            continue;
+        }
+        tex = func_00202BF0(5, p->tex);
+        p->size += p->grow;
+        for (j = 0; j < p->count; j++) {
+            if (p->idx[j] == -1) {
+                continue;
+            }
+            k = &kids[p->idx[j]];
+            if (k->age < 2) {
+                p->idx[j] = -1;
+            } else {
+                p->state = 1;
+            }
+            if (func_00101B50(k) == 0) {
+                continue;
+            }
+            k->vel[0] += k->acc[0];
+            k->vel[1] += k->acc[1];
+            k->vel[2] += k->acc[2];
+            k->pos[0] += k->vel[0];
+            k->pos[1] += k->vel[1];
+            k->pos[2] += k->vel[2];
+            pos.x = k->pos[0];
+            pos.y = k->pos[1];
+            pos.z = k->pos[2];
+            func_00101BA0(p, &pos);
+            pos.x += p->off[0];
+            pos.y += p->off[1];
+            pos.z += p->off[2];
+            func_0020EB40(m);
+            ((Pk_b176_01E03EF0 *)(u32)&pk)->flags = 0x24;
+            ((Pk_b176_01E03EF0 *)(u32)&pk)->size = 9;
+            ((Pk_b176_01E03EF0 *)(u32)&pk)->regs = ((u64)4 << 32) | 0x24242421;
+            ((Pk_b176_01E03EF0 *)(u32)&pk)->pad4 = 0;
+            pk.r = p->b;
+            pk.g = p->g;
+            pk.b = p->r;
+            pk.q = 1.0f;
+            age = k->age;
+            mask = p->mask;
+            am = age & mask;
+            if (mask != 0xFF) {
+                t = (mask + 1 - am) >> p->shift;
+            } else {
+                t = (k->max - age) >> p->shift;
+            }
+            frame = t & 7;
+            if ((age >> p->shift) < 4) {
+                frame = 7 - (age >> p->shift);
+            }
+            if ((p->flags & 1) && frame == 0) {
+                k->flags = (k->flags & 0xC7) | (((func_0019A5C8() >> 4) & 3) << 4);
+            }
+            uvs.b5 = p->bB;
+            func_001020B0(&uvs, frame, 0);
+            func_00101D20(&pk, &uvs, tex);
+            pk.a = p->a;
+            if (!(p->flags & 0x40) && k->age < 8) {
+                pk.a = (p->a >> 3) * k->age;
+            }
+            if (func_00205440(&pos, m, &scr, &depth) == 0) {
+                continue;
+            }
+            if (func_00101600(&scr) == 0) {
+                continue;
+            }
+            half = p->size / (depth / 256.0f);
+            if (p->flags & 0x80) {
+                pk.v[0].z = pk.v[1].z = pk.v[2].z = pk.v[3].z = 0xFFFFFE;
+            } else {
+                pk.v[0].z = pk.v[1].z = pk.v[2].z = pk.v[3].z = scr.z;
+            }
+            switch (k->flags & 0x30) {
+            case 0x10:
+                c = scr.x;
+                pk.v[0].x = pk.v[1].x = (u32)(c - half);
+                pk.v[2].x = pk.v[3].x = (u32)(c + half);
+                c = scr.y;
+                pk.v[1].y = pk.v[3].y = (u32)(c - half);
+                pk.v[0].y = pk.v[2].y = (u32)(c + half);
+                break;
+            case 0x20:
+                c = scr.x;
+                pk.v[1].x = pk.v[3].x = (u32)(c - half);
+                pk.v[0].x = pk.v[2].x = (u32)(c + half);
+                c = scr.y;
+                pk.v[2].y = pk.v[3].y = (u32)(c - half);
+                pk.v[0].y = pk.v[1].y = (u32)(c + half);
+                break;
+            case 0x30:
+                c = scr.x;
+                pk.v[2].x = pk.v[3].x = (u32)(c - half);
+                pk.v[0].x = pk.v[1].x = (u32)(c + half);
+                c = scr.y;
+                pk.v[0].y = pk.v[2].y = (u32)(c - half);
+                pk.v[1].y = pk.v[3].y = (u32)(c + half);
+                break;
+            default:
+                c = scr.x;
+                pk.v[0].x = pk.v[2].x = (u32)(c - half);
+                pk.v[1].x = pk.v[3].x = (u32)(c + half);
+                c = scr.y;
+                pk.v[0].y = pk.v[1].y = (u32)(c - half);
+                pk.v[2].y = pk.v[3].y = (u32)(c + half);
+                break;
+            }
+            func_002075F0((s32)&pk, id, 0);
+        }
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 /* shape b176:01E049A0, 259 insns (b176_setBst): sets up the four blade sparks of blade `n` (1-based) for `mode`:
    0 keeps only their low nibble, 1 starts them (kind 0x9F, joints from the scene's joint table: odd blades 2/3,
