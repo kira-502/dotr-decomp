@@ -924,3 +924,7 @@ there is a source form that gives the original.
   (b099:01E02A90).
 - **`slti v0, t, K; bnez v0` with `n = 2` in the delay slot, then `b join; n = 1`:** flip the test,
   `if (t >= K) n = 1; else n = 2;` (b132:01E06AC0).
+- **Whether a static's float arguments load in order can depend on how neighbouring static calls are written:** search
+  name/alias combinations across nearby calls with `work/fulltry.sh` (b401:01E02FD0). Float arguments loaded
+  `$f13, $f14, a1, $f15, $f12`: declare the locals bare and assign them in reverse order before the aliased call
+  (`f32 p; f32 s; s = 18.0f; p = 0.1f;`) (b013:01E04510).
