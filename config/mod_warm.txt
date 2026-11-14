@@ -1,0 +1,9 @@
+# Code modules whose functions were compiled in a different warm state from the rest. Every module compiles warm
+# (Makefile: DK_WARM := 1), as if a runtime helper taking two doubles (a0/a1) had just been called; a module listed
+# here instead compiles at its own level (tools/cc.sh reads this file, also for dk try copies):
+#   0  cold: no helper called yet, so `(u32)`/`(s32)` casts leave a0/a1 free
+#   1  after a helper with one argument (a0 only): double warm(int a)
+# One module and level per line. Add a module only with a match that proves it, and check the whole module matches.
+b000 0
+b005 1
+b007 1

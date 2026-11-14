@@ -723,3 +723,9 @@ there is a source form that gives the original.
   extending the `v[2][4]` tip (b732:01E02610).
 - **Float argument load order can depend on the whole function:** in c531:01E01040 deleting a dead `one = 1.0f;` moved
   which of three identical calls loads `$f13` first.
+
+- **A module whose float-cast temps sit in different argument registers from its matched copies elsewhere**
+  (`$a0` or `$a1` where every other copy has `$a2`, around `jal fptoui`/`fptosi`): the module was compiled in a
+  different warm state. Try its whole module cold or after a one-argument helper by adding it to
+  `config/mod_warm.txt` (`0` or `1`); keep it only if the whole module still matches. b000 is cold, b005 and b007
+  are level 1 (LkEFF_SortLaser b000:01E03B80 / b007:01E02FC0, b005:01E003A0 / 01E027F0).

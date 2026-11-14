@@ -78,9 +78,26 @@ if [[ "$DK_GCC" == mwcps2-* ]]; then
             DK_WARM=1
         fi
     fi
+    # A code module can have its own warm level (config/mod_warm.txt): the module is the file's
+    # name under src/mod, or else (a dk try copy) the suffix of the first module function named in it.
+    WARM_SRC='double warm(double a, double b) {\n    return a * b;\n}\n'
+    MOD_WARM="$ROOT/config/mod_warm.txt"
+    if [ "$DK_WARM" = 1 ] && [ -f "$MOD_WARM" ]; then
+        MOD="$(basename "$IN_ABS" .c)"
+        case "$IN_ABS" in
+            "$ROOT"/src/mod/*) ;;
+            *) MOD="$(grep -o -m1 -E '\bfunc_[0-9A-F]{8}_[bcm][0-9]{3}\b' "$IN_ABS" | head -1 | sed 's/.*_//')" ;;
+        esac
+        LEVEL="$(awk -v m="$MOD" '{ sub(/#.*/, "") } $1 == m { print $2 }' "$MOD_WARM")"
+        case "$LEVEL" in
+            0) DK_WARM=0 ;;
+            1) WARM_SRC='double warm(int a) {\n    return a;\n}\n' ;;
+        esac
+    fi
     COMPILER=(--mwcc-path "$MW" --use-wibo --wibo-path "$(command -v wibo)")
     if [ "$DK_WARM" = 1 ]; then
-        printf 'double warm(double a, double b) {\n    return a * b;\n}\n' > "$TMP/dk_warm.c"
+        printf "$WARM_SRC" > "$TMP/dk_warm.c"
+        echo "$OUT: $MOD_WARM" >> "$TMP/deps"
         export DK_WARM_FILE="$TMP/dk_warm.c" DK_WARM_MWCC="$MW"
         COMPILER=(--mwcc-path "$ROOT/tools/cc.sh")
         echo "$OUT: $WARM_LIST" >> "$TMP/deps"  # taken off the list = compiled again
