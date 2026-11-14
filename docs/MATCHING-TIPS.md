@@ -858,3 +858,9 @@ there is a source form that gives the original.
   callee's parameters u8 types in its prototype (`(u8 *, u8, u8)`) (b262:01E00F50).
 - **Copy only the parameter that needs it** under `opt_propagation off`: copying a u16 parameter too adds an `andi`
   into a saved register (b179:01E03940 copies only `obj`).
+- **Before the parameter-copy pragma, try `s32 arg0` with a cast local and no pragma** when `g` must take s0
+  (`static s32 f(s32 arg0, s32 id) { T *g = (T *)arg0;`) (c501:01E00910, b521:01E01BD0).
+- **-O3 bitfield loads (`q.x`, `q.y`) in each other's temp registers:** read one into a u16 local first (`py = q.y;`)
+  (b015:01E008F0).
+- **A struct copied as four words where yours copies halfwords:** its padding is `s32 pad[2]`, not `u8 pad[8]`
+  (b521:01E01BD0).
