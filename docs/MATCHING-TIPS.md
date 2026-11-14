@@ -881,3 +881,7 @@ there is a source form that gives the original.
 - **One angle passed to several calls in a row, kept in a saved register and sign-extended before each call:** an s32
   local with an s16 prototype parameter (`n = o->ang + j;`); a copy sign-extended again before a divide is an s32
   local cast at the use, `(s16)b / 160` (b443:01E01EA0).
+- **A field converted before a call into a saved float register (`cvt.s.w $f21` in the jal delay slot) where yours
+  converts after:** copy a parameter (`mode`) into a local under `opt_propagation off` (c059:01E03610).
+- **`b test` where yours has an entry guard, plus loop-invariant ints spilled after the declared locals:** write the
+  bound and divisor inline (`k < n - 1`, `/ (n * 3)`), not as named locals (b134:01E011E0).
