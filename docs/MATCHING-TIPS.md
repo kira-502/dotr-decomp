@@ -801,3 +801,9 @@ there is a source form that gives the original.
 - **A scene manager's slot count in the last saved register, below the loop counter and the id parameter:** it is the
   setup loops' counter reused (`k = 0;` at the top, `k++` in the draw loop); give the step and draw loops their own
   counters (b215:01E02E50, 650 → 685).
+
+- **Screen-UV clamp block (`(0x6BF8 - x) / -16.0f - 0`, clamped to 0..640 / 0..480) with the zero and -16.0f
+  registers rotated:** the zero is a named variable kept by `#pragma opt_propagation off`. Write `z = 0.0f;` at the
+  start of each corner's block, then `s = 0x6BF8 - v.x; s /= -16.0f; s -= z;` and clamp with `if (s < z) s = z;`;
+  declare `z` before `s`/`t` and give the bottom corners their own pair. A literal `- 0.0f` folds away
+  (b490:01E01260, b504:01E01980, b361:01E01140).
