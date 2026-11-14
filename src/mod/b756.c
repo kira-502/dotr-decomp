@@ -840,7 +840,149 @@ static s32 func_01E021C0_b756(s32 arg0, Fx_b756_01E021C0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b756", func_01E02360_b756);
+/* shape b756:01E02360 (B756_OBJ_MOVE_3_), 359 insns, 1 copy: b034:01E02970's double trail band in red with radii from
+   the object: on start f34 50, 0x48 18..117, 0x4C 18, grey 0x58, both trails (0x280-byte slots at 0x4470, 20 points)
+   filled with the start point, the second row 30 degrees back and 50 up; fades in by 0x15 while tick < 7, else out by
+   5; each tick the heading turns 12 and both trails take a new point (the second 0..44 up on every tenth tick, else
+   0..4), colour blinks red, band count to 14; the camera position is fetched and copied onto itself */
+
+typedef struct {
+    Vec4f a[20];
+    Vec4f b[20];
+} Trail_b756_01E02360;
+
+typedef struct {
+    u8 pad0[0x4470];
+    Trail_b756_01E02360 slot[1];
+    u8 pad46F0[0xAF60 - 0x46F0];
+    u8 sin[4];
+} Game_b756_01E02360;
+
+typedef struct {
+    u8 pad0[6];
+    s16 n;
+    s16 h8;
+    u8 padA[0x34 - 0xA];
+    f32 f34;
+    u8 pad38[0x48 - 0x38];
+    f32 r;
+    f32 r2;
+    s16 idx;
+    s16 h52;
+    s16 t;
+    s16 h56;
+    s16 mode;
+    s16 ang;
+    u8 pad5C[4];
+    u8 col[4];
+    u8 col2[4];
+} Obj_b756_01E02360;
+
+static s32 func_01E02360_b756(Game_b756_01E02360 *g, Obj_b756_01E02360 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5F90(s32, void *);
+    extern s32 b756_01E00080();
+    Vec4f v;
+    Vec4f w;
+    f32 f;
+    f32 r;
+    Vec4f *p;
+    s16 i;
+
+    func_001F5F90(func_001F53A0(), &w);
+    w.x = w.x;
+    w.z = w.z;
+    if (o->mode == 1) {
+        f = o->f34 = 50.0f;
+        o->h8 = func_0019A5C8() % 2;
+        o->r = func_0019A5C8() % 100 + 18;
+        o->r2 = 18.0f;
+        func_001076F0(o->col2, 0x58, 0x58, 0x58);
+        v.y = 0.0f;
+        o->ang = func_0019A5C8() % 360;
+        if (v.x) {
+            r = o->r;
+        } else {
+            r = o->r;
+        }
+        v.z = r * func_00108030(g->sin, o->ang, 0);
+        v.x = r * func_00108030(g->sin, o->ang, 1);
+        for (i = 0, p = g->slot[o->idx].a; i < 19; i++, p++) {
+            p->x = v.x;
+            p->y = v.y;
+            p->z = v.z;
+        }
+        if (v.x) {
+            r = o->r2;
+        } else {
+            r = o->r2;
+        }
+        v.z = r * func_00108030(g->sin, o->ang - 30, 0);
+        v.x = r * func_00108030(g->sin, o->ang - 30, 1);
+        v.y = f;
+        for (i = 0, p = g->slot[o->idx].b; i < 19; i++, p++) {
+            p->x = v.x;
+            p->y = v.y;
+            p->z = v.z;
+        }
+        o->n = 2;
+        o->col[3] = 0;
+        o->h8 = 0;
+        o->h56 = 0;
+        o->r = 5.0f;
+        o->mode = 2;
+    }
+    if (o->t < 7) {
+        if (o->col[3] < 0x80) {
+            o->col[3] += 0x15;
+        }
+    } else if (o->col[3] > 6) {
+        o->col[3] -= 5;
+    } else {
+        o->mode = 0;
+    }
+    if (o->t % 10 == 1) {
+        f = func_0019A5C8() % 45 - 5;
+    } else {
+        f = func_0019A5C8() % 5 - 5;
+    }
+    o->ang += 12;
+    if (o->ang >= 360) {
+        o->ang %= 360;
+    }
+    v.y = 0.0f;
+    if (v.x) {
+        r = o->r;
+    } else {
+        r = o->r;
+    }
+    v.z = r * func_00108030(g->sin, o->ang, 0);
+    v.x = r * func_00108030(g->sin, o->ang, 1);
+    b756_01E00080(&g->slot[o->idx].a[19], 20, 0, &v);
+    v.y = 5.0f + f;
+    if (v.x) {
+        r = o->r2;
+    } else {
+        r = o->r2;
+    }
+    v.z = r * func_00108030(g->sin, o->ang - 30, 0);
+    v.x = r * func_00108030(g->sin, o->ang - 30, 1);
+    b756_01E00080(&g->slot[o->idx].b[19], 20, 0, &v);
+    if (o->t % 2 == 1) {
+        func_001076F0(o->col, 0x50, 0x10, 0x20);
+    } else {
+        func_001076F0(o->col, 0x40, 8, 0x10);
+    }
+    if (o->t != 0) {
+        if (o->n < 14) {
+            o->n++;
+        }
+    }
+    o->t++;
+    return 0;
+}
 
 /* shape b756:01E02900, 116 insns: a grey-green glow on the scene point: size 0 growing by 1 to 100 (by 2 more while fading);
    alpha up by 10 for 12 frames, fading by 9 once the scene timer reaches 425; second colour flickers; spins a quarter turn */
