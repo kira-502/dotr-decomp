@@ -820,3 +820,7 @@ there is a source form that gives the original.
   `Vec4f` locals only get their `.y`/`.z` addresses kept; `f32 v[4]` arrays get neither (b104:01E03E30, b129:01E04B90).
 - **Two float variables in swapped registers in the second of two similar blocks:** swap which name holds which value
   in that block (b104:01E03E30).
+
+- **No `jal` for a small static handler in a scene manager's step loop:** the compiler doesn't inline on its own; the
+  original wrote the handler's body in the `fn ==` branch (a float-pair handler in a block with its own `f32` locals)
+  (b570:01E03020, b297:01E02650).
