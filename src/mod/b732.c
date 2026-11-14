@@ -910,7 +910,183 @@ static void func_01E01AC0_b732(Ctx_b847_01E00E60 *c, Beam_b847_01E00E60 *an, Vec
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b732", func_01E02610_b732);
+/* shape b732:01E02610 (B732_W_S), 618 insns, 1 copy (-O3,p): B732_W_S, the scene step: counts the frame (0xE718);
+   keeps the joint 0/1 offset (0xE670, turned by func_00108950) and rides joint 1 with it; 0x3C/0x50/0xD2/0x80
+   openers, odd frames 142..190 the blue ring, 95..200 sparks on joint 2, 246..265 five 01E03CD0 sparks a frame on an
+   80-step ring, 250..285 two drifting glows from joint 1, white sparks on joints 3/4 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xE650 - 0x260];
+    Vec4f va;
+    Vec4f vb;
+    Vec4f d;
+    u8 padE680[0xE6E0 - 0xE680];
+    s16 j0;
+    s16 j1;
+    s16 j2;
+    s16 j3;
+    s16 j4;
+    u8 padE6EA[0xE702 - 0xE6EA];
+    s16 ang;
+    u8 padE704[2];
+    s16 ring;
+    u8 padE708[6];
+    s16 side;
+    u8 padE710[2];
+    s16 cnt;
+    s16 flag;
+    u8 padE716[2];
+    s16 t;
+    u8 padE71A[0xEA1C - 0xE71A];
+    u8 trig[1];
+} Scene_b732_01E02610;
+
+#pragma optimization_level 3
+
+static void func_01E02610_b732(Scene_b732_01E02610 *g) {
+    extern s32 b732_01E02FC0(void);
+    extern s32 b732_01E03290(void);
+    extern s32 b732_01E03430(void);
+    extern s32 b732_01E03550(void);
+    extern s32 b732_01E03650(void);
+    extern s32 b732_01E038B0(void);
+    extern s32 b732_01E039B0(void);
+    extern s32 b732_01E03BC0(void);
+    extern s32 b732_01E03CD0(void);
+    extern s32 b732_01E04320(void);
+    extern s32 b732_01E045A0(void);
+    extern s32 b732_01E04660(void);
+    extern s32 b732_01E046E0(void);
+    extern void b732_01E054B0(Scene_b732_01E02610 *, s32 (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_00108950();
+    f32 v[3][4];
+    s32 r[4];
+    s16 i;
+
+    g->t++;
+    func_001F5620(func_001F53A0(), g->j0, v[0]);
+    func_001F5620(func_001F53A0(), g->j1, v[1]);
+    v[1][0] -= v[0][0];
+    v[1][1] -= v[0][1];
+    v[1][2] -= v[0][2];
+    r[0] = 0x5A;
+    func_00108950(v[1], r, 1, g->trig);
+    g->d.x = v[1][0];
+    g->d.y = v[1][1];
+    g->d.z = v[1][2];
+    if (g->t > 0 && g->t < 0x180) {
+        for (i = 0; i < 1; i++) {
+            func_001F5620(func_001F53A0(), g->j1, &g->pos);
+            g->pos.x += g->d.x;
+            g->pos.y += g->d.y;
+            g->pos.z += g->d.z;
+        }
+    }
+    if (g->t == 0xD2) {
+        b732_01E054B0(g, b732_01E04660, 0);
+    }
+    if (g->t >= 0x8E && g->t < 0xBF && g->t % 2 == 1 && g->cnt < 0x11) {
+        g->side = g->cnt;
+        b732_01E054B0(g, b732_01E02FC0, 0);
+        g->cnt++;
+    }
+    if (g->t == 0x50) {
+        g->side = 0;
+        b732_01E054B0(g, b732_01E03430, 0);
+        g->ang = 0x5A;
+        b732_01E054B0(g, b732_01E03BC0, 0);
+        g->ang = 0;
+        b732_01E054B0(g, b732_01E03BC0, 0);
+        b732_01E054B0(g, b732_01E03550, 0);
+    }
+    if (g->t == 0x3C) {
+        func_001F5620(func_001F53A0(), g->j2, &g->pos);
+        g->ang = 0;
+        b732_01E054B0(g, b732_01E03650, 0);
+        g->ang = 0x78;
+        b732_01E054B0(g, b732_01E03650, 0);
+        g->ang = 0xF0;
+        b732_01E054B0(g, b732_01E03650, 0);
+    }
+    if (g->t >= 0x5F && g->t < 0xC9) {
+        func_001F5620(func_001F53A0(), g->j2, &g->pos);
+        g->side = 1;
+        b732_01E054B0(g, b732_01E03290, 0);
+        b732_01E054B0(g, b732_01E039B0, 0);
+    }
+    if (g->t == 0x80) {
+        b732_01E054B0(g, b732_01E046E0, 0);
+    }
+    if (g->t > 0xF5 && g->t < 0x10A) {
+        func_001F5620(func_001F53A0(), g->j1, &g->pos);
+        for (i = 0; i < 5; i++) {
+            g->side = g->ring;
+            b732_01E054B0(g, b732_01E03CD0, 0);
+            g->ring++;
+            if (g->ring >= 0x50) {
+                g->ring = 0;
+            }
+        }
+    }
+    if (g->t >= 0xFA && g->t < 0x11E) {
+        if (g->t == 0xFA) {
+            func_001F5620(func_001F53A0(), g->j1, &g->va);
+            g->va.y += 5.0f;
+        }
+        if (g->t == 0xFA) {
+            func_001F5620(func_001F53A0(), g->j1, &g->vb);
+            g->vb.y += 5.0f;
+        }
+        if (g->t == 0xFA) {
+            g->side = 0;
+            b732_01E054B0(g, b732_01E038B0, 0);
+            g->side = 1;
+            b732_01E054B0(g, b732_01E03550, 0);
+            g->side = 1;
+            func_001F5620(func_001F53A0(), g->j1, &g->pos);
+            b732_01E054B0(g, b732_01E04320, 0);
+            b732_01E054B0(g, b732_01E04320, 0);
+            b732_01E054B0(g, b732_01E04320, 0);
+            b732_01E054B0(g, b732_01E04320, 0);
+            b732_01E054B0(g, b732_01E04320, 0);
+        }
+        g->side = 0;
+        g->pos = g->va;
+        b732_01E054B0(g, b732_01E039B0, 0);
+        g->pos = g->vb;
+        b732_01E054B0(g, b732_01E039B0, 0);
+        if (g->flag) {
+            g->va.z -= 3.0f;
+        } else {
+            g->va.z += 3.0f;
+        }
+        if (g->flag) {
+            g->vb.z -= 3.0f;
+        } else {
+            g->vb.z += 3.0f;
+        }
+        g->va.x -= 2.3f;
+        g->vb.x += 2.3f;
+    }
+    if (g->t == 0xD0 || g->t == 0xDF) {
+        func_001F5620(func_001F53A0(), g->j3, &g->pos);
+        g->side = 0;
+        b732_01E054B0(g, b732_01E04320, 0);
+    }
+    if (g->t == 0xD6 || g->t == 0xF6) {
+        func_001F5620(func_001F53A0(), g->j4, &g->pos);
+        g->side = 0;
+        b732_01E054B0(g, b732_01E04320, 0);
+    }
+    if (g->t == 0x50) {
+        b732_01E054B0(g, b732_01E045A0, 0);
+    }
+}
+#pragma optimization_level reset
 
 /* shape b732:01E02FC0, 177 insns: b264:01E03200's joint-walking ring in blue (0x60/0x60/0x80 blinking 0x20/0x20/0x80 and
    0x30/0x30/0xA0) stepping fifteenths between joints 0xE6E0/0xE6E2; every third tick it drops a 0x1E03290 at its
