@@ -907,3 +907,5 @@ there is a source form that gives the original.
 - **Argument registers set in the wrong order around a static call:** cast the second argument too
   (`(Emit_b000_01E01140 *)&g->emit`) (c625:01E02DA0, b634:01E03110).
 - **An unused local can change scheduling** (b634:01E03110 keeps an unused `s32 k;`); try removing leftovers last.
+- **A beam with no `jal func_00109A70`, only `lwc1`/`swc1` x/y/z copies:** write the vector copies field by field
+  instead of calling the copy helper (b108:01E03430).
