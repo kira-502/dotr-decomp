@@ -874,3 +874,6 @@ there is a source form that gives the original.
   `functions.h` prototype (c030:01E01510, `func_00106DD0`).
 - **Float saved registers or divisions in the wrong order:** put a shared int subexpression (`40 - g->left`) in its own
   s32 local (b351:01E068F0).
+- **Loop angles copied with a fresh sign-extend into new saved registers:** there is no stepped variable in the
+  source; pass `ra + i * 18` directly and let strength reduction make the copies (b357:01E03420).
+- **The named-local constant also fixes `mul.s` operand order** (`nx = 20.0f; ... 2.0f * o->f48 * nx`) (b215:01E01A70).
