@@ -818,3 +818,5 @@ there is a source form that gives the original.
   `Vec4f` locals only get their `.y`/`.z` addresses kept; `f32 v[4]` arrays get neither (b104:01E03E30, b129:01E04B90).
 - **Two float variables in swapped registers in the second of two similar blocks:** swap which name holds which value
   in that block (b104:01E03E30).
+  The reverse case: the slot count in the lowest saved register with the step/draw counter higher means the setup
+  loops run on the step/draw counter and `n` is only `n = 0; ... n++` (b073:01E02D30, 649 → 708).
