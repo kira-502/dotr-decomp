@@ -1614,7 +1614,94 @@ static s32 func_01E03760_b499(Obj_b479_01E03490 *obj, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b499", func_01E038F0_b499);
+/* shape b499:01E038F0 (B499PAINT_RAIN), 310 insns, 1 copy: B499PAINT_RAIN: a tube along the scene's point trail
+   (ctx+0xB930, 10 points): per segment 18 quads around it, the near ring radius t and the far one t + w (w = 0.3, t
+   from 2 growing by 0.3 a segment), alpha fading by col.a / 10 */
+
+typedef struct Rgba_b499_01E038F0 {
+    u8 r, g, b, a;
+} Rgba_b499_01E038F0;
+
+typedef struct Fx_b499_01E038F0 {
+    u8 pad0[0x28];
+    Rgba_b499_01E038F0 col;
+    u8 pad2C[6];
+    s16 n;
+} Fx_b499_01E038F0;
+
+typedef struct Game_b499_01E038F0 {
+    u8 pad0[0xB930];
+    Vec4f pts[16];
+    u8 padBA30[0xBC18 - 0xBA30];
+    u8 trig[1];
+} Game_b499_01E038F0;
+
+static void func_01E038F0_b499(Game_b499_01E038F0 *g, Fx_b499_01E038F0 *o) {
+    extern void func_001092E0();
+    extern void func_001094F0();
+    extern void func_00107990();
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630();
+    extern void func_00109380();
+    extern void func_002075F0();
+    f32 depth[4];
+    Vec4f q[4];
+    u8 pk[0x90] __attribute__((aligned(8)));
+    Rgba_b499_01E038F0 col;
+    f32 t;
+    f32 w;
+    s32 k;
+    s32 j;
+    u8 *p;
+    s32 ot __attribute__((aligned(8)));
+    s16 a;
+
+    ot = (s32)func_00207500();
+    t = 2.0f;
+    w = 0.3f;
+    p = pk;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    col = o->col;
+    for (k = 0; k < 9; k++) {
+        a = 0;
+        func_00107990(p, &col, 1);
+        col.a -= o->col.a / 10;
+        func_00107990(p, &col, 2);
+        for (j = 0; j < 18; j++) {
+            q[0].x = g->pts[k].x;
+            q[0].y = g->pts[k].y;
+            q[0].z = g->pts[k].z;
+            q[1].x = g->pts[k].x;
+            q[1].y = g->pts[k].y;
+            q[1].z = g->pts[k].z;
+            q[0].y += t * func_00108030(g->trig, a, 1);
+            q[0].x += t * func_00108030(g->trig, a, 0);
+            q[0].z += t * func_00108030(g->trig, a, 1);
+            q[1].y += t * func_00108030(g->trig, a + 20, 1);
+            q[1].x += t * func_00108030(g->trig, a + 20, 0);
+            q[1].z += t * func_00108030(g->trig, a + 20, 1);
+            q[2].x = g->pts[k + 1].x;
+            q[2].y = g->pts[k + 1].y;
+            q[2].z = g->pts[k + 1].z;
+            q[3].x = g->pts[k + 1].x;
+            q[3].y = g->pts[k + 1].y;
+            q[3].z = g->pts[k + 1].z;
+            q[2].y += (t + w) * func_00108030(g->trig, a, 1);
+            q[2].x += (t + w) * func_00108030(g->trig, a, 0);
+            q[2].z += (t + w) * func_00108030(g->trig, a, 1);
+            q[3].y += (t + w) * func_00108030(g->trig, a + 20, 1);
+            q[3].x += (t + w) * func_00108030(g->trig, a + 20, 0);
+            q[3].z += (t + w) * func_00108030(g->trig, a + 20, 1);
+            if (func_00205630(q, 0x70000000, 0, p, depth)) {
+                func_00109380(p, 1);
+                func_002075F0(p, ot, 0);
+            }
+            a += 20;
+        }
+        t += 0.3f;
+    }
+}
 
 /* shape b499:01E03DD0, 103 insns: b004:01E01860 twin two-pass sprite draw (texture id 0x9B, scene texture at +0x34C) */
 
