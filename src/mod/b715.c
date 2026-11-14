@@ -1091,7 +1091,252 @@ static s32 func_01E02320_b715(Rib_b029_01E02B80 *arg0, s32 id __attribute__((ali
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b715", func_01E02E00_b715);
+/* shape b405:01E03430 (ShFx_Redeye), 669 insns, 3 copies: red-eye streak (b444:01E03C10's ShFx_Redeye2 form, no
+   segment cap): tracks the emitter's trail points in a pool, fits a spline and draws the strip, the first segment as
+   one quad from template 0, the rest as two quads from template 1 joining the previous point */
+
+typedef struct {
+    f32 x, y, z;
+} Vec3_b405_01E03430;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b405_01E03430;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b405_01E03430 xyz;
+} Vtx_b405_01E03430;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b405_01E03430 v[4];
+    u8 tail[0x20];
+} Pkt_b405_01E03430;
+
+typedef struct {
+    s32 k0, k1;
+    s32 u, w, v, h;
+} Tex_b405_01E03430;
+
+typedef struct {
+    Tex_b405_01E03430 v[2];
+} Tmpl_b405_01E03430;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    f32 x;
+    f32 y;
+    f32 z;
+} Rec_b405_01E03430;
+
+typedef struct {
+    s32 n;
+    f32 x[8];
+    f32 y[8];
+    f32 z[8];
+    Vec4f pts[28];
+    u8 pad[0xC];
+} Spl_b405_01E03430;
+
+typedef struct {
+    u8 life;
+    u8 pad1[4];
+    u8 on;
+    u8 sel;
+    u8 pad7;
+    Rec_b405_01E03430 *pool;
+    s16 ids[9];
+    u8 kind;
+    u8 n;
+    u8 texid;
+    u8 sel0;
+    u8 sel1;
+    u8 maxseg;
+    u8 pad24[4];
+    f32 th;
+    f32 width;
+    f32 depth;
+    u8 b, g, r, a;
+    Vec3_b405_01E03430 off;
+    u8 pad44[4];
+} Emit_b405_01E03430;
+
+static s32 func_01E02E00_b715(void *arg0, s32 ot, s32 n) {
+    extern void func_00101BA0(void *, void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00101B40(void *, s32, s32);
+    extern s32 func_00101C30(void *, s32, s32);
+    extern void func_00101EE0(void *, void *, void *);
+    Emit_b405_01E03430 *e = arg0;
+    Rec_b405_01E03430 *pool = e->pool;
+    f32 mat[16];
+    Spl_b405_01E03430 spl;
+    Vec4f pos;
+    extern Tmpl_b405_01E03430 D_01E05A40_b715;
+    Tmpl_b405_01E03430 tmpl = D_01E05A40_b715;
+    Vec4f pos2;
+    Vec4f dir;
+    Vec4f cam;
+    Xyz_b405_01E03430 scr;
+    Pkt_b405_01E03430 pkt __attribute__((aligned(8)));
+    f32 depth;
+    s32 i;
+    s32 idx;
+    s32 k;
+    void *tex;
+    s32 m;
+    Rec_b405_01E03430 *r;
+    f32 a;
+    f32 hw;
+    f32 as;
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        e->on = 1;
+        e->sel = e->sel0;
+        func_00101BA0(e, &pos);
+        pos.x += e->off.x;
+        pos.y += e->off.y;
+        pos.z += e->off.z;
+        cam = *(Vec4f *)func_001FAD10(0);
+        e->sel = e->sel1;
+        func_00101BA0(e, &pos2);
+        dir.x = pos.x - pos2.x;
+        dir.y = pos.y - pos2.y;
+        dir.z = pos.z - pos2.z;
+        func_0020D070(&dir.x);
+        func_0020D070(&cam.x);
+        if (func_0020D1A0(&dir.x, &cam.x) > e->th) {
+            for (k = 0; k < e->n; k++) {
+                if (e->ids[k] >= 0) {
+                    (r = &pool[e->ids[k]])->life = 0;
+                    e->ids[k] = -1;
+                }
+            }
+            continue;
+        }
+        func_0020EB40(mat);
+        for (k = e->n; k > 0; k--) {
+            if (e->ids[k - 1] >= 0) {
+                (r = &pool[e->ids[k - 1]])->life = e->life;
+            }
+            e->ids[k] = e->ids[k - 1];
+        }
+        if (e->ids[e->n] >= 0) {
+            pool[e->ids[e->n]].life = 0;
+            e->ids[e->n] = -1;
+        }
+        if (e->life == 0) {
+            continue;
+        }
+        idx = func_00101C30(pool, 0x10, e->kind);
+        if (idx >= 0) {
+            e->ids[0] = idx;
+            r = &pool[e->ids[0]];
+            if (func_00205440(&pos, mat, &scr, &depth)) {
+                func_00101B40(r, e->life, 0);
+                r->x = scr.x;
+                r->y = scr.y;
+                r->z = func_0017B340(scr.z);
+                e->depth = depth;
+            } else {
+                e->ids[0] = -1;
+            }
+        } else {
+            e->ids[0] = -1;
+        }
+        spl.n = 0;
+        for (k = 0; k < e->n; k++) {
+            if (e->ids[k] >= 0) {
+                r = &pool[e->ids[k]];
+                spl.x[spl.n] = r->x;
+                spl.y[spl.n] = r->y;
+                spl.z[spl.n] = 0.0f;
+                if (spl.n != 0) {
+                    if (func_001A6C60((spl.x[spl.n - 1] - r->x) * (spl.x[spl.n - 1] - r->x) +
+                                      (spl.y[spl.n - 1] - r->y) * (spl.y[spl.n - 1] - r->y)) > 32.0f) {
+                        spl.n++;
+                    }
+                } else {
+                    spl.n++;
+                }
+            }
+        }
+        if (spl.n < 3) {
+            m = 2;
+            spl.pts[0].x = spl.x[0];
+            spl.pts[0].y = spl.y[0];
+            spl.pts[0].z = spl.z[0];
+        } else {
+            func_00102550(&spl);
+            m = (spl.n - 1) * 4;
+        }
+        tex = (void *)func_00202BF0(5, e->texid);
+        ((Pkt_b405_01E03430 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b405_01E03430 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b405_01E03430 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b405_01E03430 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->r;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->g;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->b;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        if (e->life < 8) {
+            a = (f32)e->life * (f32)(u32)e->a / 8.0f;
+        } else {
+            a = (u32)e->a;
+        }
+        as = a / m;
+        pkt.v[0].xyz.z = pkt.v[2].xyz.z = pkt.v[1].xyz.z = pkt.v[3].xyz.z = 0xFFFFFF;
+        hw = e->width / (e->depth / 256.0f);
+        for (k = 0; k < m - 1; k++) {
+            if (k == 0) {
+                func_00101EE0(&pkt, &tmpl.v[0], tex);
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = (u32)(spl.pts[k].x - hw);
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = (u32)(spl.pts[k].x + hw);
+                pkt.v[0].xyz.y = pkt.v[1].xyz.y = (u32)(spl.pts[k].y - hw);
+                pkt.v[2].xyz.y = pkt.v[3].xyz.y = (u32)(spl.pts[k].y + hw);
+                pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = (u32)(as * (f32)(m - k));
+                func_002075F0((s32)&pkt, ot, 0);
+            } else {
+                func_00101EE0(&pkt, &tmpl.v[1], tex);
+                pkt.v[0].a = pkt.v[2].a = (u32)(as * (f32)(m - k));
+                pkt.v[1].a = pkt.v[3].a = (u32)(as * (f32)(m - k - 1));
+                pkt.v[0].xyz.y = (u32)(scr.y - hw);
+                pkt.v[2].xyz.y = (u32)(scr.y + hw);
+                pkt.v[1].xyz.y = (u32)(spl.pts[k].y - hw);
+                pkt.v[3].xyz.y = (u32)(spl.pts[k].y + hw);
+                pkt.v[0].xyz.x = pkt.v[2].xyz.x = scr.x;
+                pkt.v[1].xyz.x = pkt.v[3].xyz.x = (u32)spl.pts[k].x;
+                func_002075F0((s32)&pkt, ot, 0);
+                pkt.v[0].xyz.x = (u32)(scr.x - hw);
+                pkt.v[2].xyz.x = (u32)(scr.x + hw);
+                pkt.v[1].xyz.x = (u32)(spl.pts[k].x - hw);
+                pkt.v[3].xyz.x = (u32)(spl.pts[k].x + hw);
+                pkt.v[0].xyz.y = pkt.v[2].xyz.y = scr.y;
+                pkt.v[1].xyz.y = pkt.v[3].xyz.y = (u32)spl.pts[k].y;
+                func_002075F0((s32)&pkt, ot, 0);
+            }
+            scr.x = (u32)spl.pts[k].x;
+            scr.y = (u32)spl.pts[k].y;
+        }
+    }
+    return 1;
+}
 
 /* shape b172:01E012E0 (ShFx_Afx04), 897 insns, 20 copies: draws n flare entities (0x38 bytes each): moves
    each by its velocity, projects a point 5 units above it (towards the camera, flipped by flags & 1) for the depth
