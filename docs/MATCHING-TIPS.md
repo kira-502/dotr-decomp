@@ -772,3 +772,5 @@ there is a source form that gives the original.
 - **`jal func_0017B380` / `func_001A2918` / `func_001A3090` triples with `lui 0x3FE0; dsll32`:** double maths on a u8,
   `c[k] *= 0.5;` (MWCC calls `_d_utod` by name; it is in config/linker_syms.txt). `c = c * 0.5` keeps the constant in
   a saved register instead (c056:01E015A0).
+  Contrast: an -O2 clamp `li n, K; b L; nop; L:` (a branch straight to the next instruction) is the plain
+  `n = n > K ? K : n;`; the if/else form gives an extra `nop` there (b462:01E04230).

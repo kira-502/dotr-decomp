@@ -120,7 +120,6 @@ b444:01E00E80	99.2%	an earlier try got this far
 b455:01E02150	99.2%	an earlier try got this far
 b455:01E03990	94.5%	an earlier try got this far
 b457:01E011B0	99.2%	an earlier try got this far
-b462:01E04230	99%	an earlier try got this far
 b463:01E01C50	40%	an earlier try got this far
 b498:01E01DB0	62% (218/352)	hard: first draft; the original keeps &v.y in s0 across calls (v.y via pointer) and fills the trails through a base pointer; b120:01E021D0 looks like the same shape (best draft: drafts/mod/b498_01E01DB0.c)
 b499:01E038F0	49%	hard: RAIN tube, constant twin-ish of b130:01E01E60 (9 segments, /10, t from 2 by 0.3): original recomputes every loop invariant (trig address, t+0.3f); `opt_loop_invariants off` segfaults mwcc on it (best draft: drafts/mod/b499_01E038F0.c)
