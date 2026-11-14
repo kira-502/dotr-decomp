@@ -778,3 +778,7 @@ there is a source form that gives the original.
 - **A setup loop that writes past an array into the fields after it** (`for (k = 0; k < 30; k++) size[k] = 40.0f;`
   over a 20-entry array and the joint ids behind it): model the overlap with a union in the struct,
   `union { f32 size[30]; struct { u8 pad[0x60]; s16 jA, ...; } j; }`, so no index is out of bounds (b425:01E020C0).
+
+- **A value used both in an argument and as a `switch` selector, its register swapped with a strength-reduced temp:**
+  write the expression in both places (`(u8)(k % 3 * 2 + (k >> 2) * 4)` and `switch (k >> 2)`) and let the compiler
+  share it; a named local keeps the swap (b078:01E05C90).
