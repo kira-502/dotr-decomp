@@ -901,6 +901,271 @@ static s32 func_01E030C0_b241(void *arg0, s32 arg1, s32 n) {
 
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b241", func_01E03580_b241);
+/* shape b712:01E01560 (ShFx_Obr), 684 insns, 2 copies (-O1,p): draws n ShFx_Obr arcs (0x4C-byte emitters): a ring of
+   up to 9 points between two joints swept in up to 9 rotated rows, each visible cell a textured quad with UVs from
+   the texture frame */
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 b5;
+    u8 pad06[2];
+    s32 w[4];
+} Tex_b712_01E01560;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b712_01E01560;
+
+typedef struct {
+    u16 u : 14;
+    u16 u_pad : 2;
+    u16 v : 14;
+    u16 v_pad : 2;
+} Uv_b712_01E01560;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+} Hdr_b712_01E01560;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 uv;
+    Xyz_b712_01E01560 xyz;
+} Vtx_b712_01E01560;
+
+typedef struct {
+    Hdr_b712_01E01560 h;
+    Vtx_b712_01E01560 v[4];
+    u8 tail[0x20];
+} Pkt_b712_01E01560;
+
+typedef struct {
+    u8 cur;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 joint;
+    u8 pad7;
+    u8 tex;
+    u8 frame;
+    u8 bA;
+    u8 ncol;
+    u8 nrow;
+    u8 jA;
+    u8 jB;
+    u8 bF;
+    f32 scale;
+    f32 astep;
+    f32 rstep;
+    f32 rot;
+    f32 drot;
+    f32 ang;
+    f32 dang;
+    f32 len;
+    f32 pos[3];
+    s32 dir[4];
+} Obj_b712_01E01560;
+
+#pragma optimization_level 1
+
+static s32 func_01E03580_b241(Obj_b712_01E01560 *obj, s32 ot, s32 n) {
+    extern Tex_b712_01E01560 D_01E05400_b241[];
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_00101BA0(void *, void *);
+    extern void func_00101940(void *, void *);
+    extern f32 func_0020D0E0(void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_002086D0(void *, u64);
+    extern void func_001020B0();
+    extern void func_0020C630(void *, void *);
+    extern void func_0020CDD0(void *, void *, void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_002075F0(void *, s32, s32);
+    f32 mat2[16];
+    f32 mat[16];
+    Tex_b712_01E01560 t;
+    Vec4f pts[9];
+    Xyz_b712_01E01560 row[9];
+    s32 vis[9];
+    f32 dep[9];
+    f32 rm[16];
+    s32 rot[4];
+    Vec4f v;
+    Vec4f d;
+    Vec4f a;
+    Vec4f b;
+    Pkt_b712_01E01560 pkt;
+    Xyz_b712_01E01560 prev;
+    f32 depth;
+    Obj_b712_01E01560 *o;
+    s32 i;
+    s32 h;
+    s32 pon;
+    s32 on;
+    s32 k;
+    s32 j;
+    s32 ncol;
+    s32 nrow;
+    f32 pdep;
+    f32 ang;
+    f32 an;
+    f32 du;
+    f32 dv;
+    f32 v0;
+    f32 u0;
+    f32 u1;
+    f32 u2;
+    f32 v1;
+    f32 v2;
+
+    o = obj;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        if (o->flags & 2) {
+            h = func_00202BF0(5, o->tex);
+        } else {
+            h = func_00202BF0(D_01E05400_b241[o->tex].id, D_01E05400_b241[o->tex].kind);
+        }
+        o->ang += o->dang;
+        o->rot += o->drot;
+        ang = 90.0f - o->ang;
+        if (ang < 0.0f) {
+            ang += 360.0f;
+        }
+        if (o->ncol >= 9 || o->nrow >= 9) {
+            continue;
+        }
+        ncol = o->ncol;
+        nrow = o->nrow;
+        if (o->flags & 1) {
+            o->b5 = 1;
+            o->joint = o->jA;
+            func_00101BA0(o, &a);
+            o->joint = o->jB;
+            func_00101BA0(o, &b);
+            d.x = b.x - a.x;
+            d.y = b.y - a.y;
+            d.z = b.z - a.z;
+            func_00101940(&d, o->dir);
+            d.x *= o->scale;
+            d.y *= o->scale;
+            d.z *= o->scale;
+            o->len = func_0020D0E0(&d);
+            o->pos[0] = a.x;
+            o->pos[1] = a.y;
+            o->pos[2] = a.z;
+        }
+        d.x = o->pos[0];
+        d.y = o->pos[1];
+        d.z = o->pos[2];
+        func_0020EB40(mat);
+        func_0020C940(mat2, NULL, o->dir, &d);
+        func_0020BC00(mat, mat2);
+        for (j = 0; j < ncol + 1; j++) {
+            an = ang + o->astep * j;
+            if (!(an <= 90.0f) && an < 180.0f) {
+                an = 90.0f;
+            }
+            pts[j].x = o->len * func_001A6898(3.1415927f * an / 180.0f);
+            pts[j].y = o->len * func_001A6A88(3.1415927f * an / 180.0f);
+            pts[j].z = 0.0f;
+            if (an == 90.0f) {
+                ncol = j;
+                break;
+            }
+        }
+        ((Hdr_b712_01E01560 *)(s32)&pkt)->count = 0x34;
+        ((Hdr_b712_01E01560 *)(s32)&pkt)->tag = 0xC;
+        ((Hdr_b712_01E01560 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Hdr_b712_01E01560 *)(s32)&pkt)->pad = 0;
+        func_002086D0(&pkt, 0x48);
+        if (o->cur < 0x10) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = o->cur * 8;
+        } else {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = 0x80;
+        }
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g =
+            pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = 0x80;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        if (o->flags & 4) {
+            o->frame = (o->frame + 1) & 7;
+        }
+        t.b5 = o->bA;
+        func_001020B0(&t, o->frame, o->bF);
+        du = 16.0f * ((f32)(t.w[3] - t.w[2]) / (f32)o->ncol);
+        dv = 16.0f * ((f32)(t.w[1] - t.w[0]) / (f32)o->nrow);
+        v0 = 16.0f * (f32)t.w[0];
+        u0 = 16.0f * (f32)t.w[2];
+        rot[2] = 0;
+        rot[0] = 0;
+        for (k = 0; k < nrow + 1; k++) {
+            rot[1] = (s32)(182.04f * (o->rot + k * o->rstep));
+            func_0020C630(rm, rot);
+            for (j = 0; j < ncol + 1; j++) {
+                func_0020CDD0(&v, rm, &pts[j]);
+                on = func_00205440(&v, mat, &pkt.v[0].xyz, &depth);
+                while (k != 0 && j != 0) {
+                    if (on == 0 || pon == 0 || vis[j] == 0 || vis[j - 1] == 0) {
+                        break;
+                    }
+                    u1 = u0 + (j - 1) * du;
+                    u2 = u0 + j * du;
+                    v1 = v0 + (k - 1) * dv;
+                    v2 = v0 + k * dv;
+                    ((Hdr_b712_01E01560 *)(s32)&pkt)->count |= 0x800;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[0].uv)->u = (u32)v2;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[0].uv)->v = (u32)u2;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[1].uv)->u = (u32)v1;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[1].uv)->v = (u32)u2;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[2].uv)->u = (u32)v2;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[2].uv)->v = (u32)u1;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[3].uv)->u = (u32)v1;
+                    ((Uv_b712_01E01560 *)(s32)&pkt.v[3].uv)->v = (u32)u1;
+                    func_00208700(&pkt, h, 1);
+                    pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+                    pkt.v[1].xyz = row[j];
+                    pkt.v[2].xyz = prev;
+                    pkt.v[3].xyz = row[j - 1];
+                    func_002075F0(&pkt, ot, (u32)((depth + pdep + dep[j] + dep[j - 1]) / 4.0f));
+                    break;
+                }
+                if (j != 0) {
+                    row[j - 1] = prev;
+                    dep[j - 1] = pdep;
+                    vis[j - 1] = pon;
+                }
+                prev = pkt.v[0].xyz;
+                pdep = depth;
+                pon = on;
+            }
+            row[j - 1] = pkt.v[0].xyz;
+            dep[j - 1] = depth;
+            vis[j - 1] = on;
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
+
 
 INCLUDE_ASM("asm/nonmatchings/mod/b241", func_01E04030_b241);
