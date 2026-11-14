@@ -892,3 +892,7 @@ there is a source form that gives the original.
   receives; take the packet type from a matched sibling (c605:01E028C0 from c602:01E01620).
 - **A stack-buffer address hoisted into a saved register for a call in a loop:** the argument is a member at a non-zero
   offset of a larger stack struct, often merged with a neighbouring buffer (`&pk` and `pk.xyz`) (b506:01E01BA0).
+- **A `?:` clamp's spill slot after a later loop counter's:** drop the later loop's variable and reuse an earlier
+  loop's counter (b379:01E046B0).
+- **A float constant stored as an int `sw` and also kept in a saved float register:** a chained assignment,
+  `f = o->f34 = 50.0f;` (b756:01E02360).
