@@ -600,8 +600,8 @@ there is a source form that gives the original.
   while the draw loop matches:** a counter used in only one loop gets its register before the strength-reduced
   pointer; one also used by the setup loops gets it after. Run the setup, step and draw loops on one s16 counter. If the
   slot count then swaps with that counter, zero the counter at the top before the count (`k = 0; m = 0;`): among
-  multi-loop variables the one mentioned first gets the lower register. Declaration order does nothing
-  (b594:01E02EC0, b494:01E013C0, b281:01E02440). When the count is itself a setup counter, put the step and draw loops
+  multi-loop variables the one mentioned first gets the lower register. Declaration order did nothing there
+  (it did matter in b060:01E013C0, whose step counter had to be declared first) (b594:01E02EC0, b494:01E013C0, b281:01E02440). When the count is itself a setup counter, put the step and draw loops
   on the setup's other counter and zero that first (`a = 0; m = 0; k = 0;`) (b215:01E02E50). Repro in work/wall2/.
   The reverse case: the slot count in the lowest saved register with the step/draw counter higher means the setup
   loops run on the step/draw counter and `n` is only `n = 0; ... n++` (b073:01E02D30, 649 → 708).
@@ -864,3 +864,7 @@ there is a source form that gives the original.
   (b015:01E008F0).
 - **A struct copied as four words where yours copies halfwords:** its padding is `s32 pad[2]`, not `u8 pad[8]`
   (b521:01E01BD0).
+- **Arc-band draw (`IWMagicCircleGT4_*`) with the flags `andi` between the span's `dsll32`/`dsra32`:** test
+  `(flags & 0xF)` inline in the loop, not through a mode local; write `t = span + a` (c061:01E01100, b390:01E015E0).
+- **A missing `nop` after an `mtc1` in an if/else that sets a float, with a stray `addiu; sw` at the join:** reuse an
+  existing float temp for the value instead of a new local (b115:01E02A10).
