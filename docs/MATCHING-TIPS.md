@@ -764,3 +764,7 @@ there is a source form that gives the original.
 - **A `?:` clamp's variable spilled after every declared local, whatever the declaration order:** the `?:` makes it a
   compiler temp. Write `if (n > 36) { n = 36; } else { (void)n; }` (the else arm keeps the original's `b`); its slot then
   follows declaration order (b761:01E05F70).
+
+- **A difference kept in a saved register across a call (`m - k` for an alpha ramp):** write it inline in both
+  statements, `(f32)(m - k)` and `(f32)(m - k - 1)`; a local `d = m - k` swaps its register with a strength-reduced
+  pointer (b405:01E03430).

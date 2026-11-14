@@ -111,7 +111,6 @@ b381:01E01A80	99.2%	an earlier try got this far
 b390:01E015E0	67% (212/316)	hard: in-file; s-register colouring + 8 insns short (best draft: drafts/mod/b390_01E015E0.c)
 b404:01E01A80	99.2%	an earlier try got this far
 b405:01E008B0	99.2%	an earlier try got this far
-b405:01E03430	99%	an earlier try got this far
 b407:01E019E0	40%	an earlier try got this far
 b408:01E011B0	99.2%	an earlier try got this far
 b423:01E02450	77%	an earlier try got this far
@@ -151,10 +150,8 @@ b621:01E02460	77%	an earlier try got this far
 b706:01E02260	99.2%	an earlier try got this far
 b706:01E050E0	81%	hard: frame 0x1D0 vs 0x1B0 (two unknown 16-byte stack slots after the packet); xyz[] copied through address regs (sp+0x110..0x128); f20/f22 (tw vs u0) and s2/s3 (tex vs k) swapped (best draft: drafts/mod/b706_01E050E0.c)
 b710:01E00440	40%	an earlier try got this far
-b715:01E02E00	99%	an earlier try got this far
 b716:01E003A0	99.2%	an earlier try got this far
 b716:01E016F0	94.5%	an earlier try got this far
-b716:01E02810	99%	an earlier try got this far
 b717:01E03B84		hard: not a function: stray epilogue at text end (also b538:01E01380, b723:01E05C80, c030:01E02600)
 b743:01E01C70	96%	hard: 2nd spawn count `n = clock < 100 ? 2 : 2`: original sign-extends each arm then again into n (arms are s16 values, not constants); `(s16)(g->clock*0+2)` reaches 98% (best draft: drafts/mod/b743_01E01C70.c)
 b756:01E02360		hard: OBJ_MOVE_3: self-copies (w.x = w.x) and `c.eq.s v.x, 0` with both arms loading the same field (macro-like ternaries); not attempted past reading
