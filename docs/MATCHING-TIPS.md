@@ -888,3 +888,7 @@ there is a source form that gives the original.
 - **Look for twins by shape comment too** (`grep -rn "shape .*burst" src/mod`): b108:01E03130 was b034:01E05A90's form.
 - **A strength-reduced counter and a pointer local swapping saved registers:** drop the pointer locals and write the
   address inline at each call (`pa + (k - 1)`) (b500:01E047C0).
+- **A "dead" struct copy into the stack before a draw call (never read back):** it is the tail of the packet the call
+  receives; take the packet type from a matched sibling (c605:01E028C0 from c602:01E01620).
+- **A stack-buffer address hoisted into a saved register for a call in a loop:** the argument is a member at a non-zero
+  offset of a larger stack struct, often merged with a neighbouring buffer (`&pk` and `pk.xyz`) (b506:01E01BA0).
