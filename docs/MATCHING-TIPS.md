@@ -714,3 +714,12 @@ there is a source form that gives the original.
 - **`f(p, 0.0f, 0.0f)` with `mov.s $f13, $f12`:** `{ f32 r = 0.0f; f(p, r, r); }` (c548:01E02720).
 - **`rand() % 0x10000` as `andi` plus a dead `addiu x, x, 0`:** the signed modulo; keep the variable `s32` (a `u16`
   adds an `andi`) (b103, b540).
+
+- **A value loaded before a struct-copy loop (`lw $a3` + `nop` ahead of `lq`/`sq`) and stored after it:** copy it to
+  its own local first (`t = tex; ... g->pts.tex = t;`); reusing a loop counter disturbs the loop (c512:01E015C0).
+- **A setup loop's counter coloured last (after the strength-reduced pointers):** share the first loop's counter `i`
+  (the reverse of the c548 tip; try both) (c512:01E015C0).
+- **Two stack vectors with `.y`/`.z` addresses in saved registers and a frame 0x20 bigger than yours:** `f32 v[3][4]`,
+  extending the `v[2][4]` tip (b732:01E02610).
+- **Float argument load order can depend on the whole function:** in c531:01E01040 deleting a dead `one = 1.0f;` moved
+  which of three identical calls loads `$f13` first.
