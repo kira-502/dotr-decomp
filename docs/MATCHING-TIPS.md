@@ -603,6 +603,8 @@ there is a source form that gives the original.
   multi-loop variables the one mentioned first gets the lower register. Declaration order does nothing
   (b594:01E02EC0, b494:01E013C0, b281:01E02440). When the count is itself a setup counter, put the step and draw loops
   on the setup's other counter and zero that first (`a = 0; m = 0; k = 0;`) (b215:01E02E50). Repro in work/wall2/.
+  The reverse case: the slot count in the lowest saved register with the step/draw counter higher means the setup
+  loops run on the step/draw counter and `n` is only `n = 0; ... n++` (b073:01E02D30, 649 → 708).
 - **An -O4 range test gives `slti $v0` + `bnez $v0` where the original has `slti $at`, and `> K-1` alone does not
   fix it:** nest the two bounds, `if (x > K-1) { if (x < L) ... }`, instead of `&&`. (b378:01E00970)
 - **A range test's first compare at -O3 gives `slti $v1, t, K` + `bnez` where yours has `slti $at`:** write the low
@@ -818,5 +820,3 @@ there is a source form that gives the original.
   `Vec4f` locals only get their `.y`/`.z` addresses kept; `f32 v[4]` arrays get neither (b104:01E03E30, b129:01E04B90).
 - **Two float variables in swapped registers in the second of two similar blocks:** swap which name holds which value
   in that block (b104:01E03E30).
-  The reverse case: the slot count in the lowest saved register with the step/draw counter higher means the setup
-  loops run on the step/draw counter and `n` is only `n = 0; ... n++` (b073:01E02D30, 649 → 708).
