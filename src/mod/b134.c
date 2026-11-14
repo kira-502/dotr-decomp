@@ -393,7 +393,123 @@ static void func_01E00DE0_b134(Obj_b134_01E00DE0 *o, Ring_b134_01E00DE0 *s, s32 
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b134", func_01E011E0_b134);
+/* shape b134:01E011E0 (IWTusk1), 315 insns, 1 copy: a tusk along one point trail: each segment is 4 spline
+   steps (module curve, shape b018:01E00EE0), each drawn as two crossed quads of width h38 / 10 (one widened in z, one
+   in x), scaled, the colour's alpha falling by a / (3 n) per step; the first segment runs on local copies (first
+   point doubled); b018:01E01760's form (ab[0] direct, ab[1] through named temps), n - 1 and n * 3 written inline, pts
+   aligned(16) */
+
+typedef struct {
+    u8 r, g, b, a;
+} C4_b134_01E011E0;
+
+typedef struct {
+    u8 pad00[6];
+    s16 n;
+    u8 pad08[0x20];
+    C4_b134_01E011E0 col;
+    u8 pad2C[0xC];
+    s16 width;
+} Tusk_b134_01E011E0;
+
+static void func_01E011E0_b134(void *o, Tusk_b134_01E011E0 *s, Vec_b018_01E00EE0 *pts __attribute__((aligned(16))), Vec_b018_01E00EE0 *scale) {
+    extern void func_001094F0(void *);
+    extern void func_00107990(void *, void *, s32);
+    extern void func_001092E0(void *, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    Vec_b018_01E00EE0 sc;
+    Vec_b018_01E00EE0 ab[2];
+    Vec_b018_01E00EE0 a4[4];
+    Vec_b018_01E00EE0 q[4];
+    f32 depth[4];
+    Vec_b018_01E00EE0 t0;
+    Vec_b018_01E00EE0 t1;
+    u8 pkt[0x94] __attribute__((aligned(8)));
+    C4_b134_01E011E0 c;
+    s32 k;
+    s32 j;
+    Vec_b018_01E00EE0 *pq;
+    s32 m;
+    u8 *p;
+    s16 n;
+    s32 ot;
+    f32 t;
+    f32 w;
+    s32 a;
+
+    sc = *scale;
+    w = s->width;
+    ot = (s32)func_00207500();
+    n = s->n;
+    w /= 10.0f;
+    p = pkt;
+    func_001094F0(p);
+    func_00107990(p, &s->col, 0);
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    c = s->col;
+    a4[0] = pts[0];
+    a4[1] = pts[0];
+    a4[2] = pts[1];
+    a4[3] = pts[2];
+    for (k = 0; k < n - 1; k++) {
+        t = 0.0f;
+        pq = pts + ((s16)k - 1);
+        for (j = 0; j < 4; j++) {
+            if (k != 0) {
+                ab[0] = func_01E003E0_b134(pq, 0, t);
+                t += 0.25f;
+                t0 = func_01E003E0_b134(pq, 0, t);
+                ab[1] = t0;
+            } else {
+                ab[0] = func_01E003E0_b134(a4, 0, t);
+                t += 0.25f;
+                t1 = func_01E003E0_b134(a4, 0, t);
+                ab[1] = t1;
+            }
+            func_00107990(p, &c, 1);
+            a = c.a - (s16)(s->col.a / (n * 3));
+            if (a <= 0) {
+                c.a = 0;
+            } else {
+                c.a = a;
+            }
+            func_00107990(p, &c, 2);
+            for (m = 0; m < 2; m++) {
+                q[0].x = ab[0].x;
+                q[0].y = ab[0].y;
+                q[0].z = ab[0].z;
+                q[1].x = ab[0].x;
+                q[1].y = ab[0].y;
+                q[1].z = ab[0].z;
+                q[2].x = ab[1].x;
+                q[2].y = ab[1].y;
+                q[2].z = ab[1].z;
+                q[3].x = ab[1].x;
+                q[3].y = ab[1].y;
+                q[3].z = ab[1].z;
+                func_00107070(q, 0, sc.x);
+                func_00107070(q, 1, sc.y);
+                func_00107070(q, 2, sc.z);
+                if (m == 0) {
+                    q[0].z += w;
+                    q[2].z += w;
+                    q[1].z += w;
+                    q[3].z += w;
+                } else if (m == 1) {
+                    q[0].x += w;
+                    q[2].x += w;
+                    q[1].x -= w;
+                    q[3].x -= w;
+                }
+                if (func_00205630(q, 0x70000000, NULL, p, depth) != 0) {
+                    func_002075F0(p, ot, func_001A23B0(depth[0]));
+                }
+            }
+        }
+    }
+}
 
 /* shape b134:01E016D0, 304 insns: the scene script by frame (ctx+0x3026): 155 one 0x1E02750, 180 one 0x1E024D0,
    179/201, 185/205 and 191 a 0x1E02080 of kind 0/1/2, 186-187 a point at joint 0x300A (y from the model) as kind 1;
