@@ -885,3 +885,6 @@ there is a source form that gives the original.
   converts after:** copy a parameter (`mode`) into a local under `opt_propagation off` (c059:01E03610).
 - **`b test` where yours has an entry guard, plus loop-invariant ints spilled after the declared locals:** write the
   bound and divisor inline (`k < n - 1`, `/ (n * 3)`), not as named locals (b134:01E011E0).
+- **Look for twins by shape comment too** (`grep -rn "shape .*burst" src/mod`): b108:01E03130 was b034:01E05A90's form.
+- **A strength-reduced counter and a pointer local swapping saved registers:** drop the pointer locals and write the
+  address inline at each call (`pa + (k - 1)`) (b500:01E047C0).
