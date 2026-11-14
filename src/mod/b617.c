@@ -1197,7 +1197,234 @@ static s32 func_01E04B20_b617(Beam_b617_01E04B20 *o, s32 target, s32 count) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b617", func_01E05340_b617);
+/* shape b617:01E05340 (ShFx_Flear02), 634 insns, 1 copy: ShFx_Flear02, the screen-space ShFx_Flear01 (b040:01E03440's
+   body without the projection): moves each live flare, its centre is the position cast straight to screen x/y at
+   depth 0xFFFFFE; fan of segs*4 triangles centre to edge colour, and unless flag 1 one textured edge quad per slice,
+   widened across the slice's steeper axis */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b617_01E05340;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+} Hdr_b617_01E05340;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Xyz_b617_01E05340 xyz;
+} Vtx1_b617_01E05340;
+
+typedef struct {
+    Hdr_b617_01E05340 h;
+    Vtx1_b617_01E05340 v[3];
+    u8 tail[8];
+} Pkt1_b617_01E05340;
+
+typedef struct {
+    u64 st;
+    Xyz_b617_01E05340 xyz;
+} Vtx2_b617_01E05340;
+
+typedef struct {
+    Hdr_b617_01E05340 h;
+    u8 r, g, b, a;
+    f32 q;
+    Vtx2_b617_01E05340 v[4];
+    u8 tail[0x20];
+} Pkt2_b617_01E05340;
+
+typedef struct {
+    f32 x, y, z, w;
+} V4_b617_01E05340;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 pad05[3];
+    s32 w[4];
+} Tex_b617_01E05340;
+
+typedef struct {
+    u8 cur;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[2];
+    u8 segs;
+    u8 b, g, r;
+    u8 padB;
+    u8 ib, ig, ir;
+    u8 alpha;
+    f32 radius;
+    f32 grow;
+    f32 width;
+    V4_b617_01E05340 pos;
+    V4_b617_01E05340 vel;
+} Obj_b617_01E05340;
+
+#define ABS_b617_01E05340(v) ((v) >= 0.0f ? (v) : -(v))
+
+static s32 func_01E05340_b617(Obj_b617_01E05340 *obj, s32 tex, s32 n) {
+    extern Tex_b617_01E05340 D_01E06E60_b617;
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_002086D0(void *, u64);
+    extern void func_00101D20(void *, void *, s32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Obj_b617_01E05340 *o;
+    s32 k;
+    s32 h __attribute__((aligned(16)));
+    Tex_b617_01E05340 t;
+    Xyz_b617_01E05340 scr;
+    Pkt1_b617_01E05340 p1 __attribute__((aligned(8)));
+    Pkt2_b617_01E05340 p2 __attribute__((aligned(8)));
+    s32 i;
+    s32 segs;
+    f32 zf;
+    f32 px;
+    f32 py;
+    f32 x;
+    f32 y;
+    f32 step;
+    f32 r;
+    f32 w;
+    f32 v;
+    f32 a;
+    u8 d;
+
+    o = obj;
+    t = D_01E06E60_b617;
+    h = func_00202BF0(t.id, t.kind);
+    for (k = 0; k < n; k++) {
+        if (k != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        o->pos.x += o->vel.x;
+        o->pos.y += o->vel.y;
+        o->pos.z += o->vel.z;
+        o->radius += o->grow;
+        segs = o->segs;
+        segs = segs > 9 ? 9 : segs;
+        step = 90.0f / segs;
+        scr.x = (u32)o->pos.x;
+        scr.y = (u32)o->pos.y;
+        scr.z = 0xFFFFFE;
+        r = o->radius;
+        w = o->width;
+        zf = 0.0f;
+        ((Hdr_b617_01E05340 *)(s32)&p1)->count = 0x13;
+        ((Hdr_b617_01E05340 *)(s32)&p1)->tag = 6;
+        ((Hdr_b617_01E05340 *)(s32)&p1)->regs = 0x414141;
+        ((Hdr_b617_01E05340 *)(s32)&p1)->pad = 0;
+        p1.v[0].r = o->ir;
+        p1.v[1].r = p1.v[2].r = o->r;
+        p1.v[0].g = o->ig;
+        p1.v[1].g = p1.v[2].g = o->g;
+        p1.v[0].b = o->ib;
+        p1.v[1].b = p1.v[2].b = o->b;
+        p1.v[0].q = p1.v[1].q = p1.v[2].q = 1.0f;
+        if (o->flags & 8) {
+            func_002086D0(&p1, 0x42);
+        } else {
+            func_002086D0(&p1, 0x48);
+        }
+        ((Hdr_b617_01E05340 *)(s32)&p2)->count = 0x24;
+        ((Hdr_b617_01E05340 *)(s32)&p2)->tag = 9;
+        ((Hdr_b617_01E05340 *)(s32)&p2)->regs = ((u64)4 << 32) | 0x24242421;
+        ((Hdr_b617_01E05340 *)(s32)&p2)->pad = 0;
+        p2.r = o->r;
+        p2.g = o->g;
+        p2.b = o->b;
+        p2.q = 1.0f;
+        func_00101D20(&p2, &t, h);
+        p1.v[0].a = o->alpha;
+        p2.a = o->alpha >> 1;
+        p1.v[1].a = p1.v[2].a = 0;
+        if (!(o->flags & 0x40)) {
+            if (o->cur < 8) {
+                p1.v[0].a = (o->alpha >> 3) * o->cur;
+                p2.a = (o->alpha >> 4) * o->cur;
+            } else {
+                d = o->max - o->cur;
+                if (d < 8) {
+                    p1.v[0].a = (o->alpha >> 3) * d;
+                    p2.a = (o->alpha >> 4) * d;
+                }
+            }
+        }
+        if (o->cur & 1) {
+            if (o->flags & 2) {
+                if (p1.v[0].a > 0x10) {
+                    p1.v[0].a -= 0x10;
+                }
+            }
+            if (o->flags & 4) {
+                if (p1.v[0].a > 0) {
+                    p1.v[0].a >>= 1;
+                }
+            }
+        }
+        x = r * func_001A6898(0.0f);
+        y = r * func_001A6A88(0.0f);
+        p2.v[0].xyz.z = p2.v[1].xyz.z = p2.v[2].xyz.z = p2.v[3].xyz.z = p1.v[0].xyz.z = p1.v[1].xyz.z =
+            p1.v[2].xyz.z = scr.z;
+        p2.v[0].xyz.f = p2.v[1].xyz.f = p2.v[2].xyz.f = p2.v[3].xyz.f = p1.v[0].xyz.f = p1.v[1].xyz.f =
+            p1.v[2].xyz.f = 1;
+        for (i = 1; i < segs * 4 + 1; i++) {
+            px = x;
+            py = y;
+            a = 3.1415927f * (step * i) / 180.0f;
+            x = r * func_001A6898(a);
+            y = r * func_001A6A88(a);
+            p1.v[0].xyz.x = scr.x;
+            p1.v[0].xyz.y = scr.y;
+            p1.v[1].xyz.x = scr.x + px;
+            p1.v[1].xyz.y = scr.y + py;
+            p1.v[2].xyz.x = scr.x + x;
+            p1.v[2].xyz.y = scr.y + y;
+            func_002075F0(&p1, tex, (u32)zf);
+            if (o->flags & 1) {
+                continue;
+            }
+            if (!(ABS_b617_01E05340(x - px) <= ABS_b617_01E05340(y - py))) {
+                p2.v[0].xyz.x = p2.v[2].xyz.x = scr.x + px;
+                p2.v[1].xyz.x = p2.v[3].xyz.x = scr.x + x;
+                v = scr.y + py;
+                p2.v[0].xyz.y = v - w;
+                p2.v[2].xyz.y = w + v;
+                v = scr.y + y;
+                p2.v[1].xyz.y = v - w;
+                p2.v[3].xyz.y = w + v;
+                func_002075F0(&p2, tex, (u32)zf);
+            } else {
+                p2.v[0].xyz.y = p2.v[2].xyz.y = scr.y + py;
+                p2.v[1].xyz.y = p2.v[3].xyz.y = scr.y + y;
+                v = scr.x + px;
+                p2.v[0].xyz.x = w + v;
+                p2.v[2].xyz.x = v - w;
+                v = scr.x + x;
+                p2.v[1].xyz.x = w + v;
+                p2.v[3].xyz.x = v - w;
+                func_002075F0(&p2, tex, (u32)zf);
+            }
+        }
+    }
+    return 1;
+}
 
 /* OVL_WARM: compile warm (DK_WARM=1, after a runtime-helper call as in the original many-files-per-run build).
    Its float -> int casts are MWCC runtime calls: fptosi = 0x001A22C0, fptoui = 0x001A23B0 (link names). */
