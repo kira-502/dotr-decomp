@@ -1191,7 +1191,152 @@ static s32 func_01E02DF0_b256(Mgr_b256_01E02DF0 *m, Obj_b256_01E02DF0 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b256", func_01E02FC0_b256);
+/* shape b256:01E02FC0 (B256_OBJ_MOVE_10_), 680 insns, 1 copy: b481:01E03230's two-side trail form in b544:01E01F70's
+   order, lilac (0xC0/0x40/0xFF): on start fill 20-point trails 0-7 (joint 0, then joint 1, each next trail 1.4 lower)
+   or 10-17 (joints 2/3), end tick 11 or 20; alpha full until the end tick then fading by 9; until then push the
+   joints into the same trails */
+
+typedef struct {
+    f32 x, y, z, w;
+} Pt_b256_01E02FC0;
+
+typedef struct {
+    u8 pad0[0xB1D0];
+    Pt_b256_01E02FC0 t[18][20];
+    u8 padC850[0x2F8];
+    s16 j[4];
+} Scene_b256_01E02FC0;
+
+typedef struct {
+    u8 pad0[6];
+    s16 h6;
+    u8 pad8[6];
+    s16 hE;
+    u8 pad10[0x38];
+    f32 f48;
+    u8 pad4C[4];
+    s16 side;
+    s16 h52;
+    s16 t;
+    u8 pad56[2];
+    s16 mode;
+    u8 pad5A[6];
+    u8 col[4];
+} Fx_b256_01E02FC0;
+
+static inline void fill_b256_01E02FC0(Pt_b256_01E02FC0 *q, Vec4f *p) {
+    s16 i;
+
+    for (i = 0; i < 19; i++, q++) {
+        q->x = p->x;
+        q->y = p->y;
+        q->z = p->z;
+    }
+}
+
+static s32 func_01E02FC0_b256(Scene_b256_01E02FC0 *g, Fx_b256_01E02FC0 *o) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    Vec4f p;
+
+    func_001076F0(o->col, 0xC0, 0x40, 0xFF);
+    if (o->mode == 1) {
+        o->f48 = 5.0f;
+        if (o->side == 0) {
+            o->hE = 30;
+            func_001F5620(func_001F53A0(), g->j[0], &p);
+            fill_b256_01E02FC0(g->t[0], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[1], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[2], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[3], &p);
+            func_001F5620(func_001F53A0(), g->j[1], &p);
+            fill_b256_01E02FC0(g->t[4], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[5], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[6], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[7], &p);
+            o->h6 = 14;
+            o->h52 = 11;
+        }
+        if (o->side == 1) {
+            o->hE = 30;
+            func_001F5620(func_001F53A0(), g->j[2], &p);
+            fill_b256_01E02FC0(g->t[10], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[11], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[12], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[13], &p);
+            func_001F5620(func_001F53A0(), g->j[3], &p);
+            fill_b256_01E02FC0(g->t[14], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[15], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[16], &p);
+            p.y -= 1.4f;
+            fill_b256_01E02FC0(g->t[17], &p);
+            o->h6 = 19;
+            o->h52 = 20;
+        }
+        o->mode = 2;
+    }
+    if (o->t < o->h52) {
+        o->col[3] = 0xFF;
+    } else if (o->col[3] > 10) {
+        o->col[3] -= 9;
+    } else {
+        o->mode = 0;
+    }
+    if (o->side == 0) {
+        if (o->t <= o->h52) {
+            func_001F5620(func_001F53A0(), g->j[0], &p);
+            func_01E00080_b256((Vec4f *)&g->t[0][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[1][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[2][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[3][19], 20, 0, &p);
+            func_001F5620(func_001F53A0(), g->j[1], &p);
+            func_01E00080_b256((Vec4f *)&g->t[4][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[5][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[6][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[7][19], 20, 0, &p);
+        }
+    }
+    if (o->side == 1) {
+        if (o->t <= o->h52) {
+            func_001F5620(func_001F53A0(), g->j[2], &p);
+            func_01E00080_b256((Vec4f *)&g->t[10][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[11][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[12][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[13][19], 20, 0, &p);
+            func_001F5620(func_001F53A0(), g->j[3], &p);
+            func_01E00080_b256((Vec4f *)&g->t[14][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[15][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[16][19], 20, 0, &p);
+            p.y -= 1.4f;
+            func_01E00080_b256((Vec4f *)&g->t[17][19], 20, 0, &p);
+        }
+    }
+    o->t++;
+    return 0;
+}
 
 /* shape b256:01E03A60, 60 insns: volume fade (layout at 0x50): for 0x1E frames down 10 to 0x30, then while the game
    state at 0xCB10 is below 0x14 up 10 to 0x80; state 3 plays at 0x80 and ends the fade */
