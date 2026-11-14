@@ -846,3 +846,11 @@ there is a source form that gives the original.
   (b378:01E02440).
 - **An extra `nop` before the epilogue after the last loop:** the setup path is the `if` arm of an if/else, not an
   early `return` (b378:01E02440).
+- **A float loop invariant the original recomputes at every use** (`lui/ori/mtc1` + `add.s` before each call where
+  yours hoists it): put the constant in a named local, `w = 0.3f; ... (t + w) * f()` (b130:01E01E60, b499:01E038F0).
+- **The aligned group is packed top-down at each object's own alignment**, not in 16-byte slots: a 4-byte colour at
+  top-4, then `pk[0x90] aligned(8)` 8 bytes lower (b018:01E01760, b130).
+- **A pointer walker assigned before a NULL test in the wrong saved register:** test the field itself and assign the
+  walker in the `for` header, `for (list = obj->frames[i]; *list > 0; list++)` (b029:01E00EF0).
+- **A family member whose "structure is wrong" may only be built at another -O level:** try all four before reworking
+  (b099:01E04C30 is b029:01E05AA0's C at -O2).
