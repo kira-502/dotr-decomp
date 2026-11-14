@@ -807,3 +807,8 @@ there is a source form that gives the original.
   start of each corner's block, then `s = 0x6BF8 - v.x; s /= -16.0f; s -= z;` and clamp with `if (s < z) s = z;`;
   declare `z` before `s`/`t` and give the bottom corners their own pair. A literal `- 0.0f` folds away
   (b490:01E01260, b504:01E01980, b361:01E01140).
+
+- **-O1 `lhu $a1, t` before `addiu $a0, g, K` in `func_001031C0(&g->x, g->t)`:** declare the callee
+  `(void *, u16)`, not `(void *, s32)` (b059:01E05540).
+- **Two stores to one field with the second in a call's delay slot:** the source writes both before the call,
+  `g->hB8 = 4; g->hB8 = 0; f(...);` (b207:01E03C40).
