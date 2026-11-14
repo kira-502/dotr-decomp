@@ -583,7 +583,179 @@ static void func_01E016F0_b764(s32 arg0, u8 *obj, s32 mode, f32 level) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b764", func_01E018C0_b764);
+/* shape b764:01E018C0 (B764_W_S), 643 insns, 1 copy: B764_W_S, the scene step: counts the frame (0xDBDC); at 1 puts
+   three anchors at unit B; at 220 gathers eight points at joint 0xDAF8 and aims six of them at the anchors over 45
+   frames, spawning 0x1E02910 on each; rings of 0x1E02440 84..420, anchor glows 270..420, alternating sparks 271..405,
+   joint sprites 62..163 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xD930 - 0x260];
+    Vec4f a[3];
+    Vec4f vel[6];
+    u8 padD9C0[0xDA00 - 0xD9C0];
+    Vec4f p[8];
+    u8 padDA80[0xDAF8 - 0xDA80];
+    s16 ja;
+    s16 jb;
+    u8 padDAFC[0xDBAA - 0xDAFC];
+    s16 cnt;
+    u8 padDBAC[2];
+    s16 ang;
+    u8 padDBB0[2];
+    s16 k;
+    u8 padDBB4[0xDBBC - 0xDBB4];
+    s16 rot[8];
+    u8 padDBCC[0xDBD4 - 0xDBCC];
+    s16 side;
+    u8 padDBD6[6];
+    s16 t;
+} Scene_b764_01E018C0;
+
+static void func_01E018C0_b764(Scene_b764_01E018C0 *g) {
+    extern void b764_01E022D0(void);
+    extern void b764_01E02440(void);
+    extern void b764_01E02910(void);
+    extern void b764_01E02A60(void);
+    extern void b764_01E02B50(void);
+    extern void b764_01E02D80(void);
+    extern void b764_01E02E80(void);
+    extern void b764_01E02FC0(void);
+    extern void b764_01E035C0(void);
+    extern void b764_01E03BD0(void);
+    extern void b764_01E03D70(void);
+    extern void b764_01E04D30(Scene_b764_01E018C0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    s16 i;
+    s32 h;
+
+    g->t++;
+    if (g->t == 1) {
+        func_001F5F90(func_001F5380(), &g->a[0]);
+        g->a[0].y = 45.0f;
+        func_001F5F90(func_001F5380(), &g->a[1]);
+        g->a[1].y = 45.0f;
+        func_001F5F90(func_001F5380(), &g->a[2]);
+        g->a[2].y = 35.0f;
+    }
+    if (g->t == 220) {
+        for (i = 0; i < 8; i++) {
+            func_001F5620(func_001F53A0(), g->ja, &g->p[i]);
+        }
+    }
+    if (g->t >= 238) {
+        if (g->a[0].y < 65.0f) {
+            g->a[0].y += 1.0f;
+        }
+        if (g->a[1].y > 30.0f) {
+            g->a[1].y -= 1.0f;
+        }
+    }
+    for (i = 0; i < 6; i++) {
+        if (g->t >= 220) {
+            if (g->t == 220) {
+                h = i % 2;
+                g->vel[i].z = (g->a[h].z - g->p[i].z) / 45.0f;
+                if (h == 0) {
+                    g->vel[i].y = (65.0f - g->p[i].y) / 45.0f;
+                } else {
+                    g->vel[i].y = (30.0f - g->p[i].y) / 45.0f;
+                }
+            }
+            if (g->t > 220 && g->t < 265) {
+                g->p[i].z += g->vel[i].z;
+                g->p[i].y += g->vel[i].y;
+            }
+        }
+    }
+    if (g->t == 220) {
+        for (i = 0; i < 6; i++) {
+            g->pos = g->p[i];
+            g->side = i;
+            b764_01E04D30(g, b764_01E02910, 0);
+        }
+    }
+    if (g->t > 220) {
+        for (i = 0; i < 8; i++) {
+            if (g->rot[i] < 180) {
+                g->rot[i] += 4;
+            }
+        }
+    }
+    if (g->t == 265) {
+        g->pos = g->a[0];
+        g->side = 0;
+        b764_01E04D30(g, b764_01E02A60, 0);
+        g->pos = g->a[1];
+        b764_01E04D30(g, b764_01E02A60, 0);
+    }
+    if (g->t >= 84 && g->t < 421 && g->cnt < 36) {
+        g->ang = g->cnt * 10;
+        g->side = g->cnt;
+        b764_01E04D30(g, b764_01E02440, 0);
+        g->ang = g->cnt * 10 + 180;
+        g->side = g->cnt + 36;
+        b764_01E04D30(g, b764_01E02440, 0);
+        g->cnt++;
+    }
+    if (g->t >= 270 && g->t < 421) {
+        g->pos = g->a[0];
+        b764_01E04D30(g, b764_01E022D0, 0);
+        b764_01E04D30(g, b764_01E03D70, 0);
+        g->pos = g->a[1];
+        b764_01E04D30(g, b764_01E022D0, 0);
+        b764_01E04D30(g, b764_01E03D70, 0);
+    }
+    if (g->t > 270 && g->t < 406) {
+        for (i = 0; i < 1; i++) {
+            if (g->t % 2 == 1) {
+                g->side = g->k;
+                b764_01E04D30(g, b764_01E035C0, 0);
+                g->k++;
+                if (g->k >= 80) {
+                    g->k = 0;
+                }
+            } else {
+                g->side = g->k;
+                b764_01E04D30(g, b764_01E02FC0, 0);
+                g->k++;
+                if (g->k >= 80) {
+                    g->k = 0;
+                }
+            }
+        }
+    }
+    if (g->t >= 164 && g->t < 270) {
+        for (i = 0; i < 6; i++) {
+            b764_01E04D30(g, b764_01E02B50, 0);
+        }
+    }
+    if (g->t == 265) {
+        b764_01E04D30(g, b764_01E02D80, 0);
+    }
+    if (g->t >= 62 && g->t < 120) {
+        func_001F5620(func_001F53A0(), g->jb, &g->pos);
+        b764_01E04D30(g, b764_01E02E80, 0);
+    }
+    if (g->t >= 138 && g->t < 164) {
+        func_001F5620(func_001F53A0(), g->ja, &g->pos);
+        b764_01E04D30(g, b764_01E02E80, 0);
+    }
+    if (g->t == 62) {
+        func_001F5620(func_001F53A0(), g->jb, &g->pos);
+        g->side = 0;
+        b764_01E04D30(g, b764_01E03BD0, 0);
+    }
+    if (g->t >= 151 && g->t < 164) {
+        func_001F5620(func_001F53A0(), g->ja, &g->pos);
+        g->side = 1;
+        b764_01E04D30(g, b764_01E03BD0, 0);
+    }
+}
 
 /* shape b764:01E022D0, 91 insns: on start f48 70.0f, f4C 100.0f + 0..79, colour 0x70 grey, second colour (0x40, 0x20, 0x30)
    with alpha 0, random rotation, 0x5A/0x5C = 30; the second alpha grows by 0x50 (below 0xA0) for 3 ticks, then fades
