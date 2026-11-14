@@ -740,3 +740,7 @@ there is a source form that gives the original.
   call. In the warm build the compiler's own fptosi call counts as reading a0/a1, so they stay live back to the last
   call's arguments and every temp in between skips them. Dropping the then-unused extern can move float loads, so
   try with and without it (b486:01E02E80, b540:01E03160, b157, b168, b263; small repro in work/wall/).
+- **A module static's argument order or delay slot off (`$f13` before `$f12`, `a3` before `a2`) and block locals don't
+  help:** call that one site through an alias even when the static is defined above: a block-scope prototyped
+  `extern s32 <mod>_<VADDR>(void *, ...);` for float arguments, a no-prototype one otherwise. Fixing one call can move
+  a sibling call, so search combinations with `work/fulltry.sh` (b028:01E03CE0, b144:01E03740).
