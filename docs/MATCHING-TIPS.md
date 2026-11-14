@@ -824,3 +824,15 @@ there is a source form that gives the original.
 - **No `jal` for a small static handler in a scene manager's step loop:** the compiler doesn't inline on its own; the
   original wrote the handler's body in the `fn ==` branch (a float-pair handler in a block with its own `f32` locals)
   (b570:01E03020, b297:01E02650).
+
+- **Frame layout with `aligned(N)` locals** (c606:01E00080, c603:01E00920): plain locals whose size is a multiple of 16
+  go first, in declaration order; locals with an explicit `aligned(N)` form a group at the top, each rounded up to 16,
+  filled top down (the last declared highest). So a packet 8 bytes above yours can be just
+  `Pkt pkt __attribute__((aligned(8)))` when its size isn't a multiple of 16; a 12-byte array at an 8-mod-16 address
+  just below it means both are `aligned(8)` and the packet has a trailing `u64`. The b494 tag-plus-packet struct can
+  make the compiler keep `&pkt.gif` in a saved register; try plain `aligned(8)` first.
+- **After the parameter-copy trick, assign the copies as statements in the right order** (`mode = arg1; o = arg0;`
+  put the `o` move in the `jal` delay slot; an initializer didn't) (c606:01E00080).
+- **Screen-UV blocks with `cvt, cvt, div, div` and no `sub.s`:** the plain split form,
+  `u = 0x6BF8 - x; v = K - y; u /= -16.0f; v /= -16.0f;`; the named-zero form is only for originals that subtract a
+  zero (b215:01E02660).
