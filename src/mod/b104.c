@@ -1198,6 +1198,201 @@ static s32 func_01E02ED0_b104(Streak_b104_01E02ED0 *arg0, s32 ot, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b104", func_01E03470_b104);
+/* shape b104:01E03470 (ShFx_Dlyline), 624 insns, 1 copy (-O2,p): ShFx_Dlyline: n delayed lines (0x48 bytes each):
+   move unless flag 1, shift the point history in the pool, splined through func_00102550 and drawn as four widened
+   quads per segment, alpha fading toward the tail */
+
+typedef struct {
+    u8 kind;
+    u8 pad1[3];
+    f32 x, y, z;
+} Pool_b104_01E03470;
+
+typedef struct {
+    u8 kind;
+    u8 pad1[3];
+    u8 flags;
+    u8 pad5[3];
+    Pool_b104_01E03470 *pool;
+    s16 idx[9];
+    u8 slot;
+    u8 count;
+    f32 width;
+    u8 b, g, r, a;
+    f32 pos[3];
+    u8 pad34[4];
+    f32 vel[3];
+    u8 pad44[4];
+} Line_b104_01E03470;
+
+typedef struct {
+    s32 n;
+    f32 x[8];
+    f32 y[8];
+    f32 z[8];
+    Vec4f out[28];
+} Spl_b104_01E03470;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b104_01E03470;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Xyz_b104_01E03470 xyz;
+} Vtx_b104_01E03470;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b104_01E03470 v[4];
+} Pkt_b104_01E03470;
+
+#pragma optimization_level 2
+
+static s32 func_01E03470_b104(Line_b104_01E03470 *arg0, s32 ot, s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_00101BA0(void *, void *);
+    extern s32 func_00102550(void *);
+    extern s32 func_00101C30(void *, s32, s32);
+    extern void func_00101B40(void *, u8, u8);
+    Line_b104_01E03470 *e = arg0;
+    Pool_b104_01E03470 *pool = arg0->pool;
+    Pool_b104_01E03470 *pt;
+    s32 i __attribute__((aligned(16)));
+    s32 k;
+    s32 idx;
+    s32 segs;
+    s32 t;
+    f32 a;
+    f32 step;
+    f32 w;
+    f32 w0;
+    f32 w1;
+    f32 m[16];
+    Spl_b104_01E03470 spl;
+    Xyz_b104_01E03470 s[2];
+    Pkt_b104_01E03470 pkt;
+    f32 dep[2];
+
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        func_0020EB40(m);
+        if (!(e->flags & 1)) {
+            e->pos[0] += e->vel[0];
+            e->pos[1] += e->vel[1];
+            e->pos[2] += e->vel[2];
+            func_00101BA0(e, e->pos);
+        }
+        for (k = e->count; k > 0; k--) {
+            if (e->idx[k - 1] >= 0) {
+                pt = &pool[e->idx[k - 1]];
+                pt->kind = e->kind;
+            }
+            e->idx[k] = e->idx[k - 1];
+        }
+        if (e->idx[e->count] >= 0) {
+            pt = &pool[e->idx[e->count]];
+            pt->kind = 0;
+            e->idx[e->count] = -1;
+        }
+        if (e->kind == 0) {
+            continue;
+        }
+        idx = func_00101C30(pool, 0x10, e->slot);
+        if (idx >= 0) {
+            e->idx[0] = idx;
+            pt = &pool[e->idx[0]];
+            func_00101B40(pt, e->kind, 0);
+            pt->x = e->pos[0];
+            pt->y = e->pos[1];
+            pt->z = e->pos[2];
+        } else {
+            e->idx[0] = -1;
+        }
+        spl.n = 0;
+        for (k = 0; k < e->count; k++) {
+            if (e->idx[k] >= 0) {
+                pt = &pool[e->idx[k]];
+                spl.x[spl.n] = pt->x;
+                spl.y[spl.n] = pt->y;
+                spl.z[spl.n] = pt->z;
+                spl.n++;
+            }
+        }
+        if (func_00102550(&spl) == 0) {
+            continue;
+        }
+        segs = (spl.n - 1) * 4;
+        ((Pkt_b104_01E03470 *)(s32)&pkt)->count = 0x14;
+        ((Pkt_b104_01E03470 *)(s32)&pkt)->tag = 8;
+        ((Pkt_b104_01E03470 *)(s32)&pkt)->regs = 0x41414141;
+        ((Pkt_b104_01E03470 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->r;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->g;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->b;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+        func_002086D0(&pkt, 0x48);
+        pkt.v[0].a = pkt.v[1].a = 0;
+        if (e->kind < 8) {
+            a = (f32)e->kind * (f32)e->a / 8.0f;
+        } else {
+            a = e->a;
+        }
+        step = a / (f32)segs;
+        for (k = 0; k < segs - 1; k++) {
+            if (func_00205440(&spl.out[k], m, &s[0], &dep[0]) == 0 || func_00101600(&s[0]) == 0 ||
+                func_00205440(&spl.out[k + 1], m, &s[1], &dep[1]) == 0 || func_00101600(&s[1]) == 0) {
+                continue;
+            }
+            w = e->width;
+            w0 = w / (dep[0] / 256.0f);
+            w1 = w / (dep[1] / 256.0f);
+            t = segs - k;
+            pkt.v[2].a = func_001A23B0(step * t);
+            pkt.v[3].a = func_001A23B0(step * (t - 1));
+            if (k == 0) {
+                pkt.v[2].a = 0;
+            }
+            pkt.v[0].xyz.z = pkt.v[2].xyz.z = s[0].z;
+            pkt.v[1].xyz.z = pkt.v[3].xyz.z = s[1].z;
+            pkt.v[2].xyz.y = s[0].y;
+            pkt.v[3].xyz.y = s[1].y;
+            pkt.v[0].xyz.y = (u32)((f32)s[0].y - w0);
+            pkt.v[1].xyz.y = (u32)((f32)s[1].y - w1);
+            pkt.v[0].xyz.x = pkt.v[2].xyz.x = s[0].x;
+            pkt.v[1].xyz.x = pkt.v[3].xyz.x = s[1].x;
+            func_002075F0(&pkt, ot, 0);
+            pkt.v[0].xyz.y = (u32)((f32)s[0].y + w0);
+            pkt.v[1].xyz.y = (u32)((f32)s[1].y + w1);
+            func_002075F0(&pkt, ot, 0);
+            pkt.v[0].xyz.x = (u32)((f32)s[0].x - w0);
+            pkt.v[1].xyz.x = (u32)((f32)s[1].x - w1);
+            pkt.v[2].xyz.x = s[0].x;
+            pkt.v[3].xyz.x = s[1].x;
+            pkt.v[0].xyz.y = pkt.v[2].xyz.y = s[0].y;
+            pkt.v[1].xyz.y = pkt.v[3].xyz.y = s[1].y;
+            func_002075F0(&pkt, ot, 0);
+            pkt.v[0].xyz.x = (u32)((f32)s[0].x + w0);
+            pkt.v[1].xyz.x = (u32)((f32)s[1].x + w1);
+            func_002075F0(&pkt, ot, 0);
+        }
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b104", func_01E03E30_b104);
