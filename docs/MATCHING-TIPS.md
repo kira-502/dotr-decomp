@@ -729,3 +729,12 @@ there is a source form that gives the original.
   different warm state. Try its whole module cold or after a one-argument helper by adding it to
   `config/mod_warm.txt` (`0` or `1`); keep it only if the whole module still matches. b000 is cold, b005 and b007
   are level 1 (LkEFF_SortLaser b000:01E03B80 / b007:01E02FC0, b005:01E003A0 / 01E027F0).
+
+- **Float argument order can differ between `tools/mod_infile.sh` and the real build** (b467's `func_001033D0`
+  calls); search block-local forms with `work/fulltry.sh` directly (about a second per try).
+- **A struct temp that belongs after the inline-return temps in the frame:** write the copy twice
+  (`ca[0] = a[0]; ca[1] = a[0];`) so the CSE temp goes last; a named temp sits in declaration order. Locals with an
+  explicit `aligned(N)` go after all temps (b847:01E02370).
+- **Open wall: after `func_00103290(tex, 0)` the original loads tex/flags for the next inits into `a3`/`a2`, ours
+  into `a1`/`a0`.** It blocks 12 scene managers (b157, b168, b263, b273, b289, b423, b486, b540, b551, b576, b621,
+  b637); no matched function shows the pattern yet.
