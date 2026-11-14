@@ -768,3 +768,7 @@ there is a source form that gives the original.
 - **A difference kept in a saved register across a call (`m - k` for an alpha ramp):** write it inline in both
   statements, `(f32)(m - k)` and `(f32)(m - k - 1)`; a local `d = m - k` swaps its register with a strength-reduced
   pointer (b405:01E03430).
+
+- **`jal func_0017B380` / `func_001A2918` / `func_001A3090` triples with `lui 0x3FE0; dsll32`:** double maths on a u8,
+  `c[k] *= 0.5;` (MWCC calls `_d_utod` by name; it is in config/linker_syms.txt). `c = c * 0.5` keeps the constant in
+  a saved register instead (c056:01E015A0).
