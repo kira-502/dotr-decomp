@@ -800,7 +800,168 @@ static void func_01E01FE0_b252(Obj_b016_01E00ED0 *obj, Cam_b016_01E00ED0 *cam, s
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b252", func_01E022A0_b252);
+/* shape b252:01E022A0 (B252_W_S), 634 insns, 1 copy: B252_W_S, the scene step: counts the frame (0xDC3E); ten points
+   track joint 0xDC08 until 97, at 98 aim at unit B over 50 frames (until 150) and get a random drift used on
+   152..188; eight segment steps; handler bursts 0x1E02C90 (25..255) and 0x1E02EC0 (154..255) four per frame by
+   parity, 0x1E03090 trail on 25..140, 0x1E03210/0x1E03310 at 152, 0x1E03CA0 at 20, 0x1E03530 slot ring of 80 on
+   152..255, eight 0x1E03A40 at 24 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xD930 - 0x260];
+    Vec4f p[10];
+    Vec4f vel[10];
+    Vec4f acc[10];
+    Vec4f d[10];
+    u8 padDBB0[0xDC08 - 0xDBB0];
+    s16 joint;
+    u8 padDC0A[0xDC2E - 0xDC0A];
+    s16 n;
+    u8 padDC30[6];
+    s16 kind;
+    u8 padDC38[6];
+    s16 t;
+} Scene_b252_01E022A0;
+
+static void func_01E022A0_b252(Scene_b252_01E022A0 *g) {
+    extern void b252_01E02C90(void);
+    extern void b252_01E02EC0(void);
+    extern void b252_01E03090(void);
+    extern void b252_01E03210(void);
+    extern void b252_01E03310(void);
+    extern void b252_01E03530(void);
+    extern void b252_01E03A40(void);
+    extern void b252_01E03CA0(void);
+    extern void b252_01E048A0(Scene_b252_01E022A0 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern s32 func_0019A5C8(void);
+    Vec4f v[2];
+    s16 i;
+
+    g->t++;
+    for (i = 0; i < 10; i++) {
+        if (g->t < 0x62) {
+            func_001F5620(func_001F53A0(), g->joint, &g->p[i]);
+            continue;
+        }
+        if (g->t == 0x62) {
+            func_001F5F90(func_001F5380(), v);
+            g->vel[i].z = (v[0].z - g->p[i].z) / 50.0f;
+            g->vel[i].y = (v[0].y - g->p[i].y) / 50.0f;
+            g->acc[i].x = (func_0019A5C8() >> 4) % 20 - 10;
+            g->acc[i].y = (func_0019A5C8() >> 4) % 20 - 10;
+            g->acc[i].z = (func_0019A5C8() >> 4) % 20 - 10;
+            g->acc[i].x /= 20.0f;
+            g->acc[i].y /= 20.0f;
+            g->acc[i].z /= 20.0f;
+        }
+        if (g->t < 0x97) {
+            g->p[i].z += g->vel[i].z;
+            g->p[i].y += g->vel[i].y;
+        }
+        if (g->t > 0x97 && g->t < 0xBD) {
+            if (g->t > 0xA1) {
+                g->p[i].z += g->acc[i].z;
+            }
+            g->p[i].y += g->acc[i].y;
+            g->p[i].x += g->acc[i].x;
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        g->d[i].x = (g->p[i + 1].x - g->p[i].x) / 5.0f;
+        g->d[i].y = (g->p[i + 1].y - g->p[i].y) / 5.0f;
+        g->d[i].z = (g->p[i + 1].z - g->p[i].z) / 5.0f;
+    }
+    if (g->t > 0x18 && g->t < 0x100) {
+        if (g->t % 2 == 1) {
+            g->kind = 0;
+            b252_01E048A0(g, b252_01E02C90, 0);
+            g->kind = 1;
+            b252_01E048A0(g, b252_01E02C90, 0);
+            g->kind = 2;
+            b252_01E048A0(g, b252_01E02C90, 0);
+            g->kind = 3;
+            b252_01E048A0(g, b252_01E02C90, 0);
+        } else {
+            g->kind = 4;
+            b252_01E048A0(g, b252_01E02C90, 0);
+            g->kind = 5;
+            b252_01E048A0(g, b252_01E02C90, 0);
+            g->kind = 6;
+            b252_01E048A0(g, b252_01E02C90, 0);
+            g->kind = 7;
+            b252_01E048A0(g, b252_01E02C90, 0);
+        }
+    }
+    if (g->t > 0x99 && g->t < 0x100) {
+        if (g->t % 2 == 1) {
+            g->kind = 0;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+            g->kind = 1;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+            g->kind = 2;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+            g->kind = 3;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+        } else {
+            g->kind = 4;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+            g->kind = 5;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+            g->kind = 6;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+            g->kind = 7;
+            b252_01E048A0(g, b252_01E02EC0, 0);
+        }
+    }
+    if (g->t > 0x18 && g->t < 0x8D) {
+        g->pos = g->p[0];
+        b252_01E048A0(g, b252_01E03090, 0);
+    }
+    if (g->t == 0x98) {
+        g->pos = g->p[0];
+        b252_01E048A0(g, b252_01E03210, 0);
+        b252_01E048A0(g, b252_01E03310, 0);
+    }
+    if (g->t == 0x14) {
+        b252_01E048A0(g, b252_01E03CA0, 0);
+    }
+    if (g->t > 0x97 && g->t < 0x100) {
+        for (i = 0; i < 1; i++) {
+            g->kind = g->n;
+            b252_01E048A0(g, b252_01E03530, 0);
+            g->n++;
+            if (g->n >= 0x50) {
+                g->n = 0;
+            }
+        }
+    }
+    if (g->t == 0x18) {
+        g->kind = 0;
+        b252_01E048A0(g, b252_01E03A40, 0);
+        g->kind = 1;
+        b252_01E048A0(g, b252_01E03A40, 0);
+        g->kind = 2;
+        b252_01E048A0(g, b252_01E03A40, 0);
+        g->kind = 3;
+        b252_01E048A0(g, b252_01E03A40, 0);
+        g->kind = 4;
+        b252_01E048A0(g, b252_01E03A40, 0);
+        g->kind = 5;
+        b252_01E048A0(g, b252_01E03A40, 0);
+        g->kind = 6;
+        b252_01E048A0(g, b252_01E03A40, 0);
+        g->kind = 7;
+        b252_01E048A0(g, b252_01E03A40, 0);
+    }
+    if (g->t > 0x21 && g->t < 0x62) {
+        g->pos = g->p[0];
+    }
+}
 
 /* shape b252:01E02C90, 138 insns: a white spark riding a scene point: size 4 before scene frame 140, else 6; frame 4,
    random spin words, height 3..22, turn 0..359, rise 2..6, f8 0..29, held 2..4; alpha grows by 0x40 (to 0xC0) while
