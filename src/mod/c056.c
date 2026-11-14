@@ -839,7 +839,226 @@ static void func_01E01490_c056(Ctx_c056_01E01490 *ctx, s32 arg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c056", func_01E015A0_c056);
+/* shape c056:01E015A0 (PAINT_PA13), 669 insns, 1 copy: two-pass 12-segment ring around a parent: mode 0 sets frame 2
+   and the colours (alpha blanked without a parent); otherwise halves the colours through double math, draws 12
+   segments between the parent's or own radius 0xA8 and 0xAA, then a second pass at 2.5x the radii with two materials
+   (0x8C, 0x96) through a turned copy of the scene matrix */
+
+typedef struct {
+    u8 c[4];
+} Col_c056_01E015A0;
+
+typedef struct {
+    f32 m[16];
+} Mtx_c056_01E015A0;
+
+typedef struct Fx_c056_01E015A0 {
+    Vec4f q[4];
+    Vec4f v40;
+    Vec4f v50;
+    u8 pad60[0x10];
+    f32 m70[8];
+    struct Fx_c056_01E015A0 *parent;
+    s32 f94;
+    u8 pad98[0x10];
+    s16 hA8;
+    s16 hAA;
+    Col_c056_01E015A0 col;
+    Col_c056_01E015A0 col2;
+    u8 padB4[4];
+    s16 hB8;
+} Fx_c056_01E015A0;
+
+typedef struct {
+    u8 pad0[0x40];
+    Mtx_c056_01E015A0 m40;
+    u8 pad80[0x48];
+    s32 texC8;
+    s32 texCC;
+    u8 padD0[0x43B8];
+    s32 ot;
+    u8 pad448C[0x1C];
+    f32 depth;
+    u8 pad44AC[0x1B4];
+    f32 t0[12];
+    f32 t1[12];
+    f32 t2[12];
+    f32 t3[12];
+} Scene_c056_01E015A0;
+
+static void func_01E015A0_c056(Scene_c056_01E015A0 *g, Fx_c056_01E015A0 *o, void *pk, s32 mode) {
+    extern void func_00105D00(void *, s32, s32);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00106DD0(void *, f32, f32, f32);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00107DD0(void *, void *, void *, s32);
+    extern void func_00106FA0(void *, void *, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    s16 i;
+    f32 r0;
+    f32 r1;
+    f32 r2;
+    Vec4f v[4];
+    f32 rm[4];
+    f32 rm2[4];
+    Mtx_c056_01E015A0 mtx;
+    Mtx_c056_01E015A0 tmp;
+    Vec4f sc;
+    Col_c056_01E015A0 c[4];
+    Fx_c056_01E015A0 *p;
+
+    p = o->parent;
+    if (mode == 0) {
+        if (o->hB8) {
+            func_00105D00(rm, 2, 0);
+        } else {
+            func_00105D00(rm, 2, 1);
+        }
+        func_00109270(pk, 0, 0);
+        if (p == NULL) {
+            o->col.c[3] = 0;
+            o->col2.c[3] = 0;
+            func_00107790(pk, &o->col, 1);
+        } else {
+            func_00107790(pk, &p->col, 1);
+        }
+        if (o->f94) {
+            func_00107790(pk, &o->col2, 2);
+        } else {
+            c[0] = o->col2;
+            c[0].c[3] = 0;
+            func_00107790(pk, &c[0], 2);
+        }
+        func_00108500(pk, rm, 0);
+        func_00208700(pk, g->texCC, 0);
+    } else {
+        v[0].y = v[1].y = o->q[0].y;
+        v[2].y = v[3].y = o->q[2].y;
+        if (o->hB8) {
+            func_00105D00(rm, 2, 0);
+        } else {
+            func_00105D00(rm, 2, 1);
+        }
+        func_00108500(pk, rm, 0);
+        mtx = g->m40;
+        { f32 r = -0.4f; func_00106DD0(&sc, 2.5f, r, 2.5f); }
+        v[0] = o->v40;
+        v[0].x *= 0.3f;
+        v[0].z *= 0.3f;
+        func_0020C940(&tmp, &sc, &o->v50, v);
+        func_0020BC00(&mtx, &tmp);
+        if (p == NULL) {
+            c[0] = o->col;
+            c[0].c[3] = 0;
+            c[0].c[0] *= 0.5;
+            c[0].c[1] *= 0.5;
+            c[0].c[2] *= 0.5;
+        } else {
+            c[1] = o->col;
+            c[1].c[3] *= 0.8;
+            c[1].c[0] *= 0.5;
+            c[1].c[1] *= 0.5;
+            c[1].c[2] *= 0.5;
+        }
+        if (o->f94) {
+            c[2] = o->col;
+            c[2].c[3] *= 0.8;
+            c[2].c[0] *= 0.5;
+            c[2].c[1] *= 0.5;
+            c[2].c[2] *= 0.5;
+        } else {
+            c[3] = o->col2;
+            c[3].c[3] = 0;
+            c[3].c[0] *= 0.5;
+            c[3].c[1] *= 0.5;
+            c[3].c[2] *= 0.5;
+        }
+        for (i = 0; i < 12; i++) {
+            if (p != NULL) {
+                o->q[0].x = g->t0[i] * p->hAA;
+                o->q[0].z = g->t1[i] * p->hAA;
+                o->q[1].x = g->t2[i] * p->hAA;
+                o->q[1].z = g->t3[i] * p->hAA;
+                o->q[1].y = o->q[0].y = p->q[2].y;
+            } else {
+                o->q[0].x = g->t0[i] * o->hA8;
+                o->q[0].z = g->t1[i] * o->hA8;
+                o->q[1].x = g->t2[i] * o->hA8;
+                o->q[1].z = g->t3[i] * o->hA8;
+            }
+            o->q[2].x = g->t0[i] * o->hAA;
+            o->q[2].z = g->t1[i] * o->hAA;
+            o->q[3].x = g->t2[i] * o->hAA;
+            o->q[3].z = g->t3[i] * o->hAA;
+            if (p != NULL) {
+                func_00107DD0(o, p->m70, o->m70, 0);
+            }
+            func_00106FA0(o, o->m70, 0);
+            func_00107DD0(&o->q[2], o->m70, &o->v40, 0);
+            if (func_00205630(o, 0x70000000, &g->m40, pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+        }
+        if (p == NULL) {
+            func_00107790(pk, &c[0], 1);
+        } else {
+            func_00107790(pk, &c[1], 1);
+        }
+        if (o->f94) {
+            func_00107790(pk, &c[2], 2);
+        } else {
+            func_00107790(pk, &c[3], 2);
+        }
+        if (p != NULL) {
+            r0 = 2.5 * p->hAA;
+        }
+        r1 = 2.5 * o->hA8;
+        r2 = 2.5 * o->hAA;
+        func_00106080(rm, 0x8C, 0, 0);
+        func_00106080(rm2, 0x96, 0, 0);
+        v[0] = *(Vec4f *)o->m70;
+        v[0].x *= 0.4f;
+        v[0].z *= 0.4f;
+        for (i = 0; i < 12; i++) {
+            func_00108500(pk, rm, 0);
+            func_00208700(pk, g->texC8, 0);
+            if (p != NULL) {
+                o->q[0].x = g->t0[i] * r0;
+                o->q[0].z = g->t1[i] * r0;
+                o->q[1].x = g->t2[i] * r0;
+                o->q[1].z = g->t3[i] * r0;
+            } else {
+                o->q[0].x = g->t0[i] * r1;
+                o->q[0].z = g->t1[i] * r1;
+                o->q[1].x = g->t2[i] * r1;
+                o->q[1].z = g->t3[i] * r1;
+            }
+            o->q[2].x = g->t0[i] * r2;
+            o->q[2].z = g->t1[i] * r2;
+            o->q[3].x = g->t2[i] * r2;
+            o->q[3].z = g->t3[i] * r2;
+            if (p != NULL) {
+                func_00107DD0(o, p->m70, o->m70, 0);
+            }
+            func_00106FA0(o, v, 0);
+            func_00107DD0(&o->q[2], o->m70, &o->v40, 0);
+            if (func_00205630(o, 0x70000000, &mtx, pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+            func_00108500(pk, rm2, 1);
+            func_00208700(pk, g->texCC, 0);
+            if (func_00205630(o, 0x70000000, &mtx, pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+        }
+    }
+}
 
 /* shape c056:01E02020, 178 insns: c056:01E02560 family flat diamond: mode 0 picks frame 1 from func_00105D00 when 0xA0 is set (scene texture g+0xCC) or texture 0x14 at its angle (g+0x98), colour 0xAC; other modes set the camera at the object (random-free turn g+0xD0, no roll) and lay its four corners at 135/45/225/315 degrees, x radius 0xAA + 5 and z radius 0xAA, depth-tested into g+0x4488 */
 
