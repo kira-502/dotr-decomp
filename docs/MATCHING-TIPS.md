@@ -596,12 +596,13 @@ there is a source form that gives the original.
   b152:01E03730)
 - **`f(p, A, 0.0f)` loads `mtc1 $zero, $f13` before `$f12`:** both constants in block locals,
   `{ f32 x = A; f32 h = 0.0f; f(p, x, h); }` (one alone is worse). (c610:01E01180)
-- **Known wall, scene managers with a random-joint setup loop (b594:01E02EC0, b494:01E013C0, b281:01E02440): the
-  step loop's s16 counter and slot pointer swapped:** live ranges are split per loop, so counter names and
-  declaration orders give only two outcomes: a counter used only after the setup gets its register before the
-  pointer; one also used in a setup loop gets it after the draw counter `m`. The originals sit in between and no
-  form reaches it yet (pragmas, loop forms, all decl orders, the permuter ruled out; repro in work/regswap/synbase.c
-  on the original machine). Don't spend tries on counter names here.
+- **Scene-manager step loop with its s16 counter and slot pointer swapped (the pointer should get the lower register)
+  while the draw loop matches:** a counter used in only one loop gets its register before the strength-reduced
+  pointer; one also used by the setup loops gets it after. Run the setup, step and draw loops on one s16 counter. If the
+  slot count then swaps with that counter, zero the counter at the top before the count (`k = 0; m = 0;`): among
+  multi-loop variables the one mentioned first gets the lower register. Declaration order does nothing
+  (b594:01E02EC0, b494:01E013C0, b281:01E02440). When the count is itself a setup counter, put the step and draw loops
+  on the setup's other counter and zero that first (`a = 0; m = 0; k = 0;`) (b215:01E02E50). Repro in work/wall2/.
 - **An -O4 range test gives `slti $v0` + `bnez $v0` where the original has `slti $at`, and `> K-1` alone does not
   fix it:** nest the two bounds, `if (x > K-1) { if (x < L) ... }`, instead of `&&`. (b378:01E00970)
 - **A range test's first compare at -O3 gives `slti $v1, t, K` + `bnez` where yours has `slti $at`:** write the low
