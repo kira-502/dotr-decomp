@@ -1,170 +1,59 @@
 shape	best	note
-b000:01E001A0	76%	an earlier try got this far
-b000:01E00BE0	50%	an earlier try got this far
-b002:01E02AD0	40%	an earlier try got this far
 b004:01E013F0	44% (123/282, ours 264)	hard: structure: original keeps &q fields in s4/fp/s5/s7 and spills i/n/n-1/arg1; ours 18 insns short (best draft: drafts/mod/b004_01E013F0.c)
-b005:01E00880	99.2%	an earlier try got this far
-b007:01E002E0	88%	an earlier try got this far
-b010:01E00410	81%	an earlier try got this far
-b010:01E02E20	88%	an earlier try got this far
-b010:01E039A0	94%	an earlier try got this far
-b010:01E04530	92%	an earlier try got this far
-b011:01E01690	99.7%	an earlier try got this far
-b011:01E03660	40%	an earlier try got this far
 b015:01E008F0	97%	hard: -O3; only the prologue q.x/q.y temp regs and the packet-address placement differ; header moves, tag helper, pointer locals, casts, decl orders, permuter tried (best draft: drafts/mod/b015_01E008F0.c)
 b018:01E01760	60% (in-file)	hard: frame layout off (pk at sp+0x228, trails at 0x160/0x1A0, ours 0x200/0x140), n kept s16->int spilled at 0xC0, colour copied through a pointer; 7 copies (best draft: drafts/mod/b018_01E01760.c)
-b024:01E02ED0	99.0%	an earlier try got this far
-b024:01E03A40	86%	an earlier try got this far
-b029:01E003A0	63%	an earlier try got this far
 b029:01E00EF0	97% (264/273)	hard: s3/s4/s5 rotation (walker/list/bone base); calls sibling func_01E00C20_b029 now; probe search: no single/pair vreg move (best draft: drafts/mod/b029_01E00EF0.c)
-b029:01E01340	99.2%	an earlier try got this far
-b029:01E01D90	95.7%	an earlier try got this far
-b029:01E03660	94.5%	an earlier try got this far
-b033:01E02B80	99.7%	an earlier try got this far
 b034:01E054C0	86% (317/369)	hard: box/ring draw: `i == 2 (best draft: drafts/mod/b034_01E054C0.c)
 b034:01E05A90	85% (298/349)	hard: ring draw: second angle is ((ang + 20) + a) + 90 unfolded in the original (MWCC folds my 20+90 into 0x6E); pk pointer / flags / a registers rotated; a < limit compare operands swapped (best draft: drafts/mod/b034_01E05A90.c)
-b034:01E06010	96%	an earlier try got this far
-b040:01E02320	94.5%	an earlier try got this far
-b040:01E03440	99.2%	an earlier try got this far
-b043:01E03790	82%	an earlier try got this far
-b044:01E02940	90%	an earlier try got this far
 b046:01E01520	94%	hard: STQ block only: original divides t0/256 twice and keeps t1/256 in a mov.s copy; MWCC shares t0/256 under every form tried (needs opt_propagation off so 0/64/256 stay unfolded)
-b051:01E003A0	99.2%	an earlier try got this far
-b051:01E04240	99%	an earlier try got this far
 b058:01E023F0	85% (153/179)	hard: the C matches the whole function (every instruction up to its jr $ra), but the listing also holds a stray loop tail and epilogue after the padding at text end (0x01E02680..0x01E026B8, like b717:01E03B84), which no C produces (best draft: drafts/mod/b058_01E023F0.c)
-b059:01E02A00	40%	an earlier try got this far
 b060:01E013C0	84% (255/305, same length)	hard: colouring: with `s32 arg0` + `Scene *g = (Scene *)arg0` first (Mod-3 c027 form) g=s0 OK; left id s1/n s2 and loop i s1/ptr s3 swapped (best draft: drafts/mod/b060_01E013C0.c)
-b061:01E01C50	40%	an earlier try got this far
-b062:01E003A0	99.2%	an earlier try got this far
-b062:01E042E0	83%	an earlier try got this far
-b064:01E030D0	71%	an earlier try got this far
-b070:01E00E80	99.2%	an earlier try got this far
-b070:01E034D0	95%	an earlier try got this far
-b097:01E01880	40%	an earlier try got this far
 b099:01E04C30	45% (138/310)	hard: in-file; frame 0x140 vs 0x120 and 24 insns short: structure wrong early (best draft: drafts/mod/b099_01E04C30.c)
 b112:01E04480	97% (231/237)	hard: (a) s64 quotient of func_001A0660: orig stores sext(q) then -q from the raw low word (paddub a0,v0; negu; dsll32/dsra32); (b) func_00208700 call keeps pk in a0 from the static helper call (best draft: drafts/mod/b112_01E04480.c)
-b114:01E01690	99.7%	an earlier try got this far
-b114:01E02AD0	40%	an earlier try got this far
 b115:01E02A10	99% (263/267)	hard: in-file; quad[1].y = quad[0].y (as b774:01E04530) restores the nop after the second func_002075F0 and drops the paddub a0; left: orig stores quad[0].y as sw 0x94(sp) with a nop after the else-arm mtc1, ours keeps addiu v0,sp,0x94 + sw 0(v0) (best draft: drafts/mod/b115_01E02A10.c)
 b120:01E021D0		hard: not tried: stopped by owner order mid-item (m2c draft ready; two 19-point trails at ctx+0x2C30/0x2D70 per slot) (best draft: drafts/mod/b120_01E021D0.c)
-b120:01E03B30	97%	an earlier try got this far
-b122:01E01690	99.7%	an earlier try got this far
-b122:01E02AD0	40%	an earlier try got this far
-b123:01E01590	99.7%	an earlier try got this far
-b123:01E029D0	40%	an earlier try got this far
-b126:01E023C0	40%	an earlier try got this far
-b128:01E01B40	40%	an earlier try got this far
 b130:01E01E60	45%	hard: same family as b018:01E01760 (pk kept in s1, n s16 then int spilled, o spilled to 0xFC, loop jumps to its bottom test, t+0.3f recomputed per use: no invariant hoist); no single pragma helps (best draft: drafts/mod/b130_01E01E60.c)
-b131:01E01340	94.5%	an earlier try got this far
-b131:01E04960	99.2%	an earlier try got this far
-b131:01E053B0	93%	an earlier try got this far
-b132:01E01340	99.2%	an earlier try got this far
 b134:01E011E0	67%	hard: heavy spills (k/j/pq/n3/last on stack, pts+s params spilled); B gets a struct-return temp per call site (sp1D0/sp1E0) that A does not; cousin of b134:01E00820 (best draft: drafts/mod/b134_01E011E0.c)
 b136:01E019D0	66% (217/330), same length	hard: scene manager; b136:01E01950's body is written inline (not auto-inlined); needs `#include ""` for its D_ globals; left: g/id/n/i register rotation (best draft: drafts/mod/b136_01E019D0.c)
-b137:01E01340	94.5%	an earlier try got this far
 b149:01E02D30	72%	an earlier try got this far
-b158:01E02630	40%	an earlier try got this far
 b159:01E00CE0	85% (297/351), same length	hard: scene manager (s32 arg0 + local g, n counter, trail pointer p, b159:01E00A90 written inline): left only an s1/s2 rotation (id/p/n/loop pointers); declaration order has no effect (best draft: drafts/mod/b159_01E00CE0.c)
 b159:01E016C0	57% (161/282)	hard: fresh C (b397:01E02D10's family): ours hoists r+0.8f into f21 and pre-tests the k loop; spills like b397 (best draft: drafts/mod/b159_01E016C0.c)
 b170:01E00C60	79% (212/267)	hard: g fixed with `s32 arg0` + local `g` cast (see PLAYBOOK-MODULES); left: id/i registers and the first jitter loop layout (best draft: drafts/mod/b170_01E00C60.c)
-b172:01E02F30	99%	an earlier try got this far
-b172:01E043A0	99.2%	an earlier try got this far
-b177:01E01170	40%	an earlier try got this far
 b177:01E01E90	99.7%	an earlier try got this far
-b179:01E00F20	40%	an earlier try got this far
 b179:01E03940		hard: ShFx_ReqBlur family: b029:01E05AA0 (84%) and b099:01E04C30 are hard for the same packet/UV temps; do together with them (best draft: drafts/mod/b179_01E03940.c)
-b181:01E01170	40%	an earlier try got this far
 b193:01E01D70	92% (299/325)	hard: chatB's old blocker stands: the original divides the constant UVs (0.0, 64.0 by 256.0) at runtime; pragmas opt_propagation/global_optimizer/opt_common_subs/opt_constant_propagation/opt_strength_reduction off all no help or worse (best draft: drafts/mod/b193_01E01D70.c)
-b196:01E014A0	40%	an earlier try got this far
-b199:01E00E10	40%	an earlier try got this far
-b200:01E01690	99.7%	an earlier try got this far
-b200:01E02AD0	40%	an earlier try got this far
-b201:01E00E10	40%	an earlier try got this far
 b215:01E01A70	95% (253/267)	hard: grid layout: `(2*f48)*20.0f` comes out const-first (mul.s f2,f3,f2) in ours; distance vector wants two hoisted pointers (&d.x, &d.z) where ours has one base +8 (best draft: drafts/mod/b215_01E01A70.c)
 b215:01E02660	80% (259/322)	hard: ring + layout match; left: the four screen-UV blocks (u/v from packet x/y, clamps) schedule differently (orig keeps -16.0 in f1 and 0.0 in f0, both subtractions first) (best draft: drafts/mod/b215_01E02660.c)
-b224:01E02030	40%	an earlier try got this far
-b224:01E03D20	99.7%	an earlier try got this far
-b229:01E00E80	99.2%	an earlier try got this far
-b233:01E04A70	74%	an earlier try got this far
-b235:01E02370	95%	an earlier try got this far
-b238:01E003A0	99.2%	an earlier try got this far
-b256:01E04AB0	99%	an earlier try got this far
 b262:01E00F50	98% (288/294)	hard: two strand fade steps must be u8 SPILLED (sb/lbu) with the third in fp; as u8 fp goes to the first one (chatA: any decl order); as s32 extra andi/sw (best draft: drafts/mod/b262_01E00F50.c)
 b262:01E013F0		hard: module main (358 insns, mostly init stores); stopped on the owner's order before drafting; likely needs the arg0-copy trick like c507
-b273:01E02450	77%	an earlier try got this far
-b275:01E02BC0	77%	an earlier try got this far
-b285:01E02120	99.2%	an earlier try got this far
-b351:01E003A0	94.5%	an earlier try got this far
-b351:01E02E00	99.2%	an earlier try got this far
 b351:01E068F0	84% (157/187)	hard: float + loop-counter colouring: orig i=s1/k=s0, dy,dz,dx div order, r/base in f26/f27 and per-i offsets f23-25; ours shifted by 2 (best draft: drafts/mod/b351_01E068F0.c)
-b355:01E030D0	71%	an earlier try got this far
 b357:01E03420	88% (234/267)	hard: three random angles: orig sext at rand, copies sext again into s32 loop angles after the size line, i=s2 / slot offset s3; ours sext twice early and loop regs s5/s6 (best draft: drafts/mod/b357_01E03420.c)
 b361:01E01CA0	70% (227/323)	hard: scene manager (b388/b538 form): the top `s1 = 0` var is both the tex loop counter (no sign-extend, do-while) and the s16 flash count in the run path; my s16 n adds sext + a pre-test (try first: `s32 n` + `n = (s16)(n + 1)`, see PLAYBOOK-MODULES b278) (best draft: drafts/mod/b361_01E01CA0.c)
-b369:01E003A0	99.2%	an earlier try got this far
-b370:01E011B0	99.2%	an earlier try got this far
 b378:01E02440	66% (212/321)	hard: PAINT_RAIN ring drawer written; frame 0x1E0 vs 0x1D0, joint vector kept in s2, the three "(kind 10/100 && count<256) ? joint : own" picks and the 12-quad inner loop schedule differ (best draft: drafts/mod/b378_01E02440.c)
-b379:01E02270	99.2%	an earlier try got this far
 b379:01E046B0	89% (327/369, ours 371)	hard: packet sits 8 low (orig 0x328, ours 0x330: an 8-byte local between v and pkt?), segs/k-loop delay slots filled where orig has nops (orig keeps segs spilled); pointer-reg order of &q[1..3]/&d[1..3] (best draft: drafts/mod/b379_01E046B0.c)
-b380:01E00440	40%	an earlier try got this far
-b381:01E01A80	99.2%	an earlier try got this far
 b390:01E015E0	67% (212/316)	hard: in-file; s-register colouring + 8 insns short (best draft: drafts/mod/b390_01E015E0.c)
-b404:01E01A80	99.2%	an earlier try got this far
-b405:01E008B0	99.2%	an earlier try got this far
-b407:01E019E0	40%	an earlier try got this far
-b408:01E011B0	99.2%	an earlier try got this far
-b439:01E00E80	99.2%	an earlier try got this far
 b443:01E01EA0	47% (137/292, structure right)	hard: one saved register short (orig s0..s7: p=s0,o=s5,g=s6,k=s7; ours 7 regs, frame 0x10 smaller); y-branch stores via addiu temps; decl order no effect (best draft: drafts/mod/b443_01E01EA0.c)
-b444:01E00E80	99.2%	an earlier try got this far
-b455:01E02150	99.2%	an earlier try got this far
-b455:01E03990	94.5%	an earlier try got this far
-b457:01E011B0	99.2%	an earlier try got this far
-b463:01E01C50	40%	an earlier try got this far
 b498:01E01DB0	62% (218/352)	hard: first draft; the original keeps &v.y in s0 across calls (v.y via pointer) and fills the trails through a base pointer; b120:01E021D0 looks like the same shape (best draft: drafts/mod/b498_01E01DB0.c)
 b499:01E038F0	49%	hard: RAIN tube, constant twin-ish of b130:01E01E60 (9 segments, /10, t from 2 by 0.3): original recomputes every loop invariant (trig address, t+0.3f); `opt_loop_invariants off` segfaults mwcc on it (best draft: drafts/mod/b499_01E038F0.c)
 b500:01E047C0		hard: not tried past m2c: spline ribbon draw (b018:01E01320 family, 2 trails, ~8 spilled locals, packet alpha ramp); needs a long session
 b506:01E01BA0	73% (257/351)	hard: module main, logic laid out (arg0 copy gives g=s0); left: counters n/i/k vs arg colouring (orig n=s1, arg=s2, k=s4) and &w hoisted into s3 for the effect loop (best draft: drafts/mod/b506_01E01BA0.c)
-b510:01E01340	99.2%	an earlier try got this far
-b510:01E02B80	94.5%	an earlier try got this far
 b517:01E01B10	68% (242/356)	hard: module main, same wall as b506:01E01BA0: the live-effect counter n wants s1 and arg s2 (ours arg s1, n s3: n's cheap web colours last); one fix should close both mains (best draft: drafts/mod/b517_01E01B10.c)
 b521:01E01BD0	78%	hard: g must colour first (s0, then n s1, id s2): `g = g0` + opt_propagation off fixes registers but un-rotates every loop (guards added); without the pragma 50% (best draft: drafts/mod/b521_01E01BD0.c)
-b526:01E02150	99.2%	an earlier try got this far
 b531:01E01970	64%	hard: mode-1 far-plane writes (pk+0x20..0x50 bitfield RMW) get hoisted out of the loop as 4 address regs, so base spills and frame is 0x240 vs 0x200; cousin of b018:01E00920 (best draft: drafts/mod/b531_01E01970.c)
-b558:01E003A0	99.2%	an earlier try got this far
-b572:01E01400	92%	an earlier try got this far
-b582:01E04E60	90%	an earlier try got this far
-b583:01E011B0	99.2%	an earlier try got this far
-b596:01E01A80	99.2%	an earlier try got this far
-b598:01E003A0	99.2%	an earlier try got this far
 b600:01E01990	89%	hard: first pass only (stop order): frame 0x10 big (stack locals), rest unchecked (best draft: drafts/mod/b600_01E01990.c)
-b601:01E00CB0	94.5%	an earlier try got this far
-b601:01E01DD0	99.2%	an earlier try got this far
-b603:01E00440	40%	an earlier try got this far
-b605:01E00440	40%	an earlier try got this far
-b617:01E02870	94.5%	an earlier try got this far
-b706:01E02260	99.2%	an earlier try got this far
 b706:01E050E0	81%	hard: frame 0x1D0 vs 0x1B0 (two unknown 16-byte stack slots after the packet); xyz[] copied through address regs (sp+0x110..0x128); f20/f22 (tw vs u0) and s2/s3 (tex vs k) swapped (best draft: drafts/mod/b706_01E050E0.c)
-b710:01E00440	40%	an earlier try got this far
-b716:01E003A0	99.2%	an earlier try got this far
-b716:01E016F0	94.5%	an earlier try got this far
 b717:01E03B84		hard: not a function: stray epilogue at text end (also b538:01E01380, b723:01E05C80, c030:01E02600)
 b743:01E01C70	96%	hard: 2nd spawn count `n = clock < 100 ? 2 : 2`: original sign-extends each arm then again into n (arms are s16 values, not constants); `(s16)(g->clock*0+2)` reaches 98% (best draft: drafts/mod/b743_01E01C70.c)
 b756:01E02360		hard: OBJ_MOVE_3: self-copies (w.x = w.x) and `c.eq.s v.x, 0` with both arms loading the same field (macro-like ternaries); not attempted past reading
-b758:01E03700	99%	an earlier try got this far
-b767:01E003A0	99.2%	an earlier try got this far
 c020:01E003C0	83% (169/203)	hard: saved-register colouring only (loop counters/pointer temps); chatF tried 120 orders (best draft: drafts/mod/c020_01E003C0.c)
-c027:01E00660	67%	an earlier try got this far
 c030:01E01510	69% (161/233)	hard: colouring fixed with `T *g = (T *)arg0;` + a separate init counter k; left: 12 unfilled delay-slot nops the original keeps (cmov/jump-threading "give up"?), slot loops want counter s3/pointer s2, pragmas no help (best draft: drafts/mod/c030_01E01510.c)
-c031:01E006E0	67%	an earlier try got this far
 c056:01E00360	dk try 100%	hard: REJECTED by the full build
-c056:01E04CF0	97%	an earlier try got this far
 c059:01E03610	273/313	hard: swing/depth s16 must convert before each func_00108030 call into f21/f20 (orig reloads the sheet index after the cast); a float temp hoists too early (best draft: drafts/mod/c059_01E03610.c)
 c061:01E01100	70% (174/249)	hard: s-register colouring only; probe search: no single/pair vreg move reaches target (o s1, s s0, flags s5, p s4); needs a different web structure (best draft: drafts/mod/c061_01E01100.c)
 c061:01E03D80	76%	an earlier try got this far
 c404:01E00080		hard: not tried past reading: whole-module draw (64 slots x 8 quads, GS packet header + 14-bit UV bitfields kept in s5/fp/s6, spills); needs a long session
 c501:01E00910	96%	hard: g must take s0 over ot: local copy + opt_propagation off fixes it but then the quad loop gets a top test and dst as addiu base (index loop wants propagation on) (best draft: drafts/mod/c501_01E00910.c)
-c514:01E01040	98%	an earlier try got this far
 c534:01E027F0	86% (345/399, ours 395)	hard: logic decoded (LkSortRing idioms); left: UV writes go through pointers to the vertex uv words (orig a0/a1/a2/v1 = &pkt.v[k].uv) and the obj arg spill slot (0xA8 vs 0xAC) (best draft: drafts/mod/c534_01E027F0.c)
-c541:01E02C40	84%	an earlier try got this far
 c603:01E00920	91% (286/314)	hard: stack only: orig pkt at sp+0x1A8 (ours 0x1A0, 8-byte gap after p[4]) and cam spill at 0x140 (ours 0x14C); code otherwise right (best draft: drafts/mod/c603_01E00920.c)
 c605:01E028C0	96% (337/343 vs 352)	hard: left: a dead 24-byte copy of o+0x60..0x77 into three stack u64 (sp+0x178/180/188, stored via addiu pointers) before the flag tests that MWCC drops from our C (best draft: drafts/mod/c605_01E028C0.c)
 c606:01E00080	70% (127/182, same length)	hard: stack: original d[3] at sp+0x158 + 8-aligned pkt at 0x168 (ours 0x160/0x170); regs o=s0 mode=s2 t=s1 (ours s2/s1/s0) (best draft: drafts/mod/c606_01E00080.c)
