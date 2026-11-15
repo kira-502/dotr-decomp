@@ -950,3 +950,8 @@ there is a source form that gives the original.
   constant's `lui`): declare the second constant as a block local before the `if` (b140:01E037A0).
 - **An `||` of two ranges where the original uses `$at` for every compare:** write the upper bounds with `<=`
   (`t <= 77`, not `t < 78`) (b140:01E037A0).
+- **Float-argument order flipping across a whole function:** search the forms of every two-float call together (a
+  random search over block-local/alias choices scored by fulltry found b419:01E02B40 in 300 tries; one call at a time
+  does not converge).
+- **14-bit UV bitfields scheduling wrong:** name the scaled coordinate (`x = kind % 4 * 32; ->u = x << 4;`), not the
+  cell index (c402:01E00080).
