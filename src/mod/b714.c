@@ -1540,7 +1540,401 @@ static s32 func_01E03230_b714(Game_b714_01E03230 *g, Fx_b714_01E03230 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b714", func_01E032B0_b714);
+/* shape b714:01E032B0 (b714), 894 insns, 1 copy: b714 scene manager (b134:01E02A00's form): setup (eight joints,
+   textures, a +-15 jitter table), run B714_W_S, fill trail G at frame 86 and trails A-F at 106, swap the six joints
+   at 103 and back at 116, follow trail G always and A-F before frame 114, step the 200 slots (two glows and the
+   0x1E03230 sound written out), draw ten slot kinds; returns 1 / 4 / 2 at frames 100 / 120 / 110, 8 once the
+   190-frame countdown runs out */
+
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    s16 f6;
+    u8 pad8[0x1C];
+    void *fn;
+    u8 c0[4];
+    u8 pad2C[4];
+    s16 kind;
+    s16 t;
+    s16 rot;
+    s16 used;
+    s16 h38;
+    u8 pad3A[6];
+} Slot_b714_01E032B0;
+
+typedef struct {
+    u8 pad0[0x80];
+    s32 ot2;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    Vec4f u94;
+    u8 padA4[0x34];
+    u8 camD8[0x238];
+    s32 w310;
+    s32 w314;
+    s32 w318;
+    u8 pad31C[0x24];
+    s32 tex[16];
+    u8 pad380[0xF8];
+    Slot_b714_01E032B0 slot[200];
+    u8 pad3678[0x58];
+    Vec_b018_01E00EE0 tr[7][10];
+    u8 pad3B30[0x10];
+    s32 timer;
+    u8 pad3B44[8];
+    s32 ot;
+    u8 pad3B50[0x38];
+    s16 j[8];
+    u8 pad3B98[4];
+    s16 id;
+    s16 frame;
+    u8 pad3BA0[2];
+    s8 jit[0x100];
+    u8 pad3CA2[2];
+    u8 cam[0x16C];
+} Scene_b714_01E032B0;
+
+static s32 func_01E032B0_b714(s32 arg0, s32 id) {
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_0019A5C8(void);
+    extern void func_001F7170(s32, s32, void *, void *, s32);
+    extern void b714_01E01DB0();
+    extern void b714_01E041D0();
+    extern void b714_01E00E30();
+    extern void b714_01E005A0();
+    Scene_b714_01E032B0 *g = (Scene_b714_01E032B0 *)arg0;
+    s32 m;
+    Vec4f c;
+    Vec4f rm;
+    Vec4f rm2;
+    Vec4f rm3;
+    Vec4f rm4;
+    Vec4f rm5;
+    Vec4f rm6;
+    Vec4f p0;
+    Vec4f p1;
+    Vec4f p2;
+    Vec4f p3;
+    Vec4f p4;
+    Vec4f p5;
+    Vec4f p6;
+    u8 buf[0x90] __attribute__((aligned(8)));
+    F_b714_01E03230 b;
+    F_b714_01E03230 a;
+    s32 i;
+
+    m = 0;
+    g->ot2 = func_00207500();
+    g->ot = func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x3E10);
+        func_00107C10(g->cam);
+        func_00107C10(g->camD8);
+        g->id = id;
+        g->timer = 0xBE;
+        g->w310 = 0;
+        g->w314 = 0;
+        g->w318 = 0;
+        g->j[0] = func_001F5560(func_001F53A0(), 4, 1);
+        g->j[1] = func_001F5560(func_001F53A0(), 5, 0);
+        g->j[2] = func_001F5560(func_001F53A0(), 6, 0);
+        g->j[3] = func_001F5560(func_001F53A0(), 0xD, 0);
+        g->j[4] = func_001F5560(func_001F53A0(), 0xE, 0);
+        g->j[5] = func_001F5560(func_001F53A0(), 0xF, 0);
+        g->j[6] = func_001F5560(func_001F53A0(), 0x17, 0);
+        g->j[7] = func_001F5560(func_001F53A0(), 0x1A, 0);
+        for (i = 0; i < 3; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        for (i = 13; i < 16; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        for (i = 0; i < 0x100; i++) {
+            g->jit[i] = func_0019A5C8() % 30 - 15;
+        }
+        return 0;
+    }
+    b714_01E01DB0(g, 0);
+    if (g->frame == 0x56) {
+        Vec_b018_01E00EE0 *p = g->tr[6];
+
+        func_001F5620(func_001F53A0(), g->j[0], &p0);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = p0.x;
+            p->y = p0.y;
+            p->z = p0.z;
+        }
+    }
+    if (g->frame == 0x6A) {
+        Vec_b018_01E00EE0 *p = g->tr[0];
+
+        func_001F5620(func_001F53A0(), g->j[0], &p1);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = p1.x;
+            p->y = p1.y;
+            p->z = p1.z;
+        }
+    }
+    if (g->frame == 0x6A) {
+        Vec_b018_01E00EE0 *p = g->tr[1];
+
+        func_001F5620(func_001F53A0(), g->j[1], &p2);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = p2.x;
+            p->y = p2.y;
+            p->z = p2.z;
+        }
+    }
+    if (g->frame == 0x6A) {
+        Vec_b018_01E00EE0 *p = g->tr[2];
+
+        func_001F5620(func_001F53A0(), g->j[2], &p3);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = p3.x;
+            p->y = p3.y;
+            p->z = p3.z;
+        }
+    }
+    if (g->frame == 0x6A) {
+        Vec_b018_01E00EE0 *p = g->tr[3];
+
+        func_001F5620(func_001F53A0(), g->j[3], &p4);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = p4.x;
+            p->y = p4.y;
+            p->z = p4.z;
+        }
+    }
+    if (g->frame == 0x6A) {
+        Vec_b018_01E00EE0 *p = g->tr[4];
+
+        func_001F5620(func_001F53A0(), g->j[4], &p5);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = p5.x;
+            p->y = p5.y;
+            p->z = p5.z;
+        }
+    }
+    if (g->frame == 0x6A) {
+        Vec_b018_01E00EE0 *p = g->tr[5];
+
+        func_001F5620(func_001F53A0(), g->j[5], &p6);
+        for (i = 0; i < 9; i++, p++) {
+            p->x = p6.x;
+            p->y = p6.y;
+            p->z = p6.z;
+        }
+    }
+    if (g->frame == 0x67) {
+        g->j[0] = func_001F5560(func_001F53A0(), 8, 1);
+        g->j[1] = func_001F5560(func_001F53A0(), 0xA, 0);
+        g->j[2] = func_001F5560(func_001F53A0(), 0xC, 0);
+        g->j[3] = func_001F5560(func_001F53A0(), 7, 0);
+        g->j[4] = func_001F5560(func_001F53A0(), 9, 0);
+        g->j[5] = func_001F5560(func_001F53A0(), 0xB, 0);
+    }
+    if (g->frame == 0x74) {
+        g->j[0] = func_001F5560(func_001F53A0(), 4, 1);
+        g->j[1] = func_001F5560(func_001F53A0(), 5, 0);
+        g->j[2] = func_001F5560(func_001F53A0(), 6, 0);
+        g->j[3] = func_001F5560(func_001F53A0(), 0xD, 0);
+        g->j[4] = func_001F5560(func_001F53A0(), 0xE, 0);
+        g->j[5] = func_001F5560(func_001F53A0(), 0xF, 0);
+    }
+    func_01E00080_b714((Vec_b004_01E00B40 *)&g->tr[6][9], 10, g->j[0]);
+    if (g->frame < 0x72) {
+        func_01E00080_b714((Vec_b004_01E00B40 *)&g->tr[0][9], 10, g->j[0]);
+    }
+    if (g->frame < 0x72) {
+        func_01E00080_b714((Vec_b004_01E00B40 *)&g->tr[1][9], 10, g->j[1]);
+    }
+    if (g->frame < 0x72) {
+        func_01E00080_b714((Vec_b004_01E00B40 *)&g->tr[2][9], 10, g->j[2]);
+    }
+    if (g->frame < 0x72) {
+        func_01E00080_b714((Vec_b004_01E00B40 *)&g->tr[3][9], 10, g->j[3]);
+    }
+    if (g->frame < 0x72) {
+        func_01E00080_b714((Vec_b004_01E00B40 *)&g->tr[4][9], 10, g->j[4]);
+    }
+    if (g->frame < 0x72) {
+        func_01E00080_b714((Vec_b004_01E00B40 *)&g->tr[5][9], 10, g->j[5]);
+    }
+    for (i = 0; i < 200; i++) {
+        if (g->slot[i].used != 0) {
+            if (g->slot[i].fn == (void *)func_01E02300_b714) {
+                func_01E02300_b714((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E02450_b714) {
+                func_01E02450_b714((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E025D0_b714) {
+                func_01E025D0_b714((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E02760_b714) {
+                func_01E02760_b714((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E02840_b714) {
+                func_001076F0(g->slot[i].c0, 0x40, 0x30, 0);
+                if (g->slot[i].used == 1) {
+                    g->slot[i].h38 = 5;
+                    g->slot[i].used = 2;
+                }
+                if (g->slot[i].t < 0xC) {
+                    g->slot[i].c0[3] = 0x60;
+                } else if (g->slot[i].c0[3] > 10) {
+                    g->slot[i].c0[3] -= 9;
+                } else {
+                    g->slot[i].used = 0;
+                }
+                g->slot[i].f6 = 10;
+                g->slot[i].t++;
+            }
+            if (g->slot[i].fn == (void *)func_01E028F0_b714) {
+                func_01E028F0_b714((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E02AA0_b714) {
+                func_01E02AA0_b714((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E02C30_b714) {
+                func_01E02C30_b714((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E02DA0_b714) {
+                if (g->slot[i].used == 1) {
+                    func_001076F0(g->slot[i].c0, 0xA0, 0x80, 8);
+                    g->slot[i].f6 = 9;
+                    g->slot[i].c0[3] = 0x80;
+                    g->slot[i].h38 = 6;
+                    g->slot[i].used = 2;
+                }
+                if (g->slot[i].t < 0xC) {
+                    g->slot[i].c0[3] = 0x60;
+                } else if (g->slot[i].c0[3] > 10) {
+                    g->slot[i].c0[3] -= 9;
+                } else {
+                    g->slot[i].used = 0;
+                }
+                g->slot[i].t++;
+            }
+            if (g->slot[i].fn == (void *)func_01E02E50_b714) {
+                func_01E02E50_b714((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E02FF0_b714) {
+                func_01E02FF0_b714((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E03170_b714) {
+                func_01E03170_b714((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (void *)func_01E03230_b714) {
+                a = D_01E04300_b714;
+                b = D_01E04308_b714;
+                func_001F7170(2, 0, &a, &b, 0);
+                if (g->timer == 10) {
+                    g->slot[i].used = 0;
+                }
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &c);
+    for (i = 0; i < 200; i++) {
+        if (g->slot[i].used != 0) {
+            m++;
+            if (g->slot[i].fn == (void *)func_01E02300_b714) {
+                b714_01E041D0(g, &g->slot[i], buf, 0);
+            }
+            if (g->slot[i].fn == (void *)func_01E02450_b714) {
+                g->tex88 = g->tex[15];
+                func_00106080(&rm, 0x9E, g->slot[i].rot, NULL);
+                g->u94 = rm;
+                func_01E00780_b714((void *)g, (void *)&g->slot[i], (void *)buf, g->jit);
+            }
+            if (g->slot[i].fn == (void *)func_01E025D0_b714) {
+                b714_01E041D0(g, &g->slot[i], buf, 0);
+                b714_01E041D0(g, &g->slot[i], buf, 1);
+            }
+            if (g->slot[i].fn == (void *)func_01E02760_b714) {
+                g->tex88 = g->tex[15];
+                func_00106080(&rm2, 0x9B, g->slot[i].rot, NULL);
+                g->u94 = rm2;
+                b714_01E00E30(g, &g->slot[i], buf, 0);
+            }
+            if (g->slot[i].fn == (void *)func_01E02840_b714) {
+                if (g->slot[i].kind == 0) {
+                    func_01E01940_b714((s32)g, (void *)&g->slot[i], g->tr[0], g->tr[3]);
+                }
+                if (g->slot[i].kind == 1) {
+                    func_01E01940_b714((s32)g, (void *)&g->slot[i], g->tr[1], g->tr[4]);
+                }
+                if (g->slot[i].kind == 2) {
+                    func_01E01940_b714((s32)g, (void *)&g->slot[i], g->tr[2], g->tr[5]);
+                }
+            }
+            if (g->slot[i].fn == (void *)func_01E028F0_b714) {
+                g->tex88 = g->tex[15];
+                func_00106080(&rm3, 0x9B, g->slot[i].rot, NULL);
+                g->u94 = rm3;
+                func_01E00780_b714((void *)g, (void *)&g->slot[i], (void *)buf, g->jit);
+            }
+            if (g->slot[i].fn == (void *)func_01E02AA0_b714) {
+                g->tex88 = g->tex[1];
+                func_00106080(&rm4, 0xA, g->slot[i].rot, NULL);
+                g->u94 = rm4;
+                func_01E00B00_b714((void *)g, (void *)&g->slot[i], (void *)buf, g->jit);
+            }
+            if (g->slot[i].fn == (void *)func_01E02C30_b714) {
+                g->tex88 = g->tex[15];
+                func_00106080(&rm5, 0x9F, g->slot[i].rot, NULL);
+                g->u94 = rm5;
+                func_01E00B00_b714((void *)g, (void *)&g->slot[i], (void *)buf, g->jit);
+            }
+            if (g->slot[i].fn == (void *)func_01E02DA0_b714) {
+                if (g->slot[i].kind == 0) {
+                    func_01E01500_b714((s32)g, (void *)&g->slot[i], g->tr[0]);
+                }
+                if (g->slot[i].kind == 1) {
+                    func_01E01500_b714((s32)g, (void *)&g->slot[i], g->tr[1]);
+                }
+                if (g->slot[i].kind == 2) {
+                    func_01E01500_b714((s32)g, (void *)&g->slot[i], g->tr[2]);
+                }
+            }
+            if (g->slot[i].fn == (void *)func_01E02E50_b714) {
+                g->tex88 = g->tex[2];
+                func_00106080(&rm6, 0x14, g->slot[i].rot, NULL);
+                g->u94 = rm6;
+                b714_01E005A0(g, &g->slot[i], buf, 0);
+                b714_01E005A0(g, &g->slot[i], buf, 1);
+            }
+        }
+    }
+    if (g->timer != 0) {
+        g->timer--;
+    }
+    if (g->frame == 0x64) {
+        return 1;
+    }
+    if (g->frame == 0x78) {
+        return 4;
+    }
+    if (g->frame == 0x6E) {
+        return 2;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b714:01E040B0, 72 insns: twin of b046:01E03E20: take the first free slot of the 200-slot pool, clear it, give
    it the scene's colour twice, the scene matrix, the scene's value 0x3B9A and the two arguments; returns 1 if a
