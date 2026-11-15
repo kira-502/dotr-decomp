@@ -944,3 +944,5 @@ there is a source form that gives the original.
   `> 3.0f` compiled and matched) (c059:01E00FB0).
 - **`daddiu $sN, $zero, K` where yours has `addiu`, for if/else-picked constants kept across calls:** the locals are
   `u8` (c547:01E02700).
+- **A main-program call with its last argument loaded first:** the argument had a cast against an int parameter in
+  functions.h; a block-scope prototype taking `void *` with no cast restores the order (c031:01E00D00).
