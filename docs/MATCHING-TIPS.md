@@ -989,3 +989,6 @@ there is a source form that gives the original.
 - **A stack address at or above the frame size passed as an output buffer** (sp+0xD0 in a 0xD0 frame): the original
   indexes past an array at the top of the frame; no honest layout reproduces it (b644:01E04740 keeps `v[3]` past
   `Vec4f v[2]` with a comment, like the LkEff_SetCocoon managers).
+- **A hoisted loop-invariant with `andi aN, sN, 0xFF` at each call:** a u8 parameter in a block prototype and the
+  value passed uncast (`j & 1`); a `(u8)` cast folds the `andi` (b526:01E05E90).
+- **`jal fptosi` then `andi 0xFF` for a float byte argument:** `(u8)(s32)s`; `(u8)s` calls fptoui (b096:01E00AA0).
