@@ -996,3 +996,6 @@ there is a source form that gives the original.
   the ring as a 2D array of a small struct (`V3 ring[37][4]`, copies `ring[36][j] = ring[0][j]`) (b033:01E04020).
 - **Texture-setup outputs 8 bytes past the packet:** put the packet and the `func_00208800` out-arguments in one
   `aligned(8)` local struct (b033:01E04020, as b010's Afx04).
+- **Many float-constant calls in a row:** search them in order, scoring each choice only by the differing words up to
+  that call's `jal` (a call's load order depends on earlier calls, not later ones); this converged where floatsearch's
+  whole-function greedy stalled (b037:01E04FB0 39 → 8 words; work/floatseq_example.py).
