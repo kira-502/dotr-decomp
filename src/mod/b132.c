@@ -955,7 +955,279 @@ static s32 func_01E01D90_b132(Beam_b040_01E03E90 *o, s32 target, s32 count) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b132", func_01E02690_b132);
+/* shape b132:01E02690 (ShFx_NdlR), 842 insns, 1 copy (-O3,p): b532:01E00080's needle form at -O3: n needle rays (0x6C
+   bytes each); a mask other than 0xFF repeats the ray every mask+1 frames from a random table index; angle steps by
+   20 plus a table byte; each segment projects two points (the second scaled), drawn as one quad turned to face its
+   direction (flags 4) or as two quads of depth-scaled half-widths */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b132_01E02690;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b132_01E02690;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b132_01E02690 p;
+} Vtx_b132_01E02690;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b132_01E02690 v[4];
+    u8 tail[0x20];
+} Pkt_b132_01E02690;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 page;
+    u8 pad06[6];
+    s32 u;
+    u8 pad10[4];
+    s32 v;
+} Tex_b132_01E02690;
+
+typedef struct {
+    u8 step;
+    u8 pad01;
+    u8 total;
+    u8 mask;
+    u8 flags;
+    u8 pad05[3];
+    u8 segments;
+    u8 index;
+    u8 texkind;
+    u8 texpage;
+    u8 texmode;
+    u8 pad0D[3];
+    u8 *table;
+    f32 size;
+    f32 scale;
+    f32 radius;
+    f32 width;
+    u8 b0, g0, r0, a0;
+    u8 b1, g1, r1, a1;
+    Vec_b132_01E02690 pos;
+    Vec_b132_01E02690 vel;
+    s32 rot[4];
+    s32 spin[4];
+} Ray_b132_01E02690;
+
+#pragma optimization_level 3
+
+static s32 func_01E02690_b132(Ray_b132_01E02690 *obj, s32 target __attribute__((aligned(8))), s32 count) {
+    extern Tex_b132_01E02690 D_01E076C0_b132;
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_001020B0(void *, s32, s32);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, s32, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00101EE0(void *, void *, s32);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern f32 func_001018E0(f32, f32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern s32 func_0019A5C8(void);
+    extern void func_002075F0(void *, s32, s32);
+    Ray_b132_01E02690 *o;
+    s32 i;
+    u8 idx;
+    s32 j;
+    s32 k;
+    s32 n;
+    s32 span;
+    s32 dx;
+    s32 dy;
+    s32 texture;
+    f32 angle;
+    f32 step;
+    f32 w0;
+    f32 w1;
+    f32 zd;
+    f32 r;
+    f32 y;
+    f32 x;
+    f32 a;
+    f32 half;
+    f32 z;
+    f32 lf;
+    f32 m2[16];
+    f32 m1[16];
+    Xyz_b132_01E02690 xy[2];
+    Vec_b132_01E02690 p[2];
+    Tex_b132_01E02690 tex0;
+    Tex_b132_01E02690 tex;
+    Pkt_b132_01E02690 pkt __attribute__((aligned(8)));
+    f32 dep[2];
+
+    o = obj;
+    tex0 = D_01E076C0_b132;
+    for (i = 0; i < count; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        if (o->flags & 2) {
+            texture = func_00202BF0(5, o->texkind);
+            tex.page = o->texpage;
+            func_001020B0(&tex, o->texmode, 0);
+        } else {
+            texture = func_00202BF0(tex0.id, tex0.kind);
+            tex = tex0;
+        }
+        n = o->mask;
+        if (n != 0xFF) {
+            k = n - (o->step & o->mask);
+            if (k == n) {
+                o->index = func_0019A5C8() >> 4;
+            }
+        } else {
+            n = o->total;
+            k = n - o->step;
+        }
+        idx = o->index;
+        step = 20.0f + (f32)(u32)o->table[idx];
+        idx++;
+        angle = 0.0f;
+        o->pos.x += o->vel.x;
+        o->pos.y += o->vel.y;
+        o->pos.z += o->vel.z;
+        o->rot[0] += o->spin[0];
+        o->rot[1] += o->spin[1];
+        o->rot[2] += o->spin[2];
+        func_00101BA0(o, &o->pos);
+        func_0020EB40(m1);
+        func_0020C940(m2, 0, o->rot, &o->pos);
+        func_0020BC00(m1, m2);
+        ((Pkt_b132_01E02690 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b132_01E02690 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b132_01E02690 *)(s32)&pkt)->regs = 0x421421421421LL;
+        ((Pkt_b132_01E02690 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = o->r0;
+        pkt.v[2].r = pkt.v[3].r = o->r1;
+        pkt.v[0].g = pkt.v[1].g = o->g0;
+        pkt.v[2].g = pkt.v[3].g = o->g1;
+        pkt.v[0].b = pkt.v[1].b = o->b0;
+        pkt.v[2].b = pkt.v[3].b = o->b1;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = o->a0;
+        pkt.v[3].a = o->a1;
+        func_00101EE0(&pkt, &tex, texture);
+        span = n - k;
+        for (j = 0; j < o->segments; j++) {
+            if (o->flags & 1) {
+                x = o->size * (o->table[idx] - o->table[idx + 1]) / 255.0f;
+                y = o->size * (o->table[idx + 2] - o->table[idx + 3]) / 255.0f;
+                z = o->size * (o->table[idx + 4] - o->table[idx + 5]) / 255.0f;
+                idx += 6;
+            } else {
+                angle += step;
+                if (!(angle <= 360.0f)) {
+                    angle -= 360.0f;
+                }
+                r = o->radius * (f32)(u32)o->table[idx] / 255.0f;
+                a = 3.1415927f * angle / 180.0f;
+                x = r * func_001A6898(a);
+                z = r * func_001A6A88(a);
+                idx++;
+                half = o->size / 2.0f;
+                y = half + half * (f32)(u32)o->table[idx] / 255.0f;
+                idx++;
+            }
+            lf = span;
+            p[0].x = x * lf;
+            p[0].y = y * lf;
+            p[0].z = z * lf;
+            p[1].x = o->scale * (x * lf);
+            p[1].y = o->scale * (y * lf);
+            p[1].z = o->scale * (z * lf);
+            if (func_00205440(&p[0], m1, &xy[0], &dep[0]) == 0 || func_00101600(&xy[0]) == 0 ||
+                func_00205440(&p[1], m1, &xy[1], &dep[1]) == 0 || func_00101600(&xy[1]) == 0) {
+                continue;
+            }
+            w0 = func_001018E0(o->width, dep[0]);
+            w1 = func_001018E0(o->width, dep[1]);
+            if (o->flags & 0x80) {
+                pkt.v[0].p.z = pkt.v[1].p.z = pkt.v[2].p.z = pkt.v[3].p.z = 0xFFFFFE;
+                zd = 0.0f;
+            } else {
+                if (dep[0] < dep[1]) {
+                    zd = dep[0];
+                } else {
+                    zd = dep[1];
+                }
+                pkt.v[0].p.z = pkt.v[1].p.z = xy[0].z;
+                pkt.v[2].p.z = pkt.v[3].p.z = xy[1].z;
+            }
+            pkt.v[0].p.f = pkt.v[1].p.f = pkt.v[2].p.f = pkt.v[3].p.f = 0;
+            if (o->flags & 4) {
+                dy = xy[1].y - xy[0].y;
+                dy = dy >= 0 ? dy : -dy;
+                dx = xy[1].x - xy[0].x;
+                dx = dx >= 0 ? dx : -dx;
+                if (dy < dx) {
+                    pkt.v[0].p.y = xy[0].y;
+                    pkt.v[1].p.y = (u32)(xy[0].y - w0);
+                    pkt.v[2].p.y = (u32)(xy[0].y + w0);
+                    pkt.v[3].p.y = xy[1].y;
+                    if (xy[0].x < xy[1].x) {
+                        pkt.v[0].p.x = (u32)(xy[0].x - w0);
+                    } else {
+                        pkt.v[0].p.x = (u32)(xy[0].x + w0);
+                    }
+                    pkt.v[1].p.x = pkt.v[2].p.x = xy[0].x;
+                    pkt.v[3].p.x = xy[1].x;
+                } else {
+                    pkt.v[0].p.x = xy[0].x;
+                    pkt.v[1].p.x = (u32)(xy[0].x - w0);
+                    pkt.v[2].p.x = (u32)(xy[0].x + w0);
+                    pkt.v[3].p.x = xy[1].x;
+                    if (xy[0].y < xy[1].y) {
+                        pkt.v[0].p.y = (u32)(xy[0].y - w0);
+                    } else {
+                        pkt.v[0].p.y = (u32)(xy[0].y + w0);
+                    }
+                    pkt.v[1].p.y = pkt.v[2].p.y = xy[0].y;
+                    pkt.v[3].p.y = xy[1].y;
+                }
+                func_002075F0(&pkt, target, (u32)zd);
+            } else {
+                pkt.v[0].p.y = (u32)(xy[0].y - w0);
+                pkt.v[1].p.y = (u32)(xy[1].y - w1);
+                pkt.v[2].p.y = (u32)(xy[0].y + w0);
+                pkt.v[3].p.y = (u32)(xy[1].y + w1);
+                pkt.v[0].p.x = pkt.v[2].p.x = xy[0].x;
+                pkt.v[1].p.x = pkt.v[3].p.x = xy[1].x;
+                func_002075F0(&pkt, target, (u32)zd);
+                pkt.v[0].p.x = (u32)(xy[0].x - w0);
+                pkt.v[1].p.x = (u32)(xy[1].x - w1);
+                pkt.v[2].p.x = (u32)(xy[0].x + w0);
+                pkt.v[3].p.x = (u32)(xy[1].x + w1);
+                pkt.v[0].p.y = pkt.v[2].p.y = xy[0].y;
+                pkt.v[1].p.y = pkt.v[3].p.y = xy[1].y;
+                func_002075F0(&pkt, target, (u32)zd);
+            }
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* OVL_WARM */
 
