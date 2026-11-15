@@ -971,7 +971,257 @@ static s32 func_01E02070_b458(void *arg0, s32 ot, s32 n) {
 #pragma opt_propagation reset
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b458", func_01E02BC0_b458);
+/* shape b458:01E02BC0 (ShFx_Vlt03), 786 insns, 1 copy (-O2,p): ShFx_Vlt03 at -O2 with opt_propagation off:
+   b457:01E026E0's lightning strips with Vlt02's inline s[k] coordinates and the rotation j & 3 in the switch */
+
+typedef struct {
+    f32 x, y, z;
+} Vec3_b458_01E02BC0;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b458_01E02BC0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b458_01E02BC0 xyz;
+} Vtx_b458_01E02BC0;
+
+typedef struct {
+    u64 u : 14;
+    u64 pad0 : 2;
+    u64 v : 14;
+    u64 pad1 : 34;
+} UV_b458_01E02BC0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b458_01E02BC0 v[4];
+    u8 tail[0x20];
+} Pkt_b458_01E02BC0;
+
+typedef struct {
+    s32 k0, k1;
+    s32 u, w, v, h;
+} Tex_b458_01E02BC0;
+
+typedef struct {
+    u8 b5[5];
+    u8 b5x;
+    u8 pad6[0x12];
+} Uvs_b458_01E02BC0;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 pad5[3];
+    u8 n;
+    u8 texid;
+    u8 frame;
+    u8 bB;
+    u8 anim;
+    u8 wdiv;
+    u8 step;
+    u8 flags2;
+    u8 pad10[4];
+    f32 grow;
+    u8 b, g, r, a;
+    Vec3_b458_01E02BC0 *pts;
+} Strip_b458_01E02BC0;
+
+extern Tex_b458_01E02BC0 D_01E06D70_b458;
+
+#pragma optimization_level 2
+#pragma opt_propagation off
+
+static s32 func_01E02BC0_b458(void *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00101EE0(void *, void *, void *);
+    extern void func_001020B0();
+    extern void func_00101C80(void *, void *);
+    Strip_b458_01E02BC0 *e = arg0;
+    f32 mat[16];
+    Xyz_b458_01E02BC0 s[3];
+    Vec4f v;
+    Uvs_b458_01E02BC0 uvs;
+    Tex_b458_01E02BC0 tmpl;
+    Pkt_b458_01E02BC0 pkt __attribute__((aligned(8)));
+    f32 depth[2];
+    u8 bl[4];
+    Vec3_b458_01E02BC0 *pts;
+    s32 i;
+    void *tex;
+    s32 j;
+    s32 start;
+    s32 end;
+    s32 k;
+    s32 cnt;
+    s32 dx;
+    s32 dy;
+    f32 fdx;
+    f32 fdy;
+    f32 w;
+    f32 z;
+
+    tmpl = D_01E06D70_b458;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        func_0020EB40(mat);
+        ((Pkt_b458_01E02BC0 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b458_01E02BC0 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b458_01E02BC0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b458_01E02BC0 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = e->r;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = e->g;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = e->b;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        if (e->flags & 1) {
+            tex = (void *)func_00202BF0(4, 0xF);
+            ((Pkt_b458_01E02BC0 *)(s32)&pkt)->count |= 0x800;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[0].st)->u = tmpl.u * 16;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[0].st)->v = tmpl.h * 16;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[1].st)->u = tmpl.u * 16;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[1].st)->v = tmpl.v * 16;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[2].st)->u = tmpl.w * 16;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[2].st)->v = tmpl.h * 16;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[3].st)->u = tmpl.w * 16;
+            ((UV_b458_01E02BC0 *)(s32)&pkt.v[3].st)->v = tmpl.v * 16;
+            func_00208CB0(&pkt, (u64)0xA | ((u64)tmpl.u << 4) | ((u64)tmpl.w << 14) | ((u64)tmpl.v << 24) |
+                                    ((u64)(tmpl.h - 1) << 34));
+            func_00208700(&pkt, tex, 1);
+            func_00101C80(&tmpl, bl);
+            func_002086D0(&pkt, (u64)bl[0] | ((u64)bl[1] << 2) | ((u64)bl[2] << 4) | ((u64)bl[3] << 6));
+        } else {
+            tex = (void *)func_00202BF0(5, e->texid);
+            uvs.b5x = e->bB;
+            func_001020B0(&uvs, e->frame, e->anim);
+            func_00101EE0(&pkt, &uvs, tex);
+        }
+        if (!(e->flags & 2) && e->life < e->n) {
+            start = e->n - e->life;
+        } else {
+            start = 0;
+        }
+        if (e->step > 0 && e->max - e->life < e->n / e->step) {
+            end = e->step * (e->max - e->life);
+        } else {
+            end = e->n;
+        }
+        pts = e->pts;
+        for (j = start; j < end; j++) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = e->a;
+            if (e->flags2 & 1) {
+                if (j == start) {
+                    pkt.v[0].a = pkt.v[1].a = 0;
+                }
+                if (j == end - 1) {
+                    pkt.v[2].a = pkt.v[3].a = 0;
+                }
+            }
+            v.x = pts[j].x;
+            v.y = pts[j].y;
+            v.z = pts[j].z;
+            if (func_00205440(&v, mat, &s[0], &depth[0]) == 0 || func_00101600(&s[0]) == 0) {
+                continue;
+            }
+            v.x = pts[j + 1].x;
+            v.y = pts[j + 1].y;
+            v.z = pts[j + 1].z;
+            if (func_00205440(&v, mat, &s[1], &depth[1]) == 0 || func_00101600(&s[1]) == 0) {
+                continue;
+            }
+            dx = s[0].x - s[1].x;
+            fdx = (dx >= 0) ? dx : -dx;
+            dy = s[0].y - s[1].y;
+            fdy = (dy >= 0) ? dy : -dy;
+            w = func_001A6C60(fdx * fdx + fdy * fdy) / e->wdiv;
+            if (e->flags & 8) {
+                cnt = 2;
+            } else {
+                cnt = (e->life & 3) + 1;
+            }
+            for (k = 0; k < cnt; k++) {
+                w += k * (w * e->grow);
+                if (fdx > fdy) {
+                    pkt.v[0].xyz.y = s[0].y - w;
+                    pkt.v[1].xyz.y = s[1].y - w;
+                    pkt.v[2].xyz.y = s[0].y + w;
+                    pkt.v[3].xyz.y = s[1].y + w;
+                    pkt.v[0].xyz.x = pkt.v[2].xyz.x = s[0].x;
+                    pkt.v[1].xyz.x = pkt.v[3].xyz.x = s[1].x;
+                } else {
+                    pkt.v[0].xyz.x = s[0].x - w;
+                    pkt.v[1].xyz.x = s[1].x - w;
+                    pkt.v[2].xyz.x = s[0].x + w;
+                    pkt.v[3].xyz.x = s[1].x + w;
+                    pkt.v[0].xyz.y = pkt.v[2].xyz.y = s[0].y;
+                    pkt.v[1].xyz.y = pkt.v[3].xyz.y = s[1].y;
+                }
+                if (e->flags & 0x80) {
+                    pkt.v[0].xyz.z = pkt.v[1].xyz.z = pkt.v[2].xyz.z = pkt.v[3].xyz.z = 0xFFFFFE;
+                    z = 0.0f;
+                } else {
+                    pkt.v[0].xyz.z = pkt.v[1].xyz.z = s[0].z;
+                    pkt.v[2].xyz.z = pkt.v[3].xyz.z = s[1].z;
+                    if (depth[0] < depth[1]) {
+                        z = depth[0];
+                    } else {
+                        z = depth[1];
+                    }
+                }
+                pkt.v[0].xyz.f = pkt.v[1].xyz.f = 0;
+                pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+                switch ((e->flags & 4) ? j & 3 : (e->life + j) & 3) {
+                case 1:
+                    s[2] = pkt.v[0].xyz;
+                    pkt.v[0].xyz = pkt.v[3].xyz;
+                    pkt.v[3].xyz = s[2];
+                    s[2] = pkt.v[1].xyz;
+                    pkt.v[1].xyz = pkt.v[2].xyz;
+                    pkt.v[2].xyz = s[2];
+                    break;
+                case 2:
+                    s[2] = pkt.v[0].xyz;
+                    pkt.v[0].xyz = pkt.v[1].xyz;
+                    pkt.v[1].xyz = s[2];
+                    s[2] = pkt.v[2].xyz;
+                    pkt.v[2].xyz = pkt.v[3].xyz;
+                    pkt.v[3].xyz = s[2];
+                    break;
+                case 3:
+                    s[2] = pkt.v[0].xyz;
+                    pkt.v[0].xyz = pkt.v[2].xyz;
+                    pkt.v[2].xyz = s[2];
+                    s[2] = pkt.v[1].xyz;
+                    pkt.v[1].xyz = pkt.v[3].xyz;
+                    pkt.v[3].xyz = s[2];
+                    break;
+                }
+                func_002075F0((s32)&pkt, ot, (u32)z);
+            }
+        }
+    }
+    return 1;
+}
+
+#pragma opt_propagation reset
+#pragma optimization_level reset
 
 /* OVL_WARM */
 
