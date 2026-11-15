@@ -1037,3 +1037,5 @@ there is a source form that gives the original.
   fulltry (b716:01E06320, b370:01E062B0).
 - **Two stack vectors at sp+X and X+0x10 with a 4-word `lwc1`/`swc1` copy between them (yours `lq`/`sq`):** one
   `Vec4f w[2]` and `w[1] = w[0];`, even when w[1] is not read later (b370:01E062B0).
+- **A `sw` of a float constant then `mtc1` of the same GPR into a `sub.s`:** read the just-stored field back,
+  `f[0] = K1; f[1] = f[0] - K2;` (b579:01E04C80).
