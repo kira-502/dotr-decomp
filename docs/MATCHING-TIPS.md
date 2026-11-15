@@ -1007,3 +1007,7 @@ there is a source form that gives the original.
   (`Scene *g = (Scene *)arg0;`) in the declaration-order search (c537:01E02EB0).
 - **A slot index read from a field reloaded and re-multiplied before every store:** read it into a local first,
   `k = g->count;`, then index `g->shell[k]` (b608:01E05920).
+- **-O2 `x += 0.0f` / `x -= 0.0f` kept as `mtc1 $zero; add.s`:** a float local set to 0.0f (a literal folds away)
+  (b398:01E05E50).
+- **An -O2 Lk manager with the `ot` copy (`paddub a0, s1`) after the address arguments:** call the draw statics
+  through no-prototype aliases (b523:01E046E0, b025:01E045A0).
