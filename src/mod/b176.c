@@ -1883,4 +1883,390 @@ static void func_01E049A0_b176(Scene_b176_01E049A0 *g, s32 n, s32 mode) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b176", func_01E04DB0_b176);
+/* shape b176:01E04DB0 (b176), 768 insns, 1 copy (-O2,p): the b176 module main at -O2 (b480:01E061C0's form): code
+   -3/-2 ends; setup clears the scene, takes both units, the camera, textures and four joints for the walk smoke; each
+   frame counts, sets the six blade ribbons up (b176_setBst) at frames 59..86 and clears them at 130, starts the six
+   joint blades at 87, at 99 the light, 24 light particles and twelve 4-part rising embers around the unit, steps
+   every system, retakes joints at 36 / 153 and returns 6 on 99..122, 1 at 89, 2 at 123, 8 at 145 */
+
+typedef struct {
+    s32 a;
+    s32 dir;
+    u8 pad8[0xC];
+} Cam_b176_01E04DB0;
+
+typedef struct {
+    u8 pad0[4];
+    u8 b4;
+    u8 b5;
+    u8 pad6[0xE];
+    f32 f14;
+    f32 f18;
+    f32 f1C;
+    Vec4f pos;
+    f32 f30;
+    f32 f34;
+    u8 pad38[0x18];
+    f32 f50;
+    u8 pad54[0xC];
+} Emit_b176_01E04DB0;
+
+typedef struct {
+    void *emits;
+    void *parts;
+    s16 *frames[8];
+    u8 bone[8];
+    u8 emit_kind;
+    u8 part_kind;
+    u8 kind;
+    u8 bone2;
+    s16 lo;
+    s16 hi;
+    f32 x0;
+    f32 x1;
+    f32 y;
+} Walk_b176_01E04DB0;
+
+typedef struct {
+    u8 pad0[4];
+    u8 b4;
+    u8 pad5[3];
+    void *pool;
+    s16 b[9];
+    s16 a[9];
+    u8 b30;
+    u8 count;
+    u8 selA;
+    u8 selB;
+    u8 pad34[4];
+    f32 t1;
+    f32 f3C;
+    f32 f40;
+    u8 pad44[8];
+    u8 c[4];
+    u8 pad50[4];
+    f32 f54;
+    u8 pad58[8];
+} Blade_b176_01E04DB0;
+
+typedef struct {
+    u8 c[4];
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 f10;
+    f32 f14;
+    f32 f18;
+    f32 f1C;
+    f32 f20;
+    f32 f24;
+} Part_b176_01E04DB0;
+
+typedef struct {
+    u8 pad0[5];
+    u8 b5;
+    u8 pad6[2];
+    u8 b8;
+    u8 b9;
+    u8 bA;
+    u8 padB;
+    s8 *tbl;
+    f32 f10;
+    f32 f14;
+    u8 c18[4];
+    u8 c1C[4];
+    Vec4f pos;
+    u8 pad30[0x18];
+    s32 w48;
+    u8 pad4C[0x14];
+} Lptc_b176_01E04DB0;
+
+typedef struct {
+    u8 pad0[4];
+    u8 b4;
+    u8 b5;
+    u8 pad6[2];
+    Part_b176_01E04DB0 *pool;
+    s16 ids[8];
+    u8 b1C;
+    u8 count;
+    u8 b1E;
+    u8 b1F;
+    u8 b20;
+    u8 pad21[3];
+    u8 c[4];
+    f32 f28;
+    f32 f2C;
+    u8 pad30[0x10];
+} Anm_b176_01E04DB0;
+
+typedef struct {
+    u16 t;
+    u8 pad2[2];
+    s32 unitA;
+    s32 unitB;
+    s32 m[7];
+    u8 pad28[4];
+    Cam_b176_01E04DB0 cam;
+    Emit_b176_01E04DB0 emit;
+    Walk_b176_01E04DB0 walk;
+    Blade_b176_01E04DB0 blade[6];
+    u8 smk[0x4E4 - 0x324];
+    u8 pool[0xB24 - 0x4E4];
+    Part_b176_01E04DB0 parts[0x32];
+    u8 tr[3][0x48];
+    u8 sp[0x18][0x48];
+    u8 pad1A8C[0x60];
+    Lptc_b176_01E04DB0 lptc[0x18];
+    Anm_b176_01E04DB0 anm[0xC];
+    s8 tbl[0x100];
+    u8 pad27EC[4];
+} Scene_b176_01E04DB0;
+
+#pragma optimization_level 2
+
+static s32 func_01E04DB0_b176(Scene_b176_01E04DB0 *g, s32 code) {
+    extern s32 func_00207500(void);
+    extern void func_00198948(void *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_00102330(void *, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00101AD0(void *, s32, s32, s32);
+    extern s32 func_00101C30(void *, s32, s32);
+    extern void func_00101B40(void *, s32, s32);
+    extern s32 func_0019A5C8(void);
+    extern s16 D_01E05B50_b176[];
+    extern s16 D_01E05B58_b176[];
+    extern s16 D_01E05B60_b176[];
+    extern s16 D_01E05B68_b176[];
+    extern void b176_01E049A0();
+    extern void b176_01E00080();
+    extern s32 b176_01E010E0(void *, u16);
+    extern s32 b176_01E00410();
+    extern s32 b176_01E02820();
+    extern s32 b176_01E03160();
+    extern s32 b176_01E015A0();
+    extern s32 b176_01E039D0();
+    extern s32 b176_01E03EF0();
+    s32 ot;
+    Vec4f v;
+    s32 i;
+    s32 j;
+    s32 k;
+
+    ot = func_00207500();
+    if (code == -3 || code == -2) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00198948(g, 0, 0x27F0);
+        g->unitA = func_001F53A0();
+        g->unitB = func_001F5380();
+        func_001F6160(g->unitA, &g->cam);
+        func_00202BF0(4, 0xF);
+        for (j = 0; j < 2; j++) {
+            func_00202BF0(5, j);
+        }
+        g->m[0] = func_001F5560(g->unitA, 0x53, 1);
+        g->m[1] = func_001F5560(g->unitA, 0x47, 0);
+        g->m[2] = func_001F5560(g->unitA, 0x3D, 0);
+        g->m[3] = func_001F5560(g->unitA, 0x32, 0);
+        g->walk.bone[0] = g->m[0];
+        g->walk.bone[1] = g->m[1];
+        g->walk.bone[2] = g->m[2];
+        g->walk.bone[3] = g->m[3];
+        g->walk.frames[0] = D_01E05B50_b176;
+        g->walk.frames[1] = D_01E05B58_b176;
+        g->walk.frames[2] = D_01E05B60_b176;
+        g->walk.frames[3] = D_01E05B68_b176;
+        g->walk.emits = g->smk;
+        g->walk.emit_kind = 8;
+        g->walk.parts = g->parts;
+        g->walk.part_kind = 0x32;
+        g->walk.kind = 0;
+        g->walk.lo = 0;
+        g->walk.x0 = 160.0f;
+        g->walk.x1 = 0.0f;
+        g->walk.y = 6.0f;
+        func_00102330(g->tbl, 0x100);
+        return 0;
+    }
+    g->t++;
+    func_001F5F90(g->unitB, &v);
+    switch (g->t) {
+    case 0x3B:
+        b176_01E049A0(g, 1, 1);
+        b176_01E049A0(g, 2, 1);
+        b176_01E049A0(g, 5, 1);
+        b176_01E049A0(g, 5, 3);
+        break;
+    case 0x41:
+        b176_01E049A0(g, 5, 2);
+        break;
+    case 0x43:
+        b176_01E049A0(g, 4, 1);
+        b176_01E049A0(g, 4, 3);
+        b176_01E049A0(g, 6, 1);
+        b176_01E049A0(g, 6, 3);
+        b176_01E049A0(g, 3, 1);
+        break;
+    case 0x49:
+        b176_01E049A0(g, 6, 2);
+        b176_01E049A0(g, 4, 2);
+        break;
+    case 0x51:
+        b176_01E049A0(g, 1, 3);
+        b176_01E049A0(g, 3, 3);
+        break;
+    case 0x56:
+        b176_01E049A0(g, 1, 2);
+        b176_01E049A0(g, 3, 2);
+        break;
+    case 0x57:
+        for (k = 0; k < 6; k++) {
+            func_00101AD0(&g->blade[k], 0x1C, 0, 0xFF);
+            g->blade[k].b4 = 0xE;
+            g->blade[k].pool = g->pool;
+            g->blade[k].b30 = 100;
+            g->blade[k].count = 6;
+            if (k & 1) {
+                g->blade[k].selA = g->m[k + 1];
+                g->blade[k].selB = g->m[k];
+            } else {
+                g->blade[k].selA = g->m[k + 1];
+                g->blade[k].selB = g->m[k + 2];
+            }
+            g->blade[k].t1 = 1.2f;
+            g->blade[k].f3C = 4.0f;
+            g->blade[k].f40 = 60.0f;
+            g->blade[k].c[1] = 0x30;
+            g->blade[k].c[2] = 0x30;
+            g->blade[k].c[0] = 0x60;
+            g->blade[k].c[3] = 0x40;
+            g->blade[k].f54 = 0.8f;
+            for (i = 0; i < g->blade[k].count + 1; i++) {
+                g->blade[k].b[i] = g->blade[k].a[i] = -1;
+            }
+        }
+        break;
+    case 0x63:
+        func_00101AD0(&g->emit, 0x20, 0, 0xFF);
+        g->emit.b5 = 0;
+        g->emit.b4 = 8;
+        g->emit.f14 = 1.5f;
+        g->emit.f18 = 1.5f;
+        g->emit.f1C = 2.0f;
+        g->emit.f30 = 0.0f;
+        g->emit.f34 = 80.0f;
+        g->emit.f50 = 6.0f;
+        g->emit.pos = v;
+        for (i = 0; i < 4; i++) {
+            for (j = 0; j < 6; j++) {
+                k = j + i * 6;
+                func_00101AD0(&g->lptc[k], 0x14, (u8)(j * 2), 0xFF);
+                g->lptc[k].b5 = 0;
+                g->lptc[k].pos = v;
+                g->lptc[k].b8 = 0x2D;
+                g->lptc[k].b9 = func_0019A5C8() >> 4;
+                g->lptc[k].bA = 3;
+                g->lptc[k].tbl = g->tbl;
+                g->lptc[k].f10 = 2.0f;
+                g->lptc[k].f14 = 0.3f;
+                g->lptc[k].c18[1] = 0x80;
+                g->lptc[k].c18[2] = 0x80;
+                g->lptc[k].c18[0] = 0x20;
+                g->lptc[k].c18[3] = 0xC0;
+                g->lptc[k].c1C[2] = 0x80;
+                g->lptc[k].c1C[1] = 0x20;
+                g->lptc[k].c1C[0] = 0x10;
+                if (g->cam.dir == 0x8000) {
+                    g->lptc[k].w48 = i * 0x4000 + 0x2000 - j * 0xA00;
+                } else {
+                    g->lptc[k].w48 = i * 0x4000 + 0x2000 + j * 0xA00;
+                }
+            }
+        }
+        for (i = 0; i < 0xC; i++) {
+            func_00101AD0(&g->anm[i], 1, (u8)(i * 2), 0xFF);
+            g->anm[i].b5 = 0;
+            g->anm[i].b4 = 0xC0;
+            g->anm[i].pool = g->parts;
+            g->anm[i].b1C = 0x32;
+            g->anm[i].count = 4;
+            g->anm[i].b1E = 2;
+            g->anm[i].b1F = 1;
+            g->anm[i].b20 = 0;
+            g->anm[i].c[0] = 0x80;
+            g->anm[i].c[1] = 0x80;
+            g->anm[i].c[2] = 0x80;
+            g->anm[i].c[3] = 0x80;
+            g->anm[i].f28 = 160.0f;
+            g->anm[i].f2C = 0.0f;
+            for (j = 0; j < g->anm[i].count; j++) {
+                k = func_00101C30(g->parts, 0x28, 0x32);
+                if (k >= 0) {
+                    Part_b176_01E04DB0 *p;
+
+                    g->anm[i].ids[j] = k;
+                    p = &g->parts[k];
+                    func_00101B40(p, 7, func_0019A5C8() >> 4 & 7);
+                    p->c[3] = (func_0019A5C8() >> 4 & 3) << 4;
+                    p->x = v.x + (f32)((func_0019A5C8() >> 4) % 2400 - 1200) / 100.0f;
+                    p->z = v.z + (f32)((func_0019A5C8() >> 4) % 2400 - 1200) / 100.0f;
+                    p->y = v.y + (f32)((func_0019A5C8() >> 4) % 2400 - 1200) / 100.0f;
+                    p->f10 = p->f14 = p->f18 = p->f1C = p->f20 = p->f24 = 0.0f;
+                } else {
+                    g->anm[i].ids[j] = -1;
+                }
+            }
+        }
+        break;
+    case 0x82:
+        for (j = 1; j < 7; j++) {
+            b176_01E049A0(g, j, 0);
+        }
+        break;
+    case 0x91:
+        return 8;
+    }
+    b176_01E00080(&g->emit);
+    b176_01E010E0(&g->walk, g->t);
+    b176_01E00410(g->smk, ot, 4);
+    b176_01E02820(g->sp, ot, 0x18);
+    b176_01E03160(g->tr, ot, 3);
+    b176_01E015A0(g->blade, ot, 6);
+    b176_01E039D0(g->lptc, ot, 0x18);
+    b176_01E03EF0(g->anm, ot, 0xC);
+    switch (g->t) {
+    case 0x24:
+        g->m[0] = func_001F5560(g->unitA, 2, 1);
+        g->m[1] = func_001F5560(g->unitA, 0xB, 0);
+        g->m[2] = func_001F5560(g->unitA, 0x10, 0);
+        g->m[3] = func_001F5560(g->unitA, 0xC, 0);
+        g->m[4] = func_001F5560(g->unitA, 0xF, 0);
+        g->m[5] = func_001F5560(g->unitA, 0xD, 0);
+        g->m[6] = func_001F5560(g->unitA, 0xE, 0);
+        break;
+    case 0x99:
+        g->m[0] = func_001F5560(g->unitA, 0x53, 1);
+        g->m[1] = func_001F5560(g->unitA, 0x47, 0);
+        g->m[2] = func_001F5560(g->unitA, 0x3D, 0);
+        g->m[3] = func_001F5560(g->unitA, 0x32, 0);
+        break;
+    }
+    if (g->t >= 0x63 && g->t < 0x7B) {
+        return 6;
+    }
+    switch (g->t) {
+    case 0x59:
+        return 1;
+    case 0x7B:
+        return 2;
+    }
+    return 0;
+}
+#pragma optimization_level reset
