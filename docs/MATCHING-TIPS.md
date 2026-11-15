@@ -999,3 +999,5 @@ there is a source form that gives the original.
 - **Many float-constant calls in a row:** search them in order, scoring each choice only by the differing words up to
   that call's `jal` (a call's load order depends on earlier calls, not later ones); this converged where floatsearch's
   whole-function greedy stalled (b037:01E04FB0 39 → 8 words; work/floatseq_example.py).
+- **A whole-function search rejects a float-order fix that flips later calls:** `floatsearch.py --seq` keeps it and
+  repairs the later calls one at a time (closed b364:01E041E0 and b274:01E02B40 after 2,000 stalled tries).

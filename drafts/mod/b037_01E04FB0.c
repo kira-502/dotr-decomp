@@ -4,7 +4,9 @@
 /* shape b037:01E04FB0 (b037), 989 insns, 1 copy: b037 scene manager: code >= 0 clears the scene, eight cameras, six
    joints, the field particles, two trail emitters, a 256-point spark emitter, twelve rings, the spiral and the shaver
    light; else follows the joints, feeds field particles on frames 25..31/50..64/74..122, waits on func_001F7260 from
-   248 to 330, fades, draws rings from 243 and sparks from 123 then runs b037:01E05F30; returns 2/1/6/8 by tick */
+   248 to 330, fades, draws rings from 243 and sparks from 123 then runs b037:01E05F30; returns 2/1/6/8 by tick.
+   HARD: 2 words, ringC[0]'s call loads mtc1 $zero,$f14 before the 4.25f lui (floatsearch --seq); needs
+   work/b037_func_01E05F30.patch (literal 10.0f in func_01E05F30's ring call) with it */
 
 typedef struct Rot_b037_01E04FB0 {
     s32 x, y, z, w;
@@ -315,14 +317,14 @@ static s32 func_01E04FB0_b037(s32 arg0, s32 code) {
             g->ringB[i].b = 0x80;
             g->ringB[i].a = 0x80;
         }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 r = 6.0f; f32 q = 4.0f; f32 z = 0.0f; b037_01E03260(&g->ringA[0], tx[0], r, q, 0.0f, z); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 r = 3.75f; f32 q = 4.0f; f32 z = 0.0f; b037_01E03260(&g->ringB[0], tx[0], r, q, z, 0.0f); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32);  b037_01E03260(&g->ringA[1], tx[0], 8.0f, 6.0f, 0.0f, 0.0f); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 z = 0.0f; b037_01E03260(&g->ringB[1], tx[0], 5.75f, 6.0f, z, 0.0f); }
+        { f32 fs2 = 6.0f; f32 fs3 = 4.0f; f32 fs4 = 0.0f; f32 fs5 = 0.0f; func_01E03260_b037(&g->ringA[0], tx[0], fs2, fs3, fs4, fs5); }
+        { f32 fs2 = 3.75f; f32 fs3 = 4.0f; f32 fs5 = 0.0f; func_01E03260_b037(&g->ringB[0], tx[0], fs2, fs3, 0.0f, fs5); }
+        { f32 fs2 = 8.0f; f32 fs4 = 0.0f; func_01E03260_b037(&g->ringA[1], tx[0], fs2, 6.0f, fs4, 0.0f); }
+        { f32 fs2; f32 fs3; f32 fs4; f32 fs5; fs2 = 5.75f; fs3 = 6.0f; fs4 = 0.0f; fs5 = 0.0f; func_01E03260_b037(&g->ringB[1], tx[0], fs2, fs3, fs4, fs5); }
         { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 z = 0.0f; b037_01E03260(&g->ringA[2], tx[0], 10.0f, 8.0f, z, 0.0f); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 z = 0.0f; b037_01E03260(&g->ringB[2], tx[0], 7.75f, 8.0f, 0.0f, z); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32);  b037_01E03260(&g->ringA[3], tx[0], 12.0f, 10.0f, 0.0f, 0.0f); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 z = 0.0f; b037_01E03260(&g->ringB[3], tx[0], 9.75f, 10.0f, z, z); }
+        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 fs2; f32 fs3; f32 fs4; f32 fs5; fs5 = 0.0f; fs4 = 0.0f; fs3 = 8.0f; fs2 = 7.75f; b037_01E03260(&g->ringB[2], tx[0], fs2, fs3, fs4, fs5); }
+        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 fs2; f32 fs3; fs3 = 10.0f; fs2 = 12.0f; b037_01E03260(&g->ringA[3], tx[0], fs2, fs3, 0.0f, 0.0f); }
+        { f32 fs2; f32 fs3; f32 fs4; fs4 = 0.0f; fs3 = 10.0f; fs2 = 9.75f; func_01E03260_b037(&g->ringB[3], tx[0], fs2, fs3, fs4, 0.0f); }
         func_00103260(tx, 0xF);
         for (i = 0; i < 4; i++) {
             g->ringC[i].flags = 0x20000000;
@@ -336,8 +338,8 @@ static s32 func_01E04FB0_b037(s32 arg0, s32 code) {
             g->ringC[i].a = 0x40;
         }
         { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 r; f32 q; r = 4.25f; q = 3.75f; b037_01E03260(&g->ringC[0], tx[0], r, q, 0.0f, 0.0f); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 r = 6.25f; f32 z = 0.0f; b037_01E03260(&g->ringC[1], tx[0], r, 5.75f, 0.0f, z); }
-        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32);  b037_01E03260(&g->ringC[2], tx[0], 8.25f, 7.75f, 0.0f, 0.0f); }
+        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 fs3 = 5.75f; b037_01E03260(&g->ringC[1], tx[0], 6.25f, fs3, 0.0f, 0.0f); }
+        { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32); f32 fs2; f32 fs4; fs4 = 0.0f; fs2 = 8.25f; b037_01E03260(&g->ringC[2], tx[0], fs2, 7.75f, fs4, 0.0f); }
         { extern s32 b037_01E03260(void *, s32, f32, f32, f32, f32);  b037_01E03260(&g->ringC[3], tx[0], 10.25f, 9.75f, 0.0f, 0.0f); }
         g->fld.tex = tx[0];
         g->fld.r = 0x30;
