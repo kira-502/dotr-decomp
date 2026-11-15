@@ -1011,3 +1011,7 @@ there is a source form that gives the original.
   (b398:01E05E50).
 - **An -O2 Lk manager with the `ot` copy (`paddub a0, s1`) after the address arguments:** call the draw statics
   through no-prototype aliases (b523:01E046E0, b025:01E045A0).
+- **One saved register short in an -O4 manager with zero-inits at entry missing:** the original's last arm re-tests a
+  range the outer test already covers (`else if (t >= 0x12)` where `else` would do), so the compiler keeps `m = 0;`
+  at entry (c062:01E04470).
+- **-O2 range tests:** `slti $at, t, K; beqz` came from `t < K` (try `<` first at -O2) (b843:01E06910, b561:01E03280).
