@@ -955,3 +955,7 @@ there is a source form that gives the original.
   does not converge).
 - **14-bit UV bitfields scheduling wrong:** name the scaled coordinate (`x = kind % 4 * 32; ->u = x << 4;`), not the
   cell index (c402:01E00080).
+- **A constant set once in an unexpected argument register and used for one store** (`li a1, 1` then `sh`): it is
+  really a later call's argument; read which argument registers each `jal` expects first (b079:01E04240).
+- **The second of two zero-float-pair calls copying `$f15`→`$f14` when no argument form fixes it:** move the zero
+  assignments (`h = 0.0f; y = 0.0f;`) to the top, right after `rv = 0;` and before the NULL checks (c604:01E037D0).
