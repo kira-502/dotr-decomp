@@ -962,3 +962,7 @@ there is a source form that gives the original.
 - **No block-local form moves a zero-pair float argument order at all:** the locals are propagated away; put
   `#pragma opt_propagation off` around the function so the c508 form takes effect, then rewrite any loop that gains an
   entry guard as a do-while (c027:01E00C50).
+- **`and v0, v0(field), sN(local)` with the operands swapped:** re-read the field (`n - (o->step & o->mask)` with
+  `n = o->mask` already loaded) (b132:01E02690).
+- **dk try's "built without optimisation" hint can be wrong** when every delay slot is a nop; sweep the levels
+  (b125:01E01EE0 was -O2).
