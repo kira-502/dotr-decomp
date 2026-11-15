@@ -937,3 +937,6 @@ there is a source form that gives the original.
   original's `w[2]` with a comment.
 - **Kept addresses:** a constant non-zero offset into a local (array element or struct member) used twice goes
   through a saved register from its first use; a plain local at offset 0 never does.
+- **-O1 saved registers follow declaration order** (variables sharing a register take one slot); reorder declarations
+  first (b200:01E05B40, 701 → 763). An -O1 u8 argument goes inline as `(u8)(expr)`, not through a u8 local
+  (b002:01E05FE0).
