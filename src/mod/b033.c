@@ -1352,7 +1352,249 @@ static s32 func_01E03590_b033(Part_b033_01E03590 *arg0, s32 id, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b033", func_01E04020_b033);
+/* shape b033:01E04020 (ShFx_Afx02), 975 insns, 1 copy (-O2,p): ShFx_Afx02: n refraction rings (0x40 bytes each): grow
+   the two radii, follow the anchor, build a 36-step ring of four radii (the fourth from the 16-entry table by mode),
+   then draw two textured strips per step sampling the screen behind; ring as V3[37][4], packet in a struct with the
+   two texture-setup outputs */
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b033_01E04020;
+
+typedef struct {
+    u16 c : 14;
+    u16 p : 2;
+} Tc_b033_01E04020;
+
+typedef struct {
+    Tc_b033_01E04020 u;
+    Tc_b033_01E04020 v;
+    s32 pad;
+} Uv_b033_01E04020;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b033_01E04020 uv;
+    Xyz_b033_01E04020 xyz;
+} Vtx_b033_01E04020;
+
+typedef struct {
+    u16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b033_01E04020 v[4];
+    u8 tail[8];
+} Pkt_b033_01E04020;
+
+typedef struct {
+    f32 x, y, z;
+} V3_b033_01E04020;
+
+typedef struct {
+    f32 v[16];
+} Tbl_b033_01E04020;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 span;
+    u8 pad3;
+    u8 mode;
+    u8 pad5[3];
+    f32 r0;
+    f32 r1;
+    f32 t1;
+    f32 t2;
+    f32 dr;
+    V3_b033_01E04020 pos;
+    f32 pad28;
+    V3_b033_01E04020 vel;
+    Xyz_b033_01E04020 xy;
+} Afx_b033_01E04020;
+
+static inline f32 rad_b033_01E04020(f32 d) {
+    return 3.1415927f * d / 180.0f;
+}
+
+#pragma optimization_level 2
+
+static s32 func_01E04020_b033(Afx_b033_01E04020 *arg0, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern Tbl_b033_01E04020 D_01E066D0_b033;
+    extern void func_00101BA0(void *, void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00208800(s32, s32, void *, void *);
+    extern void func_002075F0(void *, s32, s32);
+    Afx_b033_01E04020 *e = arg0;
+    f32 mat[16];
+    V3_b033_01E04020 ring[37][4];
+    Tbl_b033_01E04020 tbl;
+    struct {
+        Pkt_b033_01E04020 pk;
+        s32 a[2];
+        s32 b[3];
+    } w __attribute__((aligned(8)));
+    f32 depth;
+    s32 i;
+    s32 anchor;
+    s32 started;
+    s32 k;
+    f32 a;
+    f32 s;
+    f32 c;
+    f32 t;
+    f32 sx;
+    f32 sy;
+    s32 u0;
+    s32 u1;
+    s32 u2;
+    s32 u3;
+    s32 v0;
+    s32 v1;
+    s32 v2;
+    s32 v3;
+
+    anchor = func_00207F60();
+    tbl = D_01E066D0_b033;
+    started = 0;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            e++;
+        }
+        if (func_00101AF0(e) == 0) {
+            continue;
+        }
+        if (!started) {
+            ((Pkt_b033_01E04020 *)(s32)&w.pk)->count = 0x34;
+            ((Pkt_b033_01E04020 *)(s32)&w.pk)->tag = 0xC;
+            ((Pkt_b033_01E04020 *)(s32)&w.pk)->regs = ((u64)0x4214 << 32) | 0x21421421;
+            ((Pkt_b033_01E04020 *)(s32)&w.pk)->pad = 0;
+            w.pk.v[0].a = w.pk.v[1].a = w.pk.v[2].a = w.pk.v[3].a = 0x80;
+            w.pk.v[0].b = w.pk.v[1].b = w.pk.v[2].b = w.pk.v[3].b = 0x80;
+            w.pk.v[0].g = w.pk.v[1].g = w.pk.v[2].g = w.pk.v[3].g = 0x80;
+            w.pk.v[0].r = w.pk.v[1].r = w.pk.v[2].r = w.pk.v[3].r = 0x80;
+            w.pk.v[0].q = w.pk.v[1].q = w.pk.v[2].q = w.pk.v[3].q = 1.0f;
+            w.pk.v[0].xyz.z = w.pk.v[1].xyz.z = w.pk.v[2].xyz.z = w.pk.v[3].xyz.z = 0xFFFFFF;
+            w.pk.v[0].xyz.f = w.pk.v[1].xyz.f = w.pk.v[2].xyz.f = w.pk.v[3].xyz.f = 0;
+            func_00208460();
+            func_00208800(func_00209E50(), 0, w.a, w.b);
+            func_00208460();
+            started = 1;
+        }
+        func_0020EB40(mat);
+        e->r0 += e->dr;
+        e->r1 += e->dr;
+        e->pos.x += e->vel.x;
+        e->pos.y += e->vel.y;
+        e->pos.z += e->vel.z;
+        func_00101BA0(e, &e->pos);
+        if (func_00205440(&e->pos, mat, &e->xy, &depth) == 0) {
+            continue;
+        }
+        if (func_00101770(&e->xy) == 0) {
+            continue;
+        }
+        for (k = 0; k < 36; k++) {
+            a = rad_b033_01E04020(10.0f * k);
+            s = func_001A6A88(a);
+            c = func_001A6898(a);
+            ring[k][0].x = e->r0 * c;
+            ring[k][0].y = e->r0 * s;
+            ring[k][1].x = e->r1 * c;
+            ring[k][1].y = e->r1 * s;
+            ring[k][2].x = ring[k][0].x + e->t1 * (ring[k][1].x - ring[k][0].x);
+            ring[k][2].y = ring[k][0].y + e->t1 * (ring[k][1].y - ring[k][0].y);
+            switch (e->mode & 3) {
+            case 1:
+                t = tbl.v[((e->span - e->life) & 7) * 2];
+                break;
+            case 2:
+                t = tbl.v[(e->span - e->life) & 0xF];
+                break;
+            default:
+                t = e->t2;
+                break;
+            }
+            ring[k][3].x = ring[k][0].x + t * (ring[k][1].x - ring[k][0].x);
+            ring[k][3].y = ring[k][0].y + t * (ring[k][1].y - ring[k][0].y);
+        }
+        ring[36][0] = ring[0][0];
+        ring[36][1] = ring[0][1];
+        ring[36][2] = ring[0][2];
+        ring[36][3] = ring[0][3];
+        sx = e->xy.x;
+        sy = e->xy.y;
+        ((Pkt_b033_01E04020 *)(s32)&w.pk)->count |= 0x800;
+        for (k = 0; k < 36; k++) {
+            u0 = (s32)((sx - 27648.0f) + 16.0f * ring[k][2].x);
+            u1 = (s32)((sx - 27648.0f) + 16.0f * ring[k + 1][2].x);
+            u2 = (s32)((sx - 27648.0f) + 16.0f * ring[k][0].x);
+            u3 = (s32)((sx - 27648.0f) + 16.0f * ring[k + 1][0].x);
+            v0 = (s32)((sy - 29184.0f) + 16.0f * ring[k][2].y);
+            v1 = (s32)((sy - 29184.0f) + 16.0f * ring[k + 1][2].y);
+            v2 = (s32)((sy - 29184.0f) + 16.0f * ring[k][0].y);
+            v3 = (s32)((sy - 29184.0f) + 16.0f * ring[k + 1][0].y);
+            if (u0 < 0 || u1 < 0 || u2 < 0 || u3 < 0 || v0 < 0 || v1 < 0 || v2 < 0 || v3 < 0) {
+                continue;
+            }
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[0].uv)->u.c = u0;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[0].uv)->v.c = v0;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[1].uv)->u.c = u1;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[1].uv)->v.c = v1;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[2].uv)->u.c = u2;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[2].uv)->v.c = v2;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[3].uv)->u.c = u3;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[3].uv)->v.c = v3;
+            w.pk.v[0].xyz.x = (u32)(sx + 16.0f * ring[k][3].x);
+            w.pk.v[1].xyz.x = (u32)(sx + 16.0f * ring[k + 1][3].x);
+            w.pk.v[2].xyz.x = (u32)(sx + 16.0f * ring[k][0].x);
+            w.pk.v[3].xyz.x = (u32)(sx + 16.0f * ring[k + 1][0].x);
+            w.pk.v[0].xyz.y = (u32)(sy + 16.0f * ring[k][3].y);
+            w.pk.v[1].xyz.y = (u32)(sy + 16.0f * ring[k + 1][3].y);
+            w.pk.v[2].xyz.y = (u32)(sy + 16.0f * ring[k][0].y);
+            w.pk.v[3].xyz.y = (u32)(sy + 16.0f * ring[k + 1][0].y);
+            func_002075F0(&w.pk, 0, 0);
+            u0 = (s32)((sx - 27648.0f) + 16.0f * ring[k][1].x);
+            u1 = (s32)((sx - 27648.0f) + 16.0f * ring[k + 1][1].x);
+            u2 = (s32)((sx - 27648.0f) + 16.0f * ring[k][2].x);
+            u3 = (s32)((sx - 27648.0f) + 16.0f * ring[k + 1][2].x);
+            v0 = (s32)((sy - 29184.0f) + 16.0f * ring[k][1].y);
+            v1 = (s32)((sy - 29184.0f) + 16.0f * ring[k + 1][1].y);
+            v2 = (s32)((sy - 29184.0f) + 16.0f * ring[k][2].y);
+            v3 = (s32)((sy - 29184.0f) + 16.0f * ring[k + 1][2].y);
+            if (u0 < 0 || u1 < 0 || u2 < 0 || u3 < 0 || v0 < 0 || v1 < 0 || v2 < 0 || v3 < 0) {
+                continue;
+            }
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[0].uv)->u.c = u0;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[0].uv)->v.c = v0;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[1].uv)->u.c = u1;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[1].uv)->v.c = v1;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[2].uv)->u.c = u2;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[2].uv)->v.c = v2;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[3].uv)->u.c = u3;
+            ((Uv_b033_01E04020 *)(s32)&w.pk.v[3].uv)->v.c = v3;
+            w.pk.v[0].xyz.x = (u32)(sx + 16.0f * ring[k][1].x);
+            w.pk.v[1].xyz.x = (u32)(sx + 16.0f * ring[k + 1][1].x);
+            w.pk.v[2].xyz.x = (u32)(sx + 16.0f * ring[k][3].x);
+            w.pk.v[3].xyz.x = (u32)(sx + 16.0f * ring[k + 1][3].x);
+            w.pk.v[0].xyz.y = (u32)(sy + 16.0f * ring[k][1].y);
+            w.pk.v[1].xyz.y = (u32)(sy + 16.0f * ring[k + 1][1].y);
+            w.pk.v[2].xyz.y = (u32)(sy + 16.0f * ring[k][3].y);
+            w.pk.v[3].xyz.y = (u32)(sy + 16.0f * ring[k + 1][3].y);
+            func_002075F0(&w.pk, 0, 0);
+        }
+    }
+    if (started) {
+        func_00207FD0(anchor, ot, 0);
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* shape b033:01E04F60 (b033_setVolt), 323 insns, 1 copy (-O2,p): with a flag set, four bolts are taken from the
    emitter pool (stopping when it runs out), each between two of the unit's five joints: bolt 0 from joint 0 to 1, bolt
