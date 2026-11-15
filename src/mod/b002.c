@@ -777,7 +777,262 @@ static s32 func_01E02AD0_b002(Obj_b241_01E00440 *obj, s32 tex, s32 n) {
 
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b002", func_01E037F0_b002);
+/* shape b002:01E037F0 (ShFx_Ndl), 843 insns, 1 copy (-O1,p): b011:01E04380's C (b002 compiles cold): n needle rays (0x68
+   bytes each): move, spin and optionally aim at a joint, then a strip of quads jittered by the random table, faded in
+   over the first frames */
+
+#define ABS_b002_01E037F0(x) ((x) >= 0 ? (x) : -(x))
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b002_01E037F0;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b002_01E037F0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b002_01E037F0 p;
+} Vtx_b002_01E037F0;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b002_01E037F0 v[4];
+    u8 tail[0x20];
+} Pkt_b002_01E037F0;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 page;
+    u8 pad06[6];
+    s32 u;
+    u8 pad10[4];
+    s32 v;
+} Tex_b002_01E037F0;
+
+typedef struct {
+    u8 step;
+    u8 pad01;
+    u8 total;
+    u8 pad03;
+    u8 flags;
+    u8 pad05[3];
+    u8 segments;
+    u8 index;
+    u8 texkind;
+    u8 texpage;
+    u8 texmode;
+    u8 delay;
+    u8 target;
+    u8 pad0F;
+    u8 *table;
+    f32 size;
+    f32 radius;
+    f32 width;
+    u8 b0, g0, r0, a0;
+    u8 b1, g1, r1, a1;
+    Vec_b002_01E037F0 pos;
+    Vec_b002_01E037F0 vel;
+    s32 rot[4];
+    s32 spin[4];
+} Ray_b002_01E037F0;
+
+extern Tex_b002_01E037F0 D_01E06CB0_b002;
+
+#pragma optimization_level 1
+
+static s32 func_01E037F0_b002(Ray_b002_01E037F0 *obj, s32 target, s32 count) {
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_00101AF0(void *);
+    extern void func_001020B0(void *, s32, s32);
+    extern void func_00101BA0(void *, void *);
+    extern s32 func_001F53A0(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_00101940(void *, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, s32, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00101EE0(void *, void *, s32);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern s32 func_00101600(void *);
+    extern f32 func_001018E0(f32, f32);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_002075F0(void *, s32, s32);
+    Ray_b002_01E037F0 *o;
+    s32 i;
+    s32 j;
+    u8 idx;
+    s32 span;
+    s32 texture;
+    f32 w;
+    f32 zd;
+    f32 y;
+    f32 angle;
+    f32 x;
+    f32 r;
+    f32 z;
+    f32 step;
+    f32 m2[16];
+    f32 m1[16];
+    Xyz_b002_01E037F0 xy[2];
+    Vec_b002_01E037F0 pt;
+    Vec_b002_01E037F0 d;
+    Vec_b002_01E037F0 tmp;
+    Tex_b002_01E037F0 tex0;
+    Tex_b002_01E037F0 tex;
+    Pkt_b002_01E037F0 pkt __attribute__((aligned(8)));
+    f32 dep[2];
+
+    o = obj;
+    tex0 = D_01E06CB0_b002;
+    for (i = 0; i < count; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        if (o->flags & 4) {
+            texture = func_00202BF0(5, o->texkind);
+            tex.page = o->texpage;
+            func_001020B0(&tex, o->texmode, 0);
+        } else {
+            texture = func_00202BF0(tex0.id, tex0.kind);
+            tex = tex0;
+        }
+        if (!(o->flags & 2)) {
+            tex.u -= 0x10;
+            tex.v -= 0x10;
+        }
+        idx = o->index;
+        step = 17.0f;
+        angle = 0.0f;
+        if (o->step < o->delay) {
+            span = o->total - o->delay;
+        } else {
+            span = o->total - o->step;
+        }
+        o->pos.x += o->vel.x;
+        o->pos.y += o->vel.y;
+        o->pos.z += o->vel.z;
+        o->rot[0] += o->spin[0];
+        o->rot[1] += o->spin[1];
+        o->rot[2] += o->spin[2];
+        func_00101BA0(o, &o->pos);
+        if (o->flags & 8) {
+            func_001F5620(func_001F53A0(), o->target, &tmp);
+            d.x = tmp.x - o->pos.x;
+            d.y = tmp.y - o->pos.y;
+            d.z = tmp.z - o->pos.z;
+            func_00101940(&d, o->rot);
+        }
+        func_0020EB40(m1);
+        func_0020C940(m2, 0, o->rot, &o->pos);
+        func_0020BC00(m1, m2);
+        ((Pkt_b002_01E037F0 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b002_01E037F0 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b002_01E037F0 *)(s32)&pkt)->regs = 0x421421421421LL;
+        ((Pkt_b002_01E037F0 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = o->r0;
+        pkt.v[2].r = pkt.v[3].r = o->r1;
+        pkt.v[0].g = pkt.v[1].g = o->g0;
+        pkt.v[2].g = pkt.v[3].g = o->g1;
+        pkt.v[0].b = pkt.v[1].b = o->b0;
+        pkt.v[2].b = pkt.v[3].b = o->b1;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        if (o->step <= 7 && !(o->flags & 0x40)) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = (o->a0 >> 3) * o->step;
+            pkt.v[3].a = (o->a1 >> 3) * o->step;
+        } else {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = o->a0;
+            pkt.v[3].a = o->a1;
+        }
+        func_00101EE0(&pkt, &tex, texture);
+        pt.x = pt.y = pt.z = 0.0f;
+        if (func_00205440(&pt, m1, &xy[1], &dep[1]) == 0 || func_00101600(&xy[1]) == 0) {
+            continue;
+        }
+        for (j = 0; j < o->segments; j++) {
+            if (o->flags & 1) {
+                x = o->size * (o->table[idx] - o->table[idx + 1]) / 255.0f;
+                y = o->size * (o->table[idx + 2] - o->table[idx + 3]) / 255.0f;
+                z = o->size * (o->table[idx + 4] - o->table[idx + 5]) / 255.0f;
+                idx += 6;
+            } else {
+                angle += step;
+                if (!(angle <= 360.0f)) {
+                    angle -= 360.0f;
+                }
+                r = o->radius * o->table[idx] / 255.0f;
+                idx++;
+                x = r * func_001A6898(3.1415927f * angle / 180.0f);
+                z = r * func_001A6A88(3.1415927f * angle / 180.0f);
+                y = o->size / 2.0f;
+                y += y * (o->table[idx] / 255.0f);
+                idx++;
+            }
+            pt.x = x * span;
+            pt.y = y * span;
+            pt.z = z * span;
+            if (func_00205440(&pt, m1, &xy[0], &dep[0]) == 0 || func_00101600(&xy[0]) == 0) {
+                continue;
+            }
+            w = func_001018E0(o->width, dep[0]);
+            if (o->flags & 0x80) {
+                pkt.v[0].p.z = pkt.v[1].p.z = pkt.v[2].p.z = pkt.v[3].p.z = 0xFFFFFE;
+                zd = 0.0f;
+            } else {
+                if (dep[0] < dep[1]) {
+                    zd = dep[0];
+                } else {
+                    zd = dep[1];
+                }
+                pkt.v[0].p.z = pkt.v[1].p.z = xy[0].z;
+                pkt.v[2].p.z = pkt.v[3].p.z = xy[1].z;
+            }
+            pkt.v[0].p.f = pkt.v[1].p.f = pkt.v[2].p.f = pkt.v[3].p.f = 0;
+            if (ABS_b002_01E037F0(xy[1].x - xy[0].x) > ABS_b002_01E037F0(xy[1].y - xy[0].y)) {
+                pkt.v[0].p.y = xy[0].y;
+                pkt.v[1].p.y = (u32)(xy[0].y - w);
+                pkt.v[2].p.y = (u32)(xy[0].y + w);
+                pkt.v[3].p.y = xy[1].y;
+                if (xy[0].x < xy[1].x) {
+                    pkt.v[0].p.x = (u32)(xy[0].x - w);
+                } else {
+                    pkt.v[0].p.x = (u32)(xy[0].x + w);
+                }
+                pkt.v[1].p.x = pkt.v[2].p.x = xy[0].x;
+                pkt.v[3].p.x = xy[1].x;
+            } else {
+                pkt.v[0].p.x = xy[0].x;
+                pkt.v[1].p.x = (u32)(xy[0].x - w);
+                pkt.v[2].p.x = (u32)(xy[0].x + w);
+                pkt.v[3].p.x = xy[1].x;
+                if (xy[0].y < xy[1].y) {
+                    pkt.v[0].p.y = (u32)(xy[0].y - w);
+                } else {
+                    pkt.v[0].p.y = (u32)(xy[0].y + w);
+                }
+                pkt.v[1].p.y = pkt.v[2].p.y = xy[0].y;
+                pkt.v[3].p.y = xy[1].y;
+            }
+            func_002075F0(&pkt, target, (u32)zd);
+        }
+    }
+    return 1;
+}
+#pragma optimization_level reset
 
 INCLUDE_ASM("asm/nonmatchings/mod/b002", func_01E04520_b002);
 
