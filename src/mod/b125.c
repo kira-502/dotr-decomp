@@ -681,7 +681,268 @@ static s32 func_01E01710_b125(Obj_b125_01E01710 *obj, s32 ot, s32 n) {
 
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b125", func_01E01EE0_b125);
+/* shape b125:01E01EE0 (ShFx_Mgw02), 842 insns, 1 copy (-O2,p): n magic-wave arcs (0x44-byte emitters): the radius
+   shrinks to r0, the angle steps; four arc corners around the joint at angle -/+ spread, projected; a coloured quad
+   (alpha ramped by age) with the first texture, then the four edges as white quads of depth-scaled half-width
+   with the second texture */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b125_01E01EE0;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b125_01E01EE0;
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+    u64 st;
+    Xyz_b125_01E01EE0 xyz;
+} Vtx_b125_01E01EE0;
+
+typedef struct {
+    s16 tag;
+    s16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_b125_01E01EE0 v[4];
+    u8 tail[0x20];
+} Pkt_b125_01E01EE0;
+
+typedef struct {
+    s32 id;
+    u8 kind;
+    u8 b5;
+    u8 pad06[2];
+    s32 w[6];
+} Tex_b125_01E01EE0;
+
+typedef struct {
+    u8 cur;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    u8 flags;
+    u8 b5;
+    u8 pad6[2];
+    u8 tex1;
+    u8 tex2;
+    u8 bA;
+    u8 bB;
+    u8 bC;
+    u8 bD;
+    u8 bE;
+    u8 bF;
+    f32 r0;
+    f32 w;
+    f32 rad;
+    f32 step;
+    f32 ang;
+    f32 dang;
+    f32 spread;
+    f32 size;
+    u8 b, g, r, a;
+    u8 b2, g2, r2, a2;
+    f32 x, y, z;
+} Obj_b125_01E01EE0;
+
+static inline f32 rad_b125_01E01EE0(f32 d) {
+    return 3.1415927f * d / 180.0f;
+}
+
+#pragma optimization_level 2
+
+static s32 func_01E01EE0_b125(Obj_b125_01E01EE0 *obj, s32 ot __attribute__((aligned(8))), s32 n) {
+    extern s32 func_00101AF0(void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern void func_00101BA0(void *, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_001020B0();
+    extern void func_00101EE0(void *, void *, s32);
+    extern f32 func_001018E0(f32, f32);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_002086D0(void *, s32);
+    Obj_b125_01E01EE0 *o;
+    s32 i;
+    s32 h1;
+    s32 h2;
+    s32 k;
+    s32 a;
+    s32 b;
+    s32 al;
+    f32 m[16];
+    f32 m2[16];
+    Tex_b125_01E01EE0 t;
+    Xyz_b125_01E01EE0 xy[4];
+    Vec_b125_01E01EE0 pt[4];
+    Vec_b125_01E01EE0 pos;
+    f32 dep[4];
+    f32 sz[4];
+    Pkt_b125_01E01EE0 pkt __attribute__((aligned(8)));
+    f32 c0;
+    f32 s0;
+    f32 c1;
+    f32 s1;
+    f32 ang;
+
+    o = obj;
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            o++;
+        }
+        if (func_00101AF0(o) == 0) {
+            continue;
+        }
+        h1 = func_00202BF0(5, o->tex1);
+        h2 = func_00202BF0(5, o->tex2);
+        if (o->rad != o->r0) {
+            o->rad -= o->step;
+            if (o->rad < o->r0) {
+                o->rad = o->r0;
+            }
+        }
+        o->ang += o->dang;
+        pos.x = o->x;
+        pos.y = o->y;
+        pos.z = o->z;
+        if (o->b5) {
+            func_00101BA0(o, &pos);
+        }
+        func_0020EB40(m);
+        func_0020C940(m2, 0, 0, &pos);
+        func_0020BC00(m, m2);
+        ang = rad_b125_01E01EE0(o->ang);
+        c0 = o->r0 * func_001A6898(ang);
+        s0 = o->r0 * func_001A6A88(ang);
+        c1 = o->rad * func_001A6898(ang);
+        s1 = o->rad * func_001A6A88(ang);
+        ang = rad_b125_01E01EE0(o->ang - o->spread);
+        pt[0].x = c1 - c0 + o->w * func_001A6898(ang);
+        pt[0].y = 0.0f;
+        pt[0].z = s1 - s0 + o->w * func_001A6A88(ang);
+        pt[2].x = c1 - c0 + o->r0 * func_001A6898(ang);
+        pt[2].y = 0.0f;
+        pt[2].z = s1 - s0 + o->r0 * func_001A6A88(ang);
+        ang = rad_b125_01E01EE0(o->ang + o->spread);
+        pt[1].x = c1 - c0 + o->w * func_001A6898(ang);
+        pt[1].y = 0.0f;
+        pt[1].z = s1 - s0 + o->w * func_001A6A88(ang);
+        pt[3].x = c1 - c0 + o->r0 * func_001A6898(ang);
+        pt[3].y = 0.0f;
+        pt[3].z = s1 - s0 + o->r0 * func_001A6A88(ang);
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = o->r;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = o->g;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = o->b;
+        k = o->max - o->cur;
+        pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = o->a;
+        if (k < 32) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = k * (o->a >> 5);
+        }
+        if (o->cur < 8) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = o->cur * (o->a >> 3);
+        }
+        if (func_00205440(&pt[0], m, &xy[0], &dep[0]) == 0) {
+            continue;
+        }
+        if (func_00205440(&pt[1], m, &xy[1], &dep[1]) == 0) {
+            continue;
+        }
+        if (func_00205440(&pt[2], m, &xy[2], &dep[2]) == 0) {
+            continue;
+        }
+        if (func_00205440(&pt[3], m, &xy[3], &dep[3]) == 0) {
+            continue;
+        }
+        pkt.v[0].xyz = xy[0];
+        pkt.v[1].xyz = xy[1];
+        pkt.v[2].xyz = xy[2];
+        pkt.v[3].xyz = xy[3];
+        pkt.v[0].xyz.f = pkt.v[1].xyz.f = pkt.v[2].xyz.f = pkt.v[3].xyz.f = 0;
+        t.b5 = o->bE;
+        func_001020B0(&t, o->bC, o->bA);
+        func_00101EE0(&pkt, &t, h1);
+        func_002075F0(&pkt, ot, (u32)((dep[0] + dep[1] + dep[2] + dep[3]) / 4.0f));
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->count = 0x34;
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->tag = 0xC;
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->regs = ((u64)0x4214 << 32) | 0x21421421;
+        ((Pkt_b125_01E01EE0 *)(s32)&pkt)->pad = 0;
+        pkt.v[0].b = pkt.v[1].b = pkt.v[2].b = pkt.v[3].b = 0x80;
+        pkt.v[0].g = pkt.v[1].g = pkt.v[2].g = pkt.v[3].g = 0x80;
+        pkt.v[0].r = pkt.v[1].r = pkt.v[2].r = pkt.v[3].r = 0x80;
+        pkt.v[0].q = pkt.v[1].q = pkt.v[2].q = pkt.v[3].q = 1.0f;
+        func_002086D0(&pkt, 0x48);
+        al = o->a2;
+        if (k < 32) {
+            al = k * (o->a2 >> 5);
+        }
+        if (o->cur < 8) {
+            al = o->cur * (o->a2 >> 3);
+        }
+        if ((o->cur & 1) && (o->flags & 1)) {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = al >> 2;
+        } else {
+            pkt.v[0].a = pkt.v[1].a = pkt.v[2].a = pkt.v[3].a = al;
+        }
+        pkt.v[0].xyz.f = pkt.v[2].xyz.f = pkt.v[1].xyz.f = pkt.v[3].xyz.f = 1;
+        t.b5 = o->bF;
+        func_001020B0(&t, o->bD, o->bB);
+        t.w[0] += 0xC;
+        t.w[1] = t.w[0] + 8;
+        func_00101EE0(&pkt, &t, h2);
+        for (k = 0; k < 4; k++) {
+            switch (k) {
+            case 0:
+                a = 0;
+                b = 1;
+                break;
+            case 1:
+                a = 1;
+                b = 3;
+                break;
+            case 2:
+                a = 3;
+                b = 2;
+                break;
+            case 3:
+                a = 2;
+                b = 0;
+                break;
+            }
+            sz[a] = func_001018E0(o->size, dep[a]);
+            sz[b] = func_001018E0(o->size, dep[b]);
+            pkt.v[2].xyz.y = (u32)((f32)(u32)xy[a].y + sz[a]);
+            pkt.v[3].xyz.y = (u32)((f32)(u32)xy[b].y + sz[b]);
+            pkt.v[0].xyz.y = (u32)((f32)(u32)xy[a].y - sz[a]);
+            pkt.v[1].xyz.y = (u32)((f32)(u32)xy[b].y - sz[b]);
+            pkt.v[0].xyz.x = pkt.v[2].xyz.x = xy[a].x;
+            pkt.v[1].xyz.x = pkt.v[3].xyz.x = xy[b].x;
+            func_002075F0(&pkt, ot, (u32)((f32)(u32)(dep[a] + dep[b]) / 2.0f));
+            pkt.v[2].xyz.x = (u32)((f32)(u32)xy[a].x + sz[a]);
+            pkt.v[3].xyz.x = (u32)((f32)(u32)xy[b].x + sz[b]);
+            pkt.v[0].xyz.x = (u32)((f32)(u32)xy[a].x - sz[a]);
+            pkt.v[1].xyz.x = (u32)((f32)(u32)xy[b].x - sz[b]);
+            pkt.v[0].xyz.y = pkt.v[2].xyz.y = xy[a].y;
+            pkt.v[1].xyz.y = pkt.v[3].xyz.y = xy[b].y;
+            func_002075F0(&pkt, ot, (u32)((f32)(u32)(dep[a] + dep[b]) / 2.0f));
+        }
+    }
+    return 1;
+}
+
+#pragma optimization_level reset
 
 /* OVL_WARM */
 
