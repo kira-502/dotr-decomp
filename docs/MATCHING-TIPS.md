@@ -1029,3 +1029,6 @@ there is a source form that gives the original.
   element of a local array whose address is taken (`Vec4f w[2]` with the step in w[0], the by-value point in w[1])
   (b112:01E026C0, 474 → 1151). A call's output vector with its address in a saved register is w[1] of such an array
   (b758:01E04D00).
+- **Rotated registers in one of several identical copy loops:** give that loop its own pointer local as well as its
+  own counter (b531:01E02830).
+- **`x = (s32)(x * -1.0f)` with the `mul.s` operands swapped:** `x *= -1.0f` (b173:01E04BF0).
