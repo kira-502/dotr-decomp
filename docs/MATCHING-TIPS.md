@@ -940,3 +940,5 @@ there is a source form that gives the original.
 - **-O1 saved registers follow declaration order** (variables sharing a register take one slot); reorder declarations
   first (b200:01E05B40, 701 → 763). An -O1 u8 argument goes inline as `(u8)(expr)`, not through a u8 local
   (b002:01E05FE0).
+- **A `dk try` that never returns:** look for a negated float compare (`if (!(f(x) <= 3.0f))` hung mwccps2 at -O4;
+  `> 3.0f` compiled and matched) (c059:01E00FB0).
