@@ -1023,3 +1023,5 @@ there is a source form that gives the original.
   the function's first statement (`y = 0.0f; h = 0.0f;` ahead of `ot = func_00207500()`) (c541:01E03B60).
 - **-O1 int temp in `$a1` where the original has `$a0`:** the reused variable is a later call's second argument and
   gets coalesced; give the expression its own block local (b177:01E01E90).
+- **One float local reused in several switch cases, landing in `$f1` in one of them:** give that case its own local
+  (b033:01E05470).
