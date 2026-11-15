@@ -982,7 +982,355 @@ static void func_01E02640_b531(Obj_b046_01E00DD0 *obj, Data_b046_01E00DD0 *data,
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b531", func_01E02830_b531);
+/* shape b531:01E02830 (B531_W_S), 1151 insns, 1 copy: B531_W_S, the scene step: colour 0x80/0/0/0, counts the frame
+   (0x31AC), one more point on 189/194/199/206/211/216; at 1 three markers, 242 and 300 an ending pair; at 55 six
+   points at the joint, each with a marker, a glow, a purple glow and two cleared 10-point trails; the points drift
+   toward the camera 55..155, then rise and swing by 30 x the sine of their angle (+15 a tick) and feed the trails;
+   the centre follows the joint midpoint until 245, then steps 1/40 toward the camera spawning dark bursts; streaks,
+   sparks and joint flickers by frame range; 187 and 205 three blue bursts */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0x2860 - 0x260];
+    Vec4f ctr;
+    Vec4f pts[6];
+    u8 pad28D0[0x2900 - 0x28D0];
+    Vec4f off[6];
+    u8 pad2960[0x29A0 - 0x2960];
+    Vec4f ta[6][10];
+    Vec4f tb[6][10];
+    Vec4f c;
+    u8 pad3130[0x3154 - 0x3130];
+    u8 col[4];
+    u8 pad3158[0x317C - 0x3158];
+    s16 h317C;
+    u8 pad317E[2];
+    s16 h3180;
+    u8 pad3182[4];
+    s16 h3186;
+    u8 pad3188[2];
+    s16 h318A;
+    u8 pad318C[0x3194 - 0x318C];
+    s16 sel;
+    u8 pad3196[2];
+    s16 h3198;
+    s16 n;
+    s16 ang[6];
+    u8 pad31A8[2];
+    s16 h31AA;
+    s16 frame;
+    u8 pad31AE[0x32B0 - 0x31AE];
+    u8 crd[0x10];
+} Scene_b531_01E02830;
+
+static void func_01E02830_b531(Scene_b531_01E02830 *g) {
+    extern s32 b531_01E03A30();
+    extern s32 b531_01E03C00();
+    extern s32 b531_01E03CF0();
+    extern s32 b531_01E03EE0();
+    extern s32 b531_01E04460();
+    extern s32 b531_01E047A0();
+    extern s32 b531_01E049C0();
+    extern s32 b531_01E04C60();
+    extern s32 b531_01E04F50();
+    extern s32 b531_01E05050();
+    extern s32 b531_01E05220();
+    extern s32 b531_01E05380();
+    extern s32 b531_01E054D0();
+    extern s32 b531_01E05760();
+    extern s32 b531_01E05830();
+    extern void b531_01E06890(Scene_b531_01E02830 *, s32 (*)(), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    Vec4f v[2];
+    f32 d;
+    s16 i;
+    s16 k;
+    s32 n;
+    s32 q;
+    s32 r;
+    Vec4f *p;
+    Vec4f *w;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0;
+    g->col[2] = 0;
+    g->col[3] = 0;
+    g->frame++;
+    if (g->frame == 0xBD || g->frame == 0xC2 || g->frame == 0xC7 || g->frame == 0xCE || g->frame == 0xD3 ||
+        g->frame == 0xD8) {
+        g->n++;
+    }
+    if (g->frame == 1) {
+        b531_01E06890(g, b531_01E05760, 0);
+    }
+    if (g->frame == 1) {
+        b531_01E06890(g, b531_01E047A0, 0);
+    }
+    if (g->frame == 1) {
+        b531_01E06890(g, b531_01E049C0, 0);
+    }
+    if (g->frame == 0xF2) {
+        b531_01E06890(g, b531_01E05830, 0);
+    }
+    g->sel = 0;
+    if (g->frame == 0xE8) {
+        b531_01E06890(g, b531_01E05050, 0);
+    }
+    g->sel = 1;
+    if (g->frame == 0x12C) {
+        b531_01E06890(g, b531_01E05050, 0);
+    }
+    if (g->frame == 0x37) {
+        func_001F5F90(func_001F53A0(), &v[0]);
+        func_001F5620(func_001F53A0(), g->h3186, &g->c);
+        g->c.z = v[0].z;
+        g->sel = 0;
+        g->pos.x = g->pts[g->sel].x = g->c.x;
+        g->pos.y = g->pts[g->sel].y = g->c.y;
+        g->pos.z = g->pts[g->sel].z = g->c.z;
+        b531_01E06890(g, b531_01E03CF0, 0);
+        b531_01E06890(g, b531_01E04C60, 0);
+        g->sel = 1;
+        g->pos.x = g->pts[g->sel].x = g->c.x;
+        g->pos.y = g->pts[g->sel].y = g->c.y;
+        g->pos.z = g->pts[g->sel].z = g->c.z;
+        b531_01E06890(g, b531_01E03CF0, 0);
+        b531_01E06890(g, b531_01E04C60, 0);
+        g->sel = 2;
+        g->pos.x = g->pts[g->sel].x = g->c.x;
+        g->pos.y = g->pts[g->sel].y = g->c.y;
+        g->pos.z = g->pts[g->sel].z = g->c.z;
+        b531_01E06890(g, b531_01E03CF0, 0);
+        b531_01E06890(g, b531_01E04C60, 0);
+        g->sel = 3;
+        g->pos.x = g->pts[g->sel].x = g->c.x;
+        g->pos.y = g->pts[g->sel].y = g->c.y;
+        g->pos.z = g->pts[g->sel].z = g->c.z;
+        b531_01E06890(g, b531_01E03CF0, 0);
+        b531_01E06890(g, b531_01E04C60, 0);
+        g->sel = 4;
+        g->pos.x = g->pts[g->sel].x = g->c.x;
+        g->pos.y = g->pts[g->sel].y = g->c.y;
+        g->pos.z = g->pts[g->sel].z = g->c.z;
+        b531_01E06890(g, b531_01E03CF0, 0);
+        b531_01E06890(g, b531_01E04C60, 0);
+        g->sel = 5;
+        g->pos.x = g->pts[g->sel].x = g->c.x;
+        g->pos.y = g->pts[g->sel].y = g->c.y;
+        g->pos.z = g->pts[g->sel].z = g->c.z;
+        b531_01E06890(g, b531_01E03CF0, 0);
+        b531_01E06890(g, b531_01E04C60, 0);
+        for (k = 0; k < 6; k++) {
+            g->sel = k;
+            b531_01E06890(g, b531_01E03EE0, 0);
+            p = g->ta[k];
+            for (n = 0; n < 10; n++) {
+                p[n].x = g->pts[k].x;
+                p[n].y = g->pts[k].y;
+                p[n].z = g->pts[k].z;
+            }
+        }
+        for (i = 0; i < 6; i++) {
+            g->sel = i;
+            b531_01E06890(g, b531_01E04460, 0);
+            p = g->tb[i];
+            for (q = 0; q < 10; q++) {
+                p[q].x = g->ctr.x;
+                p[q].y = g->ctr.y;
+                p[q].z = g->ctr.z;
+            }
+        }
+    }
+    if (g->frame == 0xAA) {
+        for (i = 0; i < 6; i++) {
+            g->sel = i;
+            w = g->ta[i];
+            for (r = 0; r < 10; r++) {
+                w[r].x = g->pts[i].x;
+                w[r].y = g->pts[i].y;
+                w[r].z = g->pts[i].z;
+            }
+        }
+    }
+    if (g->frame >= 0x37 && g->frame < 0x9C) {
+        func_001F5F90(func_001F53A0(), &v[0]);
+        g->pts[0].x += (10.0f + v[0].x - g->c.x) / 100.0f;
+        g->pts[0].y += (v[0].y - 5.0f - g->c.y) / 100.0f;
+        g->pts[0].z += (v[0].z - g->c.z) / 100.0f;
+        g->pts[1].x += (20.0f + v[0].x - g->c.x) / 100.0f;
+        g->pts[1].y += (10.0f + v[0].y - 5.0f - g->c.y) / 100.0f;
+        g->pts[1].z += (v[0].z - g->c.z) / 100.0f;
+        g->pts[2].x += (10.0f + v[0].x - g->c.x) / 100.0f;
+        g->pts[2].y += (20.0f + v[0].y - 5.0f - g->c.y) / 100.0f;
+        g->pts[2].z += (v[0].z - g->c.z) / 100.0f;
+        g->pts[3].x += (v[0].x - 10.0f - g->c.x) / 100.0f;
+        g->pts[3].y += (v[0].y - 5.0f - g->c.y) / 100.0f;
+        g->pts[3].z += (v[0].z - g->c.z) / 100.0f;
+        g->pts[4].x += (v[0].x - 20.0f - g->c.x) / 100.0f;
+        g->pts[4].y += (10.0f + v[0].y - 5.0f - g->c.y) / 100.0f;
+        g->pts[4].z += (v[0].z - g->c.z) / 100.0f;
+        g->pts[5].x += (v[0].x - 10.0f - g->c.x) / 100.0f;
+        g->pts[5].y += (20.0f + v[0].y - 5.0f - g->c.y) / 100.0f;
+        g->pts[5].z += (v[0].z - g->c.z) / 100.0f;
+    }
+    if (g->frame >= 0xBD) {
+        for (i = 0; i < g->n; i++) {
+            func_001F5F90(func_001F5380(), &v[0]);
+            func_001F5F90(func_001F53A0(), &v[1]);
+            v[1].x = (v[0].x - v[1].x) / 15.0f;
+            v[1].y = (v[0].y - v[1].y) / 15.0f;
+            v[1].z = (v[0].z - v[1].z) / 15.0f;
+            g->pts[i].z += v[1].z;
+        }
+        for (i = 0; i < g->n; i++) {
+            if (i == 0) {
+                g->off[i].y = -30.0f * func_00108030((s32)g->crd, g->ang[i], 0);
+            }
+            if (i == 1) {
+                g->off[i].x = 30.0f * func_00108030((s32)g->crd, g->ang[i], 0);
+            }
+            if (i == 2) {
+                g->off[i].y = 30.0f * func_00108030((s32)g->crd, g->ang[i], 0);
+            }
+            if (i == 3) {
+                g->off[i].y = -30.0f * func_00108030((s32)g->crd, g->ang[i], 0);
+            }
+            if (i == 4) {
+                g->off[i].x = -30.0f * func_00108030((s32)g->crd, g->ang[i], 0);
+            }
+            if (i == 5) {
+                g->off[i].y = 30.0f * func_00108030((s32)g->crd, g->ang[i], 0);
+            }
+            g->ang[i] += 15;
+        }
+    }
+    for (i = 0; i < g->n; i++) {
+        g->sel = i;
+        v[0].x = g->off[i].x + g->pts[i].x;
+        v[0].y = g->off[i].y + g->pts[i].y;
+        v[0].z = g->off[i].z + g->pts[i].z;
+        func_01E00080_b531(&g->ta[i][9], 10, 0, &v[0]);
+    }
+    func_001F5F90(func_001F5380(), &v[0]);
+    d = func_001A6C60((v[0].z - g->ctr.z) * (v[0].z - g->ctr.z));
+    if (g->frame < 0xF5) {
+        func_001F5620(func_001F53A0(), g->h317C, &v[0]);
+        func_001F5620(func_001F53A0(), g->h3180, &v[1]);
+        v[1].x = (v[0].x - v[1].x) / 2.0f;
+        v[1].y = (v[0].y - v[1].y) / 2.0f;
+        v[1].z = (v[0].z - v[1].z) / 2.0f;
+        g->ctr.x = v[0].x - v[1].x;
+        g->ctr.y = v[0].y - v[1].y;
+        g->ctr.z = v[0].z - v[1].z;
+    } else {
+        func_001F5F90(func_001F5380(), &v[0]);
+        func_001F5F90(func_001F53A0(), &v[1]);
+        v[1].x = (v[0].x - v[1].x) / 40.0f;
+        v[1].y = (v[0].y - v[1].y) / 40.0f;
+        v[1].z = (v[0].z - v[1].z) / 40.0f;
+        if (d > 3.0f) {
+            g->ctr.z += v[1].z;
+            g->pos.x = g->ctr.x;
+            g->pos.y = 5.0f + g->ctr.y;
+            g->pos.z = g->ctr.z;
+            b531_01E06890(g, b531_01E04F50, 0);
+        }
+    }
+    if (g->frame >= 0x39 && g->frame < 0xE7) {
+        g->pos.x = g->ctr.x;
+        g->pos.y = 5.0f + g->ctr.y;
+        g->pos.z = g->ctr.z;
+        g->sel = 0;
+        b531_01E06890(g, b531_01E03A30, 0);
+        if (g->h3198 < 0x140) {
+            g->h3198 += 2;
+        }
+    }
+    func_001F5F90(func_001F5380(), &v[0]);
+    if (func_001A6C60((v[0].z - g->ctr.z) * (v[0].z - g->ctr.z)) < 3.0f) {
+        if (g->frame >= 0x104) {
+            g->h31AA++;
+            g->h3198 += 20;
+            if (g->frame < 0x12D) {
+                g->pos.x = g->ctr.x;
+                g->pos.y = 5.0f + g->ctr.y;
+                g->pos.z = g->ctr.z;
+                b531_01E06890(g, b531_01E05220, 0);
+            }
+        }
+    } else if (g->frame % 3 == 1) {
+        g->pos.x = g->ctr.x;
+        g->pos.y = 5.0f + g->ctr.y;
+        g->pos.z = g->ctr.z;
+        g->sel = 0;
+        b531_01E06890(g, b531_01E03C00, 0);
+    }
+    if (g->frame >= 0x32 && g->frame < 0xF3) {
+        func_001F5620(func_001F53A0(), g->h3186, &v[0]);
+        g->pos.x = v[0].x;
+        g->pos.y = v[0].y;
+        g->pos.z = v[0].z;
+        g->sel = 1;
+        b531_01E06890(g, b531_01E05380, 0);
+        func_001F5620(func_001F53A0(), g->h318A, &v[0]);
+        g->pos.x = v[0].x;
+        g->pos.y = v[0].y;
+        g->pos.z = v[0].z;
+        g->sel = 1;
+        b531_01E06890(g, b531_01E05380, 0);
+    }
+    if (g->frame >= 0x32 && g->frame < 0xF3) {
+        func_001F5620(func_001F53A0(), g->h317C, &v[0]);
+        g->pos.x = v[0].x;
+        g->pos.y = v[0].y;
+        g->pos.z = v[0].z;
+        g->sel = 0;
+        b531_01E06890(g, b531_01E05380, 0);
+        func_001F5620(func_001F53A0(), g->h3180, &v[0]);
+        g->pos.x = v[0].x;
+        g->pos.y = v[0].y;
+        g->pos.z = v[0].z;
+        g->sel = 0;
+        b531_01E06890(g, b531_01E05380, 0);
+    }
+    if (g->frame >= 0x38 && g->frame < 0xB5) {
+        g->sel = 1;
+        for (i = 0; i < 6; i++) {
+            g->pos.x = g->pts[i].x;
+            g->pos.y = g->pts[i].y;
+            g->pos.z = g->pts[i].z;
+            b531_01E06890(g, b531_01E05380, 0);
+        }
+    }
+    if (g->frame == 0xBB) {
+        func_001F5620(func_001F53A0(), g->h3186, &v[0]);
+        g->pos.x = v[0].x;
+        g->pos.y = v[0].y;
+        g->pos.z = v[0].z;
+        g->sel = 0;
+        b531_01E06890(g, b531_01E054D0, 0);
+        g->sel = 1;
+        b531_01E06890(g, b531_01E054D0, 0);
+        g->sel = 2;
+        b531_01E06890(g, b531_01E054D0, 0);
+    }
+    if (g->frame == 0xCD) {
+        func_001F5620(func_001F53A0(), g->h318A, &v[0]);
+        g->pos.x = v[0].x;
+        g->pos.y = v[0].y;
+        g->pos.z = v[0].z;
+        g->sel = 0;
+        b531_01E06890(g, b531_01E054D0, 0);
+        g->sel = 1;
+        b531_01E06890(g, b531_01E054D0, 0);
+        g->sel = 2;
+        b531_01E06890(g, b531_01E054D0, 0);
+    }
+}
 
 /* shape b531:01E03A30, 113 insns: a blue or purple (by kind) falling streak: frame 50 falling by 4..6, random tilt 0..0x3FFF,
    turn and sub-frame 0..3; alpha up by 10 to 0x80 for 12 frames, then down by 19 under 12, gone under -12, and down by 15 when
