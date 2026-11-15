@@ -433,7 +433,258 @@ static void func_01E00E60_b034(s32 arg0, u8 *obj, s32 mode, f32 level) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b034", func_01E01030_b034);
+/* shape b034:01E01030 (B034_W_S), 911 insns, 1 copy: B034_W_S, the scene step: counts the frame (0xAA12); at frame 1
+   six points on a radius around joint 0xA95C (inner three at half radius); spawns its effects at fixed frames and
+   windows through b034:01E05330, three s16 ramps and two float ramps from 180/59/69 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xA870 - 0x260];
+    Vec4f save;
+    Vec4f tab[6];
+    u8 padA8E0[0xA920 - 0xA8E0];
+    f32 radius;
+    u8 padA924[0xA92C - 0xA924];
+    f32 fA92C;
+    f32 fA930;
+    u8 padA934[0xA95C - 0xA934];
+    s16 j0;
+    s16 j1;
+    u8 padA960[0xA96A - 0xA960];
+    s16 j2;
+    u8 padA96C[0xA9A8 - 0xA96C];
+    s16 ang[6];
+    u8 padA9B4[0xAA00 - 0xA9B4];
+    s16 hAA00;
+    s16 hAA02;
+    s16 hAA04;
+    s16 hAA06;
+    u8 padAA08[2];
+    s16 kind;
+    s16 cyc;
+    u8 padAA0E[4];
+    s16 t;
+    u8 padAA14[0xAD14 - 0xAA14];
+    u8 trig[4];
+} Scene_b034_01E01030;
+
+static void func_01E01030_b034(Scene_b034_01E01030 *g) {
+    extern void b034_01E01E70(void);
+    extern void b034_01E01FA0(void);
+    extern void b034_01E02160(void);
+    extern void b034_01E02290(void);
+    extern void b034_01E02470(void);
+    extern void b034_01E02650(void);
+    extern void b034_01E027A0(void);
+    extern void b034_01E02970(void);
+    extern void b034_01E02F60(void);
+    extern void b034_01E03250(void);
+    extern void b034_01E03560(void);
+    extern void b034_01E03840(void);
+    extern void b034_01E03A50(void);
+    extern void b034_01E03B50(void);
+    extern void b034_01E03F80(void);
+    extern void b034_01E04050(void);
+    extern void b034_01E040D0(void);
+    extern void b034_01E05330(Scene_b034_01E01030 *, void (*)(void), s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern s32 func_0019A5C8(void);
+    extern f32 func_00108030(void *, s16, s32);
+    s16 i;
+
+    g->t++;
+    if (g->t == 0x2D) {
+        b034_01E05330(g, b034_01E03F80, 0);
+    }
+    if (g->t == 0xBC) {
+        b034_01E05330(g, b034_01E04050, 0);
+    }
+    if (g->t == 0x154) {
+        g->kind = 0;
+        b034_01E05330(g, b034_01E03560, 0);
+        g->kind = 1;
+        b034_01E05330(g, b034_01E03560, 0);
+        b034_01E05330(g, b034_01E040D0, 0);
+    }
+    if (g->t == 0x1F7) {
+        g->kind = 2;
+        b034_01E05330(g, b034_01E03560, 0);
+    }
+    func_001F5620(func_001F53A0(), g->j0, &g->save);
+    g->save.y = 30.0f;
+    if (g->t == 1) {
+        for (i = 0; i < 6; i++) {
+            func_001F5620(func_001F53A0(), g->j0, &g->pos);
+            if (i > 2) {
+                g->pos.z = g->radius * func_00108030(g->trig, g->ang[i], 0);
+                g->pos.x = g->radius * func_00108030(g->trig, g->ang[i], 1);
+            } else {
+                g->pos.z = g->radius / 2.0f * func_00108030(g->trig, g->ang[i], 0);
+                g->pos.x = g->radius / 2.0f * func_00108030(g->trig, g->ang[i], 1);
+            }
+            g->pos.y = 0.0f;
+            g->tab[i] = g->pos;
+        }
+        b034_01E05330(g, b034_01E02160, 0);
+        b034_01E05330(g, b034_01E02650, 0);
+    }
+    func_001F5F90(func_001F53A0(), &g->pos);
+    if (g->t == 6) {
+        b034_01E05330(g, b034_01E01E70, 0);
+    }
+    if (g->t == 0x3B) {
+        b034_01E05330(g, b034_01E01FA0, 0);
+    }
+    if (g->t > 0x3B) {
+        if (g->hAA00 < 0x168) {
+            g->hAA00 += 10;
+        }
+        if (g->hAA00 > 0x168) {
+            g->hAA00 = 0x168;
+        }
+    }
+    if (g->t > 0x19 && g->t < 0x3C) {
+        g->pos.y = 28.0f;
+        if (g->t % 3 != 1) {
+            b034_01E05330(g, b034_01E02290, 0);
+        }
+    }
+    g->pos.y = 30.0f;
+    if (g->t == 0x4C) {
+        b034_01E05330(g, b034_01E02470, 0);
+        g->kind = 0;
+        b034_01E05330(g, b034_01E03B50, 0);
+    }
+    if (g->t == 0x6E) {
+        g->kind = 0;
+        b034_01E05330(g, b034_01E03B50, 0);
+        g->kind = 1;
+        b034_01E05330(g, b034_01E03B50, 0);
+    }
+    if (g->t == 0xC8) {
+        g->kind = 0;
+        b034_01E05330(g, b034_01E03B50, 0);
+        g->kind = 2;
+        b034_01E05330(g, b034_01E03B50, 0);
+    }
+    func_001F5620(func_001F53A0(), g->j1, &g->pos);
+    if (g->t >= 0xC8 && g->t < 0x1D7) {
+        g->kind = 0;
+        if (g->t % 27 == 1) {
+            b034_01E05330(g, b034_01E03B50, 0);
+        }
+        if (g->t % 10 == 1) {
+            g->pos.y = 28.0f;
+            b034_01E05330(g, b034_01E02470, 0);
+        }
+    }
+    if (g->t >= 0x30 && g->t < 0x1C9) {
+        g->kind = 0;
+        b034_01E05330(g, b034_01E027A0, 0);
+        b034_01E05330(g, b034_01E027A0, 0);
+    }
+    if (g->t == 0x6E) {
+        g->pos = g->save;
+        g->kind = 1;
+        for (i = 0; i < 12; i++) {
+            b034_01E05330(g, b034_01E03250, 0);
+        }
+    }
+    if (g->t == 0x154) {
+        g->kind = 0;
+        func_001F5620(func_001F5380(), g->j2, &g->pos);
+        for (i = 0; i < 7; i++) {
+            b034_01E05330(g, b034_01E02F60, 0);
+        }
+        g->kind = 10;
+        b034_01E05330(g, b034_01E03B50, 0);
+    }
+    if (g->t == 0x154) {
+        func_001F5620(func_001F5380(), g->j2, &g->pos);
+        g->kind = 0;
+        for (i = 0; i < 10; i++) {
+            b034_01E05330(g, b034_01E03250, 0);
+        }
+    }
+    if (g->t >= 0x156 && g->t < 0x1DC) {
+        func_001F5620(func_001F5380(), g->j2, &g->pos);
+        g->pos.x += func_0019A5C8() % 40 - 20;
+        g->pos.z += func_0019A5C8() % 40 - 20;
+        g->kind = 1;
+        g->pos.y = 20.0f;
+        if (g->t % 2 == 1) {
+            b034_01E05330(g, b034_01E02F60, 0);
+        }
+    }
+    if (g->t >= 0x156 && g->t < 0x1E6) {
+        func_001F5620(func_001F5380(), g->j2, &g->pos);
+        b034_01E05330(g, b034_01E03840, 0);
+        g->pos.y += func_0019A5C8() % 60 - 45;
+        g->pos.x += func_0019A5C8() % 50 - 25;
+        g->pos.z += func_0019A5C8() % 50 - 25;
+        g->kind = 2;
+        if (g->t % 2 == 0) {
+            b034_01E05330(g, b034_01E03250, 0);
+        }
+    }
+    if (g->t >= 0x156 && g->t < 0x1DC) {
+        func_001F5620(func_001F5380(), g->j2, &g->pos);
+        g->kind = 2;
+        g->pos.y = 20.0f;
+        b034_01E05330(g, b034_01E03A50, 0);
+    }
+    if (g->t == 0x168) {
+        func_001F5620(func_001F5380(), g->j2, &g->pos);
+        g->kind = 11;
+        b034_01E05330(g, b034_01E03B50, 0);
+    }
+    if (g->t >= 0x5F && g->t < 0x12D) {
+        if (g->t % 2 == 1) {
+            g->kind = g->cyc;
+            b034_01E05330(g, b034_01E02970, 0);
+            g->cyc++;
+            if (g->cyc >= 40) {
+                g->cyc = 0;
+            }
+            g->kind = g->cyc;
+            b034_01E05330(g, b034_01E02970, 0);
+            g->cyc++;
+            if (g->cyc >= 40) {
+                g->cyc = 0;
+            }
+        }
+    }
+    if (g->t >= 0xB4) {
+        g->hAA06 += 10;
+        if (g->hAA06 > 300) {
+            g->hAA06 = 300;
+        }
+        g->fA930 += 0.5f;
+        if (g->fA930 > 20.0f) {
+            g->fA930 = 20.0f;
+        }
+    }
+    if (g->t >= 0x3B) {
+        g->hAA04 += 2;
+        if (g->hAA04 > 0x48) {
+            g->hAA04 = 0x48;
+        }
+    }
+    if (g->t >= 0x45) {
+        g->hAA02++;
+        if (g->hAA02 > 40) {
+            g->hAA02 = 40;
+            g->fA92C += 0.2f;
+            if (g->fA92C > 2.0f) {
+                g->fA92C = 2.0f;
+            }
+        }
+    }
+}
 
 /* shape b034:01E01E70, 73 insns: a blinking yellow glow (yellow on odd ticks, olive on even): in by 12 up to 0x80 for 20 ticks, then out by 9 once the scene state is under 40, and ends */
 
