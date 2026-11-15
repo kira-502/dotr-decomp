@@ -968,3 +968,5 @@ there is a source form that gives the original.
   (b125:01E01EE0 was -O2).
 - **Look up a libgcc double helper's real name before choosing the operator:** `func_001A2858` is `dpadd`, `0x1A2918`
   is `dpmul` (config/linker_syms.txt); b573:01E03C70's `v.y = v.y + 2.5;`.
+- **A static's float argument loaded from a field before an int stack argument:** a no-op cast,
+  `f(&o, tex, (f32)g->r)` (b118:01E03A20).
