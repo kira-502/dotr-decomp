@@ -986,3 +986,6 @@ there is a source form that gives the original.
   `u8 buf[0x90]` uncast, not `(void *)buf` (b357:01E05340).
 - **Two zero float arguments loaded `mtc1 $zero, $f15; mov.s $f14, $f15`:** `(..., 0.0f, z)` with `f32 z = 0.0f;`
   (floatsearch missed it) (b138:01E03C60).
+- **A stack address at or above the frame size passed as an output buffer** (sp+0xD0 in a 0xD0 frame): the original
+  indexes past an array at the top of the frame; no honest layout reproduces it (b644:01E04740 keeps `v[3]` past
+  `Vec4f v[2]` with a comment, like the LkEff_SetCocoon managers).
