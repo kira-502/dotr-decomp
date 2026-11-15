@@ -978,3 +978,5 @@ there is a source form that gives the original.
   (b127:01E04750).
 - **After floatsearch, revert its changes one at a time and keep only those whose revert breaks the match** (its random
   phase leaves noise forms; c534:01E03D50 went from 12 changed calls to 9).
+- **Big register rotation in a scene manager:** a greedy search renaming each loop's counter in turn (i, k, j, m, n),
+  scored in-file, found b154:01E026A0's fix in about 50 tries (example script work/greedy_counters_example.py).
