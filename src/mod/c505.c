@@ -1368,4 +1368,463 @@ static s32 func_01E03090_c505(s32 ot __attribute__((aligned(8))), Def_c505_01E03
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c505", func_01E035A0_c505);
+/* shape c505:01E035A0 (c505), 799 insns, 1 copy: c505's scene manager: code >= 0 clears the 0x1140 scene (count 5,
+   timer 30), sets up three lightning trails with dual boards riding them, an 8-point remain outline, a 6-point board,
+   a ring, a 60-spark cloud and an 8-sprite board; each tick shakes camera 3 along x or z by its heading, draws the
+   trails and boards, and once the count is out the outline, board, growing ring, sparks and fades, flashing the
+   screen on even counts; 2 at tick 6, 8 when the timer runs out */
+
+typedef struct {
+    u8 b, g, r, a;
+} Col_c505_01E035A0;
+
+typedef struct {
+    Vec4f scale;
+    s32 rot[4];
+    Vec4f pos;
+    u8 pad30[0x40];
+} Crd_c505_01E035A0;
+
+typedef struct {
+    s32 texture;
+    Col_c505_01E035A0 color;
+    u8 pad8[4];
+    s16 n;
+    u8 padE[2];
+    s16 u, v, w, h;
+    s16 x18;
+    s16 x1A;
+    u8 pad1C[4];
+    Vec4f pos;
+    Vec4f pts[5];
+} Trail_c505_01E035A0;
+
+typedef struct {
+    s16 r[8];
+    u8 pad10[0x20];
+    f32 f30;
+    Col_c505_01E035A0 color;
+    s32 flags;
+    u8 pad3C[0xC];
+    s16 h48, h4A, h4C, h4E, h50, h52;
+    u8 pad54[0xC];
+} Mdl_c505_01E035A0;
+
+typedef struct {
+    u8 pad0[0x10];
+    Vec4f pos;
+    u8 pad20[0x60];
+} Bb_c505_01E035A0;
+
+typedef struct {
+    Vec4f v[6];
+} Tbl6_c505_01E035A0;
+
+typedef struct {
+    Vec4f v[8];
+} Tbl8_c505_01E035A0;
+
+typedef struct {
+    s32 tex;
+    u8 pad4[4];
+    f32 scale;
+    u8 padC[4];
+    s32 a, b, c;
+    u8 pad1C[4];
+    Vec4f p[6];
+} Pts_c505_01E035A0;
+
+typedef struct {
+    s32 tex;
+    u8 pad4[8];
+    f32 scale;
+    f32 x, y, z;
+    u8 pad1C[4];
+    Vec4f p[8];
+} Obj_c505_01E035A0;
+
+typedef struct {
+    f32 x, y, z;
+    s16 pad;
+    s16 life;
+} Dot_c505_01E035A0;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    Col_c505_01E035A0 color;
+    f32 size;
+    f32 cx, cy, cz, cw;
+    s16 u, v, w, h;
+    s16 s28, s2A, s2C, s2E;
+    Dot_c505_01E035A0 pts[16];
+    s16 count;
+    s16 angle;
+    s16 cur;
+    s16 s136;
+    s16 s138;
+    s16 step;
+    s16 s13C;
+    s16 s13E;
+    s16 s140;
+    u8 pad142[0xE];
+} Emit_c505_01E035A0;
+
+typedef struct {
+    f32 x, y, z;
+} V3_c505_01E035A0;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    Col_c505_01E035A0 color;
+    f32 size;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    V3_c505_01E035A0 p[60];
+} Spark_c505_01E035A0;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    Col_c505_01E035A0 color;
+    u8 padC[4];
+    s16 u, v, w, h;
+    u8 pad18[0x3E8];
+} Ring_c505_01E035A0;
+
+typedef struct {
+    Crd_c505_01E035A0 crd[5];
+    Trail_c505_01E035A0 trail[3];
+    Mdl_c505_01E035A0 mdl[3];
+    Bb_c505_01E035A0 bb[3];
+    Mdl_c505_01E035A0 def;
+    Pts_c505_01E035A0 pts;
+    Emit_c505_01E035A0 emit;
+    u8 pad880[0xA0];
+    Mdl_c505_01E035A0 def2;
+    Obj_c505_01E035A0 obj2;
+    Spark_c505_01E035A0 spark;
+    Ring_c505_01E035A0 ring;
+    f32 sc[4];
+    s32 cnt;
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 flags;
+    Src_b000_01E00400 color;
+    s32 a;
+    s32 b;
+} Scene_c505_01E035A0;
+
+static s32 func_01E035A0_c505(s32 arg0, s32 code) {
+    Scene_c505_01E035A0 *g = (Scene_c505_01E035A0 *)arg0;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern s32 func_001039A0(void *);
+    extern s32 func_001F5380(void);
+    extern void func_001E10F0(s32, s32, s32, void *);
+    extern void func_00103260(s32 *, s32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern s32 func_00104520(s32, s32);
+    extern s32 func_00105C40(void *);
+    extern s32 func_0019A5C8();
+    extern Tbl8_c505_01E035A0 D_01E04340_c505;
+    extern Tbl6_c505_01E035A0 D_01E04280_c505;
+    s32 m;
+    s32 u;
+    s32 ot;
+    Vec4f v;
+    s32 tx[4];
+    Tbl8_c505_01E035A0 tbl8;
+    Tbl6_c505_01E035A0 tbl6;
+    s32 i;
+    s32 k;
+    s32 n;
+    s32 t;
+    s32 ang;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x1140);
+        g->flags = 0;
+        g->cnt = 5;
+        g->timer = 0x1E;
+        g->t = 0;
+        g->code = code;
+        g->a = func_001F5380() & 0xFF;
+        g->b = func_001F5380() >> 8;
+        g->sc[0] = 1.02f;
+        g->sc[1] = 1.02f;
+        g->sc[2] = 1.02f;
+        g->color.r = g->color.g = g->color.b = g->color.a = 0x80;
+        func_00103890(&g->crd[0]);
+        func_00103890(&g->crd[1]);
+        func_00103890(&g->crd[2]);
+        func_00103890(&g->crd[3]);
+        func_00103890(&g->crd[4]);
+        g->crd[1].scale.x = g->crd[1].scale.y = g->crd[1].scale.z = 0.1f;
+        func_001E10F0(g->a, g->b, 0, &g->crd[0].pos);
+        func_001E10F0(g->a, g->b, 0, &g->crd[1].pos);
+        func_001E10F0(g->a, g->b, 0, &g->crd[2].pos);
+        func_001E10F0(g->a, g->b, 0, &g->crd[3].pos);
+        func_001E10F0(g->a, g->b, 0, &g->crd[4].pos);
+        func_00103260(tx, 0xE);
+        for (i = 0; i < 3; i++) {
+            g->trail[i].n = 5;
+            g->trail[i].u = 0;
+            g->trail[i].v = 0x80;
+            g->trail[i].w = 0x20;
+            g->trail[i].h = 0x80;
+            g->trail[i].x18 = 0;
+            g->trail[i].x1A = 0x80;
+            g->trail[i].pos.w = 10.0f;
+            g->trail[i].color.r = 0x80;
+            g->trail[i].color.g = 0x80;
+            g->trail[i].color.b = 0x80;
+            g->trail[i].color.a = 0x80;
+            func_01E02B50_c505((Obj_b021_01E03DE0 *)&g->trail[i], tx[0], 200.0f);
+        }
+        g->def2.color.r = 0x80;
+        g->def2.color.g = 0x80;
+        g->def2.color.b = 0x80;
+        g->def2.color.a = 0x80;
+        g->def2.f30 = 1.0f;
+        g->def2.flags = 3;
+        g->def2.r[0] = 0x60;
+        g->def2.r[1] = 0;
+        g->def2.r[2] = 0x50;
+        g->def2.r[3] = 0x50;
+        g->def2.r[4] = 0x60;
+        g->def2.r[5] = 0;
+        g->def2.r[6] = 0x100;
+        g->def2.r[7] = 0x100;
+        g->def2.h48 = 0;
+        g->def2.h4A = 1;
+        g->def2.h4E = 2;
+        g->def2.h52 = 0;
+        g->def2.h50 = 0;
+        g->def2.h4C = g->def2.h4E - 1;
+        t = tx[0];
+        tbl8 = D_01E04340_c505;
+        g->obj2.x = g->obj2.y = g->obj2.z = 0.0f;
+        g->obj2.scale = 30.0f;
+        g->obj2.tex = t;
+        for (k = 0; k < 8; k++) {
+            g->obj2.p[k].x = g->obj2.scale * tbl8.v[k].x;
+            g->obj2.p[k].y = g->obj2.scale * tbl8.v[k].y;
+            g->obj2.p[k].z = g->obj2.scale * tbl8.v[k].z;
+        }
+        func_00103260(tx, 3);
+        for (i = 0; i < 3; i++) {
+            g->mdl[i].flags = 1;
+            g->mdl[i].f30 = 1.0f;
+            g->mdl[i].color.r = 0x80;
+            g->mdl[i].color.g = 0x80;
+            g->mdl[i].color.b = 0x80;
+            g->mdl[i].color.a = 0x80;
+            g->mdl[i].r[0] = 0x40;
+            g->mdl[i].r[1] = 0;
+            g->mdl[i].r[2] = 0x20;
+            g->mdl[i].r[3] = 0x40;
+            g->mdl[i].r[4] = 0x40;
+            g->mdl[i].r[5] = 0;
+            g->mdl[i].r[6] = 0x80;
+            g->mdl[i].r[7] = 0x40;
+            g->mdl[i].h48 = 0;
+            g->mdl[i].h4A = 1;
+            g->mdl[i].h4E = 2;
+            g->mdl[i].h52 = 999;
+            g->mdl[i].h50 = 0;
+            g->mdl[i].h4C = g->mdl[i].h4E - 1;
+            func_01E00880_c505((Src_c500_01E003D0 *)&g->mdl[i], (Bb_c500_01E003D0 *)&g->bb[i], tx[0], 25.0f);
+        }
+        func_00103260(tx, 0xF);
+        g->def.flags = 3;
+        g->def.f30 = 1.0f;
+        g->def.color.r = 0x80;
+        g->def.color.g = 0x70;
+        g->def.color.b = 0x40;
+        g->def.color.a = 0x80;
+        g->def.r[0] = 0xB0;
+        g->def.r[1] = 0x40;
+        g->def.r[2] = 0x20;
+        g->def.r[3] = 0x20;
+        g->def.r[4] = 0xB0;
+        g->def.r[5] = 0x40;
+        g->def.r[6] = 0x100;
+        g->def.r[7] = 0x100;
+        g->def.h48 = 0;
+        g->def.h4A = 1;
+        g->def.h4E = 2;
+        g->def.h52 = 0;
+        g->def.h50 = 0;
+        g->def.h4C = g->def.h4E - 1;
+        u = tx[0];
+        tbl6 = D_01E04280_c505;
+        g->pts.a = g->pts.b = g->pts.c = 0;
+        g->pts.scale = 15.0f;
+        g->pts.tex = u;
+        for (m = 0; m < 6; m++) {
+            g->pts.p[m].x = g->pts.scale * tbl6.v[m].x;
+            g->pts.p[m].y = g->pts.scale * tbl6.v[m].y;
+            g->pts.p[m].z = g->pts.scale * tbl6.v[m].z;
+        }
+        g->ring.flags = 0x8000;
+        g->ring.u = 0x8E;
+        g->ring.v = 0;
+        g->ring.w = 0x20;
+        g->ring.h = 0x40;
+        g->ring.color.r = 0x80;
+        g->ring.color.g = 0x70;
+        g->ring.color.b = 0x40;
+        g->ring.color.a = 0x80;
+        {
+            f32 z = 0.0f;
+            func_01E023A0_c505((Ring_b001_01E035A0 *)&g->ring, tx[0], 8.0f, 24.0f, z, 30.0f);
+        }
+        g->spark.tex = tx[0];
+        g->spark.size = 1.5f;
+        for (n = 0; n < 60; n++) {
+            if (func_00104520(g->spark.flags, 0x1D)) {
+                g->spark.p[n].x = func_0019A5C8() % 100 - 50;
+                g->spark.p[n].z = func_0019A5C8() % 50;
+                g->spark.p[n].y = func_0019A5C8() % 100 - 50;
+            } else {
+                g->spark.p[n].x = func_0019A5C8() % 50 - 25;
+                g->spark.p[n].y = func_0019A5C8() % 25;
+                g->spark.p[n].z = func_0019A5C8() % 50 - 25;
+            }
+        }
+        g->spark.flags = 1;
+        g->spark.u = 0xB0;
+        g->spark.v = 0x40;
+        g->spark.w = 0x20;
+        g->spark.h = 0x20;
+        g->spark.color.r = 0x80;
+        g->spark.color.g = 0x70;
+        g->spark.color.b = 0x40;
+        g->spark.color.a = 0x80;
+        g->emit.texture = tx[0];
+        g->emit.flags = 7;
+        g->emit.cx = 0.0f;
+        g->emit.cy = 0.0f;
+        g->emit.cz = 0.0f;
+        g->emit.u = 0x80;
+        g->emit.v = 0xC0;
+        g->emit.w = 0x20;
+        g->emit.h = 0x20;
+        g->emit.s28 = 0x80;
+        g->emit.s2A = 0xC0;
+        g->emit.s2C = 0x80;
+        g->emit.s2E = 0x100;
+        g->emit.size = 20.0f;
+        g->emit.count = 8;
+        g->emit.step = 1;
+        g->emit.s13C = 1;
+        g->emit.s140 = 8;
+        g->emit.s136 = 0x1E;
+        g->emit.s138 = -0x1E;
+        g->emit.color.r = 0x80;
+        g->emit.color.g = 0x70;
+        g->emit.color.b = 0x40;
+        g->emit.color.a = 0x80;
+        for (i = 0; i < 8; i++) {
+            g->emit.pts[i].x = (f32)(func_0019A5C8() % 60 - 30);
+            g->emit.pts[i].y = (f32)(func_0019A5C8() % 30);
+            g->emit.pts[i].life = -g->emit.step * i;
+            g->emit.pts[i].pad = func_00105C40(&g->emit.u);
+            g->emit.s13E = g->emit.pts[i].pad + g->emit.s140 - 1;
+        }
+        return 0;
+    }
+    func_001039A0(&g->crd[0]);
+    func_001039A0(&g->crd[1]);
+    func_001038D0(&g->crd[2]);
+    func_001039A0(&g->crd[4]);
+    ang = func_001039A0(&g->crd[3]);
+    g->crd[4].pos.y = 3.0f;
+    if (g->def.h50 > 0) {
+        g->crd[4].scale.x = g->crd[4].scale.y = 1.5f;
+    }
+    func_001E10F0(g->a, g->b, 0, &g->crd[3].pos);
+    if (g->cnt == 0) {
+        ang = ang % 0x10000;
+        if ((ang >= 0x2000 && ang < 0x6000) || (ang >= 0xA000 && ang < 0xE000)) {
+            if (g->timer % 2 == 0) {
+                g->crd[3].pos.x += 0.5f;
+            } else if (g->timer % 2 == 1) {
+                g->crd[3].pos.x -= 0.5f;
+            }
+        } else {
+            if (g->timer % 2 == 0) {
+                g->crd[3].pos.z += 0.5f;
+            } else if (g->timer % 2 == 1) {
+                g->crd[3].pos.z -= 0.5f;
+            }
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        if (g->trail[i].color.a < 0x60) {
+            g->trail[i].u = g->trail[i].x18 + g->trail[i].w;
+        } else if (g->trail[i].color.a < 0x40) {
+            g->trail[i].u = g->trail[i].x18 + g->trail[i].w * 2;
+        }
+        func_01E02CA0_c505(ot, (Trail_b021_01E03F30 *)&g->trail[i], (Cam_b021_01E03F30 *)&g->crd[3]);
+        if (g->trail[i].n != 0) {
+            g->bb[i].pos.x = 5.0f + g->trail[i].pts[4 - g->trail[i].n].x;
+            g->bb[i].pos.y = g->trail[i].pts[4 - g->trail[i].n].y;
+            func_01E00AE0_c505(ot, (Obj_c500_01E00630 *)&g->mdl[i], (Strip_c500_01E00630 *)&g->bb[i],
+                               (Cam_c500_01E00630 *)&g->crd[3]);
+        }
+        if (g->trail[i].n != 0) {
+            g->trail[i].n--;
+        }
+    }
+    if (g->cnt == 0) {
+        if (g->def2.h52 == 0 || g->def2.h52 == 999) {
+            func_01E03090_c505(ot, (Def_c505_01E03090 *)&g->def2, (Obj_c505_01E03090 *)&g->obj2,
+                               (Cam_c505_01E03090 *)&g->crd[4]);
+        }
+        g->def2.h48++;
+        func_00103470(&g->def2.color.a, 0, 0x20);
+        if (g->def.h52 == 0 || g->def.h52 == 999) {
+            func_01E003D0_c505(ot, (Def_c505_01E003D0 *)&g->def, (Obj_c505_01E003D0 *)&g->pts,
+                               (Cam_c505_01E003D0 *)&g->crd[4]);
+        }
+        func_01E02660_c505(ot, (Ring_b001_01E03860 *)&g->ring, (Cam_b001_01E03860 *)&g->crd[2]);
+        func_00103470(&g->ring.color.a, 0, 0x20);
+        g->crd[2].scale.x = g->crd[2].scale.y = g->crd[2].scale.z += 0.2f;
+        if (g->crd[1].scale.x < 1.0f) {
+            g->crd[1].scale.x = g->crd[1].scale.y = g->crd[1].scale.z += 0.2f;
+        }
+        func_01E01DC0_c505(ot, (Spark_b013_01E010C0 *)&g->spark, (Cam_b013_01E010C0 *)&g->crd[1], (s32)g->sc);
+        func_00103470(&g->spark.color.a, 0, 8);
+        for (i = 0; i < 3; i++) {
+            func_00103470(&g->trail[i].color.a, 0, 0x10);
+        }
+        v.x = v.y = v.z = 0.0f;
+        func_01E01230_c505(ot, (Cam_b001_01E00A30 *)g, (Emit_b001_01E00A30 *)&g->emit, (Vec_b001_01E00A30 *)&v);
+        func_00103470(&g->emit.color.a, 0, 8);
+    }
+    if (g->cnt % 2 == 0 && g->flags != 0x80020400) {
+        func_01E00270_c505(ot, &g->color);
+    }
+    if (g->cnt == 0 && g->flags != 0x80020400) {
+        g->flags = 0x80020400;
+    }
+    if (g->cnt != 0) {
+        g->cnt--;
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 6) {
+        return 2;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
