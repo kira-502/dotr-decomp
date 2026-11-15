@@ -1015,3 +1015,7 @@ there is a source form that gives the original.
   range the outer test already covers (`else if (t >= 0x12)` where `else` would do), so the compiler keeps `m = 0;`
   at entry (c062:01E04470).
 - **-O2 range tests:** `slti $at, t, K; beqz` came from `t < K` (try `<` first at -O2) (b843:01E06910, b561:01E03280).
+- **-O1 element index built from `$zero` for its first use** (`paddub sN, zero, zero; sll v0, zero, 3`): the source
+  assigns the index just before use, `i = 0; f(&g->flear[i]);` (b200:01E06740).
+- **-O1 negation through one element address:** `g->quad[k].rot[2] *= -1;`, not `x = -x` (b200:01E06740).
+- **A switch compare `beq` that jumps straight past the switch** is an empty `case K: break;` (b497:01E05190).
