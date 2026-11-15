@@ -959,3 +959,6 @@ there is a source form that gives the original.
   really a later call's argument; read which argument registers each `jal` expects first (b079:01E04240).
 - **The second of two zero-float-pair calls copying `$f15`→`$f14` when no argument form fixes it:** move the zero
   assignments (`h = 0.0f; y = 0.0f;`) to the top, right after `rv = 0;` and before the NULL checks (c604:01E037D0).
+- **No block-local form moves a zero-pair float argument order at all:** the locals are propagated away; put
+  `#pragma opt_propagation off` around the function so the c508 form takes effect, then rewrite any loop that gains an
+  entry guard as a do-while (c027:01E00C50).
