@@ -1025,3 +1025,7 @@ there is a source form that gives the original.
   gets coalesced; give the expression its own block local (b177:01E01E90).
 - **One float local reused in several switch cases, landing in `$f1` in one of them:** give that case its own local
   (b033:01E05470).
+- **Vector fields stored to the stack and reloaded at once, where yours keeps them in registers:** the vector is an
+  element of a local array whose address is taken (`Vec4f w[2]` with the step in w[0], the by-value point in w[1])
+  (b112:01E026C0, 474 → 1151). A call's output vector with its address in a saved register is w[1] of such an array
+  (b758:01E04D00).
