@@ -946,3 +946,7 @@ there is a source form that gives the original.
   `u8` (c547:01E02700).
 - **A main-program call with its last argument loaded first:** the argument had a cast against an int parameter in
   functions.h; a block-scope prototype taking `void *` with no cast restores the order (c031:01E00D00).
+- **Float arguments loaded `$f13` first right after an if-block join** (the bc1t delay slot holding the second
+  constant's `lui`): declare the second constant as a block local before the `if` (b140:01E037A0).
+- **An `||` of two ranges where the original uses `$at` for every compare:** write the upper bounds with `<=`
+  (`t <= 77`, not `t < 78`) (b140:01E037A0).
