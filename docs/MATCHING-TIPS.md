@@ -982,3 +982,7 @@ there is a source form that gives the original.
   scored in-file, found b154:01E026A0's fix in about 50 tries (example script work/greedy_counters_example.py).
 - **A whole-vector copy computing the source address before the destination:** declare the local with the
   destination's struct type so the copy is a plain assignment; cast the other users instead (b106:01E05580).
+- **An `sh` store before the argument moves where it belongs in the `jal` delay slot:** pass the shared
+  `u8 buf[0x90]` uncast, not `(void *)buf` (b357:01E05340).
+- **Two zero float arguments loaded `mtc1 $zero, $f15; mov.s $f14, $f15`:** `(..., 0.0f, z)` with `f32 z = 0.0f;`
+  (floatsearch missed it) (b138:01E03C60).
