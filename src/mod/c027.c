@@ -539,13 +539,251 @@ static void func_01E00AA0_c027(Ctx_c027_01E00AA0 *g, s32 arg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c027", func_01E00C50_c027);
+/* shape c027:01E00C50 (C027PAINT_RAIN), 824 insns, 1 copy: C031PAINT_RAIN (c031:01E00D00)'s form: with lit 0 it
+   copies the scene colour (0x2372) into both drop colours and sets up the packet (rect 0x98 frame 0, scene texture
+   0xCC); otherwise four 37 x 18 quads 30 deep around the player's point, one per corner, each turned by 0x6E about z,
+   pushed through the scene table 0x23A4 and moved by the drop's sin/cos offsets (0x6A/0x6C scaled by 0x72/0x74),
+   drawn three times (unrolled), depth in 0x2330; opt_propagation off keeps the zero block locals, so the corner loop
+   is a do-while */
+
+typedef struct {
+    u8 r, g, b, a;
+    f32 q;
+} Rgbaq_c027_01E00C50;
+
+typedef struct {
+    Rgbaq_c027_01E00C50 c;
+    u64 st;
+    u64 xyz;
+} Vtx_c027_01E00C50;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    Vtx_c027_01E00C50 v[4];
+} Pkt_c027_01E00C50;
+
+typedef struct {
+    u8 pad0[0x60];
+    u8 col[4];
+    u8 col2[4];
+    s16 used;
+    s16 ax;
+    s16 ay;
+    s16 rz;
+    u8 pad70[2];
+    s16 sx;
+    s16 sy;
+} Drop_c027_01E00C50;
+
+typedef struct {
+    u8 pad0[0xCC];
+    s32 tex;
+    u8 padD0[0x2214];
+    s32 ot;
+    u8 pad22E8[0x48];
+    f32 depth;
+    u8 pad2334[0x3E];
+    u8 rgb[3];
+    u8 pad2375[0x2F];
+    f32 m438[1];
+} Scene_c027_01E00C50;
+
+#pragma opt_propagation off
+
+static void func_01E00C50_c027(Scene_c027_01E00C50 *g, Drop_c027_01E00C50 *o, Pkt_c027_01E00C50 *p, s32 lit) {
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00108950(void *, void *, s32, void *);
+    extern Rgbaq_c027_01E00C50 func_00107740(void *);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    extern void func_001F5BD0(s32, void *);
+    extern s32 func_001F5380(void);
+    Vec4f q[4];
+    f32 rm[4];
+    f32 m[16];
+    f32 m2[16];
+    s32 rot[4];
+    f32 rm2[4];
+    Vec4f pos;
+    Vec4f pt;
+    s32 i;
+
+    if (lit == 0) {
+        func_00106080(rm, 0x98, 0, rm);
+        p->count = 0x34;
+        p->tag = 0xC;
+        p->regs = 0x421421421421ULL;
+        p->pad = 0;
+        p->count |= 0x800;
+        func_002086D0(p, ((u64)0xB0 << 32) | 0x48);
+        o->col[0] = g->rgb[0];
+        o->col[1] = g->rgb[1];
+        o->col[2] = g->rgb[2];
+        o->col2[0] = g->rgb[0];
+        o->col2[1] = g->rgb[1];
+        o->col2[2] = g->rgb[2];
+        p->v[0].c = func_00107740(o->col);
+        p->v[1].c = func_00107740(o->col);
+        p->v[2].c = func_00107740(o->col2);
+        p->v[3].c = func_00107740(o->col2);
+        func_00108500(p, rm, 0);
+        func_00208700(p, g->tex, 1);
+    } else {
+        pos = *(Vec4f *)func_001F9D30(0);
+        func_0020EB40(m);
+        func_00205C40((s32)rot);
+        func_001F5BD0(func_001F5380(), &pt);
+        pos.x = pt.x;
+        pos.y = pt.y;
+        pos.z = pt.z;
+        func_0020C940(m2, 0, rot, &pos);
+        func_0020BC00(m, m2);
+        func_00106DD0(&pos, 0.0f, 30.0f, 0.0f);
+        i = 0;
+        do {
+            if (i == 0) {
+                q[0].x = -37.0f;
+                q[0].y = 18.0f;
+                q[1].x = 0.0f;
+                q[1].y = 18.0f;
+                q[2].x = -37.0f;
+                q[2].y = 0.0f;
+                q[3].x = 0.0f;
+                q[3].y = 0.0f;
+                q[0].z = 30.0f;
+                q[2].z = 30.0f;
+                q[3].z = 30.0f;
+                q[1].z = 30.0f;
+                {
+                    f32 x = 0.0f;
+                    func_00106DE0(0.0f, x, o->rz, (s32 *)rm2);
+                }
+                func_00108950(&q[0], rm2, 2, g->m438);
+                func_00108950(&q[1], rm2, 2, g->m438);
+                func_00108950(&q[2], rm2, 2, g->m438);
+                func_00108950(&q[3], rm2, 2, g->m438);
+                q[0].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[0].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[1].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[1].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[2].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[2].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[3].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[3].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+            } else if (i == 1) {
+                q[0].x = 37.0f;
+                q[0].y = 18.0f;
+                q[1].x = 0.0f;
+                q[1].y = 18.0f;
+                q[2].x = 37.0f;
+                q[2].y = 0.0f;
+                q[3].x = 0.0f;
+                q[3].y = 0.0f;
+                q[0].z = 30.0f;
+                q[2].z = 30.0f;
+                q[3].z = 30.0f;
+                q[1].z = 30.0f;
+                {
+                    f32 x = 0.0f;
+                    func_00106DE0(0.0f, x, o->rz, (s32 *)rm2);
+                }
+                func_00108950(&q[0], rm2, 2, g->m438);
+                func_00108950(&q[1], rm2, 2, g->m438);
+                func_00108950(&q[2], rm2, 2, g->m438);
+                func_00108950(&q[3], rm2, 2, g->m438);
+                q[0].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[0].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[1].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[1].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[2].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[2].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[3].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[3].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+            } else if (i == 2) {
+                q[0].x = -37.0f;
+                q[0].y = -18.0f;
+                q[1].x = 0.0f;
+                q[1].y = -18.0f;
+                q[2].x = -37.0f;
+                q[2].y = 0.0f;
+                q[3].x = 0.0f;
+                q[3].y = 0.0f;
+                q[0].z = 30.0f;
+                q[2].z = 30.0f;
+                q[3].z = 30.0f;
+                q[1].z = 30.0f;
+                {
+                    f32 x = 0.0f;
+                    func_00106DE0(0.0f, x, o->rz, (s32 *)rm2);
+                }
+                func_00108950(&q[0], rm2, 2, g->m438);
+                func_00108950(&q[1], rm2, 2, g->m438);
+                func_00108950(&q[2], rm2, 2, g->m438);
+                func_00108950(&q[3], rm2, 2, g->m438);
+                q[0].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[0].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[1].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[1].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[2].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[2].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[3].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[3].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+            } else if (i == 3) {
+                q[0].x = 37.0f;
+                q[0].y = -18.0f;
+                q[1].x = 0.0f;
+                q[1].y = -18.0f;
+                q[2].x = 37.0f;
+                q[2].y = 0.0f;
+                q[3].x = 0.0f;
+                q[3].y = 0.0f;
+                q[0].z = 30.0f;
+                q[2].z = 30.0f;
+                q[3].z = 30.0f;
+                q[1].z = 30.0f;
+                func_00106DE0(0.0f, 0.0f, o->rz, (s32 *)rm2);
+                func_00108950(&q[0], rm2, 2, g->m438);
+                func_00108950(&q[1], rm2, 2, g->m438);
+                func_00108950(&q[2], rm2, 2, g->m438);
+                func_00108950(&q[3], rm2, 2, g->m438);
+                q[0].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[0].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[1].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[1].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[2].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[2].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+                q[3].x += o->sx * func_00108030((s32)g->m438, o->ax, 0);
+                q[3].y += pos.y + o->sy * func_00108030((s32)g->m438, o->ay, 0);
+            }
+            if (func_00205630(q, 0x70000000, m, p, &g->depth) != 0) {
+                func_002075F0(p, g->ot, (u32)g->depth);
+            }
+            if (func_00205630(q, 0x70000000, m, p, &g->depth) != 0) {
+                func_002075F0(p, g->ot, (u32)g->depth);
+            }
+            if (func_00205630(q, 0x70000000, m, p, &g->depth) != 0) {
+                func_002075F0(p, g->ot, (u32)g->depth);
+            }
+            i++;
+        } while (i < 4);
+    }
+}
+
+#pragma opt_propagation reset
 
 /* shape c027:01E01930 (C027PAINT_RAIN3), 314 insns, 1 copy: draw one link of c027's rain curtain: mode 0 builds the
    4-vertex packet (frame 0x96, near colours from the link, alpha 0 at a free end; far colours from the next link or
    the link's own at alpha 10); otherwise (an else, not an early return) the curtain hangs under the model's joint: a
    12-wide quad from the link to the next one (or its own base), 30 deep, turned by the link's rotation and lifted 30
-   (the 30.0f through a block local), depth-tested */
+   (the first 0.0f through a block local), depth-tested */
 
 typedef struct {
     u8 r, g, b, a;
@@ -665,8 +903,8 @@ static void func_01E01930_c027(Scene_c027_01E01930 *g, Link_c027_01E01930 *e, Pk
         func_0020C940(m2, 0, rot, &cp);
         func_0020BC00(m, m2);
         {
-            f32 r = 30.0f;
-            func_00106DD0(&cp, 0.0f, r, 0.0f);
+            f32 z = 0.0f;
+            func_00106DD0(&cp, z, 30.0f, 0.0f);
         }
         w = 6.0f;
         for (i = 0; i < 1; i++) {
