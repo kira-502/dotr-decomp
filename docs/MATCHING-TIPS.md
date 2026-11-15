@@ -970,3 +970,6 @@ there is a source form that gives the original.
   is `dpmul` (config/linker_syms.txt); b573:01E03C70's `v.y = v.y + 2.5;`.
 - **A static's float argument loaded from a field before an int stack argument:** a no-op cast,
   `f(&o, tex, (f32)g->r)` (b118:01E03A20).
+- **Prefer named fields in local types over writes through pad arrays or pointer casts** (`*(f32 *)emit.pad28`,
+  `*(Vec *)&v`, `*(u8 *)&e->start`); `(u8)e->start` gives the same `lbu`. Changing types can flip float argument
+  orders elsewhere, so rerun floatsearch after (b395:01E03D10, b166:01E05400, b213:01E04C90).
