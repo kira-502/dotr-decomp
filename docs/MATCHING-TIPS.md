@@ -1001,3 +1001,7 @@ there is a source form that gives the original.
   whole-function greedy stalled (b037:01E04FB0 39 → 8 words; work/floatseq_example.py).
 - **A whole-function search rejects a float-order fix that flips later calls:** `floatsearch.py --seq` keeps it and
   repairs the later calls one at a time (closed b364:01E041E0 and b274:01E02B40 after 2,000 stalled tries).
+- **An if/else in a setup loop with an extra `nop` after the else arm's store:** end the first arm with `continue`
+  instead (`if (i == 0) { a[0] = 0.0f; continue; } a[i] = ...;`) (c059:01E04420, 983 → 995).
+- **A saved-register rotation no order of plain locals fixes:** include the cast-initialised scene pointer
+  (`Scene *g = (Scene *)arg0;`) in the declaration-order search (c537:01E02EB0).
