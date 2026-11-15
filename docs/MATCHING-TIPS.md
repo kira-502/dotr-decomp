@@ -1019,3 +1019,7 @@ there is a source form that gives the original.
   assigns the index just before use, `i = 0; f(&g->flear[i]);` (b200:01E06740).
 - **-O1 negation through one element address:** `g->quad[k].rot[2] *= -1;`, not `x = -x` (b200:01E06740).
 - **A switch compare `beq` that jumps straight past the switch** is an empty `case K: break;` (b497:01E05190).
+- **A zero float pair loaded last-first that no block form fixes:** both zeros as function-scope locals assigned before
+  the function's first statement (`y = 0.0f; h = 0.0f;` ahead of `ot = func_00207500()`) (c541:01E03B60).
+- **-O1 int temp in `$a1` where the original has `$a0`:** the reused variable is a later call's second argument and
+  gets coalesced; give the expression its own block local (b177:01E01E90).
