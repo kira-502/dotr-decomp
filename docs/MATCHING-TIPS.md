@@ -973,3 +973,8 @@ there is a source form that gives the original.
 - **Prefer named fields in local types over writes through pad arrays or pointer casts** (`*(f32 *)emit.pad28`,
   `*(Vec *)&v`, `*(u8 *)&e->start`); `(u8)e->start` gives the same `lbu`. Changing types can flip float argument
   orders elsewhere, so rerun floatsearch after (b395:01E03D10, b166:01E05400, b213:01E04C90).
+- **A stack-array load and a constant hoisted above a run of field stores, the store at the end of the run:** copy the
+  value into a block local first, `{ s32 t = tx[0]; o->x = o->y = o->z = 0.0f; o->scale = 10.0f; o->texture = t; }`
+  (b127:01E04750).
+- **After floatsearch, revert its changes one at a time and keep only those whose revert breaks the match** (its random
+  phase leaves noise forms; c534:01E03D50 went from 12 changed calls to 9).
