@@ -966,3 +966,5 @@ there is a source form that gives the original.
   `n = o->mask` already loaded) (b132:01E02690).
 - **dk try's "built without optimisation" hint can be wrong** when every delay slot is a nop; sweep the levels
   (b125:01E01EE0 was -O2).
+- **Look up a libgcc double helper's real name before choosing the operator:** `func_001A2858` is `dpadd`, `0x1A2918`
+  is `dpmul` (config/linker_syms.txt); b573:01E03C70's `v.y = v.y + 2.5;`.
