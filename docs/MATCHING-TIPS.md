@@ -992,3 +992,7 @@ there is a source form that gives the original.
 - **A hoisted loop-invariant with `andi aN, sN, 0xFF` at each call:** a u8 parameter in a block prototype and the
   value passed uncast (`j & 1`); a `(u8)` cast folds the `andi` (b526:01E05E90).
 - **`jal fptosi` then `andi 0xFF` for a float byte argument:** `(u8)(s32)s`; `(u8)s` calls fptoui (b096:01E00AA0).
+- **A ring's closing-element copies computing the source address first, with CSE'd `(sp+K)+k*48` addresses:** declare
+  the ring as a 2D array of a small struct (`V3 ring[37][4]`, copies `ring[36][j] = ring[0][j]`) (b033:01E04020).
+- **Texture-setup outputs 8 bytes past the packet:** put the packet and the `func_00208800` out-arguments in one
+  `aligned(8)` local struct (b033:01E04020, as b010's Afx04).
