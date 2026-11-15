@@ -942,3 +942,5 @@ there is a source form that gives the original.
   (b002:01E05FE0).
 - **A `dk try` that never returns:** look for a negated float compare (`if (!(f(x) <= 3.0f))` hung mwccps2 at -O4;
   `> 3.0f` compiled and matched) (c059:01E00FB0).
+- **`daddiu $sN, $zero, K` where yours has `addiu`, for if/else-picked constants kept across calls:** the locals are
+  `u8` (c547:01E02700).
