@@ -930,3 +930,10 @@ there is a source form that gives the original.
   (`f32 p; f32 s; s = 18.0f; p = 0.1f;`) (b013:01E04510).
 - **`f(p, 0.0f, 0.0f)` with `mtc1 $zero, $f13; mov.s $f12, $f13`:** `{ f32 x = 0.0f; f(p, x, 0.0f); }`, the opposite of
   the c548 `(p, r, r)` case (c508:01E04B50).
+- **A stack slot used directly in the setup and through a saved register in the main path, in a frame 0x10 smaller
+  than an honest layout:** the original may index one past an array onto the next local (`Vec4f w[2]; s32 tx[4];`
+  and `w[2]`). MWCC never shares slots between block-scoped locals, so no honest form gives both. Look for a sibling
+  with its own slot first (b613:01E04010); the LkEff_SetCocoon managers (b220/b366/b409/b277/b055:01E03400) keep the
+  original's `w[2]` with a comment.
+- **Kept addresses:** a constant non-zero offset into a local (array element or struct member) used twice goes
+  through a saved register from its first use; a plain local at offset 0 never does.
