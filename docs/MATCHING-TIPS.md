@@ -1005,3 +1005,5 @@ there is a source form that gives the original.
   instead (`if (i == 0) { a[0] = 0.0f; continue; } a[i] = ...;`) (c059:01E04420, 983 → 995).
 - **A saved-register rotation no order of plain locals fixes:** include the cast-initialised scene pointer
   (`Scene *g = (Scene *)arg0;`) in the declaration-order search (c537:01E02EB0).
+- **A slot index read from a field reloaded and re-multiplied before every store:** read it into a local first,
+  `k = g->count;`, then index `g->shell[k]` (b608:01E05920).
