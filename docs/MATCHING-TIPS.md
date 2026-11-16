@@ -1092,3 +1092,10 @@ there is a source form that gives the original.
   as one chain, `g->pos[j].x = p[3].x = expr;` (b458:01E05250).
 - **-O1 parameter-copy moves in the wrong order at entry:** copy the second parameter into a declared local too
   (`s32 code = arg1;` after the cast `g`) (b605:01E059B0).
+- **A spilled int local 4 bytes low:** `__attribute__((aligned(8)))` on the local (b706:01E055E0).
+- **A sub-expression computed before an `if` with its sum after it:** a local used at least twice (once-used locals
+  fold back) (b617:01E003A0).
+- **Loop-invariant hoisting stops one level early:** assign the invariant inside the loop (`ang = 270.0f + 3.5f * age;`
+  then `sin(PI * ang / 180)`) so the next product is not hoisted (b617:01E003A0).
+- **Inner-loop index rebuilt from `i` every outer pass:** index `a[j * 10 + i]` directly (b706:01E055E0).
+  Declaration-move search: work/declmove_ft.py.
