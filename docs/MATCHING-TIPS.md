@@ -1108,3 +1108,8 @@ there is a source form that gives the original.
   early constant 1; for K = 24 (a divide) it does not (the b261/b643 wall).
 - **A float-constant load one slot early before `func_00187B48(&v, &v, K)`:** cast the first argument,
   `func_00187B48((void *)&v, &v, 1.4f);` (b643:01E00080).
+- **Burst sprite loop with colour bytes stored before the fptoui and hoisted floats rotated:** the multiply inside each
+  branch, `alpha = (u32)(128.0f * a); (void)alpha;`, `spr.c.q = 1.0f;` in both arms; own float names for that section
+  (b175:01E00080).
+- **An integer alpha scheduled after the colour stores:** assign it to a local before the first colour byte (b175).
+- **The line-strip packet (regs 0x414141) has an 8-byte tail** (b175:01E00080).
