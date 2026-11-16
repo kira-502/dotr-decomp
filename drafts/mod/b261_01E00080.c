@@ -4,7 +4,10 @@
    0 clears the scene, takes both units, two textures, two joints and the target; else follows the joints' midpoint,
    spawns 4-sprite puffs at the midpoint on 102..135 (32 slots), 32-spark swirls at joint 1 on 129..339 (40 slots,
    spinning out), 32-spark rises at the target on 161..401 (16 slots) and 4-sprite puffs on 129..339 (24 slots), each
-   drawn as sprites; returns 1 / 6 / 2 / 8 at 150 / 161..400 / 401 / 403 */
+   drawn as sprites; returns 1 / 6 / 2 / 8 at 150 / 161..400 / 401 / 403. HARD draft, 1424/1426 (2 words): the
+   24-slot spawn stores t before on; on first creates the constant 1 before the slot address and swaps the 1/index
+   registers. b475's fix (base = g->wave; w = &base[n]; w->on = 1; w->t = 0) gets the registers here but the slot
+   offset 0xAC60 does not fit 16 bits, so w is materialized instead of the original's lui $at stores */
 
 typedef struct {
     u64 x : 16;
@@ -395,10 +398,9 @@ static s32 func_01E00080_b261(s32 arg0, s32 code) {
     }
 
     if (g->t > 0x80 && g->t < 0x154) {
-        n = g->t;
-        n %= 24;
-        g->d[n].on = 1;
+        n = g->t % 24;
         g->d[n].t = 0;
+        g->d[n].on = 1;
         g->d[n].pos = g->mid;
         for (k = 0; k < 4; k++) {
             g->d[n].c[k] = (func_0019A5C8() >> 23) % 4;

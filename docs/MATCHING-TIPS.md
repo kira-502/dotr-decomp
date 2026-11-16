@@ -1073,3 +1073,7 @@ there is a source form that gives the original.
   (greedy search) (b261:01E00080).
 - **A division issued first that feeds a later statement:** compute it into an earlier, otherwise dead float local
   first (`r = t / 16.0f; s = ...; f = -25.0f + 80.0f * r;`) (b261:01E00080).
+- **Spawn header `on = 1; t = 0;` with the 1 and the slot index in swapped registers (writing `t = 0` first fixes the
+  registers but swaps the stores):** compute the address before the constant through a two-use pointer from a
+  constant-offset base: `base = g->wave; w = &base[n]; w->on = 1; w->t = 0;` (plain `w = &g->wave[n]` emits
+  `addu g, off`). Doesn't work when the array's offset is 0x8000 or more (b475:01E00080; b261 open).
