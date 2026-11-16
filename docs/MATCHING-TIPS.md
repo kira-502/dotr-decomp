@@ -1045,3 +1045,7 @@ there is a source form that gives the original.
   in the function; fix earlier differences first (b635:01E044B0).
 - **A loop's counter and pointer swapped with no fix inside that loop:** rename the counter of a different, earlier
   loop in the same branch (each counter name is one web per function) (b369:01E04A00).
+- **Constant stores scheduled above a cast-conversion call** (colour bytes before `jal fptoui` where the original stores
+  them after): `(void)alpha;` right after `alpha = (u32)(...);` keeps the cast's register effect (b150:01E00080).
+- **Indexing with `k + 5` in a loop strength-reduces where the original recomputes each time:** `n = k + 5;` right
+  before the first use, index with `n` (b583:01E05670).
