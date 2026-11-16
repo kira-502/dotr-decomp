@@ -1396,4 +1396,576 @@ static s32 func_01E03880_c621(s32 ot __attribute__((aligned(8))), Beam_b047_01E0
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c621", func_01E03FA0_c621);
+/* shape c621:01E03FA0 (c621), 1383 insns, 1 copy (-O2,p): c621 scene manager (-O2, from the asm in c620:01E04190's
+   types): eight beams on random spots in the unit's disc, two discs, two spinning lights, the 30-point ring, two
+   rising emitters and an anime board; returns 2 at 40, 8 when the timer ends */
+
+typedef struct Crd_c621_01E03FA0 {
+    Vec4f scale;
+    s32 rot[4];
+    Vec4f pos;
+    u8 pad30[0x40];
+} Crd_c621_01E03FA0;
+
+typedef struct Col_c621_01E03FA0 {
+    u8 b, g, r, a;
+} Col_c621_01E03FA0;
+
+typedef struct Line_c621_01E03FA0 {
+    Vec4f pts[32];
+    u8 pad200[4];
+    u8 col[4];
+    u8 pad208[8];
+} Line_c621_01E03FA0;
+
+typedef struct Item_c621_01E03FA0 {
+    s32 a, b, c, d;
+} Item_c621_01E03FA0;
+
+typedef struct Beam_c621_01E03FA0 {
+    s32 tex;
+    Col_c621_01E03FA0 color;
+    s32 flags;
+    f32 scale;
+    s16 u, v, w, h;
+    s16 u0, v0, tw, th;
+    u8 pad20[0x120];
+    s16 n;
+    s16 phase;
+    f32 width;
+    Item_c621_01E03FA0 *items;
+    s16 count;
+    s16 rows;
+    f32 speed;
+    u8 pad154[0xC];
+} Beam_c621_01E03FA0;
+
+typedef struct Disc_c621_01E03FA0 {
+    s32 flags;
+    Col_c621_01E03FA0 color;
+    f32 radius;
+    s16 count;
+    s16 height;
+} Disc_c621_01E03FA0;
+
+typedef struct Rnd_c621_01E03FA0 {
+    s32 a, b, c, d;
+} Rnd_c621_01E03FA0;
+
+typedef struct Light_c621_01E03FA0 {
+    s32 kind;
+    s32 flags;
+    Col_c621_01E03FA0 color;
+    f32 scale;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    Vec4f p[4];
+    Rnd_c621_01E03FA0 r[64];
+} Light_c621_01E03FA0;
+
+typedef struct Part_c621_01E03FA0 {
+    f32 x, y, z;
+    u8 a, d;
+    s16 t;
+} Part_c621_01E03FA0;
+
+typedef struct Fx_c621_01E03FA0 {
+    s32 tex;
+    s32 flags;
+    Col_c621_01E03FA0 color;
+    f32 size;
+    u8 pad10[0x10];
+    s32 rx, ry, rz;
+    u8 pad2C[4];
+    s16 u, v, w, h;
+    s16 u0, v0, tw, th;
+    Part_c621_01E03FA0 *parts;
+    s32 rots;
+    s32 f48;
+    f32 radius;
+    u8 pad50[0xA];
+    s16 count;
+    s16 nframes;
+    s16 rate;
+} Fx_c621_01E03FA0;
+
+typedef struct Pt_c621_01E03FA0 {
+    f32 x, y, z;
+    s16 pad;
+    s16 life;
+} Pt_c621_01E03FA0;
+
+typedef struct Board_c621_01E03FA0 {
+    s32 texture;
+    s32 flags;
+    Col_c621_01E03FA0 color;
+    f32 size;
+    f32 cx, cy;
+    s32 w18;
+    u8 pad1C[4];
+    s16 u, v, w, h;
+    s16 u0, v0, tw, th;
+    Pt_c621_01E03FA0 pts[16];
+    s16 count;
+    s16 angle;
+    s16 cur;
+    s16 h136;
+    s16 h138;
+    s16 h13A;
+    s16 h13C;
+    s16 h13E;
+    s16 h140;
+    u8 pad142[0xE];
+} Board_c621_01E03FA0;
+
+typedef struct Scene_c621_01E03FA0 {
+    Crd_c621_01E03FA0 c0;
+    Line_c621_01E03FA0 line;
+    Crd_c621_01E03FA0 crd[8];
+    Beam_c621_01E03FA0 beam[8];
+    Item_c621_01E03FA0 items[0x20];
+    Crd_c621_01E03FA0 c1;
+    Disc_c621_01E03FA0 disc;
+    Crd_c621_01E03FA0 c2;
+    Disc_c621_01E03FA0 disc2;
+    Crd_c621_01E03FA0 c3;
+    Light_c621_01E03FA0 light[2];
+    u8 pad1D30[0x1000];
+    Crd_c621_01E03FA0 c4;
+    Fx_c621_01E03FA0 emit;
+    Part_c621_01E03FA0 ep[0x100];
+    Crd_c621_01E03FA0 c5;
+    Fx_c621_01E03FA0 emit2;
+    Part_c621_01E03FA0 ep2[0x80];
+    Crd_c621_01E03FA0 c6;
+    Board_c621_01E03FA0 board;
+    u8 pad4890[0x18];
+    s32 unit;
+    u8 col[4];
+    u8 col2[4];
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 fade;
+    u8 alpha;
+    u8 pad48C5[0xB];
+} Scene_c621_01E03FA0;
+
+#pragma optimization_level 2
+
+static s32 func_01E03FA0_c621(s32 arg0, s32 code) {
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern s32 func_001039A0(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F58E0(s32);
+    extern void func_001F53C0(s32, s32, void *);
+    extern void func_00103260(void *, s32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern s32 func_001032C0(u8 *, u8, s32);
+    extern s32 func_001033D0(void *, f32, f32);
+    extern f32 func_0020B620(f32);
+    extern f32 func_0020B730(f32);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern s32 func_0019A5C8();
+    extern s32 c621_01E001A0();
+    extern s32 c621_01E004A0();
+    extern s32 c621_01E01030();
+    extern s32 c621_01E01720();
+    extern s32 c621_01E03170();
+    extern s32 c621_01E03780();
+    extern s32 c621_01E03880();
+    Scene_c621_01E03FA0 *g = (Scene_c621_01E03FA0 *)arg0;
+    u32 ot;
+    Vec4f vel;
+    s32 tx[4];
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 ang;
+    f32 a;
+    f32 r;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x48D0);
+        g->timer = 0xB4;
+        g->t = 1;
+        g->code = code;
+        g->fade = 0x80;
+        g->unit = func_001F5380();
+        func_00103890(&g->c0);
+        func_00103890(&g->c4);
+        func_00103890(&g->c3);
+        func_00103890(&g->c6);
+        func_00103890(&g->c1);
+        func_00103890(&g->c2);
+        func_00103890(&g->c5);
+        for (i = 0; i < 8; i++) {
+            func_00103890(&g->crd[i]);
+        }
+        g->col[0] = 0x80;
+        g->col[1] = 0x80;
+        g->col[2] = 0x80;
+        g->col[3] = 0xFF;
+        g->col2[0] = 0x80;
+        g->col2[1] = 0x80;
+        g->col2[2] = 0x80;
+        g->col2[3] = 0x60;
+        g->line.pts[0].z = g->line.pts[1].z = 0.0f;
+        g->line.pts[0].x = 0.0f;
+        g->line.pts[0].y = 0.0f;
+        g->line.pts[1].y = 0.0f;
+        g->line.pts[1].x = 550.0f;
+        for (k = 0; k < 30; k++) {
+            a = 0.20943952f * (f32)(k + 1);
+            g->line.pts[k + 2].x = 550.0f * func_0020B620(a);
+            g->line.pts[k + 2].z = 550.0f * func_0020B730(a);
+            g->line.pts[k + 2].y = 0.0f;
+        }
+        g->line.col[2] = 0x70;
+        g->line.col[1] = 0xB0;
+        g->line.col[0] = 0xE0;
+        g->line.col[3] = 0;
+        g->disc.flags = 0x40000;
+        g->disc.color.r = 0x70;
+        g->disc.color.g = 0xB0;
+        g->disc.color.b = 0xE0;
+        g->disc.color.a = 0;
+        g->disc.radius = 0.6f * (f32)func_001F58E0(g->unit);
+        if (g->disc.radius < 25.0f) {
+            g->disc.radius = 25.0f;
+        }
+        g->disc.count = 0x24;
+        g->disc.height = 0;
+        g->disc2.flags = 0x80000;
+        g->disc2.color.r = 0x70;
+        g->disc2.color.g = 0xB0;
+        g->disc2.color.b = 0xE0;
+        g->disc2.color.a = 0;
+        g->disc2.radius = 0.6f * (f32)func_001F58E0(g->unit);
+        if (g->disc2.radius < 25.0f) {
+            g->disc2.radius = 25.0f;
+        }
+        g->disc2.count = 0x24;
+        g->disc2.height = 0;
+        func_00103260(tx, 0xF);
+        for (i = 0; i < 2; i++) {
+            g->light[i].flags = 0x40001;
+            g->light[i].u = 0x8E;
+            g->light[i].v = 0;
+            g->light[i].w = 0x22;
+            g->light[i].h = 0x40;
+            g->light[i].color.r = 0x70;
+            g->light[i].color.g = 0xB0;
+            g->light[i].color.b = 0xE0;
+            g->light[i].color.a = 0;
+            func_01E03010_c621((Obj_b000_01E032C0 *)&g->light[i], tx[0], 1.0f);
+            for (j = 0; j < 64; j++) {
+                g->light[i].r[j].a = 0x4000;
+                g->light[i].r[j].b = func_0019A5C8() % 0x10000;
+                g->light[i].r[j].c = 0;
+            }
+        }
+        g->board.texture = tx[0];
+        g->board.flags = 0x80005;
+        g->board.cx = 0.0f;
+        g->board.cy = 0.0f;
+        g->board.w18 = 0;
+        g->board.u = 0;
+        g->board.v = 0xE4;
+        g->board.w = 0xA;
+        g->board.h = 0xA;
+        g->board.u0 = 0;
+        g->board.v0 = 0xE4;
+        g->board.tw = 0x100;
+        g->board.th = 0x100;
+        g->board.size = 0.1f;
+        g->board.count = 0x10;
+        g->board.h13A = 1;
+        g->board.h13C = 0;
+        g->board.h140 = 2;
+        g->board.h136 = 0xA;
+        g->board.h138 = 0xA;
+        g->board.color.r = 0x70;
+        g->board.color.g = 0xB0;
+        g->board.color.b = 0xE0;
+        g->board.color.a = 0x80;
+        for (i = 0; i < 8; i++) {
+            g->board.pts[i].x = (f32)(func_0019A5C8() % 20 - 10);
+            g->board.pts[i].y = (f32)(func_0019A5C8() % 20 - 10);
+            g->board.pts[i].life = -g->board.h13A * i;
+            g->board.pts[i].pad = 0;
+            g->board.h13E = g->board.h140 - 1;
+        }
+        g->emit2.tex = tx[0];
+        g->emit2.flags = 0x70000001;
+        g->emit2.color.r = 0x70;
+        g->emit2.color.g = 0xB0;
+        g->emit2.color.b = 0xE0;
+        g->emit2.color.a = 0;
+        g->emit2.size = 1.6f;
+        g->emit2.rx = 0;
+        g->emit2.ry = 0;
+        g->emit2.rz = 0;
+        g->emit2.u = 0;
+        g->emit2.v = 0xDA;
+        g->emit2.w = 0xA;
+        g->emit2.h = 0xA;
+        g->emit2.u0 = 0;
+        g->emit2.v0 = 0xDA;
+        g->emit2.tw = 0x100;
+        g->emit2.th = 0x100;
+        g->emit2.parts = g->ep2;
+        g->emit2.rots = 0;
+        g->emit2.f48 = 0;
+        g->emit2.radius = 8.0f;
+        g->emit2.count = 0x80;
+        g->emit2.nframes = 2;
+        g->emit2.rate = 0;
+        for (i = 0; i < g->emit2.count; i++) {
+            g->ep2[i].t = -(func_0019A5C8() % 12);
+            g->ep2[i].a = 0;
+            if (i % 2 == 0) {
+                g->ep2[i].d = 0;
+            } else {
+                g->ep2[i].d = 1;
+            }
+            ang = func_0019A5C8() % 0x10000;
+            r = 0.1f * (f32)(func_0019A5C8() % 40 - 20);
+            g->ep2[i].z = r * func_0020B480(ang);
+            g->ep2[i].x = r * func_0020B550(ang);
+            g->ep2[i].y = 0.1f * -(f32)(func_0019A5C8() % 30);
+        }
+        g->emit.tex = tx[0];
+        g->emit.flags = 0x50000001;
+        g->emit.color.r = 0x70;
+        g->emit.color.g = 0xB0;
+        g->emit.color.b = 0xE0;
+        g->emit.color.a = 0x80;
+        g->emit.size = 1.0f;
+        g->emit.rx = 0;
+        g->emit.ry = 0;
+        g->emit.rz = 0;
+        g->emit.u = 0;
+        g->emit.v = 0xDA;
+        g->emit.w = 0xA;
+        g->emit.h = 0xA;
+        g->emit.u0 = 0;
+        g->emit.v0 = 0xDA;
+        g->emit.tw = 0x100;
+        g->emit.th = 0x100;
+        g->emit.parts = g->ep;
+        g->emit.rots = 0;
+        g->emit.f48 = 0;
+        g->emit.radius = 25.0f;
+        g->emit.count = 0x100;
+        g->emit.nframes = 2;
+        g->emit.rate = 0;
+        func_01E01590_c621((Ring_b001_01E01B20 *)&g->emit, 0.8f);
+        for (i = 0; i < g->emit.count; i++) {
+            g->ep[i].t = -(func_0019A5C8() % 0x22);
+            g->ep[i].a = 0x80;
+            if (i % 2 == 0) {
+                g->ep[i].d = 0;
+            } else {
+                g->ep[i].d = 1;
+            }
+            g->ep[i].y -= 50.0f;
+        }
+        for (i = 0; i < 8; i++) {
+            g->beam[i].tex = tx[0];
+            g->beam[i].color.r = 0x70;
+            g->beam[i].color.g = 0xB0;
+            g->beam[i].color.b = 0xE0;
+            g->beam[i].color.a = 0x60;
+            g->beam[i].flags = 0;
+            g->beam[i].scale = 0.0f;
+            g->beam[i].n = 8;
+            g->beam[i].phase = 0;
+            g->beam[i].width = 3.0f;
+            g->beam[i].u = 0x80;
+            g->beam[i].v = 0x80;
+            g->beam[i].w = 0x80;
+            g->beam[i].h = 0x20;
+            g->beam[i].u0 = 0x80;
+            g->beam[i].v0 = 0x80;
+            g->beam[i].tw = 0x100;
+            g->beam[i].th = 0x100;
+            g->beam[i].items = g->items;
+            g->beam[i].count = 0x1E;
+            g->beam[i].rows = 0;
+            g->beam[i].speed = 1.0f;
+            c621_01E03780(&g->beam[i], tx[0]);
+        }
+        g->alpha = g->beam[0].color.a;
+        func_001F53C0(1, func_001F5380(), &g->c4.pos);
+        func_001F53C0(1, func_001F5380(), &g->c3.pos);
+        func_001F53C0(1, func_001F5380(), &g->c6.pos);
+        func_001F53C0(1, func_001F5380(), &g->c1.pos);
+        func_001F53C0(1, func_001F5380(), &g->c2.pos);
+        func_001F53C0(1, func_001F5380(), &g->c5.pos);
+        for (i = 0; i < 8; i++) {
+            func_001F53C0(1, func_001F5380(), &g->crd[i].pos);
+            g->crd[i].pos.y = 0.0f;
+            ang = func_0019A5C8() % 0x10000;
+            r = 0.05f * (f32)(func_0019A5C8() % (s32)(10.0f * g->disc.radius));
+            g->crd[i].pos.z += r * func_0020B480(ang);
+            g->crd[i].pos.x += r * func_0020B550(ang);
+        }
+        g->c3.pos.y = g->c1.pos.y = g->c2.pos.y = -1.0f;
+        g->c1.rot[0] = 0x4000;
+        g->c4.pos.y = 50.0f;
+        g->c2.scale.x = g->c2.scale.y = g->c2.scale.z = 0.1f;
+        return 0;
+    }
+    func_001038D0(&g->c0);
+    func_001038D0(&g->c3);
+    func_001038D0(&g->c4);
+    func_001038D0(&g->c1);
+    func_001039A0(&g->c6);
+    func_001039A0(&g->c2);
+    func_001038D0(&g->c5);
+    for (i = 0; i < 8; i++) {
+        func_001038D0(&g->crd[i]);
+    }
+    c621_01E001A0(ot, &g->line);
+    if (g->t >= 0xA0) {
+        func_00103470(&g->line.col[3], 0, 8);
+    } else {
+        func_001032C0(&g->line.col[3], 0x80, 8);
+    }
+    if (g->t >= 0x14) {
+        c621_01E01720(ot, &g->emit2, &g->c5);
+        if (g->t >= 0xA0) {
+            func_00103470(&g->emit2.color.a, 0, 8);
+        } else {
+            func_001032C0(&g->emit2.color.a, 0x80, 8);
+        }
+        for (i = 0; i < g->emit2.count; i++) {
+            if (g->ep2[i].t >= 0) {
+                g->ep2[i].y += 2.0f;
+                func_00103470(&g->ep2[i].a, 0, 8);
+                if (g->ep2[i].y < 20.0f) {
+                    g->ep2[i].z *= 1.2f;
+                    g->ep2[i].x *= 1.2f;
+                }
+                if (g->ep2[i].y >= 20.0f) {
+                    ang = func_0019A5C8() % 0x10000;
+                    r = 0.1f * (f32)(func_0019A5C8() % 160 - 80);
+                    g->ep2[i].z = r * func_0020B480(ang);
+                    g->ep2[i].x = r * func_0020B550(ang);
+                    g->ep2[i].y = 0.1f * -(f32)(func_0019A5C8() % 120);
+                    g->ep2[i].a = 0x80;
+                }
+            }
+        }
+    }
+    c621_01E01030(ot, &g->disc, &g->c1);
+    if (g->t >= 0x96) {
+        func_00103470(&g->disc.color.a, 0, 0x10);
+    } else {
+        func_001032C0(&g->disc.color.a, 0xFF, 0x10);
+    }
+    for (i = 0; i < 2; i++) {
+        c621_01E03170(ot, &g->light[i], &g->c3);
+        for (j = 0; j < 64; j++) {
+            if (i == 0) {
+                g->light[i].r[j].b += 0x20;
+            } else {
+                g->light[i].r[j].b -= 0x20;
+            }
+        }
+    }
+    if (g->t >= 10) {
+        if (g->t % 2 == 0) {
+            g->disc2.color.r = func_0019A5C8() % 0x70;
+            g->disc2.color.g = func_0019A5C8() % 0xB0;
+        }
+        c621_01E01030(ot, &g->disc2, &g->c2);
+        if (g->t >= 0xA0) {
+            func_00103470(&g->disc2.color.a, 0, 8);
+        } else {
+            func_001032C0(&g->disc2.color.a, 0x80, 8);
+        }
+        {
+            f32 s = 0.05f;
+
+            func_001033D0(&g->c2, 1.0f, s);
+        }
+    }
+    if (g->t >= 0x96) {
+        vel.x = vel.y = vel.z = 0.0f;
+        c621_01E004A0(ot, &g->c6, &g->board, &vel);
+        func_00103470(&g->board.color.a, 0, 8);
+        c621_01E01720(ot, &g->emit, &g->c4);
+        if (g->t >= 0xA0) {
+            func_00103470(&g->emit.color.a, 0, 8);
+        }
+        for (i = 0; i < g->emit.count; i++) {
+            if (g->ep[i].t >= 0) {
+                if (i % 3 == 0) {
+                    g->ep[i].y += 1.0f;
+                } else if (i % 3 == 1) {
+                    g->ep[i].y += 2.0f;
+                } else {
+                    g->ep[i].y += 3.0f;
+                }
+                if (g->ep[i].y > 0.0f) {
+                    func_00103470(&g->ep[i].a, 0, 8);
+                }
+                if (g->ep[i].y > 50.0f) {
+                    ang = func_0019A5C8() % 0x10000;
+                    g->ep[i].z = g->emit.radius * func_0020B480(ang);
+                    g->ep[i].x = g->emit.radius * func_0020B550(ang);
+                    g->ep[i].y = -50.0f;
+                    g->ep[i].a = 0x80;
+                }
+            }
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        g->beam[i].color.r = func_0019A5C8() % 64 + 0x30;
+        g->beam[i].color.g = func_0019A5C8() % 64 + 0x70;
+        g->beam[i].color.b = func_0019A5C8() % 64 + 0xA0;
+        if (g->t > i * 4 + 10) {
+            c621_01E03880(ot, &g->beam[i], &g->crd[i]);
+            g->beam[i].scale += 0.1f;
+            if (g->beam[i].scale > 2.0f) {
+                if (func_00103470(&g->beam[i].color.a, 0, 10) == 0) {
+                    g->beam[i].scale = 0.0f;
+                    g->beam[i].color.a = g->alpha;
+                    g->beam[i].rows = 0;
+                    ang = func_0019A5C8() % 0x10000;
+                    r = 0.05f * (f32)(func_0019A5C8() % (s32)(10.0f * g->disc.radius));
+                    func_001F53C0(1, func_001F5380(), &g->crd[i].pos);
+                    g->crd[i].pos.y = 0.0f;
+                    g->crd[i].pos.z += r * func_0020B480(ang);
+                    g->crd[i].pos.x += r * func_0020B550(ang);
+                }
+            }
+            g->beam[i].rows += 3;
+        }
+    }
+    if (g->t >= 0x96) {
+        func_00103470(&g->alpha, 0, 8);
+        for (i = 0; i < 8; i++) {
+            if (g->beam[i].color.a > g->alpha) {
+                g->beam[i].color.a = g->alpha;
+            }
+        }
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 0x28) {
+        return 2;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
+#pragma optimization_level reset
