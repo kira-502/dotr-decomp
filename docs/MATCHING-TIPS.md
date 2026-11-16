@@ -1065,3 +1065,7 @@ there is a source form that gives the original.
 - **An index `(x % 2 << 1) + i`** fixed `addu` operand order where `x % 2 * 2 + i` did not (b475:01E00080).
 - **A constant multiply belongs at the use inside the loop** (`k = t / 12.0f; ... + 5.0f * k`), not
   `k = 5.0f * (t / 12.0f)` (b483:01E00080).
+- **A second call argument kept in a saved register (grid ripple):** reuse one local for that argument and a later
+  value, assigned twice, so it is not folded into its use past the first call (b474:01E00080, 135 → 29 words).
+- **Two calls in one expression with local arguments:** MWCC calls first the one whose argument local was computed last.
+- **A loop test `j + 1 < 2` right after an inner loop:** the inner loop reuses the outer counter (b767:01E05B60).
