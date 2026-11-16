@@ -1608,7 +1608,410 @@ static void func_01E03950_b258(s32 arg0, Scene_b258_01E03950 *o) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b258", func_01E03A00_b258);
+/* shape b258:01E03A00 (b258), 1306 insns, 1 copy: b258 scene manager in b116:01E042F0's form, written from the asm:
+   setup (eight joints and one of the other unit, textures via b258:01E03950, turn from the model angle, a +-15 jitter
+   table and three 256-byte tables of zeros, small randoms and turn-signed randoms); runs B258_W_S (through an alias,
+   it takes one parameter), steps fifteen kinds of the 150 slots (01E03900's fog call written out, as that function
+   writes it), draws eleven kinds (beams between the four points interpolated per pair, PAINT_RAIN20 through an
+   alias); returns 1/2/4 at frames 285/395/405, 6 on 296..389, 8 when the 410-frame countdown runs out */
+
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    s16 h6;
+    u8 pad8[2];
+    s16 hA;
+    u8 padC[0x10];
+    s32 n;
+    u8 pad20[4];
+    s32 (*fn)();
+    u8 c0[4];
+    u8 c1[4];
+    s16 h30;
+    s16 t;
+    s16 h34;
+    s16 used;
+    u8 pad38[8];
+} Slot_b258_01E03A00;
+
+typedef struct {
+    f32 a, b, c, d;
+} Q_b258_01E03A00;
+
+typedef union {
+    Q_b258_01E03A00 q;
+    s16 s[8];
+} R_b258_01E03A00;
+
+typedef struct {
+    Vec4f pts[50];
+} Trail_b258_01E03A00;
+
+typedef struct {
+    u8 pad0[0x20];
+    f32 px;
+    f32 py;
+    f32 pz;
+    u8 pad2C[0x54];
+    s32 ot80;
+    u8 pad84[4];
+    s32 tex88;
+    u8 pad8C[8];
+    R_b258_01E03A00 rect;
+    u8 padA4[0x14];
+    s16 count;
+    u8 padBA[4];
+    s16 mode;
+    u8 padC0[0x18];
+    u8 crdD8[0x1D8];
+    s32 tex[16];
+    Slot_b258_01E03A00 slot[150];
+    u8 pad2870[0x30];
+    Vec4f p[4];
+    Vec4f q[4];
+    Vec4f tgt[4];
+    Vec4f w[4];
+    Vec4f d[30];
+    Trail_b258_01E03A00 trail[30];
+    u8 pad8940[0x10];
+    s32 tex5[5];
+    u8 pad8964[0xC];
+    s32 count2;
+    u8 col[4];
+    u8 pad8978[4];
+    s32 ot;
+    u8 pad8980[0x18];
+    s16 j[8];
+    s16 jB;
+    u8 pad89AA[0x1A];
+    s16 kind;
+    s16 turn;
+    s16 id;
+    s16 frame;
+    s8 jit[0x100];
+    s8 jit2[0x100];
+    s8 jit3[0x100];
+    s8 jit4[0x100];
+    u8 crd[0x174];
+} Scene_b258_01E03A00;
+
+static s32 func_01E03A00_b258(s32 arg0, s32 id) {
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s16 func_001F5560(s32, s32, s32);
+    extern void func_001F6160(s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_001F7260(s32);
+    extern void b258_01E01A70();
+    extern void b258_01E04FE0();
+    Scene_b258_01E03A00 *g = (Scene_b258_01E03A00 *)arg0;
+    s32 n;
+    Vec4f v;
+    Q_b258_01E03A00 r1;
+    Q_b258_01E03A00 r2;
+    Q_b258_01E03A00 r3;
+    Q_b258_01E03A00 r4;
+    Q_b258_01E03A00 r5;
+    Q_b258_01E03A00 r6;
+    Q_b258_01E03A00 r7;
+    s32 ang[4];
+    s32 ang2[4];
+    s32 ang3[4];
+    s32 ang4[4];
+    f32 b;
+    f32 a;
+    s32 t;
+    s32 i;
+
+    n = 0;
+    g->ot80 = func_00207500();
+    g->ot = func_00207500();
+    if (id >= 0) {
+        func_00195108(g, 0x8F40);
+        func_00107C10(g->crd);
+        func_00107C10(g->crdD8);
+        g->id = id;
+        g->count2 = 0x19A;
+        g->j[0] = func_001F5560(func_001F53A0(), 0xF, 1);
+        g->j[1] = func_001F5560(func_001F53A0(), 0x16, 0);
+        g->j[2] = func_001F5560(func_001F53A0(), 0x1E, 0);
+        g->j[3] = func_001F5560(func_001F53A0(), 0x26, 0);
+        g->j[4] = func_001F5560(func_001F53A0(), 0x1F, 0);
+        g->j[5] = func_001F5560(func_001F53A0(), 0x34, 0);
+        g->j[6] = func_001F5560(func_001F53A0(), 0x36, 0);
+        g->j[7] = func_001F5560(func_001F53A0(), 0x37, 0);
+        g->jB = func_001F5560(func_001F5380(), 1, 1);
+        func_01E03950_b258(0, (Scene_b258_01E03950 *)g);
+        func_001F6160(func_001F53A0(), ang);
+        g->turn = ang[1] / 180.0f;
+        for (i = 0; i < 0x100; i++) {
+            g->jit[i] = func_0019A5C8() % 30 - 15;
+        }
+        for (i = 0; i < 100; i++) {
+            g->jit2[i] = 0;
+        }
+        for (i = 100; i < 180; i++) {
+            g->jit2[i] = func_0019A5C8() % 5;
+        }
+        func_001F6160(func_001F53A0(), ang2);
+        t = ang2[1] / 180.0f;
+        for (i = 180; i < 0x100; i++) {
+            if (t) {
+                g->jit2[i] = func_0019A5C8() % 4;
+            } else {
+                g->jit2[i] = -(func_0019A5C8() % 4);
+            }
+        }
+        for (i = 0; i < 100; i++) {
+            g->jit3[i] = 0;
+        }
+        for (i = 100; i < 180; i++) {
+            g->jit3[i] = func_0019A5C8() % 6;
+        }
+        func_001F6160(func_001F53A0(), ang3);
+        t = ang3[1] / 180.0f;
+        for (i = 180; i < 0x100; i++) {
+            if (t) {
+                g->jit3[i] = func_0019A5C8() % 20 + 5;
+            } else {
+                g->jit3[i] = -(func_0019A5C8() % 20 + 5);
+            }
+        }
+        for (i = 0; i < 100; i++) {
+            g->jit4[i] = 0;
+        }
+        for (i = 100; i < 180; i++) {
+            g->jit4[i] = func_0019A5C8() % 3;
+        }
+        for (i = 180; i < 0x100; i++) {
+            g->jit4[i] = func_0019A5C8() % 2 - 1;
+            func_001F6160(func_001F53A0(), ang4);
+            if ((s32)(ang4[1] / 180.0f)) {
+                g->jit4[i] += 2;
+            } else {
+                g->jit4[i] -= 2;
+            }
+        }
+        func_001F7260(1);
+        return 0;
+    }
+    b258_01E01A70(g, 0);
+    for (i = 0; i < 150; i++) {
+        if (g->slot[i].used != 0) {
+            if (g->slot[i].fn == (s32 (*)())func_01E02370_b258) {
+                func_01E02370_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02500_b258) {
+                func_01E02500_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02650_b258) {
+                func_01E02650_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E027A0_b258) {
+                func_01E027A0_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02880_b258) {
+                func_01E02880_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02A60_b258) {
+                func_01E02A60_b258((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02C10_b258) {
+                func_01E02C10_b258((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02D80_b258) {
+                func_01E02D80_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02F40_b258) {
+                func_01E02F40_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E032B0_b258) {
+                func_01E032B0_b258((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E033B0_b258) {
+                func_01E033B0_b258((s32)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E034A0_b258) {
+                func_01E034A0_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E036B0_b258) {
+                func_01E036B0_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E03830_b258) {
+                func_01E03830_b258((void *)g, (void *)&g->slot[i]);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E03900_b258) {
+                *(f32 *)(u32)&a = *(f32 *)(u32)&D_01E05B80_b258;
+                *(f32 *)(u32)&b = *(f32 *)(u32)&D_01E05B88_b258;
+                func_001F7170(2, 0, (s32)&a, (s32)&b, 0);
+            }
+        }
+    }
+    func_001F5F90(func_001F5380(), &v);
+    for (i = 0; i < 150; i++) {
+        if (g->slot[i].used != 0) {
+            n++;
+            if (g->slot[i].fn == (s32 (*)())func_01E02370_b258) {
+                v.x = g->p[g->slot[i].h30].x;
+                v.y = g->p[g->slot[i].h30].y;
+                v.z = g->p[g->slot[i].h30].z;
+                func_01E00C90_b258((void *)g, (void *)&g->slot[i], 1, v);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02500_b258) {
+                g->tex88 = g->tex5[1];
+                func_00106080(&r1, 0x14, g->slot[i].h34, NULL);
+                g->rect.q = r1;
+                v.x = g->p[g->slot[i].h30].x;
+                v.y = g->p[g->slot[i].h30].y;
+                v.z = g->p[g->slot[i].h30].z;
+                g->mode = 0;
+                func_01E009A0_b258((void *)g, (void *)&g->slot[i], 0x21, v);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02650_b258) {
+                g->tex88 = g->tex5[3];
+                func_00106080(&r2, 0x14, g->slot[i].h34, NULL);
+                g->rect.q = r2;
+                v.x = g->p[g->slot[i].h30].x;
+                v.y = g->p[g->slot[i].h30].y;
+                v.z = g->p[g->slot[i].h30].z;
+                g->mode = 0;
+                func_01E009A0_b258((void *)g, (void *)&g->slot[i], 0x11, v);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02880_b258) {
+                g->tex88 = g->tex5[2];
+                func_00106080(&r3, 0x14, g->slot[i].h34, NULL);
+                g->rect.q = r3;
+                g->rect.s[0] = 0;
+                g->rect.s[1] = 0;
+                g->rect.s[2] = 0x7F;
+                g->rect.s[3] = 0x3F;
+                if (g->slot[i].h6 < 3) {
+                    v.x = g->p[0].x - g->slot[i].h30 * ((g->p[0].x - g->p[g->slot[i].h6 + 1].x) / g->slot[i].n);
+                    v.y = g->p[0].y - g->slot[i].h30 * ((g->p[0].y - g->p[g->slot[i].h6 + 1].y) / g->slot[i].n);
+                    v.z = g->p[0].z - g->slot[i].h30 * ((g->p[0].z - g->p[g->slot[i].h6 + 1].z) / g->slot[i].n);
+                } else if (g->slot[i].h6 < 6) {
+                    if (g->slot[i].h6 == 3) {
+                        v.x = g->p[1].x - g->slot[i].h30 * ((g->p[1].x - g->p[0].x) / g->slot[i].n);
+                        v.y = g->p[1].y - g->slot[i].h30 * ((g->p[1].y - g->p[0].y) / g->slot[i].n);
+                        v.z = g->p[1].z - g->slot[i].h30 * ((g->p[1].z - g->p[0].z) / g->slot[i].n);
+                    } else {
+                        v.x = g->p[1].x - g->slot[i].h30 * ((g->p[1].x - g->p[g->slot[i].h6 - 2].x) / g->slot[i].n);
+                        v.y = g->p[1].y - g->slot[i].h30 * ((g->p[1].y - g->p[g->slot[i].h6 - 2].y) / g->slot[i].n);
+                        v.z = g->p[1].z - g->slot[i].h30 * ((g->p[1].z - g->p[g->slot[i].h6 - 2].z) / g->slot[i].n);
+                    }
+                } else if (g->slot[i].h6 < 9) {
+                    if (g->slot[i].h6 == 8) {
+                        v.x = g->p[2].x - g->slot[i].h30 * ((g->p[2].x - g->p[3].x) / g->slot[i].n);
+                        v.y = g->p[2].y - g->slot[i].h30 * ((g->p[2].y - g->p[3].y) / g->slot[i].n);
+                        v.z = g->p[2].z - g->slot[i].h30 * ((g->p[2].z - g->p[3].z) / g->slot[i].n);
+                    } else {
+                        v.x = g->p[2].x - g->slot[i].h30 * ((g->p[2].x - g->p[g->slot[i].h6 - 6].x) / g->slot[i].n);
+                        v.y = g->p[2].y - g->slot[i].h30 * ((g->p[2].y - g->p[g->slot[i].h6 - 6].y) / g->slot[i].n);
+                        v.z = g->p[2].z - g->slot[i].h30 * ((g->p[2].z - g->p[g->slot[i].h6 - 6].z) / g->slot[i].n);
+                    }
+                } else if (g->slot[i].h6 < 12) {
+                    v.x = g->p[3].x - g->slot[i].h30 * ((g->p[3].x - g->p[g->slot[i].h6 - 9].x) / g->slot[i].n);
+                    v.y = g->p[3].y - g->slot[i].h30 * ((g->p[3].y - g->p[g->slot[i].h6 - 9].y) / g->slot[i].n);
+                    v.z = g->p[3].z - g->slot[i].h30 * ((g->p[3].z - g->p[g->slot[i].h6 - 9].z) / g->slot[i].n);
+                }
+                g->mode = func_0019A5C8() % 8;
+                func_01E009A0_b258((void *)g, (void *)&g->slot[i], 0x21, v);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02A60_b258) {
+                g->tex88 = g->tex[15];
+                func_00106080(&r4, 0x9B, g->slot[i].h34, NULL);
+                g->rect.q = r4;
+                g->count = 7;
+                g->mode = func_0019A5C8() % 4;
+                g->px = g->slot[i].x;
+                g->py = g->slot[i].y;
+                g->pz = g->slot[i].z;
+                func_01E01510_b258((void *)g, (void *)&g->slot[i], 0x20, g->jit);
+                g->count = 0;
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02C10_b258) {
+                g->tex88 = g->tex[15];
+                func_00106080(&r5, 0x9B, g->slot[i].h34, NULL);
+                g->rect.q = r5;
+                g->count = 7;
+                g->mode = func_0019A5C8() % 4;
+                g->px = g->slot[i].x;
+                g->py = g->slot[i].y;
+                g->pz = g->slot[i].z;
+                func_01E01510_b258((void *)g, (void *)&g->slot[i], 0x20, g->jit);
+                g->count = 0;
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02D80_b258) {
+                g->tex88 = g->tex5[4];
+                func_00106080(&r6, 0x14, g->slot[i].h34, NULL);
+                g->rect.q = r6;
+                g->count = 2;
+                g->mode = func_0019A5C8() % 4;
+                g->px = g->trail[g->slot[i].hA].pts[0].x;
+                g->py = g->trail[g->slot[i].hA].pts[0].y;
+                g->pz = g->trail[g->slot[i].hA].pts[0].z;
+                func_01E01510_b258((void *)g, (void *)&g->slot[i], 0x20, g->jit);
+                g->count = 0;
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E02F40_b258) {
+                g->tex88 = g->tex5[2];
+                func_00106080(&r7, 0x14, g->slot[i].h34, NULL);
+                g->rect.q = r7;
+                g->rect.s[0] = 0;
+                g->rect.s[1] = 0;
+                g->rect.s[2] = 0x7F;
+                g->rect.s[3] = 0x3F;
+                g->px = 0.0f;
+                g->py = 0.0f;
+                g->pz = 0.0f;
+                g->mode = 1;
+                b258_01E04FE0(g, &g->slot[i], &g->trail[g->slot[i].h30], 0);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E032B0_b258) {
+                v.x = g->trail[g->slot[i].h30].pts[0].x;
+                v.y = g->trail[g->slot[i].h30].pts[0].y;
+                v.z = g->trail[g->slot[i].h30].pts[0].z;
+                func_01E010A0_b258((void *)g, (void *)&g->slot[i], 0x21, v);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E033B0_b258) {
+                v.x = g->trail[g->slot[i].h30].pts[0].x;
+                v.y = g->trail[g->slot[i].h30].pts[0].y;
+                v.z = g->trail[g->slot[i].h30].pts[0].z;
+                func_01E010A0_b258((void *)g, (void *)&g->slot[i], 0x21, v);
+            }
+            if (g->slot[i].fn == (s32 (*)())func_01E034A0_b258) {
+                v.x = g->p[g->slot[i].h30].x;
+                v.y = g->p[g->slot[i].h30].y;
+                v.z = g->p[g->slot[i].h30].z;
+                func_01E00C90_b258((void *)g, (void *)&g->slot[i], 1, v);
+            }
+        }
+    }
+    if (g->count2 != 0) {
+        g->count2--;
+    }
+    if (g->frame == 0x11D) {
+        return 1;
+    }
+    if (g->frame == 0x195) {
+        return 4;
+    }
+    if (g->frame == 0x18B) {
+        return 2;
+    }
+    if (g->frame > 0x127 && g->frame < 0x186) {
+        return 6;
+    }
+    if (g->count2 <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape b258:01E04E70, 90 insns: c035:01E01150 family: take the first free glow slot of 150 (0x40 bytes each, at ctx+0x2F0), clear it, give it the scene colour twice, the scene position, its angle and both arguments; returns 1 when it got one */
 
