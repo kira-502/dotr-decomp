@@ -1039,3 +1039,7 @@ there is a source form that gives the original.
   `Vec4f w[2]` and `w[1] = w[0];`, even when w[1] is not read later (b370:01E062B0).
 - **A `sw` of a float constant then `mtc1` of the same GPR into a `sub.s`:** read the just-stored field back,
   `f[0] = K1; f[1] = f[0] - K2;` (b579:01E04C80).
+- **An s32 masked into `$v0` then moved to `$a0`, where yours masks straight into `$a0`:** two statements,
+  `ang = (s32)(...); ang &= 0xFFFF;` (b483:01E00080).
+- **A loop-head `nop` that comes and goes:** loop labels are 8-aligned, so it follows the instruction count earlier
+  in the function; fix earlier differences first (b635:01E044B0).
