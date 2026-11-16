@@ -1043,3 +1043,5 @@ there is a source form that gives the original.
   `ang = (s32)(...); ang &= 0xFFFF;` (b483:01E00080).
 - **A loop-head `nop` that comes and goes:** loop labels are 8-aligned, so it follows the instruction count earlier
   in the function; fix earlier differences first (b635:01E044B0).
+- **A loop's counter and pointer swapped with no fix inside that loop:** rename the counter of a different, earlier
+  loop in the same branch (each counter name is one web per function) (b369:01E04A00).
