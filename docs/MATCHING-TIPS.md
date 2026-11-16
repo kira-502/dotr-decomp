@@ -1113,3 +1113,7 @@ there is a source form that gives the original.
   (b175:01E00080).
 - **An integer alpha scheduled after the colour stores:** assign it to a local before the first colour byte (b175).
 - **The line-strip packet (regs 0x414141) has an 8-byte tail** (b175:01E00080).
+- **Spawn header `g->arr[n].on = 1; g->arr[n].t = 0;` with the constant 1 and the slot index swapped (and the b475
+  pointer form unusable because the array is past 0x8000):** `n = <index>; (void)n;` then the plain indexed stores in
+  on-then-t order. Works for `n = g->nburst` and `n = g->t % 24` (b204, b048, b261, b643:01E00080); this closes the
+  b261/b643 "wall" noted above.
