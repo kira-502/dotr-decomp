@@ -480,8 +480,9 @@ static s32 func_01E00080_b474(s32 arg0, s32 code) {
         spr.c.a = alpha;
         spr.c.q = 1.0f;
         s = 0.2f + 0.8f * func_00100D50(g->wave[i].t, 0x86, 1);
+        q = 0;
         h = 50.0f * (g->wave[i].t / 134.0f);
-        for (q = 0; q < 128; q++) {
+        for (; q < 128; q++) {
             func_00208700(&spr, g->tex[1], 1);
             x = g->wave[i].c[q] % 4 * 32;
             y = (g->wave[i].c[q] >> 2) * 32;

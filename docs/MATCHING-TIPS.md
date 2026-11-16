@@ -1077,3 +1077,7 @@ there is a source form that gives the original.
   registers but swaps the stores):** compute the address before the constant through a two-use pointer from a
   constant-offset base: `base = g->wave; w = &base[n]; w->on = 1; w->t = 0;` (plain `w = &g->wave[n]` emits
   `addu g, off`). Doesn't work when the array's offset is 0x8000 or more (b475:01E00080; b261 open).
+- **A wave sprite loop with float constants loaded early and the loop init late:** set the counter before the
+  per-wave float, `q = 0; h = 50.0f * (t / 64.0f); for (; q < 64; q++)` (b639; b474 29 → 21 words).
+- **A degrees-to-radians value scheduled among the stores before sin/cos:** write it inside each call argument and let
+  CSE share it (b558:01E04830).
