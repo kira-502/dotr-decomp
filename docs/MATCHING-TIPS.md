@@ -1099,3 +1099,5 @@ there is a source form that gives the original.
   then `sin(PI * ang / 180)`) so the next product is not hoisted (b617:01E003A0).
 - **Inner-loop index rebuilt from `i` every outer pass:** index `a[j * 10 + i]` directly (b706:01E055E0).
   Declaration-move search: work/declmove_ft.py.
+- **A two-level setup loop with the counter and the reused index swapped:** sweep every permutation of the names
+  (outer, inner, index) over just that block with fulltry; greedy one-loop renaming missed it (b062:01E05BB0).
