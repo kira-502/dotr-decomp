@@ -1084,3 +1084,7 @@ there is a source form that gives the original.
 - **A 16-byte stack vector overlapping two u8[4] locals stored at direct sp offsets:** the past-the-end form
   (`Vec4f p[2]; u8 c0[4]; u8 c1[4];` using `p[2]`) matches where a union leaves 13 words (b629:01E04E70).
 - **In-file side-by-side diff of one function:** `work/sd1.sh <func>` after `tools/mod_infile.sh`.
+- **A float constant in the wrong FPR on a value computed once before a loop:** put the multiply in the loop's own
+  expression (`... - 30.0f * (f32)j` with `j = max - life;` before the loop) and let it be hoisted (b762:01E05260).
+- **A field read early into a saved FPR across a sin/cos call when the angle is a named local:** write the angle inline
+  in each call argument (b021:01E04320).
