@@ -1057,3 +1057,11 @@ there is a source form that gives the original.
   (c621:01E03FA0, 36 → 5 words); `u32 ot` did better than `s32 ot`.
 - **A bolt loop's counter and walking pointer rotated:** index `pts[i]` / `pts[i + 1]` directly and drop the pointer
   (b853:01E05820). Loop-name search: work/loopnames.py.
+- **Parameter g spilled to a low stack slot and reloaded before every use (the "spill wall", about 71 single-function
+  modules at 01E00080):** MWCC's normal spill choice when g has few uses inside loops. Read loop-invariant indices into
+  locals before loops that make calls (`n = g->nring; g->ring[n].c[j] = ...`, not `g->ring[g->nring].c[j]`), and use
+  `s32 arg0` with a cast local, which puts the slot low (a `Scene *g` parameter spills high, after the locals)
+  (b475:01E00080, 66% → 99.9%).
+- **An index `(x % 2 << 1) + i`** fixed `addu` operand order where `x % 2 * 2 + i` did not (b475:01E00080).
+- **A constant multiply belongs at the use inside the loop** (`k = t / 12.0f; ... + 5.0f * k`), not
+  `k = 5.0f * (t / 12.0f)` (b483:01E00080).
