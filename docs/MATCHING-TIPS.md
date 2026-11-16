@@ -1053,3 +1053,7 @@ there is a source form that gives the original.
   separate slots), e.g. a texture-id buffer later used as a position output (b773:01E049E0).
 - **A copy chain through `addiu sN, sp` pointers:** the copied vectors are one array (`Vec4f p[3]`); a vector using
   direct sp offsets stays separate (b598:01E05E60).
+- **The ot copy lands last in an -O2 manager even through no-prototype aliases:** drop every cast in the alias calls
+  (c621:01E03FA0, 36 → 5 words); `u32 ot` did better than `s32 ot`.
+- **A bolt loop's counter and walking pointer rotated:** index `pts[i]` / `pts[i + 1]` directly and drop the pointer
+  (b853:01E05820). Loop-name search: work/loopnames.py.
