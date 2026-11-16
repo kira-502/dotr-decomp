@@ -1101,3 +1101,6 @@ there is a source form that gives the original.
   Declaration-move search: work/declmove_ft.py.
 - **A two-level setup loop with the counter and the reused index swapped:** sweep every permutation of the names
   (outer, inner, index) over just that block with fulltry; greedy one-loop renaming missed it (b062:01E05BB0).
+- **Grid-quad loop with the `k+1` index and colour-copy pointers swapped (`$a0`/`$a1`):** add the scroll offset into one
+  texture coordinate where it is assigned (`u0 = (f32)(k % 16) / 16.0f + w;`), keep it at the other's uses (`u1 + w`),
+  write `u1` as one expression, and `(void)alpha;` after the first alpha byte (b253:01E00080, 23 → 0).
