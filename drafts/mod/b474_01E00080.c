@@ -1,13 +1,12 @@
 #include "common.h"
 
 /* shape b474:01E00080 (b474), 1375 insns, 1 copy: b474 module main (written from the asm in b475:01E00080's form;
-   HARD draft, 29 words): setup clears the scene, takes both units, three textures and a joint, and seeds a 17x17
+   HARD draft, 2 words): setup clears the scene, takes both units, three textures and a joint, and seeds a 17x17
    phase table; frames 80/184/283 launch a burst from the joint toward the target with a 16-spark ring, the burst
    rebuilds a 17x17 rippling grid along its path for 52 frames and draws it as a 16x16 textured strip mesh, leaving a
    4-spark puff each frame and a 128-spark wave at the end; puffs (33 frames), rings (65) and waves (135, two sprites
-   each) are drawn as sprites; returns 1/6/7/2 by tick, 8 from 468. Left: one jal delay slot (store vs a0 move) at the
-   burst spawn, the v[2] colour base address scheduled early in the strip set-up, the wave's 134/50 constant loads
-   scheduled early */
+   each) are drawn as sprites; returns 1/6/7/2 by tick, 8 from 468. Left: one jal delay slot (the base copy's last
+   store vs the a0 move) at the burst spawn; pd placements, prototypes, store orders, declaration moves tried */
 
 typedef struct {
     u64 x : 16;
@@ -274,7 +273,7 @@ static s32 func_01E00080_b474(s32 arg0, s32 code) {
         w = -1.0f * (g->burst[i].t % 16) / 16.0f;
         for (k = 0; k < 16; k++) {
             u0 = (f32)(k % 16) / 16.0f + w;
-            u1 = (f32)(k % 16 + 1) / 16.0f + w;
+            u1 = (f32)(k % 16 + 1) / 16.0f;
             alpha = (16 - k) * 255 >> 4;
             pk.v[0].c.r = 0x6C;
             pk.v[0].c.g = 0xFF;
@@ -283,6 +282,7 @@ static s32 func_01E00080_b474(s32 arg0, s32 code) {
             pk.v[0].c.q = 1.0f;
             pk.v[1].c = pk.v[0].c;
             alpha = (16 - (k + 1)) * 255 >> 4;
+            (void)alpha;
             pk.v[2].c.r = 0x6C;
             pk.v[2].c.g = 0xFF;
             pk.v[2].c.b = 0x80;
@@ -296,9 +296,9 @@ static s32 func_01E00080_b474(s32 arg0, s32 code) {
                 pk.v[0].t = t0;
                 pk.v[1].s = u0;
                 pk.v[1].t = t1;
-                pk.v[2].s = u1;
+                pk.v[2].s = u1 + w;
                 pk.v[2].t = t0;
-                pk.v[3].s = u1;
+                pk.v[3].s = u1 + w;
                 pk.v[3].t = t1;
                 if (func_00100BA0(&g->grid[k][j], &g->grid[k][j + 1], &g->grid[k + 1][j], &g->grid[k + 1][j + 1], m,
                                   &pk, &depth) == 1) {

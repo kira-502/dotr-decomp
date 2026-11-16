@@ -1117,3 +1117,8 @@ there is a source form that gives the original.
   pointer form unusable because the array is past 0x8000):** `n = <index>; (void)n;` then the plain indexed stores in
   on-then-t order. Works for `n = g->nburst` and `n = g->t % 24` (b204, b048, b261, b643:01E00080); this closes the
   b261/b643 "wall" noted above.
+- **Loop-counter spill slots:** counters spilled per loop get high slots grouped by name, in reverse loop order within
+  a name; a variable whose first loop is spilled gets a low slot below `g`. Rename whole loops so each name's first use
+  matches the original (b290, b507, b175:01E00080).
+- **A seven-value equality chain on t (`beq ...; b`):** a `switch` with ascending cases (the chain runs descending)
+  (b599:01E00080).
