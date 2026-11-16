@@ -1081,3 +1081,6 @@ there is a source form that gives the original.
   per-wave float, `q = 0; h = 50.0f * (t / 64.0f); for (; q < 64; q++)` (b639; b474 29 → 21 words).
 - **A degrees-to-radians value scheduled among the stores before sin/cos:** write it inside each call argument and let
   CSE share it (b558:01E04830).
+- **A 16-byte stack vector overlapping two u8[4] locals stored at direct sp offsets:** the past-the-end form
+  (`Vec4f p[2]; u8 c0[4]; u8 c1[4];` using `p[2]`) matches where a union leaves 13 words (b629:01E04E70).
+- **In-file side-by-side diff of one function:** `work/sd1.sh <func>` after `tools/mod_infile.sh`.
