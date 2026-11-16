@@ -1350,7 +1350,620 @@ static s32 func_01E02F20_c543(s32 obj, Obj_b000_01E05110 *o, Cam_b000_01E05110 *
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c543", func_01E03480_c543);
+/* shape c543:01E03480 (c543), 1273 insns, 1 copy: c543 module main (c541:01E03B60's two-unit card form with two rain
+   blocks, both units' afterimages and a closing orbit): on start copies both unit models, places them at -125/125, -8
+   (code 1/2 sends them in over 20 ticks), sets up the rain, the sprite, two rings, the outline and 60 sparks; each
+   tick turns three views, from tick 100 fades a full-screen quad, flag 4 runs the scene step, then the units step in,
+   both draw with afterimages while they close in on two orbit points, the orbit radius shrinks to 0 and they leave;
+   returns 2 on tick 100, 8 when done; float arguments as block locals, the scene step through a no-prototype alias */
+
+typedef struct Src_c543_01E03480 {
+    Vec4f p0;
+    Vec4f p1;
+    u8 pad20[0x23];
+    u8 f43;
+    u8 pad44[0x5C];
+} __attribute__((aligned(16))) Src_c543_01E03480;
+
+typedef struct Unit_c543_01E03480 {
+    Vec4f pos;
+    union {
+        s32 i[4];
+        Vec4f v;
+    } rot;
+    s32 v20[4];
+    Vec4f v30;
+    u8 pad40[0x41];
+    s8 lo : 5;
+    s8 b5 : 1;
+    s8 b6 : 1;
+    s8 b7 : 1;
+    u8 pad82[0x1E];
+} __attribute__((aligned(16))) Unit_c543_01E03480;
+
+typedef struct Ctl_c543_01E03480 {
+    Vec4f a;
+    union {
+        s32 i[4];
+        Vec4f v;
+    } b;
+    s32 z[3];
+    u8 pad2C[4];
+    f32 s[2];
+    u8 pad38[8];
+    f32 x;
+    f32 y;
+    s32 on;
+    u8 pad4C[4];
+} Ctl_c543_01E03480;
+
+typedef struct Hist_c543_01E03480 {
+    Vec4f v00;
+    Vec4f v10;
+    Vec4f v20;
+    u8 pad30[0x40];
+} Hist_c543_01E03480;
+
+typedef struct Crd_c543_01E03480 {
+    Vec4f scale;
+    s32 rot[4];
+    Vec4f pos;
+    u8 pad30[0x40];
+} Crd_c543_01E03480;
+
+typedef struct Col_c543_01E03480 {
+    u8 b, g, r, a;
+} Col_c543_01E03480;
+
+typedef struct Spr_c543_01E03480 {
+    s32 kind;
+    s32 flags;
+    Col_c543_01E03480 c;
+    f32 scale;
+    s16 u, v, w, h;
+    u8 pad18[0x448];
+} Spr_c543_01E03480;
+
+typedef struct Fx_c543_01E03480 {
+    s32 kind;
+    u8 pad4[4];
+    s32 type;
+    u8 padC[0x94];
+} Fx_c543_01E03480;
+
+typedef struct Mdl_c543_01E03480 {
+    s16 h0, h2, h4, h6, h8, hA, hC, hE;
+    u8 pad10[0x20];
+    f32 f30;
+    Col_c543_01E03480 c;
+    s32 flags;
+    u8 pad3C[0xC];
+    s16 h48, h4A, h4C, h4E, h50, h52;
+    u8 pad54[0xC];
+} Mdl_c543_01E03480;
+
+typedef struct Ring_c543_01E03480 {
+    s32 type;
+    s32 flags;
+    Col_c543_01E03480 c;
+    f32 height;
+    s16 u, v, w, h;
+    u8 pad18[0x3E8];
+} Ring_c543_01E03480;
+
+typedef struct Pt_c543_01E03480 {
+    f32 x, y, z;
+} Pt_c543_01E03480;
+
+typedef struct Spark_c543_01E03480 {
+    s32 tex;
+    s32 flags;
+    Col_c543_01E03480 c;
+    f32 size;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    Pt_c543_01E03480 pts[60];
+} Spark_c543_01E03480;
+
+typedef struct Rain_c543_01E03480 {
+    s32 flags;
+    Col_c543_01E03480 c;
+    f32 len;
+    s32 count;
+    Vec4f pts[64];
+} Rain_c543_01E03480;
+
+typedef struct Scene_c543_01E03480 {
+    Crd_c543_01E03480 cam0;
+    Fx_c543_01E03480 fx;
+    Mdl_c543_01E03480 mdl;
+    Ring_c543_01E03480 ring1;
+    Ring_c543_01E03480 ring2;
+    Crd_c543_01E03480 cam1;
+    Spr_c543_01E03480 spr;
+    Spark_c543_01E03480 spark;
+    Crd_c543_01E03480 cam2;
+    Rain_c543_01E03480 rain[2];
+    s32 cnt[2];
+    u8 pad19C8[8];
+    Hist_c543_01E03480 histA[4];
+    Hist_c543_01E03480 histB[4];
+    Unit_c543_01E03480 a;
+    Unit_c543_01E03480 b;
+    Ctl_c543_01E03480 ctl[2];
+    Vec4f p[2];
+    s32 wait;
+    s32 timer;
+    s32 life;
+    s32 count;
+    s32 code;
+    s32 flags;
+    s32 alpha;
+    Col_c543_01E03480 col;
+    f32 ox;
+    f32 oy;
+    u8 pad1F78[8];
+    f32 radius;
+    s32 ang;
+    s32 step;
+    u8 pad1F8C[4];
+} Scene_c543_01E03480;
+
+static s32 func_01E03480_c543(s32 arg0, s32 code) {
+    Scene_c543_01E03480 *g = (Scene_c543_01E03480 *)arg0;
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5B30(s32);
+    extern s32 func_001F59D0(s32, s32);
+    extern void func_00195108(void *, s32);
+    extern void func_00205CB0(void *, f32, f32);
+    extern void func_00205C40();
+    extern void func_00104490(void *, void *, s32);
+    extern s32 func_00207F60(void);
+    extern void func_00207FD0(s32, s32, s32);
+    extern void func_00103260(void *, s32);
+    extern s32 c543_01E04870();
+    extern s32 c543_01E004C0();
+    s32 ot;
+    s32 idA;
+    s32 idB;
+    Src_c543_01E03480 *a;
+    Src_c543_01E03480 *b;
+    s32 tex[4];
+    s32 i;
+    s32 k;
+
+    ot = (s32)func_00207500();
+    idA = func_001F53A0();
+    idB = func_001F5380();
+    a = (Src_c543_01E03480 *)func_001F5B30(idA);
+    b = (Src_c543_01E03480 *)func_001F5B30(idB);
+    if (a == NULL && b == NULL) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00195108(g, 0x1F90);
+        func_00103890(&g->cam0);
+        func_00103890(&g->cam1);
+        func_00103890(&g->cam2);
+        if (a) {
+            g->a = *(Unit_c543_01E03480 *)a;
+        }
+        if (b) {
+            g->b = *(Unit_c543_01E03480 *)b;
+        }
+        if (a) {
+            func_001F59D0(idA, 1);
+            g->a.b6 = 1;
+            g->a.b5 = 1;
+        }
+        if (b) {
+            func_001F59D0(idB, 1);
+            g->b.b6 = 1;
+            g->b.b5 = 1;
+        }
+        g->flags = 0;
+        g->life = 0x96;
+        g->code = code;
+        if (g->code == 0) {
+            g->count = 20;
+        } else {
+            g->count = 0;
+        }
+        g->wait = 0x12;
+        g->timer = 0x10;
+        g->radius = 100.0f;
+        g->step = 0x100;
+        g->col.r = 0x80;
+        g->col.g = 0x80;
+        g->col.b = 0x80;
+        g->col.a = 0xFF;
+        if (a) {
+            a->f43 = 0;
+        }
+        if (b) {
+            b->f43 = 0;
+        }
+        g->alpha = 0x80;
+        { extern void func_00205CB0(void *, f32, f32); f32 fs2 = -8.0f; func_00205CB0(&g->p[0], -225.0f, fs2); }
+        { extern void func_00205CB0(void *, f32, f32); f32 fs1 = -25.0f; func_00205CB0(&g->p[1], fs1, -8.0f); }
+        g->ctl[0].x = -125.0f;
+        g->ctl[0].y = -8.0f;
+        g->ctl[1].x = 125.0f;
+        g->ctl[1].y = -8.0f;
+        if (g->code > 0) {
+            if (a) {
+                g->ctl[0].on = 20;
+                func_00205CB0(&g->ctl[0], g->ctl[0].x, g->ctl[0].y);
+                func_00205C40(g->ctl[0].z);
+                g->ctl[0].z[0] -= g->a.v20[0];
+                g->ctl[0].z[1] -= g->a.v20[1];
+                g->ctl[0].z[2] -= g->a.v20[2];
+                g->ctl[0].b.i[0] = 0;
+                g->ctl[0].b.i[1] = 0x10000;
+                g->ctl[0].b.i[2] = 0x10000;
+                g->ctl[0].s[0] = 0.46875f;
+                g->ctl[0].s[1] = 0.48913f;
+            }
+            if (b) {
+                g->ctl[1].on = 20;
+                func_00205CB0(&g->ctl[1], g->ctl[1].x, g->ctl[1].y);
+                func_00205C40(g->ctl[1].z);
+                g->ctl[1].z[0] -= g->b.v20[0];
+                g->ctl[1].z[1] -= g->b.v20[1];
+                g->ctl[1].z[2] -= g->b.v20[2];
+                g->ctl[1].b.i[0] = 0;
+                g->ctl[1].b.i[1] = 0x10000;
+                g->ctl[1].b.i[2] = 0x10000;
+                g->ctl[1].s[0] = 0.46875f;
+                g->ctl[1].s[1] = 0.48913f;
+            }
+        } else {
+            if (a) {
+                g->flags |= 1;
+                g->ctl[0].on = 1;
+                func_00205CB0(&g->a, g->ctl[0].x, g->ctl[0].y);
+                g->ctl[0].a = a->p0;
+                func_00205C40(g->a.v20);
+                g->ctl[0].z[0] = g->ctl[0].z[1] = g->ctl[0].z[2] = 0;
+                g->a.rot.i[0] = 0;
+                g->a.rot.i[1] = 0x10000;
+                g->a.rot.i[2] = 0x10000;
+                g->ctl[0].b.v = a->p1;
+                g->ctl[0].s[0] = g->ctl[0].s[1] = 0.1f;
+                g->a.v30.x = 0.46875f;
+                g->a.v30.y = 0.48913f;
+                for (i = 0; i < 4; i++) {
+                    g->histA[i].v20 = g->a.pos;
+                    g->histA[i].v10 = g->a.rot.v;
+                    g->histA[i].v00 = g->a.v30;
+                }
+            }
+            if (b) {
+                g->flags |= 2;
+                g->ctl[1].on = 1;
+                func_00205CB0(&g->b, g->ctl[1].x, g->ctl[1].y);
+                g->ctl[1].a = b->p0;
+                func_00205C40(g->b.v20);
+                g->ctl[1].z[0] = g->ctl[1].z[1] = g->ctl[1].z[2] = 0;
+                g->b.rot.i[0] = 0;
+                g->b.rot.i[1] = 0x10000;
+                g->b.rot.i[2] = 0x10000;
+                g->ctl[1].b.v = b->p1;
+                g->ctl[1].s[0] = g->ctl[1].s[1] = 0.1f;
+                g->b.v30.x = 0.46875f;
+                g->b.v30.y = 0.48913f;
+                for (i = 0; i < 4; i++) {
+                    g->histB[i].v20 = g->b.pos;
+                    g->histB[i].v10 = g->b.rot.v;
+                    g->histB[i].v00 = g->b.v30;
+                }
+            }
+        }
+        for (i = 0; i < 2; i++) {
+            g->rain[i].flags = 0x70080001;
+            g->rain[i].c.r = 0x20;
+            g->rain[i].c.g = 0x60;
+            g->rain[i].c.b = 0x80;
+            g->rain[i].c.a = 0;
+            func_01E02CD0_c543((Obj_b000_01E04EC0 *)&g->rain[i], 0x40, 80.0f);
+        }
+        func_00103260(tex, 0xF);
+        g->spr.flags = 0x80001;
+        g->spr.u = 0x8E;
+        g->spr.v = 0;
+        g->spr.w = 0x22;
+        g->spr.h = 0x40;
+        g->spr.c.r = 0x20;
+        g->spr.c.g = 0x60;
+        g->spr.c.b = 0x80;
+        g->spr.c.a = 0x40;
+        func_01E02560_c543((Obj_b000_01E032C0 *)&g->spr, tex[0], 15.0f);
+        g->ring1.flags = 0x20080000;
+        g->ring1.u = 0x8E;
+        g->ring1.v = 0;
+        g->ring1.w = 0x20;
+        g->ring1.h = 0x40;
+        g->ring1.c.r = 0x20;
+        g->ring1.c.g = 0x60;
+        g->ring1.c.b = 0x80;
+        g->ring1.c.a = 0x20;
+        func_01E01DB0_c543((Ring_b001_01E035A0 *)&g->ring1, tex[0], 120.0f, 115.0f, 0.0f, 0.0f);
+        g->ring2.flags = 0x20080000;
+        g->ring2.u = 0x8E;
+        g->ring2.v = 0;
+        g->ring2.w = 0x20;
+        g->ring2.h = 0x40;
+        g->ring2.c.r = 0x20;
+        g->ring2.c.g = 0x60;
+        g->ring2.c.b = 0x80;
+        g->ring2.c.a = 0x30;
+        { f32 fs2 = 120.0f; func_01E01DB0_c543((Ring_b001_01E035A0 *)&g->ring2, tex[0], fs2, 130.0f, 0.0f, 0.0f); }
+        g->mdl.flags = 0x80001;
+        g->mdl.h0 = 0x80;
+        g->mdl.h2 = 0;
+        g->mdl.h4 = 0x20;
+        g->mdl.h6 = 0x20;
+        g->mdl.h8 = 0xB0;
+        g->mdl.hA = 0x20;
+        g->mdl.hC = 0x100;
+        g->mdl.hE = 0x100;
+        g->mdl.f30 = 1.0f;
+        g->mdl.c.r = 0x20;
+        g->mdl.c.g = 0x60;
+        g->mdl.c.b = 0x80;
+        g->mdl.c.a = 0x60;
+        g->mdl.h48 = 0;
+        g->mdl.h4A = 0;
+        g->mdl.h4C = 0;
+        g->mdl.h4E = 1;
+        g->mdl.h50 = 0;
+        g->mdl.h52 = 0x3E7;
+        g->fx.type = 1;
+        func_01E00E90_c543(&g->mdl, &g->fx, tex[0], 200.0f);
+        g->spark.tex = tex[0];
+        g->spark.size = 3.0f;
+        for (k = 0; k < 60; k++) {
+            if (func_00104520(g->spark.flags, 0x1D)) {
+                g->spark.pts[k].x = func_0019A5C8() % 100 - 50;
+                g->spark.pts[k].z = func_0019A5C8() % 50;
+                g->spark.pts[k].y = func_0019A5C8() % 100 - 50;
+            } else {
+                g->spark.pts[k].x = func_0019A5C8() % 50 - 25;
+                g->spark.pts[k].y = func_0019A5C8() % 25;
+                g->spark.pts[k].z = func_0019A5C8() % 50 - 25;
+            }
+        }
+        g->spark.flags = 0x20080001;
+        g->spark.u = 0xB0;
+        g->spark.v = 0x40;
+        g->spark.w = 0x20;
+        g->spark.h = 0x20;
+        g->spark.c.r = 0x20;
+        g->spark.c.g = 0x60;
+        g->spark.c.b = 0x80;
+        g->spark.c.a = 0x80;
+        g->cam0.scale.x = g->cam0.scale.y = g->cam0.scale.z = 0.1f;
+        g->cam1.scale.x = g->cam1.scale.y = g->cam1.scale.z = 0.1f;
+        return 0;
+    }
+    { f32 fs2 = -8.0f; func_00103920(&g->cam0, -125.0f, fs2); }
+    { extern s32 func_00103920(void *object, f32 x, f32 y); f32 fs1; f32 fs2; fs2 = -8.0f; fs1 = -125.0f; func_00103920(&g->cam1, fs1, fs2); }
+    { extern s32 func_00103920(void *object, f32 x, f32 y); f32 fs2 = -8.0f; func_00103920(&g->cam2, -125.0f, fs2); }
+    if (g->count >= 100) {
+        func_01E00750_c543(ot, (Src_b000_01E00400 *)&g->col);
+        func_00103470(&g->col.a, 0, 0x10);
+    }
+    if (func_00104520(g->flags, 4)) {
+        c543_01E04870(g, ot);
+    }
+    ot = func_00207F60();
+    func_001D99F0();
+    if (!func_00104520(g->flags, 4)) {
+        if (func_00104520(g->flags, 0) && func_00104520(g->flags, 1)) {
+            if (g->code == 2) {
+                if (b) {
+                    c543_01E004C0(&g->b, g->alpha, 4, g->histB);
+                }
+                if (a) {
+                    c543_01E004C0(&g->a, g->alpha, 4, g->histA);
+                }
+            } else {
+                if (a) {
+                    c543_01E004C0(&g->a, g->alpha, 4, g->histA);
+                }
+                if (b) {
+                    c543_01E004C0(&g->b, g->alpha, 4, g->histB);
+                }
+            }
+            if (g->timer < 11) {
+                func_00104490(&g->a, &g->p[0], g->timer);
+                func_00104490(&g->b, &g->p[1], g->timer);
+            }
+            if (g->timer) {
+                g->timer--;
+            } else {
+                g->flags |= 0x10;
+                g->timer = 1;
+            }
+        } else {
+            if (a) {
+                if (!func_00104520(g->flags, 0)) {
+                    if (!func_01E001A0_c543((Cam_c536_01E00120 *)&g->a, (Cam_c536_01E00120 *)&g->ctl[0])) {
+                        g->flags |= 1;
+                        g->a.rot.i[0] = 0;
+                        g->a.rot.i[1] = 0;
+                        g->a.rot.i[2] = 0;
+                        for (i = 0; i < 4; i++) {
+                            g->histA[i].v20 = g->a.pos;
+                            g->histA[i].v10 = g->a.rot.v;
+                            g->histA[i].v00 = g->a.v30;
+                        }
+                    }
+                    func_01E003B0_c543(&g->a, g->alpha, NULL);
+                }
+            } else {
+                g->flags |= 1;
+            }
+            if (b) {
+                if (!func_00104520(g->flags, 1)) {
+                    if (!func_01E001A0_c543((Cam_c536_01E00120 *)&g->b, (Cam_c536_01E00120 *)&g->ctl[1])) {
+                        g->flags |= 2;
+                        g->b.rot.i[0] = 0;
+                        g->b.rot.i[1] = 0;
+                        g->b.rot.i[2] = 0;
+                        for (i = 0; i < 4; i++) {
+                            g->histB[i].v20 = g->b.pos;
+                            g->histB[i].v10 = g->b.rot.v;
+                            g->histB[i].v00 = g->b.v30;
+                        }
+                    }
+                    func_01E003B0_c543(&g->b, g->alpha, NULL);
+                }
+            } else {
+                g->flags |= 2;
+            }
+        }
+    } else if (!func_00104520(g->flags, 5)) {
+        if (g->code == 2) {
+            if (a) {
+                g->ctl[0].on = 20;
+                g->ctl[0].x = -125.0f;
+                g->ctl[0].y = -8.0f;
+                g->ctl[0].a = b->p0;
+                func_00205C40(g->a.v20);
+                g->ctl[0].z[0] = g->ctl[0].z[1] = g->ctl[0].z[2] = 0;
+                g->a.rot.i[0] = 0;
+                g->a.rot.i[1] = 0x10000;
+                g->a.rot.i[2] = 0x10000;
+                g->ctl[0].b.v = a->p1;
+                g->ctl[0].s[0] = g->ctl[0].s[1] = 0.1f;
+                g->a.v30.x = 0.46875f;
+                g->a.v30.y = 0.48913f;
+            }
+            if (b) {
+                c543_01E004C0(&g->b, g->alpha, 4, g->histB);
+            }
+            if (a) {
+                c543_01E004C0(&g->a, g->alpha, 4, g->histA);
+            }
+        } else {
+            if (b) {
+                g->ctl[1].on = 20;
+                g->ctl[1].x = -125.0f;
+                g->ctl[1].y = -8.0f;
+                g->ctl[1].a = b->p0;
+                func_00205C40(g->b.v20);
+                g->ctl[1].z[0] = g->ctl[1].z[1] = g->ctl[1].z[2] = 0;
+                g->b.rot.i[0] = 0;
+                g->b.rot.i[1] = 0x10000;
+                g->b.rot.i[2] = 0x10000;
+                g->ctl[1].b.v = b->p1;
+                g->ctl[1].s[0] = g->ctl[1].s[1] = 0.1f;
+                g->b.v30.x = 0.46875f;
+                g->b.v30.y = 0.48913f;
+            }
+            if (a) {
+                c543_01E004C0(&g->a, g->alpha, 4, g->histA);
+            }
+            if (b) {
+                c543_01E004C0(&g->b, g->alpha, 4, g->histB);
+            }
+        }
+        if (g->timer == 0) {
+            if (g->wait == 0) {
+                if (g->code == 0) {
+                    g->flags |= 8;
+                } else {
+                    g->flags |= 0x20;
+                }
+            } else {
+                g->wait--;
+            }
+        } else {
+            g->timer--;
+            if (g->timer == 0) {
+                g->timer = 1;
+                g->ox = g->radius * func_0020B480(g->ang);
+                g->oy = g->radius * func_0020B550(g->ang);
+                g->ang -= g->step;
+                func_00103350(&g->step, 0x1000, 0x100);
+                if (!func_00103540(&g->radius, 0.0f, 1.5f)) {
+                    g->timer = 0;
+                }
+                func_00205CB0(&g->p[0], -125.0f - g->ox, -8.0f - g->oy);
+                func_00205CB0(&g->p[1], -125.0f + g->ox, -8.0f + g->oy);
+                func_00104490(&g->a, &g->p[0], g->timer);
+                func_00104490(&g->b, &g->p[1], g->timer);
+            }
+        }
+    } else {
+        if (g->code == 2) {
+            if (a) {
+                if (!func_00104520(g->flags, 2)) {
+                    if (!func_01E001A0_c543((Cam_c536_01E00120 *)&g->a, (Cam_c536_01E00120 *)&g->ctl[0])) {
+                        g->flags |= 4;
+                        g->a.rot.i[0] = ((Unit_c543_01E03480 *)a)->rot.i[0];
+                        g->a.rot.i[1] = ((Unit_c543_01E03480 *)a)->rot.i[1];
+                        g->a.rot.i[2] = ((Unit_c543_01E03480 *)a)->rot.i[2];
+                    }
+                    func_01E003B0_c543(&g->a, g->alpha, NULL);
+                }
+            } else {
+                g->flags |= 4;
+            }
+        } else {
+            if (b) {
+                if (!func_00104520(g->flags, 3)) {
+                    if (!func_01E001A0_c543((Cam_c536_01E00120 *)&g->b, (Cam_c536_01E00120 *)&g->ctl[1])) {
+                        g->flags |= 8;
+                        g->b.rot.i[0] = ((Unit_c543_01E03480 *)b)->rot.i[0];
+                        g->b.rot.i[1] = ((Unit_c543_01E03480 *)b)->rot.i[1];
+                        g->b.rot.i[2] = ((Unit_c543_01E03480 *)b)->rot.i[2];
+                    }
+                    func_01E003B0_c543(&g->b, g->alpha, NULL);
+                }
+            } else {
+                g->flags |= 8;
+            }
+        }
+    }
+    func_001D9DD0();
+    func_00207FD0(ot, (s32)func_00207500(), 0);
+    for (i = 3; i >= 0; i--) {
+        if (i != 0) {
+            g->histA[i].v20 = g->histA[i - 1].v20;
+            g->histA[i].v10 = g->histA[i - 1].v10;
+            g->histA[i].v00 = g->histA[i - 1].v00;
+            g->histB[i].v20 = g->histB[i - 1].v20;
+            g->histB[i].v10 = g->histB[i - 1].v10;
+            g->histB[i].v00 = g->histB[i - 1].v00;
+        } else {
+            g->histA[i].v20 = g->a.pos;
+            g->histA[i].v10 = g->a.rot.v;
+            g->histA[i].v00 = g->a.v30;
+            g->histB[i].v20 = g->b.pos;
+            g->histB[i].v10 = g->b.rot.v;
+            g->histB[i].v00 = g->b.v30;
+        }
+    }
+    g->count++;
+    g->life--;
+    if (func_00104520(g->flags, 2) || func_00104520(g->flags, 3)) {
+        func_001F59D0(idA, 0);
+        func_001F59D0(idB, 0);
+        return 8;
+    }
+    if (g->count == 100) {
+        return 2;
+    }
+    if (g->life <= 0) {
+        func_001F59D0(idA, 0);
+        func_001F59D0(idB, 0);
+        return 8;
+    }
+    return 0;
+}
 
 /* shape c543:01E04870, 162 insns: c543's scene step: it runs the module's layers; before step 100 it eases the scene
    scale, after that it draws the 1.3-scaled overlay, eases its scale, grows the scene by 0.005 and clears four colour
