@@ -1088,3 +1088,7 @@ there is a source form that gives the original.
   expression (`... - 30.0f * (f32)j` with `j = max - life;` before the loop) and let it be hoisted (b762:01E05260).
 - **A field read early into a saved FPR across a sin/cos call when the angle is a named local:** write the angle inline
   in each call argument (b021:01E04320).
+- **The wrong stack-vector field kept in a saved register:** write the value into the stack field and the scene field
+  as one chain, `g->pos[j].x = p[3].x = expr;` (b458:01E05250).
+- **-O1 parameter-copy moves in the wrong order at entry:** copy the second parameter into a declared local too
+  (`s32 code = arg1;` after the cast `g`) (b605:01E059B0).
