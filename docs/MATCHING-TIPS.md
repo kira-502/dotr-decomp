@@ -1104,3 +1104,7 @@ there is a source form that gives the original.
 - **Grid-quad loop with the `k+1` index and colour-copy pointers swapped (`$a0`/`$a1`):** add the scroll offset into one
   texture coordinate where it is assigned (`u0 = (f32)(k % 16) / 16.0f + w;`), keep it at the other's uses (`u1 + w`),
   write `u1` as one expression, and `(void)alpha;` after the first alpha byte (b253:01E00080, 23 → 0).
+- **Spawn header with `slot = g->t % K`, K a power of two:** `n = g->t; n %= K;` fixes the swapped registers and the
+  early constant 1; for K = 24 (a divide) it does not (the b261/b643 wall).
+- **A float-constant load one slot early before `func_00187B48(&v, &v, K)`:** cast the first argument,
+  `func_00187B48((void *)&v, &v, 1.4f);` (b643:01E00080).
