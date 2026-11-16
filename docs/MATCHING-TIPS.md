@@ -1049,3 +1049,7 @@ there is a source form that gives the original.
   them after): `(void)alpha;` right after `alpha = (u32)(...);` keeps the cast's register effect (b150:01E00080).
 - **Indexing with `k + 5` in a loop strength-reduces where the original recomputes each time:** `n = k + 5;` right
   before the first use, index with `n` (b583:01E05670).
+- **Two locals from different points in the function at one stack slot:** one variable reused (block-scope locals get
+  separate slots), e.g. a texture-id buffer later used as a position output (b773:01E049E0).
+- **A copy chain through `addiu sN, sp` pointers:** the copied vectors are one array (`Vec4f p[3]`); a vector using
+  direct sp offsets stays separate (b598:01E05E60).
