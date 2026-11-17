@@ -1184,3 +1184,7 @@ there is a source form that gives the original.
 - **A zero kept in a saved register and stored as a colour byte:** an `s32` local assigned 0 (b766:01E00080).
 - **After a single-function module matches, check fulltry for words in a later function of the module** (b766's new
   24.0f moved func_01E02B40's constant order; fixed with a block local in the same commit).
+- **A loop's counter, buffer and kept addresses rotated with no counter rename fixing it:** rename the plain int temps
+  of that section (work/fswap_fast.py) (b182:01E00080).
+- **A screen-space frame 0x20 bigger than the locals with no references in the gap:** `Vec4f out[4]` with only out[0]
+  and out[1] used (b182:01E00080).
