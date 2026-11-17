@@ -1159,3 +1159,9 @@ there is a source form that gives the original.
   clear loops plus the first main-path loops: work/loopcombo_ft.py (`--groups=` for nested loops).
 - **A constant-zero offset hoisted into a saved FPR:** write it in the family's `K + K2 * t / N` form with both
   constants 0.0f; a bare `h = 0.0f` is propagated (b271:01E00080).
+- **Saved registers rotated by one across many later sections:** usually one loop-counter rename somewhere; the random
+  search (srch_rnd_ft) finds it where greedy and loopcombo miss (b392, b724:01E00080).
+- **A once-used angle temp spilled high:** assign it to a name already used earlier in a register (b392:01E00080).
+- **An invariant `i % 2` kept unscaled in a spill slot:** `q = i % 2;` inside the innermost loop (b214:01E00080).
+- **A one-slot spawn array keeping the field address in a saved register:** `n = g->t; n %= 1;` with `g->beam[n]`
+  (b392:01E00080). A `func_00208D00` argument loaded by nothing visible is the 1 left in `$a0` by a `== 1` test (b724).
