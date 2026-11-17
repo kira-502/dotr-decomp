@@ -1180,3 +1180,7 @@ there is a source form that gives the original.
   (`h = t / 64.0f;` before, `50.0f * h` at the use) and let it be hoisted (b022, b470, b519:01E00080).
 - **A setup clear-loop counter coloured first that loop renames can't fix:** merge the main-path variable sharing that
   name into another int local with a disjoint live range, then rename the clear loop (b592:01E00080).
+- **The second of two u8 alphas spilled high where yours spills low:** both are one variable reused (b291:01E00080).
+- **A zero kept in a saved register and stored as a colour byte:** an `s32` local assigned 0 (b766:01E00080).
+- **After a single-function module matches, check fulltry for words in a later function of the module** (b766's new
+  24.0f moved func_01E02B40's constant order; fixed with a block local in the same commit).
