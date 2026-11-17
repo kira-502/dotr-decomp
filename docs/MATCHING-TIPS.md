@@ -1131,3 +1131,8 @@ there is a source form that gives the original.
   (b246, b371:01E00080).
 - **A scale computed early into a saved FPR before a call:** `s = ...; (void)s;` (b768:01E00080).
 - Per-range rename search: work/srch_fgrp.py / srch_grnd.py (check that a picked name isn't live across the range).
+- **Init clear loops:** the first loop using a counter name gets counter v1 / pointer a0, later loops with that name
+  a0/v1; when only the first clear loop is v1/a0, every init loop uses the same name (then re-search the main path)
+  (b141:01E00080).
+- **An `addu` with operands in the wrong registers in a call argument:** try `(i << 16) / 8` for `(i << 16 >> 3)`
+  (b562:01E00080). Scripts: work/srch_rnd_ft.py, srch_minim_ft.py, srch_angform.py, sdops.py.
