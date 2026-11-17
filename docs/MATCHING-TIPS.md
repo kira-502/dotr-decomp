@@ -1127,3 +1127,7 @@ there is a source form that gives the original.
 - **When single-loop renames stall because fixing one loop breaks another:** a random search renaming 1–4 loops at a
   time, accepting equal scores (work/srch_rnd.py), then revert renames one by one to keep only the needed ones
   (work/srch_minim.py) (b371:01E00080).
+- **Grid-quad ST values:** `s0 = (f32)(k % 2) / 2.0f; s1 = (f32)(k % 2 + 1) / 2.0f + h;` with s0's add at its uses
+  (b246, b371:01E00080).
+- **A scale computed early into a saved FPR before a call:** `s = ...; (void)s;` (b768:01E00080).
+- Per-range rename search: work/srch_fgrp.py / srch_grnd.py (check that a picked name isn't live across the range).
