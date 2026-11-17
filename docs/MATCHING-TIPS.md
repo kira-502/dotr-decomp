@@ -1176,3 +1176,7 @@ there is a source form that gives the original.
   name as a setup clear-loop counter (b592:01E00080). Slot map tool: work/slotmap.py.
 - **Three colour bytes stored together after three fptoui calls:** u8 locals each followed by `(void)c;` (b151).
 - **An `x * 1.0f` the original keeps:** load the 1.0 into a float local first (b151:01E00080).
+- **Constant GPRs taken in the wrong order before a loop:** write the constant multiply inside the loop
+  (`h = t / 64.0f;` before, `50.0f * h` at the use) and let it be hoisted (b022, b470, b519:01E00080).
+- **A setup clear-loop counter coloured first that loop renames can't fix:** merge the main-path variable sharing that
+  name into another int local with a disjoint live range, then rename the clear loop (b592:01E00080).
