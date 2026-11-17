@@ -1168,3 +1168,7 @@ there is a source form that gives the original.
 - **A constant ring radius the original hoists into a saved FPR before a sin/cos loop:** `r = 45.0f + 0.0f * g->t2;`
   before the loop (the zero product folds late, so the constant stays hoisted); `r = 0.0f;` inside a loop keeps an
   `mtc1 $zero; mul.s` (b212:01E00080). `(a * 0x10000) / 20` fixed an `addu` order `(a << 16) / 20` did not.
+- **Alpha multiply operands swapped in a product of two calls:** write it inline,
+  `alpha = (u32)(128.0f * f(t, 3.0f) * (1.0f - f(t, life)))` (b188:01E00080).
+- **Constant ± corner pairs with long loads:** `r = 1.4f; s = 0.7f;` with `-r`/`-s` (b188:01E00080). Relative ranker:
+  work/callrank.py.
