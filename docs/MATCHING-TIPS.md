@@ -1150,3 +1150,7 @@ there is a source form that gives the original.
   evaluation order (b022:01E00080).
 - **`x += 0.0f` with no other load:** `x += 0.0f * g->obj` (MWCC drops `0.0f * y` but keeps the add); a bare `+= 0.0f`
   disappears (b022:01E00080). Donor pickers: work/adiff.py, work/calldiff.py.
+- **A kept ST address in a spill slot (frame 0x20 too big):** uv0/uv1 as a union of Uv and St, written
+  `spr.uv0.st.s/t` directly (b563:01E00080).
+- **`r = K * (sum)` with the product in the constant's register:** `r = sum; r = K * r;` (b014, b209:01E00080).
+- **Donor picker by callee or constant:** `python3 work/famfeat.py <callee or constant>...`; cast search: work/castsrch.py.
