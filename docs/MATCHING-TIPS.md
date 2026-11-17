@@ -1144,3 +1144,9 @@ there is a source form that gives the original.
   of the bitfields and `{f32 s, t}` (b399:01E00080).
 - **Keep `jp[i * 2 + 1]` an index with an `sll` at each use:** `n = i * 2;` inside the loop, index `jp[n + 1]`
   (b296:01E00080). Fast parallel scorers: work/fastscore.py, vfast.py, declperm_fast.py, srch_*_fast.py.
+- **Frame 8–0x18 bytes too small with an unexplained gap between packets:** the gap is a packet's tail (`Spr.tail` as
+  `u8[0x20]`, or a `u64 tail` on a Quad) (b454, b295:01E00080).
+- **A call argument moved into `$a1` too early:** cast a different argument of that call (`(void *)&g->scr`) to set the
+  evaluation order (b022:01E00080).
+- **`x += 0.0f` with no other load:** `x += 0.0f * g->obj` (MWCC drops `0.0f * y` but keeps the add); a bare `+= 0.0f`
+  disappears (b022:01E00080). Donor pickers: work/adiff.py, work/calldiff.py.
