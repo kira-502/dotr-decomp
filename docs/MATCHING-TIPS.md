@@ -1154,3 +1154,8 @@ there is a source form that gives the original.
   `spr.uv0.st.s/t` directly (b563:01E00080).
 - **`r = K * (sum)` with the product in the constant's register:** `r = sum; r = K * r;` (b014, b209:01E00080).
 - **Donor picker by callee or constant:** `python3 work/famfeat.py <callee or constant>...`; cast search: work/castsrch.py.
+- **Spill-slot groups by loop name:** the name used first in the function gets the lower block; read the original's
+  slot map and choose names so the right group comes first (b271, b587:01E00080). Exhaustive name assignment over the
+  clear loops plus the first main-path loops: work/loopcombo_ft.py (`--groups=` for nested loops).
+- **A constant-zero offset hoisted into a saved FPR:** write it in the family's `K + K2 * t / N` form with both
+  constants 0.0f; a bare `h = 0.0f` is propagated (b271:01E00080).
