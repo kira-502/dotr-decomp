@@ -1136,3 +1136,11 @@ there is a source form that gives the original.
   (b141:01E00080).
 - **An `addu` with operands in the wrong registers in a call argument:** try `(i << 16) / 8` for `(i << 16 >> 3)`
   (b562:01E00080). Scripts: work/srch_rnd_ft.py, srch_minim_ft.py, srch_angform.py, sdops.py.
+- **Which saved FPR a float gets:** names also used in the setup branch get the higher saved FPRs; reuse the setup's
+  names for values in f24/f25 (b399:01E00080). Grid-quad offsets `t0 + w` at the uses put the hoisted sums low.
+- **Pinning computation order:** give the part its own local followed by `(void)x;` (`h = 600.0f * j / 32.0f; (void)h;`)
+  (b399:01E00080).
+- **Float STs in a sprite packet with `.s` through the kept `&spr.uv0` register but `.t` direct:** uv0/uv1 as a union
+  of the bitfields and `{f32 s, t}` (b399:01E00080).
+- **Keep `jp[i * 2 + 1]` an index with an `sll` at each use:** `n = i * 2;` inside the loop, index `jp[n + 1]`
+  (b296:01E00080). Fast parallel scorers: work/fastscore.py, vfast.py, declperm_fast.py, srch_*_fast.py.
