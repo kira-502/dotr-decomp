@@ -1188,3 +1188,7 @@ there is a source form that gives the original.
   of that section (work/fswap_fast.py) (b182:01E00080).
 - **A screen-space frame 0x20 bigger than the locals with no references in the gap:** `Vec4f out[4]` with only out[0]
   and out[1] used (b182:01E00080).
+- **Every saved register shifted by one:** score structure first with work/opsscore.sh (opcode-only differences),
+  then the random loop-rename search fixes the shift (b754:01E00080, 250 → 0 words).
+- **One int field loaded as `lwc1`+`cvt` and as `lw`:** compute the int part into a local first, then the float part
+  inline (b754:01E00080).
