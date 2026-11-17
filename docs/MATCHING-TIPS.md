@@ -1172,3 +1172,7 @@ there is a source form that gives the original.
   `alpha = (u32)(128.0f * f(t, 3.0f) * (1.0f - f(t, life)))` (b188:01E00080).
 - **Constant ± corner pairs with long loads:** `r = 1.4f; s = 0.7f;` with `-r`/`-s` (b188:01E00080). Relative ranker:
   work/callrank.py.
+- **A variable spilled low where the original's sits in the high name-grouped block:** the original first uses that
+  name as a setup clear-loop counter (b592:01E00080). Slot map tool: work/slotmap.py.
+- **Three colour bytes stored together after three fptoui calls:** u8 locals each followed by `(void)c;` (b151).
+- **An `x * 1.0f` the original keeps:** load the 1.0 into a float local first (b151:01E00080).

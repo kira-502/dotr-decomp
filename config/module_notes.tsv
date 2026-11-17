@@ -33,3 +33,4 @@ b212:01E00080	99.3% (2399/2415, 25 words)	hard: setup-loop 1.0f constant in $v1 
 b470:01E00080	99.8% (2428/2432, 9 words)	hard: swirl section, the 0.1f/24.0f constant GPRs and the lui 24.0f order before the q loop; ~40 statement forms, float-name and declaration permutations, permuter tried (draft drafts/mod/b470_01E00080.c)
 b519:01E00080	99.7% (2448/2456, 12 words)	hard: b470's twin, the same swirl r/s constant allocation (sum in f3, 0.1f in $v1); same searches tried (draft drafts/mod/b519_01E00080.c)
 b156:01E00080	0%	not attempted: no close relative (best call-sequence ratio 0.41, b175); b141/b175 share its twin-burst / D_28BBF0 uv-table sections
+b592:01E00080	99.6% (11 words)	hard: setup swirl-clear loop's outer counter c coloured first; c must stay first-used there to keep its main-path spill slot; loop names, decl order, types, early assignments tried (draft drafts/mod/b592_01E00080.c)
