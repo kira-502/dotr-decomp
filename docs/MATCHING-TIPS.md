@@ -1122,3 +1122,8 @@ there is a source form that gives the original.
   matches the original (b290, b507, b175:01E00080).
 - **A seven-value equality chain on t (`beq ...; b`):** a `switch` with ascending cases (the chain runs descending)
   (b599:01E00080).
+- **A shared named angle temp in a grid/ring loop can flip registers far away** (g and `code` swapped at entry): write
+  the angle inline or give it a name used nowhere else (b371:01E00080, b571).
+- **When single-loop renames stall because fixing one loop breaks another:** a random search renaming 1–4 loops at a
+  time, accepting equal scores (work/srch_rnd.py), then revert renames one by one to keep only the needed ones
+  (work/srch_minim.py) (b371:01E00080).
