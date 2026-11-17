@@ -1165,3 +1165,6 @@ there is a source form that gives the original.
 - **An invariant `i % 2` kept unscaled in a spill slot:** `q = i % 2;` inside the innermost loop (b214:01E00080).
 - **A one-slot spawn array keeping the field address in a saved register:** `n = g->t; n %= 1;` with `g->beam[n]`
   (b392:01E00080). A `func_00208D00` argument loaded by nothing visible is the 1 left in `$a0` by a `== 1` test (b724).
+- **A constant ring radius the original hoists into a saved FPR before a sin/cos loop:** `r = 45.0f + 0.0f * g->t2;`
+  before the loop (the zero product folds late, so the constant stays hoisted); `r = 0.0f;` inside a loop keeps an
+  `mtc1 $zero; mul.s` (b212:01E00080). `(a * 0x10000) / 20` fixed an `addu` order `(a << 16) / 20` did not.
