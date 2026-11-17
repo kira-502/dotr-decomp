@@ -1192,3 +1192,7 @@ there is a source form that gives the original.
   then the random loop-rename search fixes the shift (b754:01E00080, 250 → 0 words).
 - **One int field loaded as `lwc1`+`cvt` and as `lw`:** compute the int part into a local first, then the float part
   inline (b754:01E00080).
+- **The context pointer in `$fp` where a first `Scene *g = (Scene *)arg0;` puts it in `$s0`:** declare the cast local
+  last (b249:01E00080).
+- **A `[n + 1]` / `[n + 2]` group recomputed as `base + 3l*16` where yours strength-reduces:** `n = l * 3;` inside the
+  loop and index with `n` (b249, 70% → 94%). Opcode-only scoring: work/vfastops.py, work/opsdiff.py.
