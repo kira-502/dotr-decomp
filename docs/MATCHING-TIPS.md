@@ -1252,3 +1252,7 @@ there is a source form that gives the original.
 - **The low spill block is ordered by each name's first use, latest first** (frame 0x10 short with int temps between
   `n` and the byte alpha: move the alpha's first use after the temp's) (b738:01E00080). Statement-order hill climb under
   def/use constraints: work/stmtperm.py.
+- **A setup block that looks like a preheader may be inside the loop:** check the back-branch target before hoisting it
+  (b156:01E00080).
+- **Saved FPRs rotated across a big function:** srch_frnd_fast.py with one group per section and variable plus spare
+  float names (b625, b156:01E00080).
