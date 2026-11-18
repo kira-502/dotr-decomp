@@ -1220,3 +1220,8 @@ there is a source form that gives the original.
 - **Warm level can matter in this family too:** b009:01E00080 is level 1 (config/mod_warm.txt).
 - **`jp[n + 1]`'s address computed before `jp[n]` in a call:** the index in its own local, `j = n + 1;` (b466:01E00080).
 - **callrank can miss the best donor:** compare candidates with work/opadiff.py (register-masked asm diff) (b744).
+- **Constants in swapped `$v0`/`$v1`, one `lui` too early, the constant used by stores and a later float argument:**
+  compute the product using the other constant into a local before the stores (`b = 15.0f * r;`) (b358:01E00080).
+- **High spill block order is by each name's first use, latest first:** give a temp a name first used after the variable
+  below it and also used elsewhere; lower a counter with `j = 0; g->on = j;` in setup (b358:01E00080). Twin comparison:
+  work/twindiff.py.
