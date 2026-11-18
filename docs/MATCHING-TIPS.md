@@ -1271,3 +1271,7 @@ there is a source form that gives the original.
   so it hoists (b722, b738, b647:01E00080).
 - **Saved registers rotated around a loop bound or counter:** a fresh local used nowhere else (b647, 58 → 11).
 - **An int field wanted as `lw` + `mtc1` where you get `lwc1`:** read it into an int local first (b846:01E00080).
+- **`lw` / `dsll32` / `dsra32` around `func_001A0660`:** a real s64 divide (`__divdi3`): `q = x; *p = q /= K; *p = -q;`
+  with `s64 q` (b112:01E04480).
+- **A `% 2^n` index with the field load first after the join:** `n = i % 32; (void)n;` and index with `n` throughout; an
+  index kept across a call likewise (b541:01E00080, 166 → 28).
