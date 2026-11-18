@@ -1225,3 +1225,5 @@ there is a source form that gives the original.
 - **High spill block order is by each name's first use, latest first:** give a temp a name first used after the variable
   below it and also used elsewhere; lower a counter with `j = 0; g->on = j;` in setup (b358:01E00080). Twin comparison:
   work/twindiff.py.
+- **Grid-quad ST registers swapped (`u1`/`w1` in `$f3`/`$f5`):** declare the floats `u0, w1, w0, u1`; a second quad block
+  gets its own four locals (b511:01E00080).
