@@ -1213,3 +1213,8 @@ there is a source form that gives the original.
   an earlier web from a plain statement before the loop, e.g. `i = func_001F5560(...); g->jn = i;` or
   `j = 0; g->on3 = j;`; later loops with that name then get a0/v1. Keep the statement after the name's original first
   use so the spill groups stay (b054, b624, b623:01E00080).
+- **An address kept in a saved register in the original, recomputed in yours, with your register holding a hoisted
+  `&x[k]`:** the inner loop indexes that array too: `Vec4f pos[6][1]`, `pos[k][l]` (b066:01E00080).
+- **`x / 2.0f` ST pairs with numerator and constant FPRs swapped:** divide into two locals, then add in separate
+  statements (`p = n / 2.0f; q = (n + 1) / 2.0f; s0 = p + f; s1 = q + f;`) (b222:01E00080).
+- **Warm level can matter in this family too:** b009:01E00080 is level 1 (config/mod_warm.txt).
