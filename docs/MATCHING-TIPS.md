@@ -1230,3 +1230,5 @@ there is a source form that gives the original.
 - **An outer loop's branch target on `func_0020EB40`:** the matrix setup is inside the loop (b372:01E00080).
 - **A loop-counter name used only once in the main path takes a low spill slot and shifts the frame by 0x10:** rename it
   to a name used elsewhere (b554:01E00080).
+- **A late loop counter spilled below the alpha slots where the original has it above:** reuse `buf` as that counter
+  (b442:01E00080). Which matched function covers each stretch of a target: work/covermap.py.
