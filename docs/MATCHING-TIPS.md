@@ -1232,3 +1232,6 @@ there is a source form that gives the original.
   to a name used elsewhere (b554:01E00080).
 - **A late loop counter spilled below the alpha slots where the original has it above:** reuse `buf` as that counter
   (b442:01E00080). Which matched function covers each stretch of a target: work/covermap.py.
+- **A colour-address temp one register low (`$a1` for your `$a2`) with no fptoui nearby:** test warm level 1 before
+  searching C variants (b006:01E00080).
+- **`mul.s $f22, $f22, $f0` coming out constant-first:** `s *= 0.8f;` (b012:01E00080).
