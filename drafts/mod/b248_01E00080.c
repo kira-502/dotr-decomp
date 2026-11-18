@@ -2,8 +2,8 @@
 
 /* shape b248:01E00080 (b248), 3009 insns, 1 copy (-O3,p): b248 scene manager (b291:01E00080's tornado, bursts, puffs
    and motes with other timings, plus at 0x43 a glow sprite, a 32-step gouraud arc, 96 textured fins and 128 sparkles
-   at the second joint); 13 words differ in the setup's 96-fin loop (counter/pointer registers s0/s2 and the r / -r
-   FPRs swapped) */
+   at the second joint); 12 words differ: the setup's 48-point loop (counter/pointer registers s0/s2) and the 96-fin
+   loop's r / -r FPRs */
 
 typedef struct {
     u64 x : 16;
@@ -259,8 +259,8 @@ static s32 func_01E00080_b248(s32 arg0, s32 code) {
             g->arc[j][2].z = 0.0f;
             g->arc[j][2].w = 1.0f;
         }
-        for (i = 0; i < 96; i++) {
-            f = 0.1f + 0.9f * (i + 1) / 96.0f;
+        for (j = 0; j < 96; j++) {
+            f = 0.1f + 0.9f * (j + 1) / 96.0f;
             r = 0.5f * f;
             h = 7.5f * f;
             cn[0].x = 0.0f;
@@ -282,21 +282,21 @@ static s32 func_01E00080_b248(s32 arg0, s32 code) {
             func_00101080(&v, 1.0f);
             func_00100E40(&m4, &v);
             func_00100E00(&m4, (func_0019A5C8() >> 23) % 256 << 16 >> 8, 2);
-            for (k = 0; k < 4; k++) {
-                func_001878E0(&g->fin[i][k], &m4, &cn[k]);
+            for (i = 0; i < 4; i++) {
+                func_001878E0(&g->fin[j][i], &m4, &cn[i]);
             }
         }
-        for (i = 0; i < 128; i++) {
-            g->c[i] = (func_0019A5C8() >> 23) % 4;
-            func_00101080(&g->sp[i], 0.2f);
+        for (j = 0; j < 128; j++) {
+            g->c[j] = (func_0019A5C8() >> 23) % 4;
+            func_00101080(&g->sp[j], 0.2f);
         }
         g->on2 = 0;
         g->t2 = 0;
-        for (i = 0; i < 48; i++) {
-            func_00101080(&g->pts[i], 3.0f);
+        for (k = 0; k < 48; k++) {
+            func_00101080(&g->pts[k], 3.0f);
         }
-        for (i = 0; i < 18; i++) {
-            g->puff[i].on = 0;
+        for (j = 0; j < 18; j++) {
+            g->puff[j].on = 0;
         }
         for (w = 0; w < 12; w++) {
             g->mote[w].on = 0;

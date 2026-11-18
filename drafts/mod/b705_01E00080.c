@@ -1,7 +1,7 @@
 #include "common.h"
 
 /* shape b705:01E00080 (b705), 3270 insns, 1 copy (-O3,p): b705 scene manager, b424:01E00080's relative (HARD draft,
-   16 words: saved-FPR choice of five values in the ribbon-fan draw): eight joints, a 17-step fade table; at 0x59 a
+   12 words: saved-FPR choice of the values in the ribbon-fan draw): eight joints, a 17-step fade table; at 0x59 a
    flash, at 0x12C the fade flash and func_002087A0 blur, on 0x5A..0x149 the zoom, 1x6 ribbon fans with per-ribbon
    joint glows, 32-shard bursts and the func_01E033A0 backdrop, at 0x20 an 8-layer pink blur, from 0x21 64-slot rising
    light pillars; returns 1 / 6 / 3 / 8 at 0x4F / 0x5A..0x149 / 0x14A / >0x19E */
@@ -599,14 +599,14 @@ static s32 func_01E00080_b705(s32 arg0, s32 code) {
                 func_0020BC00(m2, &g->mat[g->fan[i].c[j][k]]);
                 func_0020BC00(m2, &g->fan[i].m[j][k]);
                 func_0020BC00(m, m2);
-                z0 = 1.0f - func_00100D50(g->fan[i].t, g->fan[i].life[j][k], 1);
-                w = (32.0f * (k % 4)) / 128.0f;
-                s0 = 0.25f + w;
+                w = 1.0f - func_00100D50(g->fan[i].t, g->fan[i].life[j][k], 1);
+                r = (32.0f * (k % 4)) / 128.0f;
+                s0 = 0.25f + r;
                 ph = i * 0xD05 + j * 0x115C + k * 0x15B3;
                 for (l = 0; l < 16; l++) {
-                    z1 = 1.0f + (1.0f - z0);
-                    alpha = (u32)(g->col[l][3] * z0);
-                    a2 = (u32)(g->col[l + 1][3] * z0);
+                    z0 = 1.0f + (1.0f - w);
+                    alpha = (u32)(g->col[l][3] * w);
+                    a2 = (u32)(g->col[l + 1][3] * w);
                     pk.v[0].c.r = g->col[l][0];
                     pk.v[0].c.g = g->col[l][1];
                     pk.v[0].c.b = g->col[l][2];
@@ -621,54 +621,54 @@ static s32 func_01E00080_b705(s32 arg0, s32 code) {
                     pk.v[3].c = pk.v[2].c;
                     t0 = (128.0f * (l % 4) / 4.0f) / 128.0f;
                     t1 = (128.0f * (l % 4 + 1) / 4.0f) / 128.0f;
-                    pk.v[0].s = w;
+                    pk.v[0].s = r;
                     pk.v[0].t = t0;
                     pk.v[1].s = s0;
                     pk.v[1].t = t0;
-                    pk.v[2].s = w;
+                    pk.v[2].s = r;
                     pk.v[2].t = t1;
                     pk.v[3].s = s0;
                     pk.v[3].t = t1;
                     h = l / 16.0f;
                     e = (l + 1) / 16.0f;
-                    s1 = g->fan[i].len[j][k] * h;
-                    a = g->fan[i].w[j][k] * z0;
-                    r = g->fan[i].len[j][k] * e;
-                    x0 = h * (z1 * (g->fan[i].amp[j][k] * func_0020B550((ph + ((l << 17) >> 4)) & 0xFFFF)));
-                    x1 = e * (z1 * (g->fan[i].amp[j][k] * func_0020B550((ph + (((l + 1) << 17) >> 4)) & 0xFFFF)));
-                    cn[0].x = x0;
-                    cn[0].y = -a + x0;
-                    cn[0].z = s1;
+                    x1 = g->fan[i].len[j][k] * h;
+                    f = g->fan[i].w[j][k] * w;
+                    s1 = g->fan[i].len[j][k] * e;
+                    z1 = h * (z0 * (g->fan[i].amp[j][k] * func_0020B550((ph + ((l << 17) >> 4)) & 0xFFFF)));
+                    t0 = e * (z0 * (g->fan[i].amp[j][k] * func_0020B550((ph + (((l + 1) << 17) >> 4)) & 0xFFFF)));
+                    cn[0].x = z1;
+                    cn[0].y = -f + z1;
+                    cn[0].z = x1;
                     cn[0].w = 1.0f;
-                    cn[1].x = x0;
-                    cn[1].y = a + x0;
-                    cn[1].z = s1;
+                    cn[1].x = z1;
+                    cn[1].y = f + z1;
+                    cn[1].z = x1;
                     cn[1].w = 1.0f;
-                    cn[2].x = x1;
-                    cn[2].y = -a + x1;
-                    cn[2].z = r;
+                    cn[2].x = t0;
+                    cn[2].y = -f + t0;
+                    cn[2].z = s1;
                     cn[2].w = 1.0f;
-                    cn[3].x = x1;
-                    cn[3].y = a + x1;
-                    cn[3].z = r;
+                    cn[3].x = t0;
+                    cn[3].y = f + t0;
+                    cn[3].z = s1;
                     cn[3].w = 1.0f;
                     if (func_002058D0(cn, D_0030FF00, m, &pk, &depth) == 1) {
                         func_002075F0(&pk, ot, 0);
                     }
                 }
-                alpha = (u32)(255.0f * (0.7f + 0.3f * (g->fan[i].t % 2)) * z0);
+                alpha = (u32)(255.0f * (0.7f + 0.3f * (g->fan[i].t % 2)) * w);
                 spr.c.r = 0x1C;
                 spr.c.g = 0x62;
                 spr.c.b = 0xFF;
                 spr.c.a = alpha;
                 spr.c.q = 1.0f;
-                s1 = 8.0f;
-                cn[0].x = -s1;
-                cn[0].y = -s1;
+                x1 = 8.0f;
+                cn[0].x = -x1;
+                cn[0].y = -x1;
                 cn[0].z = 0.0f;
                 cn[0].w = 1.0f;
-                cn[1].x = s1;
-                cn[1].y = s1;
+                cn[1].x = x1;
+                cn[1].y = x1;
                 cn[1].z = 0.0f;
                 cn[1].w = 1.0f;
                 func_001878E0(&cn[0], m3, &cn[0]);

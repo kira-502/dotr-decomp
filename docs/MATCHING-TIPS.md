@@ -1238,3 +1238,9 @@ there is a source form that gives the original.
 - **Consecutive high spill slots following loop order in reverse are one counter name** (b420:01E00080).
 - **`lq`/`sq` matrix copy from a stack `f32[4][4]`:** copy through a struct declared `aligned(16)`, `m4 = *(Mq *)m3;`
   (b420:01E00080).
+- **Preheader order counter, pointer, second induction variable:** an explicit `i = 0` lands before the hoisted pointer;
+  write the second value from the counter (`K + i * M`) or walk an explicit pointer set between them (b131, c516).
+- **A walking pointer starting one element before an array:** the preceding same-type field and the array are one table
+  (c516:01E03130).
+- **A draw-loop preheader scheduled wrong:** set the counter right after the per-slot value,
+  `f = ...; j = 0; p = ...; for (; j < N; j++)` (c401:01E00080).
