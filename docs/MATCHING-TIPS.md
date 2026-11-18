@@ -1218,3 +1218,5 @@ there is a source form that gives the original.
 - **`x / 2.0f` ST pairs with numerator and constant FPRs swapped:** divide into two locals, then add in separate
   statements (`p = n / 2.0f; q = (n + 1) / 2.0f; s0 = p + f; s1 = q + f;`) (b222:01E00080).
 - **Warm level can matter in this family too:** b009:01E00080 is level 1 (config/mod_warm.txt).
+- **`jp[n + 1]`'s address computed before `jp[n]` in a call:** the index in its own local, `j = n + 1;` (b466:01E00080).
+- **callrank can miss the best donor:** compare candidates with work/opadiff.py (register-masked asm diff) (b744).
