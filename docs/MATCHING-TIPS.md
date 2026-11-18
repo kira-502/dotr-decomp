@@ -1275,3 +1275,7 @@ there is a source form that gives the original.
   with `s64 q` (b112:01E04480).
 - **A `% 2^n` index with the field load first after the join:** `n = i % 32; (void)n;` and index with `n` throughout; an
   index kept across a call likewise (b541:01E00080, 166 → 28).
+- **A field read reusing an earlier value where the original reloads it:** a one-element array read through a zero index
+  local (`n4 = 0; g->beam[n4].t`) (b846:01E00080).
+- **A register fixed only by renaming a distant setup loop:** the name needs an earlier web; replace the rename with
+  `g->x = n = 0;` (b456:01E00080).
