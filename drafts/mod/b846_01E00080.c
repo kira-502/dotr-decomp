@@ -1,8 +1,7 @@
 #include "common.h"
 
-/* shape b846:01E00080 (b846), 3982 insns, 1 copy (-O3,p): b846 scene manager. DRAFT, not matching: 3849/3982 by dk try.
-   Still different: float scheduling of the two ST blocks (seg, dart), the on4 alpha and the spark offsets, one argument
-   order before func_00187B00, and the registers that follow from them */
+/* shape b846:01E00080 (b846), 3982 insns, 1 copy (-O3,p): b846 scene manager. DRAFT, not matching: 3971/3982 by dk try (15 words).
+   Still different: the on4 alpha, where the original reloads g->t4 with lwc1 after the % 2 and this keeps the lw value */
 
 typedef struct {
     u64 x : 16;
@@ -267,7 +266,6 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     extern u8 D_0030FF00[];
     s32 ret;
     s32 ot;
-    s32 buf;
     s32 i;
     s32 j;
     s32 k;
@@ -276,6 +274,7 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     s32 x;
     s32 y;
     u8 alpha;
+    s32 buf;
     f32 r;
     f32 s;
     f32 h;
@@ -320,95 +319,96 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         g->jn[5] = func_001F5560(g->unitA, 0x8E, 0);
         g->jn2 = func_001F5560(g->unitA, 0x99, 0);
         g->cnt = 0;
-        for (y = 0; y < 8; y++) {
-            h = -6.7f * (y + 1) / 8.0f;
-            e = -6.7f * y / 7.0f;
-            r = 4.8f * (8 - (y + 1)) / 7.0f;
+        for (l = 0; l < 8; l++) {
+            u = -6.7f * (l + 1) / 8.0f;
+            e = -6.7f * l / 7.0f;
+            r = 4.8f * (8 - (l + 1)) / 7.0f;
             for (i = 0; i < 16; i++) {
-                x = (((i << 16) >> 4) + ((y << 13) >> 3)) & 0xFFFF;
+                x = (((i << 16) >> 4) + ((l << 13) >> 3)) & 0xFFFF;
                 v.x = r * func_0020B550(x);
                 v.y = r * func_0020B480(x);
                 v.z = e;
                 v.w = 1.0f;
                 func_00100E40(&m4, &v);
                 func_00100E00(&m4, (func_0019A5C8() >> 23) % 256 << 16 >> 8, 2);
-                g->q[y][i][0].x = -0.85f;
-                g->q[y][i][0].y = 0.0f;
-                g->q[y][i][0].z = 0.0f;
-                g->q[y][i][0].w = 1.0f;
-                g->q[y][i][1].x = 0.85f;
-                g->q[y][i][1].y = 0.0f;
-                g->q[y][i][1].z = 0.0f;
-                g->q[y][i][1].w = 1.0f;
-                g->q[y][i][2].x = -0.85f;
-                g->q[y][i][2].y = 0.0f;
-                g->q[y][i][2].z = h;
-                g->q[y][i][2].w = 1.0f;
-                g->q[y][i][3].x = 0.85f;
-                g->q[y][i][3].y = 0.0f;
-                g->q[y][i][3].z = h;
-                g->q[y][i][3].w = 1.0f;
+                g->q[l][i][0].x = -0.85f;
+                g->q[l][i][0].y = 0.0f;
+                g->q[l][i][0].z = 0.0f;
+                g->q[l][i][0].w = 1.0f;
+                g->q[l][i][1].x = 0.85f;
+                g->q[l][i][1].y = 0.0f;
+                g->q[l][i][1].z = 0.0f;
+                g->q[l][i][1].w = 1.0f;
+                g->q[l][i][2].x = -0.85f;
+                g->q[l][i][2].y = 0.0f;
+                g->q[l][i][2].z = u;
+                g->q[l][i][2].w = 1.0f;
+                g->q[l][i][3].x = 0.85f;
+                g->q[l][i][3].y = 0.0f;
+                g->q[l][i][3].z = u;
+                g->q[l][i][3].w = 1.0f;
                 for (j = 0; j < 4; j++) {
-                    func_001878E0(&g->q[y][i][j], &m4, &g->q[y][i][j]);
+                    func_001878E0(&g->q[l][i][j], &m4, &g->q[l][i][j]);
                 }
-                g->qc[y][i] = (func_0019A5C8() >> 23) % 4 + 4;
+                g->qc[l][i] = (func_0019A5C8() >> 23) % 4 + 4;
             }
         }
-        for (n = 0; n < 1; n++) {
-            g->seg[n].on = 0;
+        for (i = 0; i < 1; i++) {
+            g->seg[i].on = 0;
         }
         g->cur = 0;
-        for (x = 0; x < 16; x++) {
-            g->bit[x].on = 0;
+        for (j = 0; j < 16; j++) {
+            g->bit[j].on = 0;
         }
+        for (l = 0; l < 33; l++) {
+            x = (l << 16) >> 5;
+            s = func_0020B550(x);
+            r = func_0020B480(x);
+            g->ring[l].a.x = 3.0f * s;
+            g->ring[l].a.y = 3.0f * r;
+            g->ring[l].a.z = 0.0f;
+            g->ring[l].a.w = 1.0f;
+            g->ring[l].b.x = 6.0f * s;
+            g->ring[l].b.y = 6.0f * r;
+            g->ring[l].b.z = 0.0f;
+            g->ring[l].b.w = 1.0f;
+        }
+        g->on3 = 0;
+        g->t4 = 0;
+        for (i = 0; i < 24; i++) {
+            g->dart[i].on = 0;
+        }
+        g->cnt3 = 0;
+        for (x = 0; x < 24; x++) {
+            g->bird[x].on = 0;
+            g->bird[x].n = 0;
+        }
+        for (l = 0; l < 24; l++) {
+            for (i = 0; i < 16; i++) {
+                g->spk[l][i].on = 0;
+            }
+        }
+        g->on5 = 0;
         for (j = 0; j < 33; j++) {
             x = (j << 16) >> 5;
             s = func_0020B550(x);
             r = func_0020B480(x);
-            g->ring[j].a.x = 3.0f * s;
-            g->ring[j].a.y = 3.0f * r;
-            g->ring[j].a.z = 0.0f;
-            g->ring[j].a.w = 1.0f;
-            g->ring[j].b.x = 6.0f * s;
-            g->ring[j].b.y = 6.0f * r;
-            g->ring[j].b.z = 0.0f;
-            g->ring[j].b.w = 1.0f;
+            g->rim[j][0].x = 6.5f * s;
+            g->rim[j][0].y = 6.5f * r;
+            g->rim[j][0].z = 0.0f;
+            g->rim[j][0].w = 1.0f;
+            g->rim[j][1].x = 10.8f * s;
+            g->rim[j][1].y = 10.8f * r;
+            g->rim[j][1].z = 0.0f;
+            g->rim[j][1].w = 1.0f;
+            g->rim[j][2].x = 11.0f * s;
+            g->rim[j][2].y = 11.0f * r;
+            g->rim[j][2].z = 0.0f;
+            g->rim[j][2].w = 1.0f;
         }
-        g->on3 = 0;
-        g->t4 = 0;
-        for (l = 0; l < 24; l++) {
-            g->dart[l].on = 0;
-        }
-        g->cnt3 = 0;
-        for (y = 0; y < 24; y++) {
-            g->bird[y].on = 0;
-            g->bird[y].n = 0;
-        }
-        for (n = 0; n < 24; n++) {
-            for (l = 0; l < 16; l++) {
-                g->spk[n][l].on = 0;
-            }
-        }
-        g->on5 = 0;
-        for (i = 0; i < 33; i++) {
-            x = (i << 16) >> 5;
-            s = func_0020B550(x);
-            r = func_0020B480(x);
-            g->rim[i][0].x = 6.5f * s;
-            g->rim[i][0].y = 6.5f * r;
-            g->rim[i][0].z = 0.0f;
-            g->rim[i][0].w = 1.0f;
-            g->rim[i][1].x = 10.8f * s;
-            g->rim[i][1].y = 10.8f * r;
-            g->rim[i][1].z = 0.0f;
-            g->rim[i][1].w = 1.0f;
-            g->rim[i][2].x = 11.0f * s;
-            g->rim[i][2].y = 11.0f * r;
-            g->rim[i][2].z = 0.0f;
-            g->rim[i][2].w = 1.0f;
-        }
-        for (n = 0; n < 96; n++) {
-            r = 0.1f + 0.9f * (n + 1) / 96.0f;
+        for (l = 0; l < 96; l++) {
+            b = 0.1f + 0.9f * (l + 1) / 96.0f;
+            r = b;
             b = 15.0f * r;
             a = -r;
             cn[0].x = 0.0f;
@@ -430,13 +430,13 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
             func_00101080(&v, 1.0f);
             func_00100E40(&m4, &v);
             func_00100E00(&m4, ((func_0019A5C8() >> 23) % 256 << 16) >> 8, 2);
-            for (x = 0; x < 4; x++) {
-                func_001878E0(&g->shard[n][x], &m4, &cn[x]);
+            for (j = 0; j < 4; j++) {
+                func_001878E0(&g->shard[l][j], &m4, &cn[j]);
             }
         }
-        for (n = 0; n < 128; n++) {
-            g->c[n] = (func_0019A5C8() >> 23) % 4;
-            func_00101080(&g->sv[n], 0.4f);
+        for (x = 0; x < 128; x++) {
+            g->c[x] = (func_0019A5C8() >> 23) % 4;
+            func_00101080(&g->sv[x], 0.4f);
         }
         g->on6 = 0;
         return 0;
@@ -444,12 +444,12 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     func_001F57B0(1);
     func_00205CA0(m3);
     func_001F53C0(1, g->unitA, &g->pos);
-    for (j = 0; j < 6; j++) {
-        func_001F5620(g->unitA, g->jn[j], &g->jp[j]);
+    for (l = 0; l < 6; l++) {
+        func_001F5620(g->unitA, g->jn[l], &g->jp[l]);
     }
-    for (j = 0; j < 4; j++) {
-        func_00187B18(&v, &g->jp[j], &g->jp[4]);
-        func_00100E40(&g->jm[j], &v);
+    for (x = 0; x < 4; x++) {
+        func_00187B18(&v, &g->jp[x], &g->jp[4]);
+        func_00100E40(&g->jm[x], &v);
     }
     func_001F5620(g->unitA, g->jn2, &g->jq);
     func_0020EB40(m);
@@ -539,10 +539,10 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         n = g->cnt;
         g->seg[n].on = 1;
         g->seg[n].t = 0;
-        for (j = 0; j < 4; j++) {
-            g->seg[n].ang[j] = (func_0019A5C8() >> 23) % 256 << 16 >> 8;
-            g->seg[n].pos[j] = g->jp[j];
-            g->seg[n].mat[j] = g->jm[j];
+        for (i = 0; i < 4; i++) {
+            g->seg[n].ang[i] = (func_0019A5C8() >> 23) % 256 << 16 >> 8;
+            g->seg[n].pos[i] = g->jp[i];
+            g->seg[n].mat[i] = g->jm[i];
         }
         g->cnt++;
         if (g->cnt > 0) {
@@ -557,12 +557,12 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     func_00208700(&pk, g->tex[1], 1);
     func_002086D0(&pk, func_00208D00(1));
     func_00208CB0(&pk, 0);
-    for (i = 0; i < 1; i++) {
-        if (g->seg[i].on == 0) {
+    for (j = 0; j < 1; j++) {
+        if (g->seg[j].on == 0) {
             continue;
         }
-        a = 48.0f * func_00101020((f32)g->seg[i].t, 8.0f);
-        alpha = (u32)((a * func_00100FF0((f32)g->seg[i].t, 198.0f, 190.0f)) * (0.3 + 0.7f * (g->seg[i].t % 2)));
+        a = 48.0f * func_00101020((f32)g->seg[j].t, 8.0f);
+        alpha = (u32)((a * func_00100FF0((f32)g->seg[j].t, 198.0f, 190.0f)) * (0.3 + 0.7f * (g->seg[j].t % 2)));
         pk.v[0].c.r = 0xFF;
         pk.v[0].c.g = 0x58;
         pk.v[0].c.b = 0x30;
@@ -575,31 +575,29 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         v.y = 1.0f;
         v.z = 1.0f;
         v.w = 1.0f;
-        for (l = 0; l < 4; l++) {
+        for (k = 0; k < 4; k++) {
             func_0020EB40(m);
-            func_00187B60(m2, &g->jm[l], &g->jp[l]);
-            func_00100E00(m2, g->seg[i].ang[l] + g->seg[i].t * 0x457, 2);
+            func_00187B60(m2, &g->jm[k], &g->jp[k]);
+            func_00100E00(m2, g->seg[j].ang[k] + g->seg[j].t * 0x457, 2);
             func_0020CB20(m2, &v);
             func_0020BC00(m, m2);
-            for (k = 0; k < 8; k++) {
-                for (j = 0; j < 16; j++) {
-                    x = g->qc[k][j] % 4 * 32;
-                    y = (g->qc[k][j] >> 2) * 32;
-                    a = (f32)x;
-                    b = (f32)y;
-                    h = (32.0f + a) / 128.0f;
-                    a = a / 128.0f;
-                    e = b / 64.0f;
-                    f = (16.0f + b) / 64.0f;
-                    pk.v[0].uv.st.s = a;
-                    pk.v[0].uv.st.t = f;
-                    pk.v[1].uv.st.s = h;
-                    pk.v[1].uv.st.t = f;
-                    pk.v[2].uv.st.s = a;
-                    pk.v[2].uv.st.t = e;
-                    pk.v[3].uv.st.s = h;
-                    pk.v[3].uv.st.t = e;
-                    if (func_002058D0(&g->q[k][j][0], D_0030FF00, m, &pk, &depth) == 1) {
+            for (n = 0; n < 8; n++) {
+                for (i = 0; i < 16; i++) {
+                    x = g->qc[n][i] % 4 * 32;
+                    y = (g->qc[n][i] >> 2) * 32;
+                    r = x / 128.0f;
+                    a = (32.0f + x) / 128.0f;
+                    b = y / 64.0f;
+                    h = (16.0f + y) / 64.0f;
+                    pk.v[0].uv.st.s = r;
+                    pk.v[0].uv.st.t = h;
+                    pk.v[1].uv.st.s = a;
+                    pk.v[1].uv.st.t = h;
+                    pk.v[2].uv.st.s = r;
+                    pk.v[2].uv.st.t = b;
+                    pk.v[3].uv.st.s = a;
+                    pk.v[3].uv.st.t = b;
+                    if (func_002058D0(&g->q[n][i][0], D_0030FF00, m, &pk, &depth) == 1) {
                         pk.v[0].p.z = 0xFFFFF8;
                         pk.v[1].p.z = pk.v[0].p.z;
                         pk.v[2].p.z = pk.v[0].p.z;
@@ -631,8 +629,8 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         cn[1].w = 1.0f;
         func_001878E0(&cn[0], m3, &cn[0]);
         func_001878E0(&cn[1], m3, &cn[1]);
-        a = 64.0f * func_00101020((f32)g->seg[i].t, 8.0f);
-        alpha = (u32)((0.6f + 0.4f * (g->seg[i].t % 2)) * (a * func_00100FF0((f32)g->seg[i].t, 198.0f, 190.0f)));
+        a = 64.0f * func_00101020((f32)g->seg[j].t, 8.0f);
+        alpha = (u32)((0.6f + 0.4f * (g->seg[j].t % 2)) * (a * func_00100FF0((f32)g->seg[j].t, 198.0f, 190.0f)));
         spr.c.r = 0xFF;
         spr.c.g = 0x58;
         spr.c.b = 0x1C;
@@ -652,9 +650,9 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
                 func_002075F0(&spr, ot, 0);
             }
         }
-        g->seg[i].t++;
-        if (g->seg[i].t > 0xC6) {
-            g->seg[i].on = 0;
+        g->seg[j].t++;
+        if (g->seg[j].t > 0xC6) {
+            g->seg[j].on = 0;
         }
     }
 
@@ -662,15 +660,15 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         n = g->cur;
         g->bit[n].on = 1;
         g->bit[n].t = 0;
-        for (i = 0; i < 4; i++) {
-            g->bit[n].p[i] = g->jp[i];
-            for (l = 0; l < 1; l++) {
-                g->bit[n].c[i][l] = (func_0019A5C8() >> 23) % 8;
-                func_00101080(&g->bit[n].v[i][l], 0.5f);
+        for (l = 0; l < 4; l++) {
+            g->bit[n].p[l] = g->jp[l];
+            for (k = 0; k < 1; k++) {
+                g->bit[n].c[l][k] = (func_0019A5C8() >> 23) % 8;
+                func_00101080(&g->bit[n].v[l][k], 0.5f);
             }
         }
         g->cur++;
-        if (g->cur > 15) {
+        if (g->cur >= 16) {
             g->cur = 0;
         }
     }
@@ -686,11 +684,11 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     func_0020EB40(m);
     func_0020BBB0(m2);
     func_0020BC00(m, m2);
-    for (i = 0; i < 16; i++) {
-        if (g->bit[i].on == 0) {
+    for (l = 0; l < 16; l++) {
+        if (g->bit[l].on == 0) {
             continue;
         }
-        r = 10.0f * (0.5f + 0.5f * g->bit[i].t / 16.0f);
+        r = 10.0f * (0.5f + 0.5f * g->bit[l].t / 16.0f);
         cn[0].x = -r;
         cn[0].y = -r;
         cn[0].z = 0.0f;
@@ -701,21 +699,21 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         cn[1].w = 1.0f;
         func_001878E0(&cn[0], m3, &cn[0]);
         func_001878E0(&cn[1], m3, &cn[1]);
-        alpha = (16 - g->bit[i].t) * 64 >> 4;
+        alpha = (16 - g->bit[l].t) * 64 >> 4;
         spr.c.r = 0x8A;
         spr.c.g = 0x8A;
         spr.c.b = 0x8A;
         spr.c.a = alpha;
         spr.c.q = 1.0f;
-        f = func_00100D50(g->bit[i].t, 16, 1);
-        for (l = 0; l < 4; l++) {
+        f = func_00100D50(g->bit[l].t, 16, 1);
+        for (n = 0; n < 4; n++) {
             for (j = 0; j < 1; j++) {
-                func_00187B48(&v, &g->bit[i].v[l][j], f);
-                func_00187B00(&v, &v, &g->bit[i].p[l]);
+                func_00187B48(&v, &g->bit[l].v[n][j], f);
+                func_00187B00(&v, &v, &g->bit[l].p[n]);
                 func_00187B00(&out[0], &cn[0], &v);
                 func_00187B00(&out[1], &cn[1], (void *)&v);
-                x = g->bit[i].c[l][j] % 4 * 32;
-                y = (g->bit[i].c[l][j] >> 2) * 32;
+                x = g->bit[l].c[n][j] % 4 * 32;
+                y = (g->bit[l].c[n][j] >> 2) * 32;
                 ((Uv_b846_01E00080 *)(s32)&spr.uv0)->u = x << 4;
                 ((Uv_b846_01E00080 *)(s32)&spr.uv0)->v = y << 4;
                 ((Uv_b846_01E00080 *)(s32)&spr.uv1)->u = (x + 32) << 4;
@@ -725,9 +723,9 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
                 }
             }
         }
-        g->bit[i].t++;
-        if (g->bit[i].t > 16) {
-            g->bit[i].on = 0;
+        g->bit[l].t++;
+        if (g->bit[l].t > 16) {
+            g->bit[l].on = 0;
         }
     }
 
@@ -765,39 +763,38 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         pk.v[2].c.a = 0;
         pk.v[2].c.q = 1.0f;
         pk.v[3].c = pk.v[2].c;
-        for (j = 0; j < 32; j++) {
+        for (n = 0; n < 32; n++) {
             func_0020EB40(m);
             func_0020BBB0(m2);
             func_00187B60(m2, m2, &g->jp[5]);
-            m4 = g->rm[j];
+            m4 = g->rm[n];
             func_00100E00(&m4, g->t3 * 0x21, 2);
             func_00100E00(&m4, g->t3 * 0x2C, 1);
             func_00100E00(&m4, g->t3 * 0x22B, 0);
             func_0020BC00(m2, &m4);
-            f = 0.8f + 0.2f * (j + 1) / 32.0f;
-            v.x = f;
-            v.y = f;
-            v.z = f;
+            e = 0.8f + 0.2f * (n + 1) / 32.0f;
+            v.x = e;
+            v.y = e;
+            v.z = e;
             v.w = 1.0f;
             func_0020CB20(m2, &v);
             func_0020BC00(m, m2);
-            s = 32.0f * ((g->t3 + g->ofs[j]) % 32) / 32.0f;
-            x = g->rc[j] % 4 * 32;
-            y = (g->rc[j] >> 2) * 32;
+            s = 32.0f * ((g->t3 + g->ofs[n]) % 32) / 32.0f;
+            x = g->rc[n] % 4 * 32;
+            y = (g->rc[n] >> 2) * 32;
             s = (x + s) / 128.0f;
-            b = (f32)y;
-            e = b / 64.0f;
-            h = (32.0f + b) / 64.0f;
-            for (k = 0; k < 32; k++) {
+            u = y / 64.0f;
+            h = (32.0f + y) / 64.0f;
+            for (x = 0; x < 32; x++) {
                 pk.v[0].uv.st.s = s;
-                pk.v[0].uv.st.t = e;
+                pk.v[0].uv.st.t = u;
                 pk.v[1].uv.st.s = s;
-                pk.v[1].uv.st.t = e;
+                pk.v[1].uv.st.t = u;
                 pk.v[2].uv.st.s = s;
                 pk.v[2].uv.st.t = h;
                 pk.v[3].uv.st.s = s;
                 pk.v[3].uv.st.t = h;
-                if (func_00100BA0(&g->ring[k].a, &g->ring[k + 1].a, &g->ring[k].b, &g->ring[k + 1].b, m, &pk, &depth) == 1) {
+                if (func_00100BA0(&g->ring[x].a, &g->ring[x + 1].a, &g->ring[x].b, &g->ring[x + 1].b, m, &pk, &depth) == 1) {
                     func_002075F0(&pk, ot, (u32)depth);
                 }
             }
@@ -833,17 +830,17 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         spr.c.b = 0xFF;
         spr.c.a = alpha;
         spr.c.q = 1.0f;
-        r = 8.0f;
-        cn[0].x = r;
-        cn[0].y = r;
+        w = 8.0f;
+        cn[0].x = w;
+        cn[0].y = w;
         cn[0].z = 0.0f;
         cn[0].w = 1.0f;
-        cn[1].x = -r;
-        cn[1].y = -r;
+        cn[1].x = -w;
+        cn[1].y = -w;
         cn[1].z = 0.0f;
         cn[1].w = 1.0f;
         func_001878E0(&out[0], m3, &cn[0]);
-        func_001878E0(&out[1], m3, &cn[1]);
+        func_001878E0(&out[1], (void *)m3, &cn[1]);
         ((Uv_b846_01E00080 *)(s32)&spr.uv0)->u = 0;
         ((Uv_b846_01E00080 *)(s32)&spr.uv0)->v = 0x200;
         ((Uv_b846_01E00080 *)(s32)&spr.uv1)->u = 0x200;
@@ -863,9 +860,9 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         n = g->t % 24;
         g->dart[n].on = 1;
         g->dart[n].t = 0;
-        for (y = 0; y < 3; y++) {
-            g->dart[n].c[y] = (func_0019A5C8() >> 23) % 8;
-            func_00101080(&g->dart[n].v[y], 0.5f);
+        for (l = 0; l < 3; l++) {
+            g->dart[n].c[l] = (func_0019A5C8() >> 23) % 8;
+            func_00101080(&g->dart[n].v[l], 0.5f);
         }
     }
 
@@ -878,11 +875,11 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     func_00208CB0(&pk, 5);
     a = (f32)func_00101050(g->t - 0x95, 0, 16);
     a = a * (f32)func_00101050(0x10E - g->t, 0, 16) / 256.0f;
-    for (i = 0; i < 24; i++) {
-        if (g->dart[i].on == 0) {
+    for (l = 0; l < 24; l++) {
+        if (g->dart[l].on == 0) {
             continue;
         }
-        alpha = (u32)(a * ((24 - g->dart[i].t) * 0x50 / 24));
+        alpha = (u32)(a * ((24 - g->dart[l].t) * 0x50 / 24));
         pk.v[0].c.r = 0x78;
         pk.v[0].c.g = 0x4B;
         pk.v[0].c.b = 0xFF;
@@ -895,10 +892,10 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         v = g->jp[5];
         func_0020C940(m2, 0, 0, &v);
         func_0020BC00(m, m2);
-        f = -3.5f * (0.5f + 0.5f * func_00100D50(g->dart[i].t, 24, 1));
-        for (k = 0; k < 3; k++) {
-            func_00100E40(&m4, &g->dart[i].v[k]);
-            func_00100E00(&m4, (i << 16) / 24 + (k << 16) / 3, 2);
+        f = -3.5f * (0.5f + 0.5f * func_00100D50(g->dart[l].t, 24, 1));
+        for (j = 0; j < 3; j++) {
+            func_00100E40(&m4, &g->dart[l].v[j]);
+            func_00100E00(&m4, (l << 16) / 24 + (j << 16) / 3, 2);
             cn[0].x = 0.0f;
             cn[0].y = 0.5f;
             cn[0].z = 0.0f;
@@ -909,19 +906,17 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
             cn[1].w = 1.0f;
             func_001878E0(&cn[0], &m4, &cn[0]);
             func_001878E0(&cn[1], &m4, &cn[1]);
-            func_00187B00(&out[0], &cn[0], &g->dart[i].v[k]);
-            func_00187B00(&out[1], &cn[1], (void *)&g->dart[i].v[k]);
-            func_00187B48(&v, &g->dart[i].v[k], f);
-            func_00187B00(&out[2], &out[0], &v);
+            func_00187B00(&out[0], &cn[0], &g->dart[l].v[j]);
+            func_00187B00(&out[1], &cn[1], (void *)&g->dart[l].v[j]);
+            func_00187B48(&v, &g->dart[l].v[j], f);
+            func_00187B00(&out[2], (void *)&out[0], (void *)&v);
             func_00187B00(&out[3], &out[1], (void *)&v);
-            x = g->dart[i].c[k] % 4 * 32;
-            y = (g->dart[i].c[k] >> 2) * 32;
-            r = (f32)x;
-            s = (f32)y;
-            h = r / 128.0f;
-            e = (32.0f + r) / 128.0f;
-            u = s / 64.0f;
-            w = (32.0f + s) / 64.0f;
+            x = g->dart[l].c[j] % 4 * 32;
+            y = (g->dart[l].c[j] >> 2) * 32;
+            h = x / 128.0f;
+            e = (32.0f + x) / 128.0f;
+            u = y / 64.0f;
+            w = (32.0f + y) / 64.0f;
             pk.v[0].uv.st.s = h;
             pk.v[0].uv.st.t = u;
             pk.v[1].uv.st.s = e;
@@ -938,19 +933,19 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
                 func_002075F0(&pk, ot, 0);
             }
         }
-        g->dart[i].t++;
-        if (g->dart[i].t > 24) {
-            g->dart[i].on = 0;
+        g->dart[l].t++;
+        if (g->dart[l].t > 24) {
+            g->dart[l].on = 0;
         }
     }
 
     if (g->t == 0x87) {
-        for (x = 0; x < 24; x++) {
-            g->bird[x].on = 1;
-            g->bird[x].t = 0;
-            g->bird[x].c = (func_0019A5C8() >> 23) % 3 + 1;
-            g->bird[x].d = (func_0019A5C8() >> 23) % 2 * 2 - 1;
-            func_00101080(&g->bird[x].v, 1.0f);
+        for (j = 0; j < 24; j++) {
+            g->bird[j].on = 1;
+            g->bird[j].t = 0;
+            g->bird[j].c = (func_0019A5C8() >> 23) % 3 + 1;
+            g->bird[j].d = (func_0019A5C8() >> 23) % 2 * 2 - 1;
+            func_00101080(&g->bird[j].v, 1.0f);
         }
     }
 
@@ -965,65 +960,65 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     func_0020EB40(m);
     func_0020BBB0(m2);
     func_0020BC00(m, m2);
-    for (l = 0; l < 24; l++) {
-        if (g->bird[l].on == 0) {
+    for (i = 0; i < 24; i++) {
+        if (g->bird[i].on == 0) {
             continue;
         }
-        e = func_00101020((f32)g->bird[l].t, 7.0f);
-        alpha = (u32)(255.0f * e);
+        w = func_00101020((f32)g->bird[i].t, 7.0f);
+        alpha = (u32)(255.0f * w);
         spr.c.r = 0x78;
         spr.c.g = 0x4B;
         spr.c.b = 0xFF;
         spr.c.a = alpha;
         spr.c.q = 1.0f;
-        x = g->bird[l].c % 4 * 32;
-        y = (g->bird[l].c >> 2) * 32;
-        g->bird[l].c += g->bird[l].d;
-        if (g->bird[l].c == 0 || g->bird[l].c == 4) {
-            g->bird[l].d = -g->bird[l].d;
+        x = g->bird[i].c % 4 * 32;
+        y = (g->bird[i].c >> 2) * 32;
+        g->bird[i].c += g->bird[i].d;
+        if (g->bird[i].c == 0 || g->bird[i].c == 4) {
+            g->bird[i].d = -g->bird[i].d;
         }
         ((Uv_b846_01E00080 *)(s32)&spr.uv0)->u = x << 4;
         ((Uv_b846_01E00080 *)(s32)&spr.uv0)->v = y << 4;
         ((Uv_b846_01E00080 *)(s32)&spr.uv1)->u = (x + 32) << 4;
         ((Uv_b846_01E00080 *)(s32)&spr.uv1)->v = (y + 32) << 4;
-        r = 3.0f;
-        cn[0].x = -r;
-        cn[0].y = -r;
+        a = 3.0f;
+        cn[0].x = -a;
+        cn[0].y = -a;
         cn[0].z = 0.0f;
         cn[0].w = 1.0f;
-        cn[1].x = r;
-        cn[1].y = r;
+        cn[1].x = a;
+        cn[1].y = a;
         cn[1].z = 0.0f;
         cn[1].w = 1.0f;
         func_001878E0(&cn[0], m3, &cn[0]);
         func_001878E0(&cn[1], m3, &cn[1]);
-        f = g->bird[l].t / 15.0f;
+        f = g->bird[i].t / 15.0f;
         func_00187B18(&v, &g->jp[5], &g->pos2);
         func_00187B48(&v, &v, f);
         func_00187B00(&v, &v, &g->pos2);
-        func_00187B48(&v2, &g->bird[l].v, func_0020B550((g->bird[l].t << 15) / 15));
+        func_00187B48(&v2, &g->bird[i].v, func_0020B550((g->bird[i].t << 15) / 15));
         func_00187B00(&v, &v, &v2);
         func_00187B00(&out[0], &cn[0], &v);
         func_00187B00(&out[1], &cn[1], (void *)&v);
         if (func_00205630(out, D_0030FF00, m, &spr, &depth) == 1) {
             func_002075F0(&spr, ot, (u32)depth);
         }
-        n = g->bird[l].n;
-        g->spk[l][n].on = 1;
-        g->spk[l][n].t = 0;
-        g->spk[l][n].a = e;
-        g->spk[l][n].pos = v;
-        for (k = 0; k < 2; k++) {
-            g->spk[l][n].c[k] = (func_0019A5C8() >> 23) % 8;
-            func_00101080(&g->spk[l][n].v[k], 0.6f);
+        n = g->bird[i].n;
+        g->spk[i][n].on = 1;
+        g->spk[i][n].t = 0;
+        g->spk[i][n].a = w;
+        g->spk[i][n].pos = v;
+        for (j = 0; j < 2; j++) {
+            g->spk[i][n].c[j] = (func_0019A5C8() >> 23) % 8;
+            func_00101080(&g->spk[i][n].v[j], 0.6f);
         }
-        g->bird[l].n++;
-        if (g->bird[l].n > 15) {
-            g->bird[l].n = 0;
+        g->bird[i].n++;
+        if (g->bird[i].n >= 16) {
+            g->bird[i].n = 0;
         }
-        g->bird[l].t++;
-        if (g->bird[l].t > 15) {
-            g->bird[l].on = 0;
+        g->bird[i].t++;
+        if (g->bird[i].t > 15) {
+            g->bird[i].on = 0;
         }
     }
 
@@ -1038,18 +1033,18 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
     func_0020EB40(m);
     func_0020BBB0(m2);
     func_0020BC00(m, m2);
-    for (j = 0; j < 24; j++) {
-        for (n = 0; n < 16; n++) {
-            if (g->spk[j][n].on == 0) {
+    for (k = 0; k < 24; k++) {
+        for (i = 0; i < 16; i++) {
+            if (g->spk[k][i].on == 0) {
                 continue;
             }
-            alpha = (u32)(g->spk[j][n].a * (64.0f * func_0020B480((g->spk[j][n].t << 14) >> 4)));
+            alpha = (u32)(g->spk[k][i].a * (64.0f * func_0020B480((g->spk[k][i].t << 14) >> 4)));
             spr.c.r = 0x78;
             spr.c.g = 0x4B;
             spr.c.b = 0xFF;
             spr.c.a = alpha;
             spr.c.q = 1.0f;
-            r = 3.9f * (0.2f + 0.8f * (16 - g->spk[j][n].t) / 16.0f);
+            r = 3.9f * (0.2f + 0.8f * (16 - g->spk[k][i].t) / 16.0f);
             cn[0].x = -r;
             cn[0].y = -r;
             cn[0].z = 0.0f;
@@ -1060,29 +1055,30 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
             cn[1].w = 1.0f;
             func_001878E0(&cn[0], m3, &cn[0]);
             func_001878E0(&cn[1], m3, &cn[1]);
-            b = g->spk[j][n].t;
-            h = 18.0f * (b / 16.0f);
-            s = 0.2f + 0.8f * b / 16.0f;
-            for (k = 0; k < 2; k++) {
-                x = g->spk[j][n].c[k] % 4 * 32;
-                y = (g->spk[j][n].c[k] >> 2) * 32;
+            l = g->spk[k][i].t;
+            b = l / 16.0f;
+            s = 0.2f + 0.8f * l / 16.0f;
+            u = 18.0f * b;
+            for (j = 0; j < 2; j++) {
+                x = g->spk[k][i].c[j] % 4 * 32;
+                y = (g->spk[k][i].c[j] >> 2) * 32;
                 ((Uv_b846_01E00080 *)(s32)&spr.uv0)->u = x << 4;
                 ((Uv_b846_01E00080 *)(s32)&spr.uv0)->v = y << 4;
                 ((Uv_b846_01E00080 *)(s32)&spr.uv1)->u = (x + 32) << 4;
                 ((Uv_b846_01E00080 *)(s32)&spr.uv1)->v = (y + 32) << 4;
-                v.x = g->spk[j][n].v[k].x * s;
-                v.y = h + g->spk[j][n].v[k].y * s;
-                v.z = g->spk[j][n].v[k].z * s;
-                func_00187B00(&v, &v, &g->spk[j][n].pos);
+                v.x = g->spk[k][i].v[j].x * s;
+                v.y = u + g->spk[k][i].v[j].y * s;
+                v.z = g->spk[k][i].v[j].z * s;
+                func_00187B00(&v, &v, &g->spk[k][i].pos);
                 func_00187B00(&out[0], &cn[0], &v);
                 func_00187B00(&out[1], &cn[1], (void *)&v);
                 if (func_00205630(out, D_0030FF00, m, &spr, &depth) == 1) {
                     func_002075F0(&spr, ot, (u32)depth);
                 }
             }
-            g->spk[j][n].t++;
-            if (g->spk[j][n].t > 16) {
-                g->spk[j][n].on = 0;
+            g->spk[k][i].t++;
+            if (g->spk[k][i].t > 16) {
+                g->spk[k][i].on = 0;
             }
         }
     }
@@ -1104,13 +1100,13 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         ((Uv_b846_01E00080 *)(s32)&spr.uv0)->v = 0;
         ((Uv_b846_01E00080 *)(s32)&spr.uv1)->u = 0x600;
         ((Uv_b846_01E00080 *)(s32)&spr.uv1)->v = 0x200;
-        r = 30.0f;
-        cn[0].x = -r;
-        cn[0].y = -r;
+        h = 30.0f;
+        cn[0].x = -h;
+        cn[0].y = -h;
         cn[0].z = 0.0f;
         cn[0].w = 1.0f;
-        cn[1].x = r;
-        cn[1].y = r;
+        cn[1].x = h;
+        cn[1].y = h;
         cn[1].z = 0.0f;
         cn[1].w = 1.0f;
         a = (16 - g->t5) / 16.0f;
@@ -1156,15 +1152,15 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         v.w = 1.0f;
         func_0020CB20(m2, &v);
         func_0020BC00(m, m2);
-        for (y = 0; y < 32; y++) {
-            if (func_00100BA0(&g->rim[y][1], &g->rim[y + 1][1], &g->rim[y][0], &g->rim[y + 1][0], m, &st, &depth) == 1) {
+        for (n = 0; n < 32; n++) {
+            if (func_00100BA0(&g->rim[n][1], &g->rim[n + 1][1], &g->rim[n][0], &g->rim[n + 1][0], m, &st, &depth) == 1) {
                 st.v[0].p.z = 0xFFFFF8;
                 st.v[1].p.z = st.v[0].p.z;
                 st.v[2].p.z = st.v[0].p.z;
                 st.v[3].p.z = st.v[0].p.z;
                 func_002075F0(&st, ot, 0);
             }
-            if (func_00100BA0(&g->rim[y][1], &g->rim[y + 1][1], &g->rim[y][2], &g->rim[y + 1][2], m, &st, &depth) == 1) {
+            if (func_00100BA0(&g->rim[n][1], &g->rim[n + 1][1], &g->rim[n][2], &g->rim[n + 1][2], m, &st, &depth) == 1) {
                 st.v[0].p.z = 0xFFFFF8;
                 st.v[1].p.z = st.v[0].p.z;
                 st.v[2].p.z = st.v[0].p.z;
@@ -1196,7 +1192,7 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         func_0020BBB0(m2);
         func_00187B60(m2, m2, &g->jq);
         func_0020BC00(m, m2);
-        for (i = 0; i < 96; i++) {
+        for (l = 0; l < 96; l++) {
             pk.v[0].uv.st.s = 0.5f;
             pk.v[0].uv.st.t = 0.25f;
             pk.v[1].uv.st.s = 0.75f;
@@ -1205,7 +1201,7 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
             pk.v[2].uv.st.t = 0.25f;
             pk.v[3].uv.st.s = 0.75f;
             pk.v[3].uv.st.t = 0.25f;
-            if (func_00100BA0(&g->shard[i][0], &g->shard[i][1], &g->shard[i][2], &g->shard[i][3], m, &pk, &depth) == 1) {
+            if (func_00100BA0(&g->shard[l][0], &g->shard[l][1], &g->shard[l][2], &g->shard[l][3], m, &pk, &depth) == 1) {
                 func_002075F0(&pk, ot, (u32)depth);
             }
         }
@@ -1217,13 +1213,13 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         func_002086D0(&spr, func_00208D00(1));
         func_00208700(&spr, g->tex[1], 1);
         func_00208CB0(&spr, 5);
-        r = 0.4f;
-        cn[0].x = -r;
-        cn[0].y = -r;
+        h = 0.4f;
+        cn[0].x = -h;
+        cn[0].y = -h;
         cn[0].z = 0.0f;
         cn[0].w = 1.0f;
-        cn[1].x = r;
-        cn[1].y = r;
+        cn[1].x = h;
+        cn[1].y = h;
         cn[1].z = 0.0f;
         cn[1].w = 1.0f;
         func_001878E0(&cn[0], m3, &cn[0]);
@@ -1239,14 +1235,14 @@ static s32 func_01E00080_b846(s32 arg0, s32 code) {
         func_00187B60(m2, m2, &g->jq);
         func_0020BC00(m, m2);
         s = 0.8f + 0.2f * func_00100D50(g->t5, 16, 1);
-        for (k = 0; k < 128; k++) {
-            x = g->c[k] % 4 * 32;
-            y = (g->c[k] >> 2) * 32;
+        for (l = 0; l < 128; l++) {
+            x = g->c[l] % 4 * 32;
+            y = (g->c[l] >> 2) * 32;
             ((Uv_b846_01E00080 *)(s32)&spr.uv0)->u = x << 4;
             ((Uv_b846_01E00080 *)(s32)&spr.uv0)->v = y << 4;
             ((Uv_b846_01E00080 *)(s32)&spr.uv1)->u = (x + 32) << 4;
             ((Uv_b846_01E00080 *)(s32)&spr.uv1)->v = (y + 32) << 4;
-            func_00187B48(&v, &g->sv[k], s);
+            func_00187B48(&v, &g->sv[l], s);
             func_00187B00(&out[0], &cn[0], &v);
             func_00187B00(&out[1], &cn[1], (void *)&v);
             if (func_00205630(out, D_0030FF00, m, &spr, &depth) == 1) {

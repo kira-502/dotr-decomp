@@ -1265,3 +1265,9 @@ there is a source form that gives the original.
   it pointed at one `if` whose call arguments belonged in int locals (b471:01E00080, 86 → 20).
 - **A constant loaded in the wrong order with the multiply already in place:** `r = K * s; (void)r;` at the top of the
   loop (b212:01E00080). `e = A; e = e * B / K;` for a result in the wrong saved FPR (b100:01E00080).
+- **An ST pair with `q = l % N` and the `q + 1` conversion scheduled early:** drop `q`:
+  `z0 = 0.5f * (l % N) / N.0f; z1 = 0.5f * (l % N + 1) / N.0f;` before the stores (b722, b738:01E00080).
+- **`1.0f + 1.5f * (1.0f - f)` computed among the colour copies:** assign it in the innermost loop before its first use
+  so it hoists (b722, b738, b647:01E00080).
+- **Saved registers rotated around a loop bound or counter:** a fresh local used nowhere else (b647, 58 → 11).
+- **An int field wanted as `lw` + `mtc1` where you get `lwc1`:** read it into an int local first (b846:01E00080).

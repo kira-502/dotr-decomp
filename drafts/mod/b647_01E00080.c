@@ -1,7 +1,7 @@
 #include "common.h"
 
-/* shape b647:01E00080 (b647), 2848 insns, 1 copy: scene effect (draft): rim rings, arcs, flares, rays with pops,
-   bursts and halos */
+/* shape b647:01E00080 (b647), 2848 insns, 1 copy: scene effect (draft, 2837/2848, 7 words): rim rings, arcs, flares,
+   rays with pops, bursts and halos. Still different: the arc loop's h and x0 in each other's saved FPRs ($f24/$f26) */
 
 typedef struct {
     u64 x : 16;
@@ -231,6 +231,8 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
     s32 n;
     u8 a1;
     u8 a2;
+    s32 seg;
+    s32 cnt;
     f32 a;
     f32 len;
     f32 e;
@@ -281,7 +283,8 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
             g->rim[i].b.z = 0.0f;
             g->rim[i].b.w = 1.0f;
         }
-        g->on = 0;
+        k = 0;
+        g->on = k;
         g->t1 = 0;
         for (i = 0; i < 9; i++) {
             h = i / 8.0f;
@@ -411,15 +414,15 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
             continue;
         }
         for (l = 0; l < 2; l++) {
-            for (k = 0; k < 6; k++) {
-                if (g->arc[n].t > g->arc[n].delay[l][k]) {
+            for (seg = 0; seg < 6; seg++) {
+                if (g->arc[n].t > g->arc[n].delay[l][seg]) {
                     continue;
                 }
                 func_0020EB40(m);
                 func_0020C940(m2, 0, 0, &g->jp[l]);
-                func_0020BC00(m2, &g->arc[n].mat[l][k]);
+                func_0020BC00(m2, &g->arc[n].mat[l][seg]);
                 func_0020BC00(m, m2);
-                x1 = 1.0f - func_00100D50(g->arc[n].t, g->arc[n].delay[l][k], 1);
+                x1 = 1.0f - func_00100D50(g->arc[n].t, g->arc[n].delay[l][seg], 1);
                 h = 1.0f + (1.0f - x1);
                 for (j = 0; j < 8; j++) {
                     a1 = (u32)(e * (g->col[j][3] * x1));
@@ -446,11 +449,11 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
                     pk.v[2].t = t1;
                     pk.v[3].s = 0.2109375f;
                     pk.v[3].t = t1;
-                    a = g->arc[n].len[l][k] * j / 8.0f;
-                    len = g->arc[n].len[l][k] * (j + 1) / 8.0f;
-                    x0 = g->arc[n].w[l][k] * x1;
-                    y0 = h * (g->arc[n].amp[l][k] * func_0020B550((j << 16) >> 3));
-                    y1 = h * (g->arc[n].amp[l][k] * func_0020B550(((j + 1) << 16) >> 3));
+                    a = g->arc[n].len[l][seg] * j / 8.0f;
+                    len = g->arc[n].len[l][seg] * (j + 1) / 8.0f;
+                    x0 = g->arc[n].w[l][seg] * x1;
+                    y0 = h * (g->arc[n].amp[l][seg] * func_0020B550((j << 16) >> 3));
+                    y1 = h * (g->arc[n].amp[l][seg] * func_0020B550(((j + 1) << 16) >> 3));
                     cn[0].x = y0;
                     cn[0].y = -x0 + y0;
                     cn[0].z = a;
@@ -484,11 +487,11 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
         (void)n;
         g->flare[n].on = 1;
         g->flare[n].t = 1;
-        for (k = 0; k < 4; k++) {
-            g->flare[n].delay[k] = (s32)(16.0f * (0.7f + 0.3f * ((func_0019A5C8() >> 23) % 256) / 256.0f));
-            g->flare[n].w[k] = 3.0f * (0.5f + 0.5f * ((func_0019A5C8() >> 23) % 256) / 256.0f);
-            g->flare[n].amp[k] = 3.5f * (0.5f + 0.5f * ((func_0019A5C8() >> 23) % 256) / 256.0f);
-            g->flare[n].ang[k] = ((func_0019A5C8() >> 23) % 256 << 16 >> 8) & 0xFFFF;
+        for (seg = 0; seg < 4; seg++) {
+            g->flare[n].delay[seg] = (s32)(16.0f * (0.7f + 0.3f * ((func_0019A5C8() >> 23) % 256) / 256.0f));
+            g->flare[n].w[seg] = 3.0f * (0.5f + 0.5f * ((func_0019A5C8() >> 23) % 256) / 256.0f);
+            g->flare[n].amp[seg] = 3.5f * (0.5f + 0.5f * ((func_0019A5C8() >> 23) % 256) / 256.0f);
+            g->flare[n].ang[seg] = ((func_0019A5C8() >> 23) % 256 << 16 >> 8) & 0xFFFF;
         }
     }
 
@@ -527,8 +530,8 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
             pk.v[1].c = pk.v[0].c;
             pk.v[2].c = pk.v[0].c;
             pk.v[3].c = pk.v[0].c;
-            h = 1.0f + (1.0f - s);
             for (n = 0; n < 8; n++) {
+                h = 1.0f + (1.0f - s);
                 t0 = 0.5f * (n % 4) / 4.0f;
                 t1 = 0.5f * (n % 4 + 1) / 4.0f;
                 pk.v[0].s = 0.0390625f;
@@ -685,9 +688,9 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
         if (func_00205630(out, D_0030FF00, m, &spr, &depth) == 1) {
             func_002075F0(&spr, ot, (u32)depth);
         }
-        k = (s32)(8.0f * h);
-        if (k > 8) {
-            k = 8;
+        cnt = (s32)(8.0f * h);
+        if (cnt > 8) {
+            cnt = 8;
         }
         x1 = 1.0f - func_00100D50(g->ray[i].t, 24, 1);
         a1 = (u32)(255.0f * x1);
@@ -697,7 +700,6 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
         pk.v[0].c.b = 0xFF;
         pk.v[0].c.a = a1;
         pk.v[0].c.q = 1.0f;
-        h = 1.0f + 1.5f * (1.0f - x1);
         pk.v[1].c = pk.v[0].c;
         pk.v[2].c = pk.v[0].c;
         pk.v[3].c = pk.v[0].c;
@@ -705,7 +707,7 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
             func_0020EB40(m);
             func_00187B60(m2, &g->ray[i].mat[l], &g->ray[i].p);
             func_0020BC00(m, m2);
-            for (n = 0; n < k; n++) {
+            for (n = 0; n < cnt; n++) {
                 t0 = 0.5f * (n % 3) / 3.0f;
                 t1 = 0.5f * (n % 3 + 1) / 3.0f;
                 pk.v[0].s = 0.0390625f;
@@ -719,6 +721,7 @@ static s32 func_01E00080_b647(s32 arg0, s32 code) {
                 a = g->ray[i].len * n / 8.0f;
                 len = g->ray[i].len * (n + 1) / 8.0f;
                 x0 = g->ray[i].a[l] * x1;
+                h = 1.0f + 1.5f * (1.0f - x1);
                 y0 = h * (g->ray[i].b[l] * func_0020B480((((n << 16) >> 3) + (i * 5555 + l * 6666)) & 0xFFFF));
                 y1 = h * (g->ray[i].b[l] * func_0020B480(((((n + 1) << 16) >> 3) + (i * 5555 + l * 6666)) & 0xFFFF));
                 out[0].x = 0.0f;
