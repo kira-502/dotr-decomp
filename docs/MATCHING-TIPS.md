@@ -1198,3 +1198,6 @@ there is a source form that gives the original.
   loop and index with `n` (b249, 70% → 94%). Opcode-only scoring: work/vfastops.py, work/opsdiff.py.
 - **Frame 0x10 too small with spilled int temps above the counter group:** spill groups follow each name's first use
   in the whole function; rename the temps to a name the setup already uses (b217:01E00080).
+- **Two loop counters in each other's spill slots:** a name used in only one loop keeps its own low slot in declaration
+  order; a name used elsewhere spills to the shared high block. Give one loop a unique, correctly placed name and
+  rename the other to a name whose first loop isn't spilled (b739:01E00080).

@@ -35,3 +35,5 @@ b249:01E00080	98.4% (45 words)	hard: shell-grid setup loop counter coloured befo
 b575:01E00080	0%	not attempted: shares only the setup grid, normals and shatter with b249 (adiff 3585 lines); a full write from the asm
 b248:01E00080	99.6% (2996/3009, 13 words)	hard: setup 96-fin loop counter/pointer (s0/s2) and r/-r FPRs swapped; declperm, fswap, fren_greedy, greedy_ctr and ~25 expression variants tried (draft drafts/mod/b248_01E00080.c)
 b488:01E00080	0%	not attempted: closest relatives b454/b729 at call-sequence ratio ~0.58; mixes b182/b217-style screen blurs with sprite bursts; mostly a write from the asm
+b153:01E00080	99.9%	hard: the C matches all 3125 insns (work/func_01E00080_b153.c); 13 stale tail words at 01E03180 (a loop tail and an exit for a 0x2B0 frame) need a piece split in the split setup (tools change, pending)
+b722:01E00080	99% (3070/3114, 69 words)	hard: FP temp registers in the strand/beam ST and colour-copy blocks (q+1 conversion scheduled early); orders, forms, float locals, names, decl moves, -O4 tried (draft drafts/mod/b722_01E00080.c)
