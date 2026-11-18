@@ -1196,3 +1196,5 @@ there is a source form that gives the original.
   last (b249:01E00080).
 - **A `[n + 1]` / `[n + 2]` group recomputed as `base + 3l*16` where yours strength-reduces:** `n = l * 3;` inside the
   loop and index with `n` (b249, 70% → 94%). Opcode-only scoring: work/vfastops.py, work/opsdiff.py.
+- **Frame 0x10 too small with spilled int temps above the counter group:** spill groups follow each name's first use
+  in the whole function; rename the temps to a name the setup already uses (b217:01E00080).
