@@ -1244,3 +1244,5 @@ there is a source form that gives the original.
   (c516:01E03130).
 - **A draw-loop preheader scheduled wrong:** set the counter right after the per-slot value,
   `f = ...; j = 0; p = ...; for (; j < N; j++)` (c401:01E00080).
+- **Keeping `(i + 1) * 64` as its own induction variable:** `y = i * 64 + 64` (b456:01E00080). `t * 0x8000 / life` fixed
+  registers `t << 15` left swapped. Masked diff of a draft: work/mdiff.py.
