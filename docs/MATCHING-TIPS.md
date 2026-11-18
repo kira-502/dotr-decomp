@@ -1279,3 +1279,6 @@ there is a source form that gives the original.
   local (`n4 = 0; g->beam[n4].t`) (b846:01E00080).
 - **A register fixed only by renaming a distant setup loop:** the name needs an earlier web; replace the rename with
   `g->x = n = 0;` (b456:01E00080).
+- **An extra saved FPR with the frame 0x10 short and many later hunks:** a value hoisted out of an inner loop; put it in
+  a local before the loop (b723:01E00080, one statement, about 1000 instructions).
+- **Spilled "counters" in the low walker block that step by a constant:** strength-reduced `j * K`, not variables (b373).

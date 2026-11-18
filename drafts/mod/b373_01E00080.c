@@ -1,9 +1,10 @@
 #include "common.h"
 
-/* DRAFT, does not match (3539/4620 instructions): b373:01E00080, b612:01E00080's form plus a wall-and-floor room and a
-   512-point cloud. Structure and constants follow the asm; what is left is register allocation: the original keeps
-   &spr.uv0/&spr.uv1 (and +2) in $fp/$s6/$s1/$s2 from the shard section to the dust section and spills the room's loop
-   counters; here the room's loops take $s6 and those addresses are recomputed. Generator: work/b373_gen.py. */
+/* DRAFT, does not match (3516/4620 instructions, frame 0x8B0 of 0x8F0): b373:01E00080, b612:01E00080's form plus a
+   wall-and-floor room and a 512-point cloud. Structure and constants follow the asm; what is left is register
+   allocation: the original keeps &spr.uv0/&spr.uv1 (and +2) in $fp/$s6/$s1/$s2 from the shard section to the dust
+   section and spills the shard, room and cloud walkers and the cloud alpha; here $s6 goes to those and &spr.uv0 is
+   recomputed at each use. Counter renames and declaration order do not change this. */
 
 typedef struct {
     u64 x : 16;
@@ -1010,18 +1011,16 @@ static s32 func_01E00080_b373(s32 arg0, s32 code) {
             }
         }
         w = 70.0f * w;
-        ph = 0;
-        n = 0;
-        for (y = 0; y < 1; y++) {
+        for (j = 0; j < 1; j++) {
             func_0020EB40(m);
             func_0020BBB0(m2);
             v.x = 0.0f;
-            v.y = 15.0f - 2.0f * (7.0f * y);
+            v.y = 15.0f - 2.0f * (7.0f * j);
             v.z = 0.0f;
             v.w = 1.0f;
             func_00187B60(m2, m2, &v);
             func_0020BC00(m, m2);
-            if (y == 0) {
+            if (j == 0) {
                 alpha = (u32)w;
             } else {
                 alpha = (u32)w;
@@ -1033,10 +1032,10 @@ static s32 func_01E00080_b373(s32 arg0, s32 code) {
             tx.c.q = 1.0f;
             for (y = 0; y < 21; y++) {
                 for (x = 0; x < 21; x++) {
-                    g->floor[y][x].y = 7.0f * func_0020B550((g->rnd[y][x] + ph + g->t8 * 0x457) & 0xFFFF);
+                    g->floor[y][x].y = 7.0f * func_0020B550((g->rnd[y][x] + j * 0x33333 + g->t8 * 0x457) & 0xFFFF);
                 }
             }
-            x = (((g->t8 + n) % 128) << 16 >> 7) * (y % 2 * 2 - 1) & 0xFFFF;
+            x = (((g->t8 + j * 32) % 128) << 16 >> 7) * (j % 2 * 2 - 1) & 0xFFFF;
             s0 = 0.2f * func_0020B550(x);
             s1 = 0.2f * func_0020B480(x);
             for (k = 0; k < 20; k++) {
@@ -1066,8 +1065,6 @@ static s32 func_01E00080_b373(s32 arg0, s32 code) {
                     }
                 }
             }
-            ph += 0x33333;
-            n += 0x20;
         }
         g->t8++;
         if (g->t8 > 0x10FE) {
@@ -1330,7 +1327,7 @@ static s32 func_01E00080_b373(s32 arg0, s32 code) {
         func_001878E0(&cn[0], m3, &cn[0]);
         func_001878E0(&cn[1], m3, &cn[1]);
         h = func_00100D50(g->dust[i].t, 32, 1);
-        s = -3.0f + 0.0f * g->dust[i].t;
+        s = 0.0f;
         for (j = 0; j < 1; j++) {
             for (k = 0; k < 32; k++) {
                 func_00187B48(&v, &g->dust[i].v[j][k], h);
