@@ -1246,3 +1246,6 @@ there is a source form that gives the original.
   `f = ...; j = 0; p = ...; for (; j < N; j++)` (c401:01E00080).
 - **Keeping `(i + 1) * 64` as its own induction variable:** `y = i * 64 + 64` (b456:01E00080). `t * 0x8000 / life` fixed
   registers `t << 15` left swapped. Masked diff of a draft: work/mdiff.py.
+- **A discarded `func_0020B480` call followed by `add.s` with a zero register:** `r = 0.0f * func_0020B480(x) + A;`; the
+  product folds but the call and add stay (b216:01E00080).
+- **A `bne` whose delay slot copies the first instruction after the `if`:** that code is outside the `if` (b216).
