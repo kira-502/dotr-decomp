@@ -1205,3 +1205,7 @@ there is a source form that gives the original.
   before the corner block and `x = k % 4; e = (32.0f * x) / 128.0f;` right before the ST stores (b705:01E00080).
 - **For modules whose function is first in the file, the standalone fastscore equals the in-file score**, so the
   parallel `*_fast` searches are reliable on the 01E00080 family.
+- **A switch whose default sets the result, laid out as a beq chain with the default in the first delay slot:**
+  `n = -1;` before the switch, no default (b612:01E00080).
+- **Spawn loops copying the joint vector straight from g even inside `for (i < 1)`:** the source copies a fixed
+  element (`p[i] = g->jp[0]`) (b030, b441:01E00080). Segment compare at each jal: work/jalseg.py.
