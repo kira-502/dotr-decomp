@@ -1201,3 +1201,7 @@ there is a source form that gives the original.
 - **Two loop counters in each other's spill slots:** a name used in only one loop keeps its own low slot in declaration
   order; a name used elsewhere spills to the shared high block. Give one loop a unique, correctly placed name and
   rename the other to a name whose first loop isn't spilled (b739:01E00080).
+- **Pillar quad with the `k % 4` temp in the wrong GPR and the half-width scheduled early:** `a = 30.0f * f;` right
+  before the corner block and `x = k % 4; e = (32.0f * x) / 128.0f;` right before the ST stores (b705:01E00080).
+- **For modules whose function is first in the file, the standalone fastscore equals the in-file score**, so the
+  parallel `*_fast` searches are reliable on the 01E00080 family.

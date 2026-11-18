@@ -37,3 +37,5 @@ b248:01E00080	99.6% (2996/3009, 13 words)	hard: setup 96-fin loop counter/pointe
 b488:01E00080	0%	not attempted: closest relatives b454/b729 at call-sequence ratio ~0.58; mixes b182/b217-style screen blurs with sprite bursts; mostly a write from the asm
 b153:01E00080	99.9%	hard: the C matches all 3125 insns (work/func_01E00080_b153.c); 13 stale tail words at 01E03180 (a loop tail and an exit for a 0x2B0 frame) need a piece split in the split setup (tools change, pending)
 b722:01E00080	99% (3070/3114, 69 words)	hard: FP temp registers in the strand/beam ST and colour-copy blocks (q+1 conversion scheduled early); orders, forms, float locals, names, decl moves, -O4 tried (draft drafts/mod/b722_01E00080.c)
+b624:01E00080	99.8% (6 words)	hard: shard clear-loop counter/pointer swap (v1/a0) against the main-path k/i loop webs; every rename trades it for a 6-word swap in the ring or tornado ctr loop (draft drafts/mod/b624_01E00080.c)
+b705:01E00080	99.5% (16 words)	hard: f20-f28 assignment of five fan-draw values (glow constant f25 vs f28); name/role/decl/order searches and permuter stall (draft drafts/mod/b705_01E00080.c)
