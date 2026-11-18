@@ -1235,3 +1235,6 @@ there is a source form that gives the original.
 - **A colour-address temp one register low (`$a1` for your `$a2`) with no fptoui nearby:** test warm level 1 before
   searching C variants (b006:01E00080).
 - **`mul.s $f22, $f22, $f0` coming out constant-first:** `s *= 0.8f;` (b012:01E00080).
+- **Consecutive high spill slots following loop order in reverse are one counter name** (b420:01E00080).
+- **`lq`/`sq` matrix copy from a stack `f32[4][4]`:** copy through a struct declared `aligned(16)`, `m4 = *(Mq *)m3;`
+  (b420:01E00080).
