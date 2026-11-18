@@ -1227,3 +1227,6 @@ there is a source form that gives the original.
   work/twindiff.py.
 - **Grid-quad ST registers swapped (`u1`/`w1` in `$f3`/`$f5`):** declare the floats `u0, w1, w0, u1`; a second quad block
   gets its own four locals (b511:01E00080).
+- **An outer loop's branch target on `func_0020EB40`:** the matrix setup is inside the loop (b372:01E00080).
+- **A loop-counter name used only once in the main path takes a low spill slot and shifts the frame by 0x10:** rename it
+  to a name used elsewhere (b554:01E00080).
