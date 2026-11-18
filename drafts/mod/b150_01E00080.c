@@ -188,7 +188,8 @@ static s32 func_01E00080_b150(s32 arg0, s32 code) {
         g->tex[1] = func_00202BF0(5, 1);
         func_001F5F90(g->unitB, &g->tgt);
         g->m[0] = func_001F5560(g->unitA, 0x1B, 1);
-        g->m[1] = func_001F5560(g->unitA, 0x1C, 0);
+        i = func_001F5560(g->unitA, 0x1C, 0);
+        g->m[1] = i;
         for (k = 0; k < 16; k++) {
             g->b[k].on = 0;
         }
@@ -263,7 +264,6 @@ static s32 func_01E00080_b150(s32 arg0, s32 code) {
         func_001878E0(&cn[1], m3, &cn[1]);
         dy = g->b[i].t / 16.0f;
         h = 0.9f + 0.1f * g->b[i].t / 16.0f;
-        dy = -1.0f + 15.0f * dy;
         for (j = 0; j < 8; j++) {
             for (k = 0; k < 4; k++) {
                 ((Uv_b150_01E00080 *)(s32)&spr.uv0)->u = D_28BBF0[g->b[i].c[j][k]].u0;
@@ -271,7 +271,7 @@ static s32 func_01E00080_b150(s32 arg0, s32 code) {
                 ((Uv_b150_01E00080 *)(s32)&spr.uv1)->u = D_28BBF0[g->b[i].c[j][k]].u1;
                 ((Uv_b150_01E00080 *)(s32)&spr.uv1)->v = D_28BBF0[g->b[i].c[j][k]].v1;
                 v.x = g->b[i].v[j][k].x * h;
-                v.y = dy + g->b[i].v[j][k].y;
+                v.y = -1.0f + 15.0f * dy + g->b[i].v[j][k].y;
                 v.z = g->b[i].v[j][k].z * h;
                 func_00187B00(&v, &v, &g->b[i].p[j]);
                 func_00187B00(&p0, &cn[0], &v);

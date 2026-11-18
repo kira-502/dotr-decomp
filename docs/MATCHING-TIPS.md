@@ -1261,3 +1261,7 @@ there is a source form that gives the original.
 - **A step count spilled above the temps where the original has it below:** it is no variable; write `32 - y` inline at
   each use (b249:01E00080).
 - **Unexplained scheduling around packet fields:** read fields directly, not through `*(u16 *)(s32)&` casts (b575).
+- **A whole-function register swap (`ot`/`code`):** delete each statement in turn and watch which registers the two get;
+  it pointed at one `if` whose call arguments belonged in int locals (b471:01E00080, 86 → 20).
+- **A constant loaded in the wrong order with the multiply already in place:** `r = K * s; (void)r;` at the top of the
+  loop (b212:01E00080). `e = A; e = e * B / K;` for a result in the wrong saved FPR (b100:01E00080).
