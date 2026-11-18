@@ -1256,3 +1256,8 @@ there is a source form that gives the original.
   (b156:01E00080).
 - **Saved FPRs rotated across a big function:** srch_frnd_fast.py with one group per section and variable plus spare
   float names (b625, b156:01E00080).
+- **A setup-grid counter coloured before the strength-reduced temps:** reuse a variable dead in the setup branch (`ot`)
+  as the outer counter; if spill slots shift, give the old counter name an early use inside the loop (b575, b249:01E00080).
+- **A step count spilled above the temps where the original has it below:** it is no variable; write `32 - y` inline at
+  each use (b249:01E00080).
+- **Unexplained scheduling around packet fields:** read fields directly, not through `*(u16 *)(s32)&` casts (b575).
