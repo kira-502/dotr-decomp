@@ -1209,3 +1209,7 @@ there is a source form that gives the original.
   `n = -1;` before the switch, no default (b612:01E00080).
 - **Spawn loops copying the joint vector straight from g even inside `for (i < 1)`:** the source copies a fixed
   element (`p[i] = g->jp[0]`) (b030, b441:01E00080). Segment compare at each jal: work/jalseg.py.
+- **A setup clear loop stuck at counter v1 / pointer a0 when every rename disturbs other loops:** give its counter name
+  an earlier web from a plain statement before the loop, e.g. `i = func_001F5560(...); g->jn = i;` or
+  `j = 0; g->on3 = j;`; later loops with that name then get a0/v1. Keep the statement after the name's original first
+  use so the spill groups stay (b054, b624, b623:01E00080).
