@@ -1249,3 +1249,6 @@ there is a source form that gives the original.
 - **A discarded `func_0020B480` call followed by `add.s` with a zero register:** `r = 0.0f * func_0020B480(x) + A;`; the
   product folds but the call and add stay (b216:01E00080).
 - **A `bne` whose delay slot copies the first instruction after the `if`:** that code is outside the `if` (b216).
+- **The low spill block is ordered by each name's first use, latest first** (frame 0x10 short with int temps between
+  `n` and the byte alpha: move the alpha's first use after the temp's) (b738:01E00080). Statement-order hill climb under
+  def/use constraints: work/stmtperm.py.
