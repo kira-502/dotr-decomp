@@ -1282,3 +1282,7 @@ there is a source form that gives the original.
 - **An extra saved FPR with the frame 0x10 short and many later hunks:** a value hoisted out of an inner loop; put it in
   a local before the loop (b723:01E00080, one statement, about 1000 instructions).
 - **Spilled "counters" in the low walker block that step by a constant:** strength-reduced `j * K`, not variables (b373).
+- **High or low spill slot depends on the name's first web:** first web spilled = low slot; an earlier unspilled web sends
+  it to the high block. Move it with `g->x = j = 0;` placed by the first-use order you need (b543:01E00C30).
+- **`sb $zero` to a spill slot, then `lbu` and a store of that byte:** a fade with strength 0, `(0x30 - t) * 0 / 48`; a
+  plain `alpha = 0` is propagated (b543:01E00C30).
