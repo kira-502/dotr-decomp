@@ -825,3 +825,5 @@ static void func_01E01730_c022(Ctx_c022_01E01730 *ctx) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/mod/c022", func_01E01850_c022);
+
+INCLUDE_ASM("asm/nonmatchings/mod/c022", func_01E01B00_c022);

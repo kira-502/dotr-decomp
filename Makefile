@@ -46,6 +46,7 @@ build:
 	@[ -f $(LD_SCRIPT) ] || $(MAKE) --no-print-directory split
 	@$(MAKE) --no-print-directory $(OUT_EXE)
 	@[ -f $(MOD_MK) ] || $(MAKE) --no-print-directory split-modules
+	@python3 tools/modules.py sync
 	@$(MAKE) --no-print-directory modules
 
 check: build

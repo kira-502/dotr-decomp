@@ -1108,3 +1108,5 @@ static s32 func_01E022C0_b506(Ctx_b506_01E022C0 *ctx, s32 arg1, s32 arg2) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/mod/b506", func_01E02460_b506);
+
+INCLUDE_ASM("asm/nonmatchings/mod/b506", func_01E02C80_b506);

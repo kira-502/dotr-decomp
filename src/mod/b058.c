@@ -1093,3 +1093,5 @@ static void func_01E02240_b058(u8 *ctx, Obj_b058_01E02240 *o, void *pkt, s32 mod
 }
 
 INCLUDE_ASM("asm/nonmatchings/mod/b058", func_01E023F0_b058);
+
+INCLUDE_ASM("asm/nonmatchings/mod/b058", func_01E02680_b058);

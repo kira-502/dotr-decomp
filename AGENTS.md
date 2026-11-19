@@ -89,7 +89,8 @@ Names: a module function is `func_<VADDR>_<module>`, e.g. `func_01E029E0_b211` a
 
 Pick the next row of `docs/TODO-MODULES.md` (kind `work` or `switch`, smallest first). Then:
 
-- Kind `piece`: stray code at a module's text end that no C produces on its own. Leave these rows.
+- Kind `piece`: stray code at a module's text end that no C produces on its own. Leave these rows. (Stale code
+  that branches back into the function before it gets split off by a line in `config/mod_pieces.txt`.)
 - Kind `switch` (the function uses a jump table): write a plain C `switch` and use the same loop. Since 9b663245
   `tools/jtbl_fix.py` points the compiled switch at the module's own table (`jtbl_<VADDR>_<module>`), so `dk try`
   and `dk accept` work on these as on any other row (b172:01E02F30 was the first).
