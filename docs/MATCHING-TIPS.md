@@ -1291,3 +1291,9 @@ there is a source form that gives the original.
 - **Check immediates before chasing registers:** compare non-stack immediates on the opcode-aligned diff (b373).
 - **One `addiu a0` out of place next to float arguments:** `floatsearch.py --calls <callee>`; a prototyped alias plus
   float locals on both calls (b001:01E044C0).
+- **A delay slot swapped with a store before a `jal`:** `(void *)` casts on the address arguments, in combinations; in
+  b474:01E00080 only the 2nd and 3rd together worked.
+- **A byte temp and a counter in each other's spill slots:** give the byte its own u8 name covering one earlier unspilled
+  web and reuse a counter name with earlier webs (b717:01E00080).
+- **Re-tune float calls in order after fixing one**, scoring only the words up to each call's `jal`, with backtracking
+  (b037:01E04FB0, 273 tries).
