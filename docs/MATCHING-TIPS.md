@@ -1286,3 +1286,8 @@ there is a source form that gives the original.
   it to the high block. Move it with `g->x = j = 0;` placed by the first-use order you need (b543:01E00C30).
 - **`sb $zero` to a spill slot, then `lbu` and a store of that byte:** a fade with strength 0, `(0x30 - t) * 0 / 48`; a
   plain `alpha = 0` is propagated (b543:01E00C30).
+- **A kept address lost to another kept address:** delete each top-level section and watch the frame and kept
+  `addiu sN, sp`; a one-iteration loop the original lacks can add the extra webs (b373:01E00080).
+- **Check immediates before chasing registers:** compare non-stack immediates on the opcode-aligned diff (b373).
+- **One `addiu a0` out of place next to float arguments:** `floatsearch.py --calls <callee>`; a prototyped alias plus
+  float locals on both calls (b001:01E044C0).
