@@ -1297,3 +1297,14 @@ there is a source form that gives the original.
   web and reuse a counter name with earlier webs (b717:01E00080).
 - **Re-tune float calls in order after fixing one**, scoring only the words up to each call's `jal`, with backtracking
   (b037:01E04FB0, 273 tries).
+
+## Stale words after a function's padding (config/mod_pieces.txt)
+
+The tell: the C matches every instruction up to the function's `jr $ra`, but the asm file goes on past the zero
+padding with a loop tail and an epilogue for another frame size, which branches back into the function (an older,
+longer build's leftovers). The splitter files it with the function because of that backward branch. The fix is
+not C: add `<module> <VADDR of the first stale word>` to `config/mod_pieces.txt`, add
+`INCLUDE_ASM(..., func_<VADDR>_<module>)` after the function in the module's C file, and run `make` (it re-splits
+the module; the linker script PROVIDEs the labels the piece branches to). Closed b153:01E00080, b506:01E02460,
+c022:01E01850 and b058:01E023F0 (b058 also wanted mode 0 as `if/else` instead of an early `return`: the early
+return dropped the `nop` between the loop's `bnel` and the epilogue).
