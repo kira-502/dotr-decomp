@@ -5,7 +5,12 @@
    strip of the texture rect, drawn count+1 times at the mean depth */
 
 /* draft, 316/335: only the STQ block differs. The original computes t0 / 256 twice (v[0].t and v[1].t) and keeps t1 / 256
-   in a copy (mov.s); this C shares t0 / 256 once. opt_propagation off is needed so 0/64/256 are not folded. */
+   in a copy (mov.s); this C shares t0 / 256 once. opt_propagation off is needed so 0/64/256 are not folded
+   (or keep 0/64 in a promoted f32 array: arrays are promoted after constant propagation, so their constants stay
+   unfolded without the pragma). Ruled out (MWCC still shares t0 / 256): a second t0 copy (tt = t0 or tt = o->v),
+   a second w = 256 variable, a 256.0f literal in one use, named quotients (sa = t0 / w) in any order, empty
+   do-while(0) between, inline STQ helpers (fold everything), -O3, opt_common_subs off (wrecks the function), and
+   10 min of dk perm. b193:01E01D70 has the identical block. */
 
 typedef struct {
     u16 x, y;

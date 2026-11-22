@@ -1,0 +1,10 @@
+# Extra function starts for the module split (tools/modules.py split; make build re-splits a module when its lines
+# here change). Each is stale code after a function's zero padding: a loop tail and epilogue left over from an
+# older, longer build of the function (another frame size), which branches back into the function, so the splitter
+# files it with the function and no C can produce that function's asm. Split off, it is a piece like the 20 the
+# splitter finds by itself (AGENTS.md: leave piece rows), and the function's own asm ends at its padding.
+# module  VADDR
+b058 01E02680
+b153 01E03180
+b506 01E02C80
+c022 01E01B00

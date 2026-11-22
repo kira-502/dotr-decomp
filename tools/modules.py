@@ -12,6 +12,8 @@ Commands (run in the game folder, the toolchain loaded):
                    config/modules.tsv (tracked: one row per module with its sha1); checks the sha1s if the table
                    exists
   split [N ...]    split the modules (make split-modules runs it)
+  sync             split again the modules whose config/mod_pieces.txt lines changed since their split (make
+                   build runs it)
   ld [N ...]       write linker/mod/<name>.ld again (split does; after a change to the linker script's form)
   pack N ELF OUT   linked module ELF -> MWo3 file (header fields from config/modules.tsv, sizes from the ELF)
   check [N ...]    compare build/modules/<name>.mwo with config/modules.tsv's sha1 (all modules by default)
@@ -34,6 +36,8 @@ ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "config/modules.tsv"
 OUT_DIR = ROOT / "assets/modules"
 MRGS = ("DATA/BMODULE.MRG", "DATA/CMODULE.MRG", "DATA/MMODULE.MRG")
+PIECES = ROOT / "config/mod_pieces.txt"
+PIECES_SEEN = ROOT / "linker/mod/mod_pieces.txt"   # the lines the current split was made with
 COLS = ["name", "mrg", "offset", "slot", "entry", "text", "data", "bss", "cb_start", "cb_end", "sha1"]
 HEADER = struct.Struct("<4s7I32s64s")
 
@@ -158,7 +162,7 @@ options:
   ld_script_path: build/modsplit/{name}.splat.ld
   symbol_addrs_path:
     - linker/mod/main_syms.txt
-  undefined_funcs_auto_path: linker/mod/{name}.funcs.txt
+{pieces}  undefined_funcs_auto_path: linker/mod/{name}.funcs.txt
   undefined_syms_auto_path: linker/mod/{name}.syms.txt
   find_file_boundaries: False
   disassemble_all: True
@@ -189,6 +193,17 @@ segments:
 """
 
 
+def read_pieces(path: Path = PIECES) -> dict[str, list[str]]:
+    """config/mod_pieces.txt: module -> the extra function starts its split makes (VADDRs, upper-case hex)"""
+    out: dict[str, list[str]] = {}
+    if path.exists():
+        for ln in path.read_text().splitlines():
+            p = ln.split("#")[0].split()
+            if len(p) == 2:
+                out.setdefault(p[0], []).append(p[1].upper())
+    return {n: sorted(a) for n, a in out.items()}
+
+
 def split(jobs: int = 8, only: list[str] | None = None) -> None:
     """every module -> asm/nonmatchings/mod/<name>/<func>.s, asm/data/mod/<name>.data.s, src/mod/<name>.c (an
     existing C file is kept: splat never overwrites one), linker/mod/<name>.{funcs,syms}.txt"""
@@ -197,13 +212,19 @@ def split(jobs: int = 8, only: list[str] | None = None) -> None:
     names = only or sorted(table)
     cfg = ROOT / "build/modsplit"
     cfg.mkdir(parents=True, exist_ok=True)
+    pieces = read_pieces()
     for n in names:
         r = table[n]
         pool = pool_start(n, r)
         data = (f"      - [{0x80 + pool:#x}, rodata, mod/{n}_pool]\n" if pool < r["text"] else "") + \
             (f"      - [{0x80 + r['text']:#x}, data, mod/{n}]\n" if r["data"] else "")
+        extra = ""
+        if n in pieces:  # a function start the splitter would not find by itself
+            (cfg / f"{n}.pieces.txt").write_text("".join(f"func_{a}_{n} = 0x{a}; // type:func\n"
+                                                         for a in pieces[n]))
+            extra = f"    - build/modsplit/{n}.pieces.txt\n"
         (cfg / f"{n}.yaml").write_text(YAML.format(name=n, sha1=r["sha1"], bss=r["bss"], data=data,
-                                                   end=0x80 + r["text"] + r["data"]))
+                                                   end=0x80 + r["text"] + r["data"], pieces=extra))
 
     def run(n: str) -> tuple[str, int, str]:
         # a relative config path: splat writes INCLUDE_ASM paths relative to it (asm/nonmatchings/mod/<name>)
@@ -222,7 +243,30 @@ def split(jobs: int = 8, only: list[str] | None = None) -> None:
     for n in names:
         write_ld(n, table[n])
     write_mk(table)
+    # remember which config/mod_pieces.txt lines each module was split with (sync compares)
+    seen = read_pieces(PIECES_SEEN) if only else {}
+    for n in names:
+        seen.pop(n, None)
+        if n in pieces:
+            seen[n] = pieces[n]
+    PIECES_SEEN.write_text("".join(f"{n} {a}\n" for n in sorted(seen) for a in seen[n]))
     print(f"split {len(names)} modules")
+
+
+def sync() -> None:
+    """split again the modules whose config/mod_pieces.txt lines differ from the ones their split was made with"""
+    if not PIECES_SEEN.exists() and not read_pieces():
+        return
+    now, seen = read_pieces(), read_pieces(PIECES_SEEN)
+    names = sorted(n for n in set(now) | set(seen) if now.get(n) != seen.get(n))
+    if not names:
+        return
+    for n in names:
+        for d in (f"asm/nonmatchings/mod/{n}", f"asm/matchings/mod/{n}"):
+            shutil.rmtree(ROOT / d, ignore_errors=True)
+        (ROOT / f"build/src/mod/{n}.c.o").unlink(missing_ok=True)
+    print(f"config/mod_pieces.txt changed: splitting {' '.join(names)} again")
+    split(only=names)
 
 
 def pool_start(n: str, r: dict[str, Any]) -> int:
@@ -281,7 +325,16 @@ def write_ld(n: str, r: dict[str, Any]) -> None:
     # a jump table in the literal pool names its targets by the asm's labels (.word .L<VRAM>_<n>); once the
     # function is C those labels are gone, so they also answer to their addresses (PROVIDE: the asm's own wins)
     pool_s = ROOT / f"asm/data/mod/{n}_pool.rodata.s"
-    labels = sorted(set(re.findall(rf"\.word (\.L([0-9A-F]{{8}})_{n})\b", pool_s.read_text()))) if pool else []
+    labels = set(re.findall(rf"\.word (\.L([0-9A-F]{{8}})_{n})\b", pool_s.read_text())) if pool else set()
+    # a piece split off a function (config/mod_pieces.txt) branches back into it by the function's labels, which
+    # its own asm file does not define (and which are gone once the function is C)
+    for a in read_pieces().get(n, []):
+        s = ROOT / f"asm/nonmatchings/mod/{n}/func_{a}_{n}.s"
+        if s.exists():
+            t = s.read_text()
+            own = set(re.findall(rf"^\s*(\.L[0-9A-F]{{8}}_{n}):", t, re.M))
+            labels |= {(sym, v) for sym, v in re.findall(rf"(\.L([0-9A-F]{{8}})_{n})\b", t) if sym not in own}
+    labels = sorted(labels)
     aliases += "".join(f"PROVIDE({s} = 0x{a});\n" for s, a in labels) + ("\n" if labels else "")
     (ROOT / f"linker/mod/{n}.ld").write_text(LD.format(n=n, pool=pool, data=data, aliases=aliases))
 
@@ -331,6 +384,8 @@ if __name__ == "__main__":
         extract()
     elif cmd == "split":
         split(only=sys.argv[2:] or None)
+    elif cmd == "sync":
+        sync()
     elif cmd == "ld":
         table = read_table()
         for n in sys.argv[2:] or sorted(table):

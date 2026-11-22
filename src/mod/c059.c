@@ -480,7 +480,508 @@ static s32 func_01E00B30_c059(Scene_c059_01E00B30 *g, Card_c059_01E00B30 *o, s32
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c059", func_01E00FB0_c059);
+/* shape c059:01E00FB0 (c059), 768 insns, 1 copy: the c059 scene manager: code >= 0 clears the scene (0x35C0 bytes),
+   the sine and fade tables, the four 0x2000 steps, textures 1..15, the three card points, timer 0xD8, the scene mask
+   and the model or sound setup by mode, fade 0x80; otherwise steps then draws the 48 slots (scale 1.2/0.1 for
+   c059:01E031C0, 1.3/0.1 for c059:01E029A0, else 1; c059:01E03600 turned by its own point), 27 rows, 40 segments and
+   10 entities, shows or hides the 22 models before step 10, steers the three cards before step 0x87 (c059:01E006D0 or
+   c059:01E00B30 by mode), fades, from step 0x87 sets up and flies the picked card's camera model to its point; timer
+   1 restores the models; returns 2 at step 0x86, 8 when the timer runs out */
+
+typedef struct {
+    u8 pad0[0x20];
+    f32 pos[4];
+    u8 pad30[8];
+    s32 (*draw)(void *, void *, void *, s32);
+    void (*fn)(void *, void *);
+    u8 pad40[8];
+    s16 used;
+    u8 pad4A[0xE];
+} Slot_c059_01E00FB0;
+
+typedef struct {
+    u8 pad0[0x20];
+    s32 draw;
+    u8 pad24[4];
+    s16 used;
+    u8 pad2A[6];
+} Row_c059_01E00FB0;
+
+typedef struct {
+    u8 pad0[0x18];
+    s32 (*draw)(void *, void *, void *, s32);
+    void (*fn)(void *, void *);
+    u8 pad20[8];
+    s16 used;
+    u8 pad2A[6];
+} Seg_c059_01E00FB0;
+
+typedef struct {
+    u8 pad0[0x20];
+    s32 draw;
+    s32 step;
+    u8 pad28[6];
+    s16 used;
+    u8 pad30[0xC];
+} Ent_c059_01E00FB0;
+
+typedef struct {
+    u8 pad0[0x64];
+    s32 w64;
+    u8 pad68[8];
+} Obj_c059_01E00FB0;
+
+typedef struct {
+    s32 a;
+    u8 pad4[0xC];
+} Q_c059_01E00FB0;
+
+typedef struct {
+    u8 pad0[0x40];
+    u8 m40[0x40];
+    u8 pad80[0x100];
+    u8 m180[0x40];
+    u8 pad1C0[0x60];
+    s32 rot[4];
+    u8 pad230[0x10];
+    f32 scale[4];
+    u8 pad250[0x40];
+    Slot_c059_01E00FB0 slot[48];
+    u8 pad1310[0x16D8 - 0x1310];
+    Q_c059_01E00FB0 q[4];
+    u8 pad1718[8];
+    Row_c059_01E00FB0 row[27];
+    Seg_c059_01E00FB0 seg[40];
+    Ent_c059_01E00FB0 ent[10];
+    s32 tex[16];
+    u8 pad2648[8];
+    union {
+        Obj_c059_01E00FB0 obj[22];
+        struct {
+            u8 pad2650[0x2880 - 0x2650];
+            Vec4f c;
+            u8 pad2890[0x10];
+            u8 tags[0x20];
+            u8 m28C0[0x10];
+            f32 d[4];
+            u8 col28E0[0x10];
+            Vec4f pos;
+            u8 pad2900[0x10];
+            s32 r[4];
+            u8 pad2920[0x30];
+            u8 col[4];
+            u8 pad2954[0x5C];
+            f32 at[3][4];
+            u8 pad29E0[0x70];
+            s32 timer;
+            u8 pad2A54[0x34];
+            f32 f2A88;
+            u8 pad2A8C[0x12];
+            s16 mode;
+            u8 pad2AA0[2];
+            s16 step;
+            u8 pad2AA4[0x24];
+            s32 has;
+            s32 ot;
+            u8 pad2AD0[0x60];
+            u8 sin[0x17C];
+            s32 ids[3];
+            s32 cam;
+            s32 arrived;
+            u32 mask;
+            u8 pad2CC4[0x5C];
+            s16 fade;
+            s16 off;
+            u8 pad2D24[2];
+            s16 code;
+            u8 pad2D28[0x30];
+            u8 m2D58[0x10];
+        } s;
+    } u;
+} Scene_c059_01E00FB0;
+
+typedef struct {
+    u8 pad0[4];
+    s32 w4;
+    u8 pad8[0x3D];
+    u8 b45;
+} Card_c059_01E00FB0;
+
+static s32 func_01E00FB0_c059(s32 arg0, s32 code) {
+    Scene_c059_01E00FB0 *g = (Scene_c059_01E00FB0 *)arg0;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00107C10(void *);
+    extern void func_00107CB0(void *, s32, s32);
+    extern s32 func_00202BF0(s32, s32);
+    extern u32 func_001F53A0(void);
+    extern void func_00205C40(void *);
+    extern void func_001F53B0(s32, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern s32 func_00109270(void *, s32, s32);
+    extern s32 func_00107180(s32, s32, s32, s32);
+    extern s32 func_00107280(s32, s32, s32);
+    extern void func_001F6CF0(s32);
+    extern s32 func_001DE540(void);
+    extern s32 func_001F5380(void);
+    extern Card_c059_01E00FB0 *func_001DF580(s32, s32, s32, s32, s32);
+    extern void func_001F5970(s32, s32);
+    extern void func_001F5BD0(s32, void *);
+    extern void func_001F5E40(s32, void *);
+    extern void func_001F5D70(s32, void *);
+    extern void func_001F5CA0(s32, void *);
+    extern void func_001F5B70(s32, void *);
+    extern void func_001F5DE0(s32, void *);
+    extern void func_001F5C40(s32, void *);
+    extern f32 func_001A6C60(f32);
+    extern void c059_01E04420();
+    extern void c059_01E06470();
+    extern void c059_01E065D0();
+    extern void c059_01E03B00();
+    extern void c059_01E040B0();
+    extern void c059_01E006D0();
+    extern void c059_01E00B30();
+    extern void c059_01E005C0();
+    extern void c059_01E031C0();
+    extern void c059_01E029A0();
+    extern void c059_01E03600();
+    extern void c059_01E06DC0();
+    extern void c059_01E02F40();
+    Vec4f v;
+    u8 pkt[0x90];
+    s32 n;
+    s32 i;
+    u16 k;
+    s32 m;
+    s32 (*draw)(void *, void *, void *, s32);
+    s32 c;
+    Card_c059_01E00FB0 *p;
+    s16 s;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+
+    n = 0;
+    g->u.s.ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x35C0);
+        func_00107C10(g->u.s.sin);
+        func_00107CB0(g->u.s.m2D58, 30, 12);
+        for (i = 0; i < 4; i++) {
+            g->q[i].a = i * 0x2000;
+        }
+        g->u.s.f2A88 = 0.06f;
+        g->u.s.mode = 0;
+        g->u.s.code = code;
+        g->u.s.timer = 0xD8;
+        for (k = 1; k < 16; k++) {
+            g->tex[k] = func_00202BF0(4, k);
+        }
+        g->u.s.at[0][0] = -150.0f;
+        g->u.s.at[0][1] = 130.0f;
+        g->u.s.at[0][2] = 0.0f;
+        g->u.s.at[1][0] = 150.0f;
+        g->u.s.at[1][1] = 130.0f;
+        g->u.s.at[1][2] = 150.0f;
+        g->u.s.at[2][0] = 150.0f;
+        g->u.s.at[2][1] = 130.0f;
+        g->u.s.at[2][2] = -150.0f;
+        g->u.s.mask = 0x1C0000;
+        g->u.s.mask = func_001F53A0();
+        if (g->u.s.mode == 0) {
+            func_01E00080_c059(g);
+        } else {
+            func_01E00340_c059(g);
+        }
+        g->u.s.fade = 0x80;
+        return 0;
+    }
+    c059_01E04420(g, 0);
+    for (i = 0; i < 48; i++) {
+        if (g->slot[i].used != 0) {
+            if (g->slot[i].fn != NULL) {
+                g->slot[i].fn(g, &g->slot[i]);
+            }
+        }
+    }
+    for (i = 0; i < 27; i++) {
+        if (g->row[i].used != 0) {
+            c059_01E06470(g, &g->row[i]);
+        }
+    }
+    for (i = 0; i < 40; i++) {
+        if (g->seg[i].used != 0) {
+            if (g->seg[i].fn != NULL) {
+                g->seg[i].fn(g, &g->seg[i]);
+            }
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        if (g->ent[i].used != 0) {
+            if (g->ent[i].step != 0) {
+                c059_01E065D0(g, &g->ent[i]);
+            }
+        }
+    }
+    v.z = 0.0f;
+    v.x = 0.0f;
+    v.y = 10.0f;
+    func_00205C40(g->rot);
+    g->rot[2] = 0;
+    g->rot[0] = 0;
+    func_001F53B0(0, &v);
+    func_0020EB40(g->m40);
+    func_0020C940(g, NULL, g->rot, NULL);
+    func_0020BC00(g->m40, g);
+    for (i = 0; i < 48; i++) {
+        if (g->slot[i].used != 0) {
+            n++;
+            func_0020EB40(g->m180);
+            if (g->slot[i].draw != NULL) {
+                if (g->slot[i].draw == (void *)c059_01E031C0) {
+                    func_00106DD0(g->scale, 1.2f, 0.1f, 1.2f);
+                } else if (g->slot[i].draw == (void *)c059_01E029A0) {
+                    { f32 t = 0.1f; func_00106DD0(g->scale, 1.3f, t, 1.3f); }
+                } else {
+                    { f32 o = 1.0f; func_00106DD0(g->scale, o, o, o); }
+                }
+                if (g->slot[i].draw == (void *)c059_01E03600) {
+                    g->rot[0] = (s32)g->slot[i].pos[0];
+                    g->rot[1] = (s32)g->slot[i].pos[1];
+                    g->rot[2] = (s32)g->slot[i].pos[2];
+                } else {
+                    g->rot[0] = 0;
+                    g->rot[1] = 0;
+                    g->rot[2] = 0;
+                }
+            }
+            if (g->slot[i].draw != (void *)c059_01E06DC0 && g->slot[i].draw != (void *)c059_01E02F40 &&
+                g->slot[i].draw != (void *)c059_01E031C0) {
+                func_0020C940(g, g->scale, g->rot, &v);
+                func_0020BC00(g->m180, g);
+            }
+            if (g->slot[i].draw != NULL) {
+                func_00109270(pkt, 0, 0);
+                draw = g->slot[i].draw;
+                draw(g, &g->slot[i], pkt, 0);
+                draw(g, &g->slot[i], pkt, 1);
+            }
+        }
+    }
+    for (i = 0; i < 27; i++) {
+        if (g->row[i].used != 0) {
+            n++;
+            if (g->row[i].draw != 0) {
+                g->rot[0] = 0;
+                g->rot[1] = 0;
+                g->rot[2] = 0;
+            }
+            if (g->row[i].draw != 0) {
+                func_00109270(pkt, 0, 0);
+                c059_01E03B00(g, &g->row[i], pkt, 0);
+                c059_01E03B00(g, &g->row[i], pkt, 1);
+            }
+        }
+    }
+    for (i = 0; i < 40; i++) {
+        if (g->seg[i].used != 0) {
+            n++;
+            if (g->seg[i].draw != NULL) {
+                func_00109270(pkt, 0, 0);
+                draw = g->seg[i].draw;
+                draw(g, &g->seg[i], pkt, 0);
+                draw(g, &g->seg[i], pkt, 1);
+            }
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        if (g->ent[i].used != 0) {
+            n++;
+            if (g->ent[i].draw != 0) {
+                c059_01E040B0(g, &g->ent[i], pkt, 0);
+                c059_01E040B0(g, &g->ent[i], pkt, 1);
+            }
+        }
+    }
+    if (g->u.s.mode == 0) {
+        if (g->u.s.step < 10) {
+            for (i = 0; i < 22; i++) {
+                m = i;
+                if (i > 10) {
+                    m = i + 0xF5;
+                }
+                func_00107180(m, 0, 0, 1);
+                if (g->u.s.ids[0] != m && g->u.s.ids[1] != m && g->u.s.ids[2] != m) {
+                    func_00107280(m, 0, 0);
+                }
+            }
+        }
+        if (g->u.s.step < 0x87) {
+            for (i = 0; i < 3; i++) {
+                c059_01E006D0(g, &g->u.obj[i], i, i);
+            }
+            if (g->u.s.arrived >= 9) {
+                g->u.obj[0].w64 = 1;
+                g->u.obj[1].w64 = 1;
+                g->u.obj[2].w64 = 1;
+                g->u.s.arrived = 0;
+            } else {
+                g->u.s.arrived = 0;
+            }
+        }
+    } else {
+        if (g->u.s.step < 0x87) {
+            for (i = 0; i < 3; i++) {
+                c059_01E00B30(g, &g->u.obj[i], i, 0);
+            }
+            if (g->u.s.arrived >= 9) {
+                g->u.obj[0].w64 = 1;
+                g->u.obj[1].w64 = 1;
+                g->u.obj[2].w64 = 1;
+                g->u.s.arrived = 0;
+            } else {
+                g->u.s.arrived = 0;
+            }
+        }
+        if (g->u.s.step < 10) {
+            for (i = 0; i < 22; i++) {
+                n = i;
+                if (i > 10) {
+                    n = i + 0xF5;
+                }
+                func_00107280(n, 0, 0);
+                if (g->u.s.ids[0] != n && g->u.s.ids[1] != n && g->u.s.ids[2] != n) {
+                    func_00107180(n, 0, 0, 1);
+                }
+            }
+        }
+    }
+    if (g->u.s.step < 8) {
+        g->u.s.fade -= 9;
+        if (g->u.s.fade < 0) {
+            g->u.s.fade = 0;
+        }
+    }
+    if (g->u.s.timer < 10) {
+        for (i = 0; i < 22; i++) {
+            c059_01E005C0(g, &g->u.obj[i], i);
+        }
+        g->u.s.fade += 16;
+        if (g->u.s.fade > 0x80) {
+            g->u.s.fade = 0x80;
+        }
+    }
+    func_001F6CF0((u8)g->u.s.fade);
+    s = g->u.s.step;
+    if (s >= 0x87) {
+        if (s == 0x87) {
+            if (g->u.s.ids[0] < 11) {
+                g->u.s.off = 0;
+            } else {
+                g->u.s.off = 0x100;
+            }
+            c = g->u.s.code;
+            p = func_001DF580(func_001DE540(), c & 0xF, (c >> 8) & 0xF, func_001F5380(), 0);
+            if (p != NULL) {
+                g->u.s.cam = p->b45 + g->u.s.off;
+                func_001F5970(g->u.s.cam, 1);
+                func_001F5BD0(g->u.s.cam, &g->u.s.c);
+                func_001F5E40(g->u.s.cam, g->u.s.col28E0);
+                func_001F5D70(g->u.s.cam, g->u.s.m28C0);
+                func_001F5CA0(g->u.s.cam, g->u.s.tags);
+                g->u.s.has = p->w4;
+                if (g->u.s.has != 0) {
+                    g->u.s.pos.x = 0.0f;
+                    g->u.s.pos.y = 130.0f;
+                    g->u.s.pos.z = 0.0f;
+                    func_001F5B70(g->u.s.cam, &g->u.s.pos);
+                    g->u.s.col[2] = 0;
+                    g->u.s.col[1] = 0;
+                    g->u.s.col[0] = 0;
+                    g->u.s.col[3] = 0x80;
+                    func_001F5DE0(g->u.s.cam, g->u.s.col);
+                    func_00205C40(g->u.s.r);
+                    func_001F5C40(g->u.s.cam, g->u.s.r);
+                    g->u.s.d[0] = g->u.s.c.x / 52.0f;
+                    g->u.s.d[1] = (g->u.s.c.y - g->u.s.pos.y) / 52.0f;
+                    g->u.s.d[2] = g->u.s.c.z / 52.0f;
+                }
+            }
+        } else if (g->u.s.has != 0) {
+            dx = g->u.s.c.x - g->u.s.pos.x;
+            dy = g->u.s.c.y - g->u.s.pos.y;
+            dz = g->u.s.c.z - g->u.s.pos.z;
+            if (s > 0x96) {
+                if (func_001A6C60(dx * dx + dy * dy + dz * dz) > 3.0f) {
+                    g->u.s.pos.x += g->u.s.d[0];
+                    g->u.s.pos.y += g->u.s.d[1];
+                    g->u.s.pos.z += g->u.s.d[2];
+                } else {
+                    g->u.s.pos = g->u.s.c;
+                }
+            }
+            func_001F5B70(g->u.s.cam, &g->u.s.pos);
+            if (g->u.s.cam >> 8) {
+                if (g->u.s.step > 0x9D) {
+                    if (g->u.s.r[0] > 0x4200) {
+                        g->u.s.r[0] -= 0x200;
+                    } else if (g->u.s.r[0] < 0x3E00) {
+                        g->u.s.r[0] += 0x200;
+                    } else {
+                        g->u.s.r[0] = 0x4000;
+                    }
+                    if (g->u.s.r[1] > 0) {
+                        g->u.s.r[1] -= 0x200;
+                    } else {
+                        g->u.s.r[1] = 0;
+                    }
+                }
+                func_001F5C40(g->u.s.cam, g->u.s.r);
+            } else {
+                if (g->u.s.step > 0x9D) {
+                    if (g->u.s.r[0] > 0x4200) {
+                        g->u.s.r[0] -= 0x200;
+                    } else if (g->u.s.r[0] < 0x3E00) {
+                        g->u.s.r[0] += 0x200;
+                    } else {
+                        g->u.s.r[0] = 0x4000;
+                    }
+                    if (g->u.s.r[1] > 0) {
+                        g->u.s.r[1] -= 0x200;
+                    } else {
+                        g->u.s.r[1] = 0;
+                    }
+                }
+                func_001F5C40(g->u.s.cam, g->u.s.r);
+            }
+        }
+    }
+    if (g->u.s.timer == 1) {
+        func_001F5BD0(g->u.s.cam, &g->u.s.c);
+        func_001F5C40(g->u.s.cam, g->u.s.tags);
+        func_001F5E40(g->u.s.cam, g->u.s.col28E0);
+        for (i = 0; i < 22; i++) {
+            m = i;
+            if (i > 10) {
+                m = i + 0xF5;
+            }
+            func_001F5970(m, 0);
+        }
+        func_001F5970(g->u.s.cam, 0);
+    }
+    if (g->u.s.timer != 0) {
+        g->u.s.timer--;
+    }
+    if (g->u.s.step == 0x86) {
+        return 2;
+    }
+    if (g->u.s.timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape c059:01E01BB0, 75 insns: takes the first free of 48 effect slots (0x58 bytes, c021:01E028F0 shape), marks it with its
    index + 1, colours both from the context, copies the context's point and stores both arguments */
@@ -1663,7 +2164,144 @@ static void func_01E031C0_c059(Scene_c059_01E031C0 *g, Ent_c059_01E031C0 *e, voi
 static void func_01E03600_c059(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c059", func_01E03610_c059);
+/* shape c059:01E03610 (C059PAINT_RAIN9), 313 insns, 1 copy: draw one link of a c059 rain sheet: mode 0 sets the
+   material (frame 0x96) and the near and far colours (alpha 0 at a free end, else the link's or the next link's
+   colour); otherwise the quad spans 12 wide at the link and the next one, each edge lifted 50 plus the sheet's swing
+   x the table sine of base + height x rate, pushed out by its depth sine, drawn twice through the entry's half-height
+   matrix; mode copied under opt_propagation off */
+
+typedef struct {
+    u8 r, g, b, a;
+} Col_c059_01E03610;
+
+typedef struct {
+    Vec4f pos;
+    s32 rot[4];
+    s16 depth;
+    u8 pad22[2];
+    s16 swing;
+    u8 pad26[4];
+    s16 base;
+    u8 pad2C[4];
+    f32 rate;
+} Sheet_c059_01E03610;
+
+typedef struct Link_c059_01E03610 {
+    s16 h0;
+    s16 h2;
+    u8 pad4[4];
+    s16 h8;
+    s16 hA;
+    u8 padC[2];
+    s16 hE;
+    struct Link_c059_01E03610 *next;
+    s32 f14;
+    u8 pad18[8];
+    Col_c059_01E03610 c20;
+    Col_c059_01E03610 c24;
+    u8 pad28[4];
+    s16 h2C;
+    s16 sheet;
+} Link_c059_01E03610;
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f quad[4];
+    u8 pad290[0x23B4];
+    s32 tex;
+    u8 pad2648[0x3D8];
+    Vec4f sc;
+    u8 pad2A30[0x9C];
+    s32 ot;
+    u8 pad2AD0[0x60];
+    u8 table[0x368];
+    Sheet_c059_01E03610 sh[1];
+} Scene_c059_01E03610;
+
+#pragma opt_propagation off
+
+static void func_01E03610_c059(Scene_c059_01E03610 *g, Link_c059_01E03610 *e, void *p, s32 arg3) {
+    extern Col_c059_01E03610 D_01E06F80_c059;
+    extern void func_00106080(void *, s32, s32, void *);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern f32 func_00108030(void *, s16, s32);
+    extern void func_00106DD0(void *, f32, f32, f32);
+    extern void func_00108EF0(void *, void *, void *, void *);
+    extern void func_00108FF0(void *, void *, void *, s32);
+    s32 mode = arg3;
+    Link_c059_01E03610 *q = e->next;
+    Col_c059_01E03610 c = D_01E06F80_c059;
+    f32 rm[4];
+    Vec4f sc;
+    f32 m[16];
+    f32 rate;
+    f32 w;
+    s16 a;
+    s32 d;
+
+    if (mode == 0) {
+        func_00106080(rm, 0x96, 0, rm);
+        if (e->f14 == 0) {
+            c = e->c24;
+            c.a = 0;
+            func_00107790(p, &c, 1);
+        } else {
+            func_00107790(p, &e->c24, 1);
+        }
+        if (e->h2C == 0) {
+            c = e->c20;
+            c.a = 0;
+            func_00107790(p, &c, 2);
+        } else if (q != 0) {
+            func_00107790(p, &q->c24, 2);
+        }
+        func_00108500(p, rm, 0);
+        func_00208700(p, g->tex, 1);
+        return;
+    }
+    g->quad[0].x = e->hE + (e->h8 - 6);
+    g->quad[1].x = e->hE + (e->h8 + 6);
+    if (q != 0) {
+        g->quad[2].x = q->hE + (q->h8 - 6);
+        g->quad[3].x = q->hE + (q->h8 + 6);
+    } else {
+        g->quad[2].x = e->h0 - 6;
+        g->quad[3].x = e->h0 + 6;
+    }
+    rate = g->sh[e->sheet].rate;
+    a = g->sh[e->sheet].base + e->hA * rate;
+    g->quad[1].y = g->quad[0].y = 50.0f + g->sh[e->sheet].swing * func_00108030(g->table, a, 1);
+    if (q != 0) {
+        a = g->sh[e->sheet].base + q->hA * rate;
+    } else {
+        a = g->sh[e->sheet].base + e->h2 * rate;
+    }
+    g->quad[3].y = g->quad[2].y = 50.0f + g->sh[e->sheet].swing * func_00108030(g->table, a, 1);
+    d = e->hA - 110;
+    w = g->sh[e->sheet].depth;
+    g->quad[1].z = g->quad[0].z = w * func_00108030(g->table, d, 1);
+    if (q != 0) {
+        d = q->hA - 110;
+        w = g->sh[e->sheet].depth;
+        g->quad[3].z = g->quad[2].z = w * func_00108030(g->table, d, 1);
+    } else {
+        g->quad[3].z = g->quad[2].z = 0.0f;
+    }
+    {
+        f32 r;
+        func_00106DD0(&g->sc, r = 150.0f, 0.0f, r);
+    }
+    {
+        f32 o = 1.0f;
+        func_00106DD0(&sc, o, 0.5f, o);
+    }
+    func_00108EF0(m, &sc, g->sh[e->sheet].rot, &g->sh[e->sheet].pos);
+    func_00108FF0(&g->quad[0], p, m, g->ot);
+    func_00108FF0(&g->quad[0], p, m, g->ot);
+}
+#pragma opt_propagation reset
 
 /* shape c059:01E03B00, 156 insns: draws a pair of mirrored sprites (scale 3) under the camera's turned-back yaw: mode 0
    sets the material (frame 0x50 at +0x2E, colour 0x24 twice, scene texture 0x2628); otherwise the second copy sits at
@@ -1724,7 +2362,10 @@ static void func_01E03B00_c059(Scene_c059_01E03B00 *g, Node_c059_01E03B00 *o, vo
     rot[2] = 0;
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 1; j++) {
-            func_00108CE0(g->m, 3.0f, 3.0f);
+            {
+                f32 r = 3.0f;
+                func_00108CE0(g->m, r, r);
+            }
             func_00109100(g->m, rot, 1, g->table);
             if (i == 0) {
                 v.x = o->x;
@@ -1748,8 +2389,7 @@ static void func_01E03B00_c059(Scene_c059_01E03B00 *g, Node_c059_01E03B00 *o, vo
    (frame 0x96, the link colour with alpha 0 for a side whose flag 0x14 / 0x2C is clear, else its own or the previous
    link colour, scene texture 0x2644); otherwise a quad 12 wide around h8 + hE from this link (height hA) to the
    previous one (or its own start), depth 90 x the table sine of each height, scale 150/0/150, drawn under joint 0x2E
-   (0x34 apart from g+0x2E98); the 0.0f through a block local and the 1.0f through a local one (in its file after
-   c059:01E03B00) */
+   (0x34 apart from g+0x2E98); the 1.0f through a local (in its file after c059:01E03610 and c059:01E03B00) */
 
 typedef struct {
     u8 r, g, b, a;
@@ -1849,10 +2489,7 @@ static void func_01E03D70_c059(Scene_c059_01E03D70 *g, Ent_c059_01E03D70 *e, voi
         } else {
             g->quad[3].z = g->quad[2].z = 90.0f * func_00108030(g->table, e->y, 0);
         }
-        {
-            f32 r = 0.0f;
-            func_00106DD0(&g->sc, 150.0f, r, 150.0f);
-        }
+        func_00106DD0(&g->sc, 150.0f, 0.0f, 150.0f);
         one = 1.0f;
         func_00106DD0(&sv, one, one, one);
         func_00108EF0(m, &sv, g->j[e->idx].m + 0x10, g->j[e->idx].m);
@@ -1965,7 +2602,400 @@ static void func_01E040B0_c059(Scene_c059_01E040B0 *g, Node_c059_01E040B0 *o, Pk
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c059", func_01E04420_c059);
+/* shape c059:01E04420 (C059_W_S), 996 insns, 1 copy: C059_W_S, the scene step: colour 0x80/0x80/0x80/0, counts the
+   frame (0x2AA2); at 1 sets five colours, ten 20-apart distances, three random timers and eight 160s, then spawns
+   four corner glows (+-150), three c059:01E05A70 columns, a c059:01E05710 pair, a c059:01E05440 segment, the
+   c059:01E063A0 glow and the c059:01E06280 fade; each odd frame past time 50 takes a free rain row (35 of 0x34 bytes
+   at 0x2E98) and spawns its glow, steps the rows, and spawns a falling shard (past time 17); frame 1 adds three blue
+   glows at the card points, every 7th a purple glow; turns the three cards' five quads (scale 0.9) from the card
+   points (the camera target from 136); 100 and 130 spawn a white flash; the dist loop's i == 0 arm ends in continue
+   */
+
+typedef struct {
+    Vec4f pos;
+    Vec4f off;
+    u8 x20[0x50];
+} Obj_c059_01E04420;
+
+typedef struct {
+    s32 x, y, z, w;
+} Rot_c059_01E04420;
+
+typedef struct {
+    f32 pos[4];
+    s32 spin;
+    s32 ang;
+    u8 pad18[8];
+    s16 grow;
+    s16 used;
+    s16 lim;
+    s16 speed;
+    s16 delay;
+    s16 h2A;
+    u8 pad2C[4];
+    f32 f30;
+} Row_c059_01E04420;
+
+typedef struct {
+    u8 pad0[0x1310];
+    f32 mat[3][5][16];
+    Rot_c059_01E04420 rot[5];
+    u8 pad1720[0x2650 - 0x1720];
+    Obj_c059_01E04420 obj[3];
+    u8 pad27A0[0x28F0 - 0x27A0];
+    Vec4f c28F0;
+    u8 pad2900[0x2A10 - 0x2900];
+    f32 vx;
+    f32 vy;
+    f32 vz;
+    u8 pad2A1C[4];
+    f32 pos[3];
+    s32 w2A2C;
+    u8 pad2A30[0x10];
+    f32 f2A40;
+    f32 f2A44;
+    f32 f2A48;
+    u8 pad2A4C[4];
+    s32 time;
+    u8 col[4];
+    u8 pad2A58[4];
+    void *owner;
+    f32 f2A60[8];
+    u8 pad2A80[4];
+    f32 f2A84;
+    u8 pad2A88[4];
+    s16 idx;
+    s16 h2A8E;
+    s16 h2A90;
+    u8 pad2A92[2];
+    s16 ang;
+    s16 h2A96;
+    u8 pad2A98[2];
+    s16 h2A9A;
+    s16 slot;
+    u8 pad2A9E[4];
+    s16 step;
+    u8 pad2AA4[4];
+    s16 h2AA8;
+    u8 pad2AAA[2];
+    s16 h2AAC;
+    u8 pad2AAE[2];
+    s16 h2AB0;
+    u8 pad2AB2[0x12];
+    s16 h2AC4;
+    u8 pad2AC6[2];
+    s32 has;
+    u8 pad2ACC[4];
+    f32 dist[10];
+    u8 pad2AF8[0x2B30 - 0x2AF8];
+    u8 sintab[0x198];
+    s16 h2CC8;
+    u8 pad2CCA[6];
+    s16 h2CD0;
+    u8 pad2CD2[6];
+    s16 h2CD8;
+    u8 pad2CDA[0x3A];
+    s16 h2D14;
+    s16 h2D16;
+    s16 h2D18;
+    u8 pad2D1A[0xE];
+    u8 c2D28[4];
+    u8 c2D2C[4];
+    u8 c2D30[4];
+    u8 c2D34[4];
+    u8 c2D38[4];
+    u8 pad2D3C[0x2E98 - 0x2D3C];
+    Row_c059_01E04420 rows[0x23];
+} Scene_c059_01E04420;
+
+static void func_01E04420_c059(Scene_c059_01E04420 *g) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern void func_00106DD0(void *, f32, f32, f32);
+    extern void func_00195108(void *, s32);
+    extern s32 func_0019A5C8(void);
+    extern void func_00205C40(void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00108950(void *, void *, s32, void *);
+    extern void c059_01E01BB0();
+    extern void c059_01E01CE0();
+    extern void c059_01E01EE0();
+    extern void c059_01E020E0();
+    extern void c059_01E02310();
+    extern void c059_01E02460();
+    extern void c059_01E025E0();
+    extern void c059_01E02750();
+    extern void c059_01E02890();
+    extern s32 c059_01E053B0();
+    extern s32 c059_01E05440();
+    extern s32 c059_01E05710();
+    extern s32 c059_01E05A70();
+    extern s32 c059_01E05E40();
+    extern s32 c059_01E05F90();
+    extern s32 c059_01E06280();
+    extern s32 c059_01E062F0();
+    extern s32 c059_01E063A0();
+    extern s32 c059_01E06470();
+    extern s32 c059_01E065D0();
+    extern void c059_01E06720();
+    extern void c059_01E06DC0();
+    Vec4f sc;
+    Vec4f v;
+    s32 r[4];
+    f32 m[16];
+    s32 i;
+    s32 j;
+    s32 k;
+
+    g->col[0] = 0x80;
+    g->col[1] = 0x80;
+    g->col[2] = 0x80;
+    g->col[3] = 0;
+    g->h2AAC = 0x14;
+    g->step++;
+    if (g->step == 1) {
+        func_001076F0(g->c2D28, 0x40, 0x40, 0x40);
+        func_001076F0(g->c2D2C, 0x50, 0x20, 0x20);
+        func_001076F0(g->c2D30, 0x80, 0x80, 0x80);
+        func_001076F0(g->c2D34, 0x80, 0x80, 0x80);
+        func_001076F0(g->c2D38, 0x80, 0x80, 0x80);
+        for (i = 0; i < 10; i++) {
+            if (i == 0) {
+                g->dist[0] = 0.0f;
+                continue;
+            }
+            g->dist[i] = 20.0f + g->dist[i - 1];
+        }
+        g->h2CC8 = 0x1E;
+        g->h2CD0 = 0x96;
+        g->h2CD8 = 0xB4;
+        g->h2D14 = func_0019A5C8() % 200 + 40;
+        g->h2D16 = func_0019A5C8() % 200 + 160;
+        g->h2D18 = func_0019A5C8() % 120 + 200;
+        g->owner = 0;
+        for (i = 0; i < 8; i++) {
+            g->f2A60[i] = 160.0f;
+        }
+        func_001076F0(g->col, 0x80, 0x80, 0x80);
+        func_00106DD0(g->pos, 150.0f, 0.0f, 150.0f);
+        c059_01E01BB0(g, c059_01E053B0, func_01E02C10_c059, 0);
+        func_00106DD0(g->pos, -150.0f, 0.0f, 150.0f);
+        c059_01E01BB0(g, c059_01E053B0, func_01E02C10_c059, 0);
+        func_00106DD0(g->pos, 150.0f, 0.0f, -150.0f);
+        c059_01E01BB0(g, c059_01E053B0, func_01E02C10_c059, 0);
+        func_00106DD0(g->pos, -150.0f, 0.0f, -150.0f);
+        c059_01E01BB0(g, c059_01E053B0, func_01E02C10_c059, 0);
+        g->owner = 0;
+        for (i = 7; i < 10; i++) {
+            if (g->h2A9A == 0) {
+                g->h2A9A = 1;
+            } else {
+                g->h2A9A = 0;
+            }
+            g->f2A40 = i * 15 + 1;
+            g->f2A44 = i * 16 + 1;
+            if (i != 9) {
+                g->h2A96 = 0;
+            } else {
+                g->h2A96 = 1;
+            }
+            g->f2A48 = i * 18;
+            g->slot = 1;
+            g->col[3] = 0;
+            func_00106DD0(g->pos, 0.0f, 0.0f, 0.0f);
+            g->h2A90 = i * 10;
+            g->h2AA8 = 7;
+            func_001076F0(g->col, 0x50, 0x50, 0x50);
+            c059_01E020E0(g, c059_01E05A70, 0, 0);
+        }
+        func_001076F0(g->col, 0x70, 0x70, 0x70);
+        g->owner = 0;
+        for (i = 4; i < 5; i++) {
+            g->f2A40 = i * 10 + 1;
+            g->f2A44 = i * 11 + 1;
+            if (i != 4) {
+                g->h2A96 = 0;
+            } else {
+                g->h2A96 = 1;
+            }
+            g->f2A48 = i * 15;
+            g->slot = 1;
+            g->col[3] = 0;
+            func_00106DD0(g->pos, 0.0f, 0.0f, 0.0f);
+            g->h2A90 = i * 10;
+            g->h2AA8 = 7;
+            g->h2A8E = 3;
+            c059_01E01EE0(g, c059_01E05710, func_01E02F40_c059, 0);
+        }
+        g->owner = 0;
+        for (i = 0; i < 1; i++) {
+            g->f2A40 = 0.0f;
+            g->f2A44 = 0.0f;
+            g->h2A96 = 1;
+            g->f2A48 = i * 25;
+            g->slot = 1;
+            func_00106DD0(g->pos, 0.0f, 0.0f, 0.0f);
+            g->col[3] = 0;
+            g->h2A90 = i * 15;
+            g->h2AA8 = 7;
+            g->h2AC4 = 0;
+            c059_01E01CE0(g, c059_01E05440, func_01E029A0_c059, 0);
+        }
+        g->f2A40 = 20.0f;
+        {
+            f32 x = 0.0f;
+            func_00106DD0(g->pos, x, 50.0f, 0.0f);
+        }
+        c059_01E02460(g, c059_01E063A0, c059_01E06720, 0);
+        func_001076F0(g->col, 0x10, 0x10, 0x10);
+        g->col[3] = 0;
+        c059_01E025E0(g, c059_01E06280, c059_01E06DC0, 0);
+    }
+    if (g->step > 0x14) {
+        if (g->f2A84 < 180.0f) {
+            g->f2A84 += 1.0f;
+        }
+    }
+    if (g->h2CC8 < 0xB4) {
+        g->h2CC8 += 3;
+    }
+    g->ang += 6;
+    if (g->ang >= 360) {
+        g->ang %= 360;
+    }
+    if (g->step % 2 == 1) {
+        if (g->time > 0x32) {
+            for (k = 0; k < 1; k++) {
+                g->owner = 0;
+                g->f2A40 = 0.0f;
+                for (j = 0; j < 0x23; j++) {
+                    if (g->rows[j].used == 0) {
+                        func_00195108(&g->rows[j], 0x34);
+                        g->rows[j].used = 1;
+                        g->idx = j;
+                        j = 0x23;
+                    } else {
+                        g->idx = 0x23;
+                    }
+                }
+                if (g->idx < 0x23) {
+                    func_001076F0(g->col, 0x30, 0x30, 0);
+                    g->slot = g->idx;
+                    g->h2A96 = 0;
+                    if (func_0019A5C8() % 10 < 6) {
+                        c059_01E02310(g, c059_01E05F90, func_01E03D70_c059, 0);
+                    } else {
+                        c059_01E02310(g, c059_01E05F90, func_01E03610_c059, 0);
+                    }
+                    g->rows[g->idx].lim = func_0019A5C8() % 100 + 120;
+                    func_00106DD0(g->rows[g->idx].pos, func_0019A5C8() % 50 - 25, 0.0f, func_0019A5C8() % 50 - 25);
+                    g->rows[g->idx].ang = func_0019A5C8() % 0x10000;
+                    g->rows[g->idx].speed = func_0019A5C8() % 0x80 + 0x20;
+                    g->rows[g->idx].delay = 7;
+                    g->rows[g->idx].h2A = func_0019A5C8() % 60 + 0xAA;
+                    g->rows[g->idx].f30 = 0.6 + 0.1 * (func_0019A5C8() % 8);
+                }
+            }
+        }
+    }
+    for (j = 0; j < 0x23; j++) {
+        if (g->rows[j].used) {
+            if (g->rows[j].delay == 0) {
+                g->rows[j].spin += g->rows[j].speed;
+            } else {
+                g->rows[j].delay--;
+            }
+            if (g->rows[j].grow < 100) {
+                g->rows[j].grow += 3;
+            }
+        }
+    }
+    if (g->step % 2 == 1) {
+        func_00106DD0(g->pos, func_0019A5C8() % 300 - 150, 100.0f, func_0019A5C8() % 300 - 150);
+        g->col[3] = 0;
+        func_00107EC0(g->col, 0, func_0019A5C8() % 10);
+        g->slot = func_0019A5C8() % 12;
+        g->vy = -6.0f;
+        g->vx = -g->pos[0] / 14.0f;
+        g->vz = -g->pos[2] / 14.0f;
+        g->f2A40 = func_0019A5C8() % 100 + 50;
+        g->owner = 0;
+        if (g->time > 0x11) {
+            c059_01E02750(g, c059_01E06470, func_01E03B00_c059, 0);
+        }
+    }
+    if (g->step == 1) {
+        for (k = 0; k < 1; k++) {
+            g->f2A40 = func_0019A5C8() % 10 + 15;
+            g->col[3] = 0;
+            g->h2A90 = func_0019A5C8() % 120;
+            g->f2A48 = 0.0f;
+            g->h2A96 = func_0019A5C8() % 12;
+            func_001076F0(g->col, 0x70, 0x70, 0x70);
+            g->slot = 0;
+            func_00106DD0(g->pos, g->obj[g->slot].pos.x, g->obj[g->slot].pos.y, g->obj[g->slot].pos.z);
+            c059_01E02460(g, c059_01E05E40, c059_01E06720, 0);
+            g->slot = 1;
+            func_00106DD0(g->pos, g->obj[g->slot].pos.x, g->obj[g->slot].pos.y, g->obj[g->slot].pos.z);
+            c059_01E02460(g, c059_01E05E40, c059_01E06720, 0);
+            g->slot = 2;
+            func_00106DD0(g->pos, g->obj[g->slot].pos.x, g->obj[g->slot].pos.y, g->obj[g->slot].pos.z);
+            c059_01E02460(g, c059_01E05E40, c059_01E06720, 0);
+        }
+    }
+    if (g->step % 7 == 1) {
+        for (k = 0; k < 1; k++) {
+            func_00106DD0(g->pos, 0.0f, 30.0f, 0.0f);
+            g->col[3] = 10;
+            g->slot = 0;
+            g->h2A90 = func_0019A5C8() % 360;
+            g->w2A2C = 0;
+            c059_01E02890(g, c059_01E065D0, func_01E040B0_c059, 0);
+        }
+    }
+    func_00205C40(r);
+    for (i = 0; i < 3; i++) {
+        v = g->obj[i].pos;
+        v.x += g->obj[i].off.x;
+        v.y += g->obj[i].off.y;
+        v.z += g->obj[i].off.z;
+        func_00108950(&v, g->obj[i].x20, 0, g->sintab);
+        if (g->step > 0x87) {
+            if (g->has) {
+                v.x = g->c28F0.x;
+                v.y = g->c28F0.y;
+                v.z = g->c28F0.z;
+            }
+        }
+        for (j = 0; j < 5; j++) {
+            g->rot[j].x = r[0] / 10;
+            g->rot[j].z += 0x400;
+            g->rot[j].y = r[1];
+            func_00106DD0(&sc, 0.9f, 0.9f, 0.9f);
+            func_0020EB40(g->mat[i][j]);
+            func_0020C940(m, &sc, NULL, &v);
+            func_0020BC00(g->mat[i][j], m);
+            func_0020C940(m, &sc, &g->rot[j], NULL);
+            func_0020BC00(g->mat[i][j], m);
+        }
+    }
+    if (g->step == 100) {
+        func_001076F0(g->col, 0xFF, 0xFF, 0xFF);
+        g->col[3] = 0;
+        g->slot = 0;
+        c059_01E025E0(g, c059_01E062F0, c059_01E06DC0, 0);
+    }
+    if (g->step == 0x82) {
+        func_001076F0(g->col, 0xFF, 0xFF, 0xFF);
+        g->col[3] = 0;
+        g->slot = 0;
+        c059_01E025E0(g, c059_01E062F0, c059_01E06DC0, 0);
+    }
+    if (g->h2AB0 < 200) {
+        g->h2AB0 += 4;
+    }
+}
 
 /* shape c059:01E053B0, 35 insns: raises two alphas by 16 up to 0x80 while the scene value is under 10, lowers them by 16 down to 16 while the other one is */
 

@@ -1451,4 +1451,532 @@ static s32 func_01E03D20_b523(s32 ot __attribute__((aligned(8))), Laser_b117_01E
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b523", func_01E046E0_b523);
+/* shape b523:01E046E0 (b523), 1015 insns, 1 copy (-O2,p): b523 scene manager, the -O2 build of b487:01E043F0's form
+   with a laser: setup (two discs, a 256-particle burst, a sprite, a 16-point trail, three rings, a 128-particle
+   fountain, a 32-point laser), joints place them, random green/blue each tick, the laser follows joint 0 then homes
+   on the target from tick 107, fountain grows x1.2 and respawns, discs flash, burst grows x1.4 and respawns on a
+   sphere, rings regrow; returns 2/1/6/8 by tick */
+
+typedef struct Crd_b523_01E046E0 {
+    Vec4f scale;
+    Vec4f rot;
+    Vec4f pos;
+    u8 pad30[0x40];
+} Crd_b523_01E046E0;
+
+typedef struct CrdI_b523_01E046E0 {
+    Vec4f scale;
+    s32 rot[4];
+    Vec4f pos;
+    u8 pad30[0x40];
+} CrdI_b523_01E046E0;
+
+typedef struct Part_b523_01E046E0 {
+    f32 x, y, z;
+    u8 a, d;
+    s16 t;
+} Part_b523_01E046E0;
+
+typedef struct Pt_b523_01E046E0 {
+    f32 x, y, z;
+    s16 a;
+    s16 t;
+} Pt_b523_01E046E0;
+
+typedef struct Laser_b523_01E046E0 {
+    s32 tex;
+    u8 b, g, r, a;
+    s32 flags;
+    f32 base;
+    s16 uv[8];
+    u8 pad20[2];
+    s16 kind;
+    s16 tick;
+    s16 limit;
+    s16 count;
+    s16 idx;
+    s16 on;
+    u8 pad2E[2];
+} Laser_b523_01E046E0;
+
+typedef struct Emit_b523_01E046E0 {
+    s32 tex;
+    s32 flags;
+    u8 b, g, r, a;
+    Part_b523_01E046E0 *parts;
+    s16 u, v, w, h;
+    s16 u0, v0, tw, th;
+    f32 width;
+    f32 len;
+    f32 radius;
+    s16 count;
+    u8 nframes;
+    u8 rate;
+} Emit_b523_01E046E0;
+
+typedef struct Spr_b523_01E046E0 {
+    s32 tex;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 w, h, w2, h2;
+    u8 pad1C[4];
+    s16 u, v, tw, th;
+    u8 pad28[8];
+    s32 rx, ry, rz;
+    u8 pad3C[4];
+} Spr_b523_01E046E0;
+
+typedef struct Disc_b523_01E046E0 {
+    s32 flags;
+    u8 b, g, r, a;
+    f32 radius;
+    s16 count;
+    s16 height;
+} Disc_b523_01E046E0;
+
+typedef struct Trail_b523_01E046E0 {
+    s32 tex;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 base;
+    Vec4f org;
+    u8 pad20[4];
+    s16 uv[6];
+    Pt_b523_01E046E0 pts[16];
+    s16 count;
+    u8 pad132[4];
+    s16 h136;
+    s16 h138;
+    s16 step;
+    s16 h13C;
+    s16 last;
+    s16 len;
+    u8 pad142[0xE];
+} Trail_b523_01E046E0;
+
+typedef struct Ring_b523_01E046E0 {
+    s32 tex;
+    s32 flags;
+    u8 b, g, r, a;
+    u8 pad0C[4];
+    s16 u, v, w, h;
+    u8 pad18[0x3E8];
+} Ring_b523_01E046E0;
+
+typedef struct Fx_b523_01E046E0 {
+    s32 tex;
+    s32 flags;
+    u8 b, g, r, a;
+    f32 size;
+    u8 pad10[0x10];
+    s32 rx, ry, rz;
+    u8 pad2C[4];
+    s16 u, v, w, h;
+    s16 u0, v0, tw, th;
+    Part_b523_01E046E0 *parts;
+    s32 rots;
+    s32 f48;
+    f32 radius;
+    u8 pad50[0xA];
+    s16 count;
+    s16 nframes;
+    s16 rate;
+} Fx_b523_01E046E0;
+
+typedef struct Scene_b523_01E046E0 {
+    Crd_b523_01E046E0 c0;
+    Laser_b523_01E046E0 laser;
+    Part_b523_01E046E0 lp[0x20];
+    Crd_b523_01E046E0 c1;
+    Emit_b523_01E046E0 emit;
+    Part_b523_01E046E0 ep[0x100];
+    Crd_b523_01E046E0 c2;
+    Spr_b523_01E046E0 spr;
+    Crd_b523_01E046E0 c5;
+    Disc_b523_01E046E0 disc;
+    Trail_b523_01E046E0 trail;
+    CrdI_b523_01E046E0 cB[3];
+    Ring_b523_01E046E0 ring[3];
+    Crd_b523_01E046E0 c4;
+    Disc_b523_01E046E0 disc3;
+    Crd_b523_01E046E0 cC;
+    Fx_b523_01E046E0 fx;
+    Part_b523_01E046E0 fp[0x80];
+    Vec4f target;
+    s32 steps;
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 j0;
+    s32 j1;
+    s32 j2;
+    u8 pad2C8C[4];
+} Scene_b523_01E046E0;
+
+#pragma optimization_level 2
+
+static s32 func_01E046E0_b523(s32 arg0, s32 code) {
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern s32 func_001039A0(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00103260(void *, s32);
+    extern void func_00103DB0(void *, void *, void *);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern s32 func_001032C0(u8 *, u8, s32);
+    extern s32 func_001033D0(void *, f32, f32);
+    extern void func_001043F0(void *, f32);
+    extern void func_00104490(void *, void *, s32);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern s32 func_0019A5C8();
+    extern s32 b523_01E002E0();
+    extern s32 b523_01E01300();
+    extern s32 b523_01E017F0();
+    extern s32 b523_01E01D80();
+    extern s32 b523_01E022E0();
+    extern s32 b523_01E03D20();
+    Scene_b523_01E046E0 *g = (Scene_b523_01E046E0 *)arg0;
+    s32 ot;
+    Vec4f w;
+    Vec4f v[2];
+    s32 tex[4];
+    s32 i;
+    s32 a;
+    f32 r;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x2C90);
+        func_00103890(&g->c0);
+        func_00103890(&g->c2);
+        func_00103890(&g->c1);
+        for (i = 0; i < 3; i++) {
+            func_00103890(&g->cB[i]);
+        }
+        func_00103890(&g->c4);
+        func_00103890(&g->c5);
+        func_00103890(&g->cC);
+        g->j0 = func_001F5560(func_001F53A0(), 0x1F, 1);
+        g->j1 = func_001F5560(func_001F53A0(), 0x18, 0);
+        g->j2 = func_001F5560(func_001F53A0(), 0x20, 0);
+        g->timer = 0x104;
+        g->t = 1;
+        g->code = code;
+        g->steps = 0x10;
+        g->disc.flags = 0x80000;
+        g->disc.r = 0x80;
+        g->disc.g = 0x80;
+        g->disc.b = 0x80;
+        g->disc.a = 0xFF;
+        g->disc.radius = 30.0f;
+        g->disc.count = 0x24;
+        g->disc.height = 0;
+        g->disc3.flags = 0x80000;
+        g->disc3.r = 0x80;
+        g->disc3.g = 0x80;
+        g->disc3.b = 0x80;
+        g->disc3.a = 0;
+        g->disc3.radius = 4.0f;
+        g->disc3.count = 0x24;
+        g->disc3.height = 0;
+        func_00103260(tex, 0xF);
+        g->laser.tex = tex[0];
+        g->laser.flags = 0x8003;
+        g->laser.r = 0xD0;
+        g->laser.g = 0x70;
+        g->laser.b = 0xA0;
+        g->laser.a = 0x80;
+        g->laser.uv[0] = 0xC8;
+        g->laser.uv[1] = 0x20;
+        g->laser.uv[2] = 7;
+        g->laser.uv[3] = 0x20;
+        g->laser.uv[4] = 0xC8;
+        g->laser.uv[5] = 0x20;
+        g->laser.uv[6] = 0x100;
+        g->laser.uv[7] = 0x100;
+        g->laser.base = 20.0f;
+        g->laser.kind = 8;
+        g->laser.tick = 0;
+        g->laser.limit = 0x64;
+        g->laser.count = 0x20;
+        g->laser.idx = 0;
+        g->laser.on = 1;
+        g->emit.tex = tex[0];
+        g->emit.flags = 3;
+        g->emit.r = 0x80;
+        g->emit.g = 0x80;
+        g->emit.b = 0x80;
+        g->emit.a = 0x80;
+        g->emit.width = 0.5f;
+        g->emit.len = 3.0f;
+        g->emit.u = 0xB0;
+        g->emit.v = 0x60;
+        g->emit.w = 0x20;
+        g->emit.h = 0x20;
+        g->emit.u0 = 0xB0;
+        g->emit.v0 = 0x60;
+        g->emit.tw = 0x100;
+        g->emit.th = 0x100;
+        g->emit.parts = g->ep;
+        g->emit.radius = 10.0f;
+        g->emit.count = 0x100;
+        g->emit.nframes = 1;
+        g->emit.rate = 0;
+        {
+            extern s32 b523_01E00120(void *, s32, f32);
+
+            b523_01E00120(&g->emit, 0xC, 3.0f);
+        }
+        g->spr.tex = tex[0];
+        g->spr.flags = 0x80000;
+        g->spr.r = 0x80;
+        g->spr.g = 0x80;
+        g->spr.b = 0x80;
+        g->spr.a = 0;
+        g->spr.w = 0.5f;
+        g->spr.h = 8.0f;
+        g->spr.w2 = 0.5f;
+        g->spr.h2 = 4.0f;
+        g->spr.u = 0xB0;
+        g->spr.v = 0x40;
+        g->spr.tw = 0x20;
+        g->spr.th = 0x20;
+        g->spr.rx = 0;
+        g->spr.ry = 0;
+        g->spr.rz = 0;
+        g->trail.tex = tex[0];
+        g->trail.flags = 0x85;
+        g->trail.org.x = 0.0f;
+        g->trail.org.y = 0.0f;
+        g->trail.org.z = 0.0f;
+        g->trail.org.w = 0.0f;
+        g->trail.uv[2] = 0xF0;
+        g->trail.uv[3] = 0;
+        g->trail.uv[0] = 0x10;
+        g->trail.uv[1] = 0x10;
+        g->trail.uv[4] = 0x100;
+        g->trail.uv[5] = 0x100;
+        g->trail.base = 20.0f;
+        g->trail.count = 0x10;
+        g->trail.step = 1;
+        g->trail.h13C = 1;
+        g->trail.len = 8;
+        g->trail.h136 = 10;
+        g->trail.h138 = 10;
+        g->trail.r = 0x80;
+        g->trail.g = 0x80;
+        g->trail.b = 0x80;
+        g->trail.a = 0x20;
+        for (i = 0; i < g->trail.count; i++) {
+            g->trail.pts[i].x = g->trail.org.x + (f32)(func_0019A5C8() % 20 - 10);
+            g->trail.pts[i].y = g->trail.org.y + (f32)(func_0019A5C8() % 20 - 10);
+            g->trail.pts[i].z = g->trail.org.z;
+            g->trail.pts[i].t = -g->trail.step * i;
+            g->trail.pts[i].a = 0;
+            g->trail.last = g->trail.len - 1;
+        }
+        for (i = 0; i < 3; i++) {
+            g->ring[i].flags = 0;
+            g->ring[i].u = 0x8E;
+            g->ring[i].v = 0;
+            g->ring[i].w = 0x20;
+            g->ring[i].h = 0x80;
+            g->ring[i].r = 0xD0;
+            g->ring[i].g = 0x70;
+            g->ring[i].b = 0xA0;
+            g->ring[i].a = 0x80;
+            {
+                extern s32 b523_01E01040(void *, s32, f32, f32, f32, f32);
+                f32 in;
+                f32 y;
+                f32 out;
+
+                in = 11.5f;
+                y = 0.0f;
+                out = 12.5f;
+                b523_01E01040(&g->ring[i], tex[0], in, out, y, 0.0f);
+            }
+        }
+        g->fx.tex = tex[0];
+        g->fx.flags = 0x70000001;
+        g->fx.r = 0x80;
+        g->fx.g = 0x80;
+        g->fx.b = 0x80;
+        g->fx.a = 0;
+        g->fx.size = 1.0f;
+        g->fx.rx = 0;
+        g->fx.ry = 0;
+        g->fx.rz = 0;
+        g->fx.u = 0;
+        g->fx.v = 0xE4;
+        g->fx.w = 0xA;
+        g->fx.h = 0xA;
+        g->fx.u0 = 0;
+        g->fx.v0 = 0xE4;
+        g->fx.tw = 0x100;
+        g->fx.th = 0x100;
+        g->fx.parts = g->fp;
+        g->fx.rots = 0;
+        g->fx.f48 = 0;
+        g->fx.radius = 2.0f;
+        g->fx.count = 0x80;
+        g->fx.nframes = 2;
+        g->fx.rate = 0;
+        for (i = 0; i < g->fx.count; i++) {
+            g->fp[i].t = -(func_0019A5C8() % 12);
+            g->fp[i].a = 0;
+            g->fp[i].d = 0;
+            a = func_0019A5C8() % 0x10000;
+            r = 0.1f * (func_0019A5C8() % 40 - 20);
+            g->fp[i].z = r * func_0020B480(a);
+            g->fp[i].x = r * func_0020B550(a);
+            g->fp[i].y = 0.1f * -(f32)(func_0019A5C8() % 30);
+        }
+        g->cB[0].scale.z = 0.0f;
+        g->cB[0].scale.y = 0.0f;
+        g->cB[0].scale.x = 0.0f;
+        g->cB[1].scale.z = 0.5f;
+        g->cB[1].scale.y = 0.5f;
+        g->cB[1].scale.x = 0.5f;
+        g->cB[2].scale.z = 1.0f;
+        g->cB[2].scale.y = 1.0f;
+        g->cB[2].scale.x = 1.0f;
+        return 0;
+    }
+    func_001F5620(func_001F53A0(), g->j1, &v[0]);
+    func_001F5620(func_001F53A0(), g->j2, &v[1]);
+    func_001F5620(func_001F53A0(), g->j1, &g->cC.pos);
+    func_00103DB0(&v[0], &v[1], &g->cC.rot);
+    func_001F5620(func_001F53A0(), g->j1, &g->c4.pos);
+    func_001F5F90(func_001F5380(), &g->target);
+    func_001F5F90(func_001F5380(), &g->c5.pos);
+    func_001F5F90(func_001F5380(), &g->c1.pos);
+    for (i = 0; i < 3; i++) {
+        func_001F5F90(func_001F5380(), &g->cB[i].pos);
+    }
+    func_001F5F90(func_001F53A0(), &v[0]);
+    func_001F5F90(func_001F5380(), &v[1]);
+    func_00103DB0(&v[0], &v[1], &g->c1.rot);
+    if (g->t <= 0x6B) {
+        func_001F5620(func_001F53A0(), g->j0, &g->c2.pos);
+    }
+    if (g->t >= 0x6B) {
+        func_01E03BD0_b523((Obj_b000_01E03A30 *)&g->laser, (Pt_b000_01E03A30 *)g->lp, (f32 *)&g->c2.pos);
+        func_00104490(&g->c2.pos, &g->target, g->steps);
+        if (g->steps != 0) {
+            g->steps--;
+        }
+    }
+    func_001038D0(&g->c0);
+    func_001039A0(&g->c2);
+    func_001038D0(&g->c1);
+    for (i = 0; i < 3; i++) {
+        func_001038D0(&g->cB[i]);
+    }
+    func_001039A0(&g->c4);
+    func_001039A0(&g->c5);
+    func_001038D0(&g->cC);
+    g->disc.g = g->disc3.g = g->laser.g = g->emit.g = g->fx.g = g->spr.g = g->trail.g = func_0019A5C8() % 0x70;
+    g->disc.b = g->disc3.b = g->laser.b = g->emit.b = g->fx.b = g->spr.b = g->trail.b = func_0019A5C8() % 0xA0;
+    if (g->t <= 0xA9) {
+        b523_01E022E0(ot, &g->fx, &g->cC);
+        func_001032C0(&g->fx.a, 0x80, 8);
+        for (i = 0; i < g->fx.count; i++) {
+            if (g->fp[i].t >= 0) {
+                g->fp[i].y += 1.0f;
+                func_00103470(&g->fp[i].a, 0, 8);
+                if (g->fp[i].y < 10.0f) {
+                    g->fp[i].z *= 1.2f;
+                    g->fp[i].x *= 1.2f;
+                }
+                if (g->fp[i].y >= 10.0f) {
+                    a = func_0019A5C8() % 0x10000;
+                    r = 0.1f * (func_0019A5C8() % 40 - 20);
+                    g->fp[i].z = r * func_0020B480(a);
+                    g->fp[i].x = r * func_0020B550(a);
+                    g->fp[i].y = 0.1f * -(f32)(func_0019A5C8() % 30);
+                    g->fp[i].a = 0x80;
+                }
+            }
+        }
+    }
+    if (g->t >= 0x7B) {
+        b523_01E01D80(ot, &g->disc, &g->c5);
+        if (g->t >= 0xE0) {
+            func_00103470(&g->disc.a, 0, 0x10);
+        } else if (g->t % 2 == 0) {
+            g->disc.a = 0xFF;
+        } else {
+            g->disc.a = 0x80;
+        }
+    }
+    if (g->t >= 0x5D && g->t < 0x95) {
+        b523_01E017F0(ot, &g->spr, &g->c4);
+        b523_01E01D80(ot, &g->disc3, &g->c4);
+        func_001032C0(&g->spr.a, 0x80, 0x10);
+        func_001032C0(&g->disc3.a, 0x80, 0x10);
+    }
+    if (g->t >= 0x7B) {
+        for (i = 0; i < 3; i++) {
+            f32 k;
+
+            b523_01E01300(ot, &g->ring[i], &g->cB[i]);
+            func_00103470(&g->ring[i].a, 0, 8);
+            k = 0.1f;
+            if (func_001033D0(&g->cB[i], 2.0f, k) == 0) {
+                g->cB[i].scale.x = g->cB[i].scale.y = g->cB[i].scale.z = 0.1f;
+                g->cB[i].rot[0] = func_0019A5C8() % 0x10000;
+                g->cB[i].rot[1] = func_0019A5C8() % 0x10000;
+                g->cB[i].rot[2] = func_0019A5C8() % 0x10000;
+                if (g->t < 0xE0) {
+                    g->ring[i].a = 0x80;
+                }
+            }
+        }
+        b523_01E002E0(ot, &g->emit, &g->c1);
+        if (g->t > 0xE0) {
+            func_00103470(&g->emit.a, 0, 8);
+        }
+        for (i = 0; i < g->emit.count; i++) {
+            if (g->ep[i].t >= 0) {
+                g->ep[i].x *= 1.4f;
+                g->ep[i].y *= 1.4f;
+                g->ep[i].z *= 1.4f;
+                if (g->ep[i].t > 8) {
+                    func_001043F0(&w, 1.0f);
+                    g->ep[i].y = w.y;
+                    g->ep[i].z = w.z;
+                    g->ep[i].x = w.x;
+                    g->ep[i].t = -(func_0019A5C8() % 12);
+                }
+            }
+        }
+    }
+    if (g->t > 0x6B) {
+        b523_01E03D20(ot, &g->laser, g->lp, (Cam_b117_01E00270 *)&g->c0);
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 0xE0) {
+        return 2;
+    }
+    if (g->t == 0x71) {
+        return 1;
+    }
+    if (g->t >= 0x7B && g->t < 0xE0) {
+        return 6;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
+
+#pragma optimization_level reset

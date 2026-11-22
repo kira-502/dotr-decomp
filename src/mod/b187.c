@@ -676,7 +676,188 @@ static s32 func_01E01CD0_b187(s32 ot, Disc_b540_01E00250 *d, Cam_b540_01E00250 *
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b187", func_01E02230_b187);
+/* shape b015:01E008F0 (LkPrim_ModelShot2), 422 insns, 7 copies (-O3,p): a 2x2 sprite light shot around the
+   model's screen point, its texture window stretched over count steps by the point's offset over 640/448;
+   q.y read through the u16 local py first (puts q.x/q.y in the original's temp registers) */
+
+typedef struct {
+    f32 x, y, z, w;
+} Vec_b015_01E008F0;
+
+typedef struct {
+    u64 x : 16;
+    u64 y : 16;
+    u64 z : 24;
+    u64 f : 8;
+} Xyz_b015_01E008F0;
+
+typedef struct {
+    u16 s : 14;
+    u16 s_pad : 2;
+    u16 t : 14;
+    u16 t_pad : 2;
+    u32 pad;
+} Uv_b015_01E008F0;
+
+typedef struct {
+    s16 tag;
+    u16 count;
+    s32 pad;
+    u64 regs;
+    u8 r, g, b, a;
+    f32 q;
+    Uv_b015_01E008F0 st0;
+    Xyz_b015_01E008F0 p0;
+    Uv_b015_01E008F0 st1;
+    Xyz_b015_01E008F0 p1;
+    u8 pad50[8];
+    u64 t58;
+    u64 t60;
+    u8 pad68[8];
+} Pkt_b015_01E008F0;
+
+typedef struct {
+    u8 pad00[0x30];
+    f32 m[16];
+} Cam_b015_01E008F0;
+
+typedef struct {
+    s32 flags;
+    u8 b, g, r, a;
+    f32 scale;
+    s16 count;
+    s16 model;
+} Shot_b015_01E008F0;
+
+#pragma optimization_level 3
+static inline void b015_01E008F0_tag(Pkt_b015_01E008F0 *p, s32 tag, s32 count, u64 regs) {
+    p->count = count;
+    p->tag = tag;
+    p->regs = regs;
+    p->pad = 0;
+}
+
+static s32 func_01E02230_b187(Shot_b015_01E008F0 *o, Vec_b015_01E008F0 *pos) {
+    extern s32 func_00207F60(void);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern s32 func_00205440(void *, void *, void *, f32 *);
+    extern void func_00208460(void);
+    extern void func_001F7060(s32, s32, void *, void *);
+    extern f32 func_001F5860(s32);
+    extern u64 func_00205D10(void *, f32);
+    extern f32 func_00205DF0(void *, f32);
+    extern void func_002075F0(void *, s32, s32);
+    extern s32 func_00207500(void);
+    extern void func_00207FD0(s32, s32, s32);
+    s32 h;
+    s32 j;
+    s32 i;
+    u16 py;
+    u16 y;
+    s32 u0;
+    s32 v0;
+    s32 u1;
+    s32 v1;
+    u16 x;
+    s32 k;
+    s16 x0;
+    s16 y0;
+    f32 ax;
+    f32 bx;
+    f32 ay;
+    f32 by;
+    Cam_b015_01E008F0 cam;
+    Pkt_b015_01E008F0 pkt __attribute__((aligned(8)));
+    Xyz_b015_01E008F0 q;
+    f32 dep;
+
+    h = func_00207F60();
+    func_00103890(&cam);
+    func_001038D0(&cam);
+    if (func_00205440(pos, cam.m, &q, &dep) == 0) {
+        return -1;
+    }
+    py = q.y;
+    x0 = (q.x >> 4) - 0x6C0;
+    y0 = (py >> 4) - 0x720;
+    ax = x0 / 640.0f;
+    bx = 1.0f - ax;
+    ay = y0 / 448.0f;
+    by = 1.0f - ay;
+    ax *= o->scale;
+    bx *= o->scale;
+    ay *= 0.7f * o->scale;
+    by *= 0.7f * o->scale;
+    ((Pkt_b015_01E008F0 *)(s32)&pkt)->count = 0x26;
+    ((Pkt_b015_01E008F0 *)(s32)&pkt)->tag = 5;
+    ((Pkt_b015_01E008F0 *)(s32)&pkt)->regs = 0x42421;
+    ((Pkt_b015_01E008F0 *)(s32)&pkt)->pad = 0;
+    if (func_00104520(o->flags, 0xC) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x44);
+    } else if (func_00104520(o->flags, 0xB) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x88);
+    } else if (func_00104520(o->flags, 0xA) != 0) {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x42);
+    } else {
+        func_002086D0(&pkt, ((u64)0x80 << 32) | 0x48);
+    }
+    pkt.r = o->r;
+    pkt.g = o->g;
+    pkt.b = o->b;
+    pkt.a = o->a;
+    pkt.q = 1.0f;
+    func_00208460();
+    func_001F7060(o->model, 0, &pkt.t58, &pkt.t60);
+    func_00208460();
+    ((Pkt_b015_01E008F0 *)(s32)&pkt)->count |= 0x800;
+    for (i = 0; i < o->count; i++) {
+        for (j = 0; j < 2; j++) {
+            for (k = 0; k < 2; k++) {
+                x = k * 640 + 0x6C0;
+                y = j * 448 + 0x720;
+                u0 = ((s32)ax * i) << 4;
+                v0 = ((s32)ay * i) << 4;
+                u1 = (640 - (s32)bx * i) << 4;
+                v1 = (448 - (s32)by * i) << 4;
+                py = (y << 4) - 8;
+                pkt.p0.x = q.x;
+                pkt.p0.y = q.y;
+                pkt.p0.f = 0;
+                pkt.p1.x = (x << 4) - 8;
+                pkt.p1.y = py;
+                pkt.p1.f = 0;
+                ((Uv_b015_01E008F0 *)(s32)&pkt.st0)->s = x0 << 4;
+                ((Uv_b015_01E008F0 *)(s32)&pkt.st0)->t = y0 << 4;
+                if (j == 0) {
+                    if (k == 0) {
+                        ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->s = u0;
+                        ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->t = v0;
+                    } else {
+                        ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->s = u1;
+                        ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->t = v0;
+                    }
+                } else if (k == 0) {
+                    ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->s = u0;
+                    ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->t = v1;
+                } else {
+                    ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->s = u1;
+                    ((Uv_b015_01E008F0 *)(s32)&pkt.st1)->t = v1;
+                }
+                if (func_00104520(o->flags, 0x13) != 0) {
+                    pkt.p0.z = pkt.p1.z = 0xFFFFFF;
+                    func_002075F0(&pkt, 0, 0);
+                } else {
+                    pkt.p0.z = pkt.p1.z = func_00205D10(pos, -func_001F5860(o->model));
+                    func_002075F0(&pkt, 0, (u32)func_00205DF0(pos, -func_001F5860(o->model)));
+                }
+            }
+        }
+    }
+    func_00207FD0(h, func_00207500(), 0);
+    return 0;
+}
+#pragma optimization_level reset
 
 typedef struct V4_b000_01E032C0 {
     f32 x, y, z, w;
@@ -1346,4 +1527,412 @@ static s32 func_01E03CB0_b187(s32 obj, Spr_b087_01E03C90 *spr, Cam_b087_01E03C90
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b187", func_01E042C0_b187);
+/* shape b187:01E042C0 (b187), 651 insns, 1 copy: b187 scene manager: code >= 0 sets up two discs, the model shot, the
+   laser trail, a 256-point falling spray, a sprite and a ribbon sprite; else follows joints, draws the shot from 30
+   to 104, the big disc/sprite from 123, the small disc and laser from 105, the spray before 105; returns 2/1/6/8 by
+   tick */
+
+typedef struct {
+    f32 x, y, z;
+    u8 padC[4];
+    Vec4f rot;
+    Vec4f pos;
+    u8 pad30[0x40];
+} Cam_b187_01E042C0;
+
+typedef struct {
+    s32 tex;
+    u8 c[3];
+    u8 a;
+    s32 flags;
+    f32 base;
+    s16 uv[8];
+    u8 pad20[2];
+    s16 h22;
+    s16 tick;
+    s16 h26;
+    s16 n1;
+    s16 n2;
+    s16 h2C;
+    u8 pad2E[2];
+} Laser_b187_01E042C0;
+
+typedef struct {
+    f32 x, y, z;
+    u8 a;
+    u8 frame;
+    s16 t;
+} Pt_b187_01E042C0;
+
+typedef struct {
+    s32 flags;
+    u8 c[4];
+    f32 radius;
+    s16 count;
+    s16 height;
+} Disc_b187_01E042C0;
+
+typedef struct {
+    s32 f0;
+    u8 b, g, r, a;
+    f32 size;
+    s16 n;
+    s16 id;
+} Shot_b187_01E042C0;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    u8 c[4];
+    f32 scale;
+    s16 uv[4];
+    u8 pad18[8];
+    Vec4f v[4];
+    s32 r[64][4];
+} Spr_b187_01E042C0;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    u8 c[4];
+    f32 scale;
+    s16 uv[4];
+    u8 pad18[8];
+    f32 w0;
+    f32 w1;
+    f32 h0;
+    f32 h1;
+    Vec4f v[4];
+    s32 r[64][4];
+} Rib_b187_01E042C0;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    u8 c[4];
+    f32 size;
+    u8 pad10[0x10];
+    s32 rot[4];
+    s16 uv[8];
+    Pt_b187_01E042C0 *pts;
+    s32 rots;
+    s32 x48;
+    f32 radius;
+    f32 grow;
+    f32 amp;
+    s16 freq;
+    s16 count;
+    s16 nframes;
+    s16 rate;
+} Emit_b187_01E042C0;
+
+typedef struct {
+    Cam_b187_01E042C0 c0;
+    Laser_b187_01E042C0 laser;
+    Pt_b187_01E042C0 lpts[32];
+    Cam_b187_01E042C0 c1;
+    Cam_b187_01E042C0 c6;
+    Shot_b187_01E042C0 shot;
+    Cam_b187_01E042C0 c2;
+    Disc_b187_01E042C0 disc1;
+    Cam_b187_01E042C0 c3;
+    Spr_b187_01E042C0 spr1;
+    Disc_b187_01E042C0 disc2;
+    Cam_b187_01E042C0 c4;
+    Emit_b187_01E042C0 emit;
+    Pt_b187_01E042C0 pts[0x100];
+    Cam_b187_01E042C0 c5;
+    Rib_b187_01E042C0 spr2;
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 fade;
+    s32 cnt;
+    u8 col[4];
+    Vec4f tgt;
+    s32 j[4];
+    u8 pad1ED8[8];
+} Scene_b187_01E042C0;
+
+static s32 func_01E042C0_b187(s32 arg0, s32 code) {
+    Scene_b187_01E042C0 *g = (Scene_b187_01E042C0 *)arg0;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern void func_001039A0(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F53C0(s32, s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F6D00(s32);
+    extern void func_00103260(s32 *, s32);
+    extern void func_00103290(s32 *, s32);
+    extern void func_00103DB0(void *, void *, void *);
+    extern void func_00104490(void *, void *, s32);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern s32 func_001032C0(u8 *, u8, s32);
+    extern s32 func_001033D0(void *, f32, f32);
+    extern void func_00103540(void *, f32, f32);
+    extern void func_00103390(void *, f32, f32);
+    extern s32 func_0019A5C8();
+    extern s32 b187_01E02230();
+    Vec4f v[2];
+    s32 tx[4];
+    s32 ot;
+    s32 i;
+    s32 a;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x1EE0);
+        func_00103890(&g->c0);
+        func_00103890(&g->c1);
+        func_00103890(&g->c4);
+        func_00103890(&g->c2);
+        func_00103890(&g->c3);
+        func_00103890(&g->c5);
+        func_00103890(&g->c6);
+        g->j[0] = func_001F5560(func_001F53A0(), 0x1F, 1);
+        g->j[1] = func_001F5560(func_001F53A0(), 8, 0);
+        g->j[2] = func_001F5560(func_001F53A0(), 0x40, 0);
+        g->j[3] = func_001F5560(func_001F53A0(), 0x48, 0);
+        g->timer = 0xE6;
+        g->t = 1;
+        g->code = code;
+        g->cnt = 0x13;
+        g->fade = 0x80;
+        g->col[2] = 0xE0;
+        g->col[1] = 0x70;
+        g->col[0] = 0xA0;
+        g->col[3] = 0;
+        g->disc1.flags = 0x80000;
+        g->disc1.c[2] = 0xE0;
+        g->disc1.c[1] = 0x50;
+        g->disc1.c[0] = 0x60;
+        g->disc1.c[3] = 0;
+        g->disc1.radius = 10.0f;
+        g->disc1.count = 0x24;
+        g->disc1.height = 0;
+        g->disc2.flags = 0;
+        g->disc2.c[2] = 0xE0;
+        g->disc2.c[1] = 0x50;
+        g->disc2.c[0] = 0x60;
+        g->disc2.c[3] = 0;
+        g->disc2.radius = 15.0f;
+        g->disc2.count = 0x24;
+        g->disc2.height = 0;
+        g->shot.f0 = 0;
+        g->shot.r = 0x80;
+        g->shot.g = 0x80;
+        g->shot.b = 0x80;
+        g->shot.a = 0x30;
+        g->shot.size = 0.0f;
+        g->shot.n = 5;
+        g->shot.id = func_001F53A0();
+        func_00103290(tx, 0);
+        g->laser.tex = tx[0];
+        g->laser.flags = 0x8003;
+        g->laser.c[2] = 0x80;
+        g->laser.c[1] = 0x80;
+        g->laser.c[0] = 0x80;
+        g->laser.a = 0x80;
+        g->laser.uv[0] = 0;
+        g->laser.uv[1] = 0;
+        g->laser.uv[2] = 0x10;
+        g->laser.uv[3] = 0x20;
+        g->laser.uv[4] = 0;
+        g->laser.uv[5] = 0;
+        g->laser.uv[6] = 0x80;
+        g->laser.uv[7] = 0x40;
+        g->laser.base = 150.0f;
+        g->laser.h22 = 8;
+        g->laser.tick = 0;
+        g->laser.h26 = 0x30;
+        g->laser.n1 = 0x20;
+        g->laser.n2 = 0;
+        g->laser.h2C = 1;
+        g->spr2.flags = 1;
+        g->spr2.uv[0] = 0x40;
+        g->spr2.uv[1] = 0;
+        g->spr2.uv[2] = 0x40;
+        g->spr2.uv[3] = 0x40;
+        g->spr2.c[2] = 0x80;
+        g->spr2.c[1] = 0x80;
+        g->spr2.c[0] = 0x80;
+        g->spr2.c[3] = 0x40;
+        g->spr2.w0 = 0.5f;
+        g->spr2.w1 = 1.0f;
+        g->spr2.h0 = 8.0f;
+        g->spr2.h1 = 0.0f;
+        func_01E03B50_b187((Obj_b087_01E03B30 *)&g->spr2, tx[0], 3.0f);
+        g->emit.tex = tx[0];
+        g->emit.flags = 0x70000003;
+        g->emit.c[2] = 0x80;
+        g->emit.c[1] = 0x80;
+        g->emit.c[0] = 0x80;
+        g->emit.c[3] = 0;
+        g->emit.size = 0.5f;
+        g->emit.rot[0] = 0;
+        g->emit.rot[1] = 0;
+        g->emit.rot[2] = 0;
+        g->emit.uv[0] = 0;
+        g->emit.uv[1] = 0x20;
+        g->emit.uv[2] = 0x20;
+        g->emit.uv[3] = 0x20;
+        g->emit.uv[4] = 0;
+        g->emit.uv[5] = 0x20;
+        g->emit.uv[6] = 0x80;
+        g->emit.uv[7] = 0x40;
+        g->emit.pts = g->pts;
+        g->emit.rots = 0;
+        g->emit.x48 = 0;
+        g->emit.radius = 15.0f;
+        g->emit.count = 0x100;
+        g->emit.nframes = 1;
+        g->emit.rate = 0;
+        func_01E00250_b187((Ring_b001_01E01B20 *)&g->emit, 0.5f);
+        for (i = 0; i < g->emit.count; i++) {
+            g->pts[i].t = -(func_0019A5C8() % 12);
+            g->pts[i].a = 0x30;
+            g->pts[i].frame = 0;
+            g->pts[i].y += 10.0f;
+        }
+        func_00103260(tx, 0xF);
+        g->spr1.flags = 1;
+        g->spr1.uv[0] = 0x8E;
+        g->spr1.uv[1] = 0;
+        g->spr1.uv[2] = 0x22;
+        g->spr1.uv[3] = 0x40;
+        g->spr1.c[2] = 0xE0;
+        g->spr1.c[1] = 0x50;
+        g->spr1.c[0] = 0x60;
+        g->spr1.c[3] = 0x20;
+        func_01E028D0_b187((Obj_b000_01E032C0 *)&g->spr1, tx[0], 2.0f);
+        g->c3.x = g->c3.y = g->c3.z = 0.1f;
+        return 0;
+    }
+    func_001F53C0(1, func_001F53A0(), &g->c6.pos);
+    if (g->t == 0x69) {
+        func_001F5F90(func_001F5380(), &v[0]);
+        func_001F5620(func_001F53A0(), g->j[0], &v[1]);
+        func_00103DB0(&v[0], &v[1], &g->c5.rot);
+        g->c5.pos = v[1];
+    }
+    func_001F5620(func_001F53A0(), g->j[0], &v[0]);
+    func_001F5620(func_001F53A0(), g->j[1], &v[1]);
+    func_00103DB0(&v[0], &v[1], &g->c4.rot);
+    func_001F5F90(func_001F5380(), &g->tgt);
+    func_001F5F90(func_001F5380(), &g->c3.pos);
+    func_001F5620(func_001F53A0(), g->j[0], &g->c4.pos);
+    func_001F5620(func_001F53A0(), g->j[0], &g->c2.pos);
+    if (g->t <= 0x69) {
+        func_001F5620(func_001F53A0(), g->j[0], &g->c1.pos);
+    }
+    if (g->t >= 0x69) {
+        func_01E03040_b187((Obj_b000_01E03A30 *)&g->laser, (Pt_b000_01E03A30 *)g->lpts, (f32 *)&g->c1.pos);
+        func_00104490(&g->c1.pos, &g->tgt, g->cnt);
+        if (g->cnt != 0) {
+            g->cnt--;
+        }
+    }
+    func_001038D0(&g->c0);
+    func_001039A0(&g->c1);
+    func_001038D0(&g->c4);
+    func_001039A0(&g->c2);
+    func_001039A0(&g->c3);
+    func_001038D0(&g->c5);
+    if (g->t >= 0x69) {
+        func_01E00120_b187();
+    }
+    if (g->t < 0xCC) {
+        func_00103470((u8 *)&g->fade, 0x20, 4);
+    } else {
+        func_001032C0((u8 *)&g->fade, 0x80, 4);
+    }
+    func_001F6D00((u8)g->fade);
+    if (g->t >= 0x1E && g->t < 0x69) {
+        b187_01E02230(&g->shot, &g->c6.pos);
+        if (g->t >= 0x3D) {
+            func_00103540(&g->shot.size, 0.0f, 2.0f);
+        } else {
+            { f32 q = 2.0f; func_00103390(&g->shot.size, 40.0f, q); }
+        }
+    }
+    if (g->t >= 0x7B) {
+        if (g->t < 0xB2) {
+            func_001033D0(&g->c3, 2.0f, 0.05f);
+        } else {
+            g->c3.x = g->c3.y = g->c3.z = 1.0f;
+        }
+        func_01E01CD0_b187(ot, (Disc_b540_01E00250 *)&g->disc2, (Cam_b540_01E00250 *)&g->c3);
+        func_01E02A30_b187(ot, (Spr_b000_01E03420 *)&g->spr1, (Cam_b000_01E03420 *)&g->c3);
+        if (g->t >= 0xBE) {
+            func_00103470(&g->disc2.c[3], 0, 0x10);
+            func_00103470(&g->spr1.c[3], 0, 2);
+        } else {
+            func_001032C0(&g->disc2.c[3], 0xFF, 8);
+        }
+        for (i = 0; i < 0x40; i++) {
+            g->spr1.r[i][0] += 0x80;
+            g->spr1.r[i][1] += 0x80;
+            g->spr1.r[i][2] += 0x80;
+        }
+    }
+    if (g->t >= 0x69) {
+        if (g->t == 0x69) {
+            g->disc1.c[3] = 0xFF;
+        }
+        func_01E01CD0_b187(ot, (Disc_b540_01E00250 *)&g->disc1, (Cam_b540_01E00250 *)&g->c2);
+        func_00103470(&g->disc1.c[3], 0, 4);
+    }
+    if (g->t < 0x69) {
+        func_01E003E0_b187(ot, (Emit_b000_01E01140 *)&g->emit, (Cam_b000_01E01140 *)&g->c4);
+        if (g->t >= 0x51) {
+            func_001032C0(&g->emit.c[3], 0x80, 8);
+        }
+        for (i = 0; i < g->emit.count; i++) {
+            if (g->pts[i].t >= 0) {
+                g->pts[i].y -= 1.0f;
+                func_001032C0(&g->pts[i].a, 0x80, 8);
+                if (g->pts[i].y > 0.0f) {
+                    g->pts[i].z *= 0.8f;
+                    g->pts[i].x *= 0.8f;
+                }
+                if (g->pts[i].y < 0.0f) {
+                    a = func_0019A5C8() % 0x10000;
+                    g->pts[i].z = g->emit.radius * func_0020B480(a);
+                    g->pts[i].x = g->emit.radius * func_0020B550(a);
+                    g->pts[i].y = 10.0f + (f32)(func_0019A5C8() % 10);
+                    g->pts[i].a = 0;
+                }
+            }
+        }
+    }
+    if (g->t > 0x69) {
+        func_01E03CB0_b187(ot, (Spr_b087_01E03C90 *)&g->spr2, (Cam_b087_01E03C90 *)&g->c5);
+        func_00103470(&g->spr2.c[3], 0, 1);
+        func_001033D0(&g->c5, 3.0f, 0.4f);
+        func_01E03190_b187(ot, (Laser_b117_01E00270 *)&g->laser, (Pt_b117_01E00270 *)g->lpts,
+                           (Cam_b117_01E00270 *)&g->c0);
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 0xCC) {
+        return 2;
+    }
+    if (g->t == 0x6F) {
+        return 1;
+    }
+    if (g->t >= 0x7B && g->t < 0xCC) {
+        return 6;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}

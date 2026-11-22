@@ -982,4 +982,236 @@ static s32 func_01E02860_b128(void *arg0, s32 ot, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b128", func_01E033C0_b128);
+/* shape b128:01E033C0 (b128), 567 insns, 1 copy (-O1,p): scene manager: a ring wave pair, needle, flare and emitter
+   at 0xB6, 90 rcore sprites at 0x93, flashes 0x8C-0xDE */
+
+typedef struct {
+    u8 pad0[4];
+    u8 on;
+    u8 b5;
+    u8 pad6[0xE];
+    f32 f14;
+    f32 f18;
+    f32 f1C;
+    Vec4f pos;
+    f32 f30;
+    f32 f34;
+    u8 pad38[0x18];
+    f32 f50;
+    u8 pad54[0xC];
+} Emit_b128_01E033C0;
+
+typedef struct {
+    u8 pad0[4];
+    u8 b4;
+    u8 b5;
+    u8 pad6;
+    u8 b7;
+    u8 b8;
+    u8 pad9[3];
+    f32 fC;
+    f32 f10;
+    f32 f14;
+    f32 f18;
+    f32 f1C;
+    u8 c[4];
+    u8 d[4];
+    Vec4f pos;
+    u8 pad38[8];
+    s32 rot;
+    u8 pad44[4];
+} Wave_b128_01E033C0;
+
+typedef struct {
+    u8 pad0[4];
+    u8 b4;
+    u8 b5;
+    u8 b6;
+    u8 b7;
+    u8 b8;
+    u8 b9;
+    u8 bA;
+    u8 bB;
+    u8 c[4];
+    f32 f10;
+    s32 i14;
+    u8 pad18[0x24];
+} Rc_b128_01E033C0;
+
+typedef struct {
+    u16 t;
+    u8 pad2[2];
+    s32 unitA;
+    s32 unitB;
+    s32 m[4];
+    u8 pad1C[0x10];
+    u8 cam[0x14];
+    Emit_b128_01E033C0 emit;
+    Wave_b128_01E033C0 wave[2];
+    Ray_b011_01E04380 ndl;
+    Obj_b241_01E00440 flear;
+    Rc_b128_01E033C0 rc[90];
+    s8 tbl[0x100];
+} Scene_b128_01E033C0;
+
+#pragma optimization_level 1
+
+static s32 func_01E033C0_b128(Scene_b128_01E033C0 *g, s32 code) {
+    extern s32 func_00207500(void);
+    extern void func_00198948(void *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_00102330(void *, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00101AD0(void *, s32, s32, s32);
+    extern s32 func_0019A5C8(void);
+    extern void func_001F71A0(s32, s32, s32, void *, void *, s32);
+    s32 ot;
+    Vec4f v;
+    s32 i;
+    s32 j;
+    s32 n;
+    u8 c0[4];
+    u8 c1[4];
+
+    ot = func_00207500();
+    if (code == -3 || code == -2) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00198948(g, 0, 0x1800);
+        g->unitA = func_001F53A0();
+        g->unitB = func_001F5380();
+        func_001F6160(g->unitA, g->cam);
+        func_00202BF0(4, 0xF);
+        for (i = 0; i < 2; i++) {
+            func_00202BF0(5, i);
+        }
+        g->m[0] = func_001F5560(g->unitA, 0x10, 1);
+        g->m[1] = func_001F5560(g->unitA, 0x12, 0);
+        g->m[2] = func_001F5560(g->unitA, 0x14, 0);
+        g->m[3] = func_001F5560(g->unitA, 1, 0);
+        func_00102330(g->tbl, 0x100);
+        return 0;
+    }
+    g->t++;
+    func_001F5F90(g->unitB, &v);
+    switch (g->t) {
+    case 0x93:
+        for (j = 0; j < 3; j++) {
+            for (i = 0; i < 30; i++) {
+                n = i + j * 30;
+                func_00101AD0(&g->rc[n], 0x40, (u8)(i >> 1), 7);
+                g->rc[n].b5 = 1;
+                g->rc[n].b6 = g->m[j];
+                g->rc[n].b4 = 0;
+                g->rc[n].b8 = 1;
+                g->rc[n].b9 = 3;
+                g->rc[n].bA = 2;
+                g->rc[n].bB = 0;
+                g->rc[n].c[2] = g->rc[n].c[1] = g->rc[n].c[0] = 0x80;
+                g->rc[n].c[3] = 0x80;
+                g->rc[n].f10 = 25.0f;
+                g->rc[n].i14 = 0xFA;
+            }
+        }
+        break;
+    case 0xB6:
+        for (i = 0; i < 2; i++) {
+            func_00101AD0(&g->wave[i], 0x14, 0, 0xFF);
+            g->wave[i].b4 = 0;
+            g->wave[i].b5 = 0;
+            g->wave[i].b7 = 9;
+            g->wave[i].b8 = 0;
+            g->wave[i].fC = 2.5f;
+            g->wave[i].f10 = 0.1f;
+            g->wave[i].f14 = 0.2f;
+            g->wave[i].f18 = 0.0f;
+            g->wave[i].f1C = 0.03f;
+            g->wave[i].c[2] = g->wave[i].c[1] = g->wave[i].c[0] = g->wave[i].c[3] = 0x80;
+            g->wave[i].d[2] = 0x80;
+            g->wave[i].d[1] = 0;
+            g->wave[i].d[0] = 0x40;
+            g->wave[i].d[3] = 0;
+            g->wave[i].pos = v;
+            if (i != 0) {
+                g->wave[i].rot = 0x2800;
+            } else {
+                g->wave[i].rot = -0x2800;
+            }
+        }
+        func_00101AD0(&g->ndl, 0x1C, 0, 0xFF);
+        g->ndl.flags = 7;
+        g->ndl.size = 1.2f;
+        g->ndl.width = 40.0f;
+        g->ndl.pad05[0] = 0;
+        g->ndl.texkind = 0;
+        g->ndl.texpage = 2;
+        g->ndl.texmode = 3;
+        g->ndl.segments = 0xA0;
+        g->ndl.index = func_0019A5C8() >> 4;
+        g->ndl.table = (u8 *)g->tbl;
+        g->ndl.radius = 1.0f;
+        g->ndl.r0 = 0x80;
+        g->ndl.g0 = 0;
+        g->ndl.b0 = 0x40;
+        g->ndl.r1 = g->ndl.g1 = g->ndl.b1 = 0x80;
+        g->ndl.a0 = 0x10;
+        g->ndl.a1 = 0x80;
+        g->ndl.pos = *(Vec_b011_01E04380 *)&v;
+        func_00101AD0(&g->flear, 0x1C, 0, 0xFF);
+        g->flear.pad5[0] = 0;
+        g->flear.flags = 0x81;
+        g->flear.segs = 9;
+        g->flear.ir = g->flear.ig = g->flear.ib = g->flear.alpha = 0xC0;
+        g->flear.r = 0x40;
+        g->flear.g = 0;
+        g->flear.b = 0x80;
+        g->flear.grow = 0.0f;
+        g->flear.radius = 600.0f;
+        g->flear.pos = *(V4_b241_01E00440 *)&v;
+        func_00101AD0(&g->emit, 0x18, 0, 0xFF);
+        g->emit.b5 = 0;
+        g->emit.on = 1;
+        g->emit.f14 = 1.8f;
+        g->emit.f18 = 1.0f;
+        g->emit.f1C = 2.0f;
+        g->emit.f30 = 0.0f;
+        g->emit.f34 = 80.0f;
+        g->emit.f50 = 6.0f;
+        g->emit.pos = v;
+        break;
+    case 0x118:
+        return 8;
+    }
+    if (g->t >= 0x8C && g->t <= 0xDE && (g->t & 1)) {
+        c0[0] = 0x80;
+        c0[1] = 0x80;
+        c0[2] = 0x80;
+        c1[2] = 0x80;
+        c1[1] = 0x80;
+        c1[0] = 0x80;
+        c0[3] = 0x70;
+        c1[3] = 0x40;
+        func_001F71A0(g->unitA, 6, 0, c0, c1, 0);
+    }
+    func_01E00080_b128((Obj_b002_01E00080 *)&g->emit);
+    func_01E00440_b128(g->wave, ot, 2);
+    func_01E00E10_b128(&g->ndl, ot, 1);
+    func_01E01B40_b128(&g->flear, ot, 1);
+    func_01E02860_b128(g->rc, ot, 0x5A);
+    if (g->t >= 0xB6 && g->t <= 0xCC) {
+        return 6;
+    }
+    switch (g->t) {
+    case 0xAC:
+        return 1;
+    case 0xB3:
+        return 2;
+    }
+    return 0;
+}
+#pragma optimization_level reset

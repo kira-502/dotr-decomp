@@ -429,6 +429,372 @@ static s32 func_01E00940_b262(s32 obj, Spr_b000_01E03420 *spr, Cam_b000_01E03420
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b262", func_01E00F50_b262);
+/* shape b262:01E00F50 (LkEff_SortFlash), 294 insns, 3 copies: lightning bolt update: on tick 0 lays count (<= 16)
+   nodes from p0 to p1 jittered by rand and resets the three strand alphas; grows one node per step ticks, builds and
+   fades the strands (fade steps u8, passed to a (u8 *, u8, u8) fader), nudges each glow point, restarts after fade +
+   step * count ticks */
 
-INCLUDE_ASM("asm/nonmatchings/mod/b262", func_01E013F0_b262);
+typedef struct {
+    u8 pad0[0x20];
+    Vec4f pos;
+    u8 pad30[0x40];
+} Node_b262_01E00F50;
+
+typedef struct {
+    u8 pad0[7];
+    u8 a;
+    u8 pad8[8];
+} Strand_b262_01E00F50;
+
+typedef struct {
+    s32 x, y, z, w;
+} Pt_b262_01E00F50;
+
+typedef struct {
+    u8 pad0[0xB];
+    u8 a;
+    u8 padC[0x54];
+    Pt_b262_01E00F50 v[64];
+} Glow_b262_01E00F50;
+
+typedef struct {
+    u8 pad0[4];
+    s32 flags;
+    u8 pad8[4];
+    s16 count;
+    s16 jitter;
+    u8 pad10[0x10];
+    Node_b262_01E00F50 *nodes;
+    Glow_b262_01E00F50 *glow;
+    Strand_b262_01E00F50 *sa;
+    Strand_b262_01E00F50 *sb;
+    s16 tick;
+    s16 step;
+    s16 fade;
+    u8 ac;
+    u8 aa;
+    u8 ab;
+} Bolt_b262_01E00F50;
+
+static s32 func_01E00F50_b262(s32 ot, Bolt_b262_01E00F50 *o, s32 unused, Vec4f *p0, Vec4f *p1) {
+    extern void b262_01E00280(s32, void *, void *);
+    extern void b262_01E00940(s32, void *, void *);
+    extern s32 func_0019A5C8(void);
+    extern void func_001039A0(void *);
+    extern void func_00103470(u8 *, u8, u8);
+    u8 fa;
+    u8 fb;
+    u8 fc;
+    s32 i;
+    s32 k;
+    s32 n;
+    f32 t;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+
+    fa = o->aa / o->fade;
+    fb = o->ab / o->fade;
+    fc = o->ac / o->fade;
+    if (o->count > 16) {
+        o->count = 16;
+    }
+    if (o->tick == 0) {
+        dx = p1->x - p0->x;
+        dy = p1->y - p0->y;
+        dz = p1->z - p0->z;
+        for (i = 0; i < o->count; i++) {
+            t = (f32)(i + 1) / (f32)o->count;
+            if (o->jitter != 0) {
+                o->nodes[i].pos.x = p0->x + dx * t + 0.1f * (f32)(func_0019A5C8() % (o->jitter * 2) - o->jitter);
+                o->nodes[i].pos.y = p0->y + dy * t + 0.1f * (f32)(func_0019A5C8() % (o->jitter * 2) - o->jitter);
+                o->nodes[i].pos.z = p0->z + dz * t + 0.1f * (f32)(func_0019A5C8() % (o->jitter * 2) - o->jitter);
+            } else {
+                o->nodes[i].pos.x = p0->x + dx * t;
+                o->nodes[i].pos.y = p0->y + dy * t;
+                o->nodes[i].pos.z = p0->z + dz * t;
+            }
+            if (i == 0) {
+                func_001039A0(o->nodes);
+            }
+            if (func_00104520(o->flags, 0x18) != 0) {
+                o->sa[i].a = o->aa;
+                o->sb[i].a = o->ab;
+                o->glow[i].a = o->ac;
+            }
+        }
+    }
+    n = o->tick / o->step + 1;
+    if (o->count < n) {
+        n = o->count;
+    }
+    for (i = 0; i < n; i++) {
+        b262_01E00280(ot, &o->sa[i], &o->nodes[i]);
+        b262_01E00280(ot, &o->sb[i], &o->nodes[i]);
+        b262_01E00940(ot, &o->glow[i], &o->nodes[i]);
+        if (func_00104520(o->flags, 0x18) != 0) {
+            func_00103470(&o->sa[i].a, 0, fa);
+            func_00103470(&o->sb[i].a, 0, fb);
+            func_00103470(&o->glow[i].a, 0, fc);
+        }
+        for (k = 0; k < 64; k++) {
+            o->glow[i].v[k].x += 0x80;
+            o->glow[i].v[k].y += 0x80;
+            o->glow[i].v[k].z += 0x80;
+        }
+    }
+    o->tick++;
+    if (o->tick > o->fade + o->step * o->count) {
+        o->tick = 0;
+    }
+    return 0;
+}
+
+/* shape b262:01E013F0 (b262), 358 insns, 1 copy: b438:01E01530's scene manager with 16 bolt nodes: code >= 0 sets up
+   the glow sprite, disc, 16 glows/discs and the bolt; else follows joint 0x26 with the camera, fades, and from tick
+   25 to 199 flashes one random grey into sprite, disc and glows, draws them and the bolt; returns 5/1/6/8 by tick */
+
+typedef struct {
+    u8 pad0[0x20];
+    Vec4f pos;
+    u8 pad30[0x40];
+} Mat_b262_01E013F0;
+
+typedef struct {
+    s32 x, y, z, w;
+} Rnd_b262_01E013F0;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    u8 c[4];
+    u8 padC[4];
+    s16 uv[4];
+    u8 pad18[8];
+    Vec4f p[4];
+    Rnd_b262_01E013F0 r[64];
+} Spr_b262_01E013F0;
+
+typedef struct {
+    s32 flags;
+    u8 b, g, r, a;
+    f32 radius;
+    s16 count;
+    s16 height;
+} Disc_b262_01E013F0;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    u8 c[4];
+    s16 count;
+    s16 jitter;
+    s16 uv[4];
+    u8 pad88[8];
+    Mat_b262_01E013F0 *nodes;
+    Spr_b262_01E013F0 *glow;
+    Disc_b262_01E013F0 *sa;
+    Disc_b262_01E013F0 *sb;
+    s16 tick;
+    s16 step;
+    s16 fade;
+    u8 ac;
+    u8 aa;
+    u8 ab;
+    u8 padA9[7];
+} Bolt_b262_01E013F0;
+
+typedef struct {
+    Mat_b262_01E013F0 m0;
+    Bolt_b262_01E013F0 bolt;
+    Mat_b262_01E013F0 ma;
+    Mat_b262_01E013F0 cam;
+    Spr_b262_01E013F0 spr;
+    Disc_b262_01E013F0 disc;
+    Mat_b262_01E013F0 mb[16];
+    Spr_b262_01E013F0 glow[16];
+    Disc_b262_01E013F0 sa[16];
+    Disc_b262_01E013F0 sb[16];
+    u8 c[4];
+    u8 c2[4];
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 fade;
+    s32 ja;
+    s32 jb;
+} Scene_b262_01E013F0;
+
+static s32 func_01E013F0_b262(s32 arg0, s32 code) {
+    Scene_b262_01E013F0 *g = (Scene_b262_01E013F0 *)arg0;
+    extern void b262_01E00F50();
+    extern void b262_01E00120();
+    extern void b262_01E00280();
+    extern void b262_01E00940();
+    extern s32 b262_01E007E0(void *, s32, f32);
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern void func_001039A0(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00103260(s32 *, s32);
+    extern void func_00103470(u8 *, s32, s32);
+    extern void func_001032C0(u8 *, s32, s32);
+    extern void func_001F6D00(s32);
+    Vec4f v[3];
+    s32 tx[4];
+    s32 ot;
+    Vec4f *p;
+    s32 i;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x5520);
+        func_00103890(&g->m0);
+        func_00103890(&g->ma);
+        func_00103890(&g->cam);
+        for (i = 0; i < 16; i++) {
+            func_00103890(&g->mb[i]);
+        }
+        g->ja = func_001F5560(func_001F53A0(), 0x26, 1);
+        g->jb = func_001F5560(func_001F53A0(), 0x21, 0);
+        g->timer = 220;
+        g->t = 1;
+        g->code = code;
+        g->fade = 0x80;
+        g->c[2] = 0x80;
+        g->c[1] = 0x80;
+        g->c[0] = 0x80;
+        g->c[3] = 0x40;
+        g->c2[2] = 0x80;
+        g->c2[1] = 0x80;
+        g->c2[0] = 0x80;
+        g->c2[3] = 0x60;
+        g->disc.flags = 0;
+        g->disc.r = 0xD0;
+        g->disc.g = 0xA0;
+        g->disc.b = 0x70;
+        g->disc.a = 0;
+        g->disc.radius = 3.0f;
+        g->disc.count = 0x24;
+        g->disc.height = 0;
+        for (i = 0; i < 16; i++) {
+            g->sa[i].flags = 0;
+            g->sa[i].r = 0xD0;
+            g->sa[i].g = 0xA0;
+            g->sa[i].b = 0x70;
+            g->sa[i].a = 0xFF;
+            g->sa[i].radius = 16.0f;
+            g->sa[i].count = 0x24;
+            g->sa[i].height = 0;
+            g->sb[i].flags = 0x10000000;
+            g->sb[i].r = 0xD0;
+            g->sb[i].g = 0xA0;
+            g->sb[i].b = 0x70;
+            g->sb[i].a = 0xFF;
+            g->sb[i].radius = 5.0f;
+            g->sb[i].count = 0x24;
+            g->sb[i].height = 0;
+        }
+        func_00103260(tx, 0xF);
+        g->spr.flags = 1;
+        g->spr.uv[0] = 0x8E;
+        g->spr.uv[1] = 0;
+        g->spr.uv[2] = 0x22;
+        g->spr.uv[3] = 0x40;
+        g->spr.c[2] = 0xD0;
+        g->spr.c[1] = 0xA0;
+        g->spr.c[0] = 0x70;
+        g->spr.c[3] = 0;
+        b262_01E007E0(&g->spr, tx[0], 0.3f);
+        for (i = 0; i < 16; i++) {
+            g->glow[i].flags = 1;
+            g->glow[i].uv[0] = 0x8E;
+            g->glow[i].uv[1] = 0;
+            g->glow[i].uv[2] = 0x22;
+            g->glow[i].uv[3] = 0x40;
+            g->glow[i].c[2] = 0x80;
+            g->glow[i].c[1] = 0x80;
+            g->glow[i].c[0] = 0x80;
+            g->glow[i].c[3] = 0x30;
+            b262_01E007E0(&g->glow[i], tx[0], 0.8f);
+        }
+        g->bolt.tex = tx[0];
+        g->bolt.flags = 0x1000000;
+        g->bolt.uv[0] = 10;
+        g->bolt.uv[1] = 0;
+        g->bolt.uv[2] = 0x2A;
+        g->bolt.uv[3] = 0x80;
+        g->bolt.c[2] = 0x80;
+        g->bolt.c[1] = 0x80;
+        g->bolt.c[0] = 0x80;
+        g->bolt.c[3] = 0x20;
+        g->bolt.count = 14;
+        g->bolt.tick = 0;
+        g->bolt.step = 1;
+        g->bolt.fade = 14;
+        g->bolt.jitter = 100;
+        g->bolt.nodes = g->mb;
+        g->bolt.glow = g->glow;
+        g->bolt.sa = g->sa;
+        g->bolt.sb = g->sb;
+        g->bolt.ac = g->glow[0].c[3];
+        g->bolt.aa = g->sa[0].a;
+        g->bolt.ab = g->sb[0].a;
+        return 0;
+    }
+    func_001F5620(func_001F53A0(), g->ja, &g->cam.pos);
+    func_001F5F90(func_001F5380(), p = &v[2]);
+    func_001038D0(&g->m0);
+    func_001039A0(&g->ma);
+    func_001039A0(&g->cam);
+    for (i = 0; i < 16; i++) {
+        func_001039A0(&g->mb[i]);
+    }
+    if (g->t < 200) {
+        func_00103470((u8 *)&g->fade, 0x20, 4);
+    } else {
+        func_001032C0((u8 *)&g->fade, 0x80, 4);
+    }
+    func_001F6D00((u8)g->fade);
+    if (g->t >= 25 && g->t < 200) {
+        g->c[2] = g->disc.r = g->spr.c[2] = g->c[1] = g->disc.g = g->spr.c[1] = g->c[0] = g->disc.b = g->spr.c[0] =
+            func_0019A5C8() % 64 + 64;
+        b262_01E00120(ot, g->c);
+        b262_01E00280(ot, &g->disc, &g->cam);
+        func_001032C0(&g->disc.a, 0xFF, 0x10);
+        b262_01E00940(ot, &g->spr, &g->cam);
+        func_001032C0(&g->spr.c[3], 0x20, 2);
+        for (i = 0; i < 64; i++) {
+            g->spr.r[i].x += 0x80;
+            g->spr.r[i].y += 0x80;
+            g->spr.r[i].z += 0x80;
+        }
+        for (i = 0; i < 16; i++) {
+            g->glow[i].c[2] = g->sa[i].r = g->sb[i].r = g->spr.c[2];
+            g->glow[i].c[1] = g->sa[i].g = g->sb[i].g = g->spr.c[1];
+            g->glow[i].c[0] = g->sa[i].b = g->sb[i].b = g->spr.c[0];
+        }
+        b262_01E00F50(ot, &g->bolt, g, &g->cam.pos, p);
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 200) {
+        return 5;
+    }
+    if (g->t == 26) {
+        return 1;
+    }
+    if (g->t >= 36 && g->t < 200) {
+        return 6;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}

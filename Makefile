@@ -46,6 +46,7 @@ build:
 	@[ -f $(LD_SCRIPT) ] || $(MAKE) --no-print-directory split
 	@$(MAKE) --no-print-directory $(OUT_EXE)
 	@[ -f $(MOD_MK) ] || $(MAKE) --no-print-directory split-modules
+	@python3 tools/modules.py sync
 	@$(MAKE) --no-print-directory modules
 
 check: build
@@ -81,6 +82,7 @@ $(BUILD)/modules/%.mwo: $(BUILD)/modules/%.elf $(MOD_TABLE)
 
 # Module C compiles warm (tools/cc.sh): their float casts call fptoui/fptosi as a warm compiler does, and every
 # cold match so far also matches warm (OVERLAYS-COMPILER.md). dk try does the same for module functions.
+# A few modules were built in another warm state: config/mod_warm.txt (read by tools/cc.sh) sets their level.
 $(BUILD)/src/mod/%.c.o: export DK_WARM := 1
 
 -include $(MOD_MK)

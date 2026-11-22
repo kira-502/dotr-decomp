@@ -1705,4 +1705,272 @@ static s32 func_01E04AC0_b230(Emit_b042_01E038E0 *arg0, s32 arg1, s32 n) {
 }
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b230", func_01E05010_b230);
+/* shape b230:01E05010 (b230), 634 insns, 1 copy (-O2,p): b230, the effect scene manager in b245:01E058B0's form with
+   the cue table: code >= 0 clears the scene, takes both units, the camera and four joints; else counts the frame: 223
+   arms the joint swirl, 224 the fade, glow, three rays and the emitter, 333 ends; from frame 71 sprays four smoke
+   puffs a frame around joint 0; draws all; returns 6 on 224..252, 1/2 on frames 214/221 */
+
+typedef struct {
+    u16 start;
+    u16 end;
+    u8 motion;
+    u8 flags;
+    u8 rate;
+    u8 pad7;
+    s32 w8;
+    u8 c0[4];
+    u8 c1[4];
+} Cue_b230_01E05010;
+
+typedef struct {
+    u8 pad0[4];
+    u8 on;
+    u8 b5;
+    u8 pad6[0xE];
+    f32 f14;
+    f32 f18;
+    f32 f1C;
+    Vec4f pos;
+    f32 f30;
+    f32 f34;
+    u8 pad38[0x18];
+    f32 f50;
+    u8 pad54[0xC];
+} Emit_b230_01E05010;
+
+typedef struct {
+    s16 a;
+    s16 b;
+} Wv_b230_01E05010;
+
+typedef struct {
+    Obj_b010_01E05740 o;
+    u8 pad5[3];
+} Fade_b230_01E05010;
+
+typedef struct {
+    u16 t;
+    u8 pad2[2];
+    s32 unitA;
+    s32 unitB;
+    s32 m0;
+    s32 m1;
+    s32 m2;
+    s32 m3;
+    u8 pad1C[0x10];
+    u8 cam[0x14];
+    Emit_b230_01E05010 emit;
+    Wv_b230_01E05010 wv;
+    Rib_b024_01E02120 rib[0x28];
+    Emit_b042_01E038E0 sw;
+    Rib_b091_01E00410 band;
+    Pool_b091_01E00410 pool[0x14];
+    Ray_b532_01E00080 ray[4];
+    Fade_b230_01E05010 fade;
+    Obj_b035_01E00410 glow;
+    Part_b010_01E04D20 parts[0xFA];
+    s8 tbl[0x100];
+    u8 pad55EC[4];
+} Scene_b230_01E05010;
+
+#pragma optimization_level 2
+
+static s32 func_01E05010_b230(Scene_b230_01E05010 *g, s32 code) {
+    extern s32 func_00207500(void);
+    extern void func_00198948(void *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_00102330(void *, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_00101AD0(void *, s32, s32, s32);
+    extern s32 func_00101C30(void *, s32, s32);
+    extern s32 func_0019A5C8(void);
+    extern void func_001031C0(void *, u16);
+    extern void func_001F71A0(s32, s32, s32, void *, void *, s32);
+    extern s32 b230_01E02DA0();
+    extern Cue_b230_01E05010 D_01E05B30_b230[];
+    s32 ot;
+    Vec4f v;
+    Vec4f p;
+    s32 i;
+    s32 k;
+    f32 a;
+    f32 r;
+    Cue_b230_01E05010 *e;
+    u16 t;
+    s32 unit;
+
+    ot = func_00207500();
+    if (code == -3 || code == -2) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00198948(g, 0, 0x55F0);
+        g->unitA = func_001F53A0();
+        g->unitB = func_001F5380();
+        func_001F6160(g->unitA, g->cam);
+        func_00202BF0(4, 0xF);
+        for (i = 0; i < 2; i++) {
+            func_00202BF0(5, i);
+        }
+        g->m0 = func_001F5560(g->unitA, 5, 1);
+        g->m1 = func_001F5560(g->unitA, 0x58, 0);
+        g->m2 = func_001F5560(g->unitA, 0x5A, 0);
+        g->m3 = func_001F5560(g->unitA, 0x59, 0);
+        g->wv.a = 2;
+        g->wv.b = 0x147;
+        func_00102330(g->tbl, 0x100);
+        return 0;
+    }
+    g->t++;
+    func_001F5F90(g->unitB, &v);
+    switch (g->t) {
+    case 0xDF:
+        func_00101AD0(&g->sw, 6, 0, 0xFF);
+        g->sw.flags = 2;
+        g->sw.attached = 1;
+        g->sw.pad6[0] = g->m3;
+        g->sw.pool = (Part_b042_01E038E0 *)g->rib;
+        g->sw.kind = 0x28;
+        g->sw.f12 = 0x14;
+        g->sw.sub = 0x28;
+        g->sw.f13 = 1;
+        g->sw.f16 = 2;
+        g->sw.f14 = 4;
+        g->sw.scale = 2.0f;
+        g->sw.f1C = 0.4f;
+        g->sw.f20 = 120.0f;
+        g->sw.fC = (s32)g->tbl;
+        g->sw.col.b = g->sw.col.g = g->sw.col.r = g->sw.col.a = 0x80;
+        func_001F5620(g->unitA, g->m3, &g->sw.prev);
+        g->sw.prev2 = g->sw.prev;
+        break;
+    case 0xE0:
+        func_00101AD0(&g->fade, 0xC, 0, 0xFF);
+        g->fade.o.flags = 1;
+        func_00101AD0(&g->glow, 0x20, 0, 0xFF);
+        g->glow.pad5[0] = 0;
+        g->glow.flags = 0x80;
+        g->glow.segs = 9;
+        g->glow.radius = 100.0f;
+        g->glow.grow = 50.0f;
+        g->glow.ib = 0xF0;
+        g->glow.ig = 0xF0;
+        g->glow.ir = 0xF0;
+        g->glow.r = 0x40;
+        g->glow.g = 0x10;
+        g->glow.b = 0x80;
+        g->glow.alpha = 0xC0;
+        g->glow.org.x = g->glow.org.y = g->glow.org.z = 0.0f;
+        g->glow.pos = *(V4_b035_01E00410 *)&v;
+        g->glow.width = 60.0f;
+        for (i = 0; i < 3; i++) {
+            func_00101AD0(&g->ray[i], 0x1C, (u8)(i * 2), 0xFF);
+            g->ray[i].flags = 4;
+            g->ray[i].flags |= 3;
+            g->ray[i].texkind = 1;
+            g->ray[i].texmode = 4;
+            g->ray[i].size = 2.5f;
+            g->ray[i].width = 120.0f;
+            g->ray[i].a0 = 0x80;
+            g->ray[i].a1 = 0x10;
+            g->ray[i].segments = 0x78;
+            g->ray[i].pad05[0] = 0;
+            g->ray[i].texpage = 2;
+            g->ray[i].index = func_0019A5C8() >> 4;
+            g->ray[i].table = (u8 *)g->tbl;
+            g->ray[i].b1 = 0x80;
+            g->ray[i].g1 = 0x80;
+            g->ray[i].r1 = 0x80;
+            g->ray[i].b0 = 0x80;
+            g->ray[i].g0 = 0x80;
+            g->ray[i].r0 = 0x80;
+            g->ray[i].pos = *(Vec_b532_01E00080 *)&v;
+        }
+        func_00101AD0(&g->emit, 0x20, 0, 0xFF);
+        g->emit.b5 = 0;
+        g->emit.on = 1;
+        g->emit.f14 = 1.6f;
+        g->emit.f18 = 1.6f;
+        g->emit.f1C = 1.0f;
+        g->emit.f30 = 0.0f;
+        g->emit.f34 = 80.0f;
+        g->emit.f50 = 6.0f;
+        g->emit.pos = v;
+        break;
+    case 0x14D:
+        return 8;
+    }
+    if (g->t > 0x46) {
+        func_001F5620(g->unitA, g->m0, &p);
+        p.y -= 5.0f;
+        for (i = 0; i < 4; i++) {
+            k = func_00101C30(g->parts, 0x44, 0xFA);
+            if (k >= 0) {
+                func_00101AD0(&g->parts[k], 0x26, 0, 0xFF);
+                g->parts[k].flags = (func_0019A5C8() >> 4 & 3) << 4;
+                g->parts[k].tex = 0;
+                g->parts[k].bB = 1;
+                g->parts[k].anim = 5;
+                g->parts[k].frame = func_0019A5C8() >> 4 & 3;
+                g->parts[k].r = 0x80;
+                g->parts[k].g = 0x80;
+                g->parts[k].b = 0x80;
+                g->parts[k].a = 0x50;
+                g->parts[k].size = 80.0f + (f32)((func_0019A5C8() >> 4) % 5 * 200 - 500) / 100.0f;
+                g->parts[k].grow = 10.0f + (f32)((func_0019A5C8() >> 4) % 5 * 200 - 500) / 100.0f;
+                g->parts[k].grav = -0.03f;
+                g->parts[k].floor = p.y;
+                g->parts[k].pos[0] = p.x;
+                g->parts[k].pos[1] = p.y;
+                g->parts[k].pos[2] = p.z;
+                a = 6.0f * (f32)(g->t % 360) + 90.0f * (f32)i;
+                a = 360.0f - a;
+                r = 0.8f + (f32)((func_0019A5C8() >> 4) % 80 - 40) / 100.0f;
+                a = 3.1415927f * a / 180.0f;
+                g->parts[k].vel[0] = r * func_001A6898(a);
+                g->parts[k].vel[2] = r * func_001A6A88(a);
+                g->parts[k].vel[1] = 0.4f;
+            }
+        }
+    }
+    func_01E00080_b230((Obj_b010_01E00080 *)&g->emit);
+    func_001031C0(&g->wv, g->t);
+    t = g->t;
+    for (e = D_01E05B30_b230; e->start != 0; e++) {
+        if (t >= (u16)e->start && t <= e->end) {
+            if (e->flags & 0x80) {
+                unit = func_001F5380();
+            } else {
+                unit = func_001F53A0();
+            }
+            if (e->flags & 0x40) {
+                e->c0[3] = e->c1[3] = (t - *(u8 *)&e->start) * e->rate;
+            }
+            func_001F71A0(unit, e->motion, e->flags & 3, e->c0, e->c1, e->w8);
+            break;
+        }
+    }
+    b230_01E02DA0(&g->fade, ot);
+    func_01E00410_b230(&g->band, ot, 1);
+    func_01E02210_b230(g->ray, ot, 4);
+    func_01E01690_b230(&g->glow, ot, 1);
+    func_01E04AC0_b230(&g->sw, ot, 1);
+    func_01E03D10_b230(g->rib, ot, 0x28);
+    func_01E032F0_b230(g->parts, ot, 0xFA);
+    if (g->t >= 0xE0 && g->t < 0xFD) {
+        return 6;
+    }
+    switch (g->t) {
+    case 0xD6:
+        return 1;
+    case 0xDD:
+        return 2;
+    }
+    return 0;
+}
+#pragma optimization_level reset

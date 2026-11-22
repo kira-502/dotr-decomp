@@ -1492,4 +1492,571 @@ static s32 func_01E03670_b133(Obj_b035_01E00410 *obj, s32 tex, s32 n) {
 
 #pragma optimization_level reset
 
-INCLUDE_ASM("asm/nonmatchings/mod/b133", func_01E041F0_b133);
+/* shape b133:01E041F0 (b133), 1108 insns, 1 copy (-O2,p): b133 scene manager written from the asm (b748's -O2 manager
+   skeleton): code -3/-2 returns 8; code >= 0 clears the scene and picks the joints (a rotating bone set); frame 6 two
+   cores and a flare, 40/182 fifteen light bursts, 60 five trails with 8 points each and the emitter, 74 five flares,
+   181 five quad sprites with act-ribbons, 204 two flares and 13 cores, 208 eight ribbons, 250 ends; re-picks the
+   joints on 60..66 and 181; returns 6 on 212..224, 1/2 on 202/225 */
+
+typedef struct {
+    s32 a;
+    s32 dir;
+    u8 pad8[8];
+} Cam_b133_01E041F0;
+
+typedef struct {
+    u8 pad0[4];
+    u8 b4;
+    u8 b5;
+    u8 b6;
+    u8 pad7[0xD];
+    f32 f14;
+    f32 f18;
+    f32 f1C;
+    Vec4f pos;
+    f32 f30;
+    f32 f34;
+    u8 pad38[8];
+    Vec4f vel;
+    f32 f50;
+    u8 pad54[0xC];
+} Emit_b133_01E041F0;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 pad6[2];
+    s32 tex;
+    u8 b0, g0, r0, a0;
+    u8 b1, g1, r1, a1;
+    f32 size;
+    f32 grow;
+    f32 scale;
+    Vec4f pos;
+    Vec4f vel;
+} Qp1_b133_01E041F0;
+
+typedef struct {
+    u8 life;
+    u8 pad1;
+    u8 max;
+    u8 pad3;
+    f32 x, y, z;
+} Pt_b133_01E041F0;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 b6;
+    u8 pad7;
+    Pt_b133_01E041F0 *pool;
+    u8 idx[8];
+    u8 count;
+    u8 pad15[3];
+    s32 tex;
+    u8 b0, g0, r0, a0;
+    u8 b1, g1, r1, a1;
+    f32 size;
+    f32 grow;
+    f32 scale;
+    Vec4f pos;
+    Vec4f vel;
+} Qp2_b133_01E041F0;
+
+typedef struct {
+    u8 age;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 pad6[2];
+    u8 count;
+    u8 k;
+    u8 idx;
+    u8 padB[5];
+    s8 *pts;
+    f32 scale;
+    f32 f18;
+    f32 width;
+    f32 grow;
+    u8 r, g, b, a;
+    Vec4f pos;
+    u8 pad38[0x20];
+} Mptc_b133_01E041F0;
+
+typedef struct {
+    u8 age;
+    u8 pad1[3];
+    u8 flags;
+    u8 attached;
+    u8 pad6[2];
+    Mptc_b133_01E041F0 *pool;
+    s8 *tbl;
+    u8 kind;
+    u8 sub;
+    u8 f12;
+    u8 f13;
+    u8 f14;
+    u8 f15;
+    u8 pad16[2];
+    f32 scale;
+    f32 f1C;
+    f32 f20;
+    f32 f24;
+    u8 r, g, b, a;
+    Vec4f pos;
+    Vec4f prev;
+    Vec4f prev2;
+    Vec4f vel;
+    u8 pad6C[0x20];
+} Act_b133_01E041F0;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 pad6[2];
+    u8 count;
+    u8 idx;
+    u8 mask;
+    u8 padB;
+    s8 *tab;
+    f32 hscale;
+    f32 rscale;
+    u8 b1, g1, r1, a1;
+    u8 b0, g0, r0, a0;
+    Vec4f pos;
+    Vec4f vel;
+    s32 rot[4];
+    s32 drot[4];
+} Lptc_b133_01E041F0;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 b6;
+    u8 pad7;
+    u8 b, g, r;
+    u8 padB;
+    u8 b2, g2, r2, a;
+    f32 len;
+    f32 width;
+    f32 angle;
+    f32 spin;
+    Vec4f pos;
+    Vec4f vel;
+    Vec4f point;
+} Core_b133_01E041F0;
+
+typedef struct {
+    u8 life;
+    u8 pad1[3];
+    u8 flags;
+    u8 b5;
+    u8 b6;
+    u8 segs;
+    u8 b, g, r;
+    u8 padB;
+    u8 ib, ig, ir;
+    u8 alpha;
+    f32 radius;
+    f32 grow;
+    f32 width;
+    Vec4f pos;
+    Vec4f vel;
+    f32 ox, oy, oz;
+    u8 pad48[4];
+} Flear_b133_01E041F0;
+
+typedef struct {
+    u16 t;
+    u8 pad2[2];
+    s32 unitA;
+    s32 unitB;
+    s32 m[5];
+    s32 m5;
+    u8 pad24[8];
+    s32 sel;
+    Cam_b133_01E041F0 cam;
+    Emit_b133_01E041F0 emit;
+    Qp1_b133_01E041F0 qp1[5];
+    Qp2_b133_01E041F0 qp2[5];
+    Mptc_b133_01E041F0 mptc[0x46];
+    Act_b133_01E041F0 act[5];
+    Lptc_b133_01E041F0 lptc[0xF];
+    Core_b133_01E041F0 core[0xD];
+    Flear_b133_01E041F0 flear[5];
+    Pt_b133_01E041F0 pool[0x3C];
+    s8 tbl[0x100];
+    u8 pad2E28[8];
+} Scene_b133_01E041F0;
+
+#pragma optimization_level 2
+
+static s32 func_01E041F0_b133(Scene_b133_01E041F0 *g, s32 code) {
+    extern s32 func_00207500(void);
+    extern void func_00198948(void *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F6160(s32, void *);
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_00102330(void *, s32);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F53C0(s32, s32, void *);
+    extern void func_00101AD0(void *, u8, u8, s32);
+    extern void func_00101B40(void *, u8, u8);
+    extern s32 func_00101C30(void *, s32, s32);
+    extern void func_00101940(void *, void *);
+    extern s32 func_0019A5C8(void);
+    s32 ot;
+    s32 i;
+    s32 j;
+    s32 k;
+    Vec4f w;
+    Vec4f v;
+    Vec4f d;
+    f32 a;
+    Pt_b133_01E041F0 *pool;
+
+    ot = func_00207500();
+    if (code == -3 || code == -2) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00198948(g, 0, 0x2E30);
+        g->unitA = func_001F53A0();
+        g->unitB = func_001F5380();
+        func_001F6160(g->unitA, &g->cam);
+        func_00202BF0(4, 0xF);
+        func_00202BF0(4, 2);
+        for (i = 0; i < 0; i++) {
+            func_00202BF0(5, i);
+        }
+        g->m[0] = func_001F5560(g->unitA, g->sel + 4, 1);
+        g->m[1] = func_001F5560(g->unitA, g->sel + 0xD, 0);
+        g->m[2] = func_001F5560(g->unitA, g->sel + 0x16, 0);
+        g->m[3] = func_001F5560(g->unitA, g->sel + 0x1F, 0);
+        g->m[4] = func_001F5560(g->unitA, g->sel + 0x28, 0);
+        g->sel++;
+        g->sel &= 7;
+        g->m5 = func_001F5560(g->unitA, 1, 0);
+        func_001F5560(g->unitB, 1, 1);
+        func_00102330(g->tbl, 0x100);
+        return 0;
+    }
+    g->t++;
+    func_001F5F90(g->unitB, &v);
+    switch (g->t) {
+    case 6:
+        for (i = 0; i < 2; i++) {
+            func_00101AD0(&g->core[i], 0x20, 0, 0xFF);
+            g->core[i].b5 = 1;
+            g->core[i].b6 = g->m5;
+            g->core[i].flags = 0x80;
+            g->core[i].len = 1000.0f - 400.0f * i;
+            g->core[i].width = 20.0f;
+            g->core[i].b2 = 0x80;
+            g->core[i].g2 = 0x80;
+            g->core[i].r2 = 0x80;
+            g->core[i].a = 0x80;
+            g->core[i].r = 0;
+            g->core[i].g = 0x40;
+            g->core[i].b = 0;
+            g->core[i].angle = 90.0f * i;
+            g->core[i].spin = 0.0f;
+            g->core[i].point.y = 3.0f;
+            g->core[i].point.z = 2.0f;
+            if (g->cam.dir == 0x8000) {
+                g->core[i].point.z *= -1.0f;
+            }
+        }
+        func_00101AD0(&g->flear[0], 0x20, 0, 0xFF);
+        g->flear[0].b5 = 1;
+        g->flear[0].b6 = g->m5;
+        g->flear[0].flags = 0x80;
+        g->flear[0].segs = 9;
+        g->flear[0].radius = 600.0f;
+        g->flear[0].grow = 0.0f;
+        g->flear[0].width = 30.0f;
+        g->flear[0].ib = 0x80;
+        g->flear[0].ig = 0x80;
+        g->flear[0].ir = 0x80;
+        g->flear[0].alpha = 0x80;
+        g->flear[0].r = 0;
+        g->flear[0].g = 0x40;
+        g->flear[0].b = 0;
+        g->flear[0].oy = 3.0f;
+        g->flear[0].oz = 2.0f;
+        if (g->cam.dir == 0x8000) {
+            g->flear[0].oz *= -1.0f;
+        }
+        break;
+    case 0x28:
+    case 0xB6:
+        func_001F53C0(1, g->unitA, &w);
+        for (i = 0; i < 0xF; i++) {
+            func_00101AD0(&g->lptc[i], 0x10, i / 5 * 2, 0xFF);
+            g->lptc[i].b5 = 0;
+            func_001F5620(func_001F53A0(), i % 5, &g->lptc[i].pos);
+            g->lptc[i].count = 0x1E;
+            g->lptc[i].idx = func_0019A5C8() >> 4;
+            g->lptc[i].mask = 3;
+            g->lptc[i].tab = g->tbl;
+            g->lptc[i].hscale = 1.0f;
+            g->lptc[i].rscale = 0.5f;
+            g->lptc[i].g1 = 0x80;
+            g->lptc[i].r1 = 0x80;
+            g->lptc[i].b1 = 0x40;
+            g->lptc[i].a1 = 0x80;
+            g->lptc[i].r0 = 0x50;
+            g->lptc[i].g0 = 0x20;
+            g->lptc[i].b0 = 0;
+            d.x = g->lptc[i].pos.x - w.x;
+            d.y = g->lptc[i].pos.y - w.y;
+            d.z = g->lptc[i].pos.z - w.z;
+            func_00101940(&d, g->lptc[i].rot);
+        }
+        break;
+    case 0x3C:
+        for (i = 0; i < 5; i++) {
+            func_00101AD0(&g->qp2[i], 0x30, 0, 0xFF);
+            g->qp2[i].b5 = 1;
+            g->qp2[i].b6 = i;
+            g->qp2[i].tex = 0;
+            g->qp2[i].scale = 0.7f;
+            g->qp2[i].size = 120.0f;
+            g->qp2[i].grow = 0.5f;
+            g->qp2[i].r0 = 0x60;
+            g->qp2[i].g0 = 0x60;
+            g->qp2[i].b0 = 0x20;
+            g->qp2[i].a0 = 0x60;
+            g->qp2[i].a1 = 0x60;
+            g->qp2[i].b1 = 0x60;
+            g->qp2[i].g1 = 0x60;
+            g->qp2[i].r1 = 0x60;
+            g->qp2[i].pool = g->pool;
+            g->qp2[i].count = 8;
+            for (j = 0; j < 8; j++) {
+                k = func_00101C30(g->pool, 0x10, 0x3C);
+                if (k < 0) {
+                    break;
+                }
+                g->qp2[i].idx[j] = k;
+                pool = g->pool;
+                func_00101B40(&pool[k], 0x7D, 0);
+                func_001F5620(func_001F53A0(), i, &w);
+                pool[k].x = w.x;
+                pool[k].y = w.y;
+                pool[k].z = w.z;
+            }
+        }
+        func_00101AD0(&g->emit, 0x79, 0, 0xF);
+        g->emit.b5 = 1;
+        g->emit.b6 = g->m[3];
+        g->emit.b4 = 4;
+        g->emit.f14 = 2.0f;
+        g->emit.f18 = 2.0f;
+        g->emit.f1C = 1.0f;
+        g->emit.f30 = 0.0f;
+        g->emit.f34 = 120.0f;
+        g->emit.f50 = 4.0f;
+        break;
+    case 0x4A:
+        for (i = 0; i < 5; i++) {
+            func_00101AD0(&g->flear[i], 0x6E, 0, 0xFF);
+            g->flear[i].b5 = 1;
+            g->flear[i].b6 = g->m[i];
+            g->flear[i].flags = 0x85;
+            g->flear[i].segs = 9;
+            g->flear[i].radius = 300.0f;
+            g->flear[i].grow = 0.0f;
+            g->flear[i].width = 30.0f;
+            g->flear[i].ib = 0x80;
+            g->flear[i].ig = 0x80;
+            g->flear[i].ir = 0x80;
+            g->flear[i].alpha = 0xC0;
+            g->flear[i].g = 0x80;
+            g->flear[i].r = 0x80;
+            g->flear[i].b = 0x10;
+            g->flear[i].oy = 0.0f;
+            g->flear[i].oz = 0.0f;
+            g->qp2[i].flags |= 2;
+        }
+        break;
+    case 0xB5:
+        for (i = 0; i < 5; i++) {
+            func_00101AD0(&g->qp1[i], 0x20, 0, 0xFF);
+            g->qp1[i].b5 = 0;
+            g->qp1[i].tex = 0;
+            g->qp1[i].size = 300.0f;
+            g->qp1[i].grow = 0.0f;
+            g->qp1[i].r0 = 0x60;
+            g->qp1[i].g0 = 0x60;
+            g->qp1[i].b0 = 0x20;
+            g->qp1[i].a0 = 0x60;
+            g->qp1[i].a1 = 0x80;
+            g->qp1[i].b1 = 0x80;
+            g->qp1[i].g1 = 0x80;
+            g->qp1[i].r1 = 0x80;
+            func_001F5620(func_001F53A0(), g->m[i], &g->qp1[i].pos);
+            g->qp1[i].vel.x = (v.x - g->qp1[i].pos.x) / 32.0f;
+            g->qp1[i].vel.y = (v.y - g->qp1[i].pos.y) / 32.0f;
+            g->qp1[i].vel.z = (v.z - g->qp1[i].pos.z) / 32.0f;
+            func_00101AD0(&g->act[i], 0x20, 0, 0xFF);
+            g->act[i].flags = 1;
+            g->act[i].attached = 0;
+            g->act[i].pool = g->mptc;
+            g->act[i].kind = 0x46;
+            g->act[i].f12 = 0x10;
+            g->act[i].sub = 0xC;
+            g->act[i].f13 = 0;
+            g->act[i].f15 = 1;
+            g->act[i].scale = 1.5f;
+            g->act[i].f1C = 1.2f;
+            g->act[i].f20 = 20.0f;
+            g->act[i].f24 = 0.0f;
+            g->act[i].tbl = g->tbl;
+            g->act[i].g = 0x80;
+            g->act[i].b = 0x80;
+            g->act[i].r = 0x40;
+            g->act[i].a = 0xC0;
+            g->act[i].pos = g->act[i].prev = g->act[i].prev2 = g->qp1[i].pos;
+            g->act[i].vel = g->qp1[i].vel;
+            if (i == 3) {
+                func_00101AD0(&g->emit, 0x30, 0, 7);
+                g->emit.b5 = 0;
+                g->emit.b4 = 2;
+                g->emit.f34 = 120.0f;
+                g->emit.f50 = 4.0f;
+                g->emit.pos = g->qp1[i].pos;
+                g->emit.vel = g->qp1[i].vel;
+            }
+        }
+        break;
+    case 0xCC:
+        for (i = 0; i < 2; i++) {
+            func_00101AD0(&g->flear[i], 0x1C, 0, 0xFF);
+            g->flear[i].b5 = 0;
+            g->flear[i].flags = 0x81;
+            g->flear[i].segs = 9;
+            g->flear[i].radius = 600.0f + 600.0f * i;
+            g->flear[i].grow = 0.0f;
+            g->flear[i].g = 0x80;
+            g->flear[i].r = 0x80;
+            g->flear[i].ib = 0x80;
+            g->flear[i].ig = 0x80;
+            g->flear[i].ir = 0x80;
+            g->flear[i].b = 0x40;
+            g->flear[i].alpha = 0x90;
+            g->flear[i].ox = g->flear[i].oy = g->flear[i].oz = 0.0f;
+            g->flear[i].pos = v;
+        }
+        a = (f32)((func_0019A5C8() >> 4) % 40000 - 20000) / 100.0f;
+        for (i = 0; i < 0xD; i++) {
+            func_00101AD0(&g->core[i], 0x14, 4, 0xFF);
+            g->core[i].b5 = 0;
+            g->core[i].point.x = g->core[i].point.y = g->core[i].point.z = 0.0f;
+            g->core[i].pos = v;
+            if (i == 0) {
+                g->core[i].flags = 0x81;
+                g->core[i].len = 5000.0f;
+                g->core[i].width = 60.0f;
+                g->core[i].g2 = 0x40;
+                g->core[i].r2 = 0x40;
+                g->core[i].b2 = 0x80;
+                g->core[i].g = 0x10;
+                g->core[i].r = 0x10;
+                g->core[i].b = 0x40;
+                g->core[i].a = 0x60;
+                g->core[i].spin = 0.0f;
+                g->core[i].angle = 0.0f;
+            } else {
+                g->core[i].flags = 0x80;
+                g->core[i].len = 1000.0f + (f32)((func_0019A5C8() >> 4) % 90000 - 45000) / 100.0f;
+                g->core[i].width = 30.0f;
+                g->core[i].b2 = 0x80;
+                g->core[i].g2 = 0x80;
+                g->core[i].r2 = 0x80;
+                g->core[i].g = 0x40;
+                g->core[i].r = 0x40;
+                g->core[i].b = 0;
+                g->core[i].a = 0x40;
+                g->core[i].angle = a + 15.0f * i;
+                g->core[i].spin = 1.0f;
+            }
+        }
+        break;
+    case 0xD0:
+        for (i = 0; i < 8; i++) {
+            k = func_00101C30(g->mptc, 0x58, 0x46);
+            if (k >= 0) {
+                func_00101AD0(&g->mptc[k], (func_0019A5C8() >> 4 & 3) + 0x14, func_0019A5C8() >> 4 & 7, 0xFF);
+                g->mptc[k].flags = 1;
+                g->mptc[k].b5 = 0;
+                g->mptc[k].count = 0x32;
+                g->mptc[k].k = func_0019A5C8() >> 4;
+                g->mptc[k].idx = 0;
+                g->mptc[k].width = 20.0f + 4.0f * i;
+                g->mptc[k].grow = 0.0f;
+                g->mptc[k].pts = g->tbl;
+                g->mptc[k].scale = 2.5f;
+                g->mptc[k].b = 0x80;
+                g->mptc[k].g = 0x80;
+                g->mptc[k].r = 0x40;
+                g->mptc[k].a = 0x80;
+                g->mptc[k].pos = v;
+            }
+        }
+        break;
+    case 0xFA:
+        return 8;
+    }
+    func_01E00080_b133((Obj_b010_01E00080 *)&g->emit);
+    func_01E02710_b133((Emit_b042_01E038E0 *)g->act, ot, 5);
+    func_01E01440_b133(g->lptc, ot, 0xF);
+    func_01E00410_b133((Obj_b133_01E00410 *)g->qp1, ot, 5);
+    func_01E00BA0_b133((Obj_b133_01E00BA0 *)g->qp2, ot, 5);
+    func_01E01960_b133((Rib_b024_01E02120 *)g->mptc, ot, 0x46);
+    func_01E02C60_b133(g->core, ot, 0xD);
+    func_01E03670_b133((Obj_b035_01E00410 *)g->flear, ot, 5);
+    switch (g->t) {
+    case 0x3C:
+    case 0x3D:
+    case 0x3E:
+    case 0x3F:
+    case 0x40:
+    case 0x41:
+    case 0x42:
+    case 0xB5:
+        g->m[0] = func_001F5560(g->unitA, g->sel + 4, 1);
+        g->m[1] = func_001F5560(g->unitA, g->sel + 0xD, 0);
+        g->m[2] = func_001F5560(g->unitA, g->sel + 0x16, 0);
+        g->m[3] = func_001F5560(g->unitA, g->sel + 0x1F, 0);
+        g->m[4] = func_001F5560(g->unitA, g->sel + 0x28, 0);
+        g->sel++;
+        g->sel &= 7;
+        g->m5 = func_001F5560(g->unitA, 1, 0);
+        func_001F5560(g->unitB, 1, 1);
+        break;
+    }
+    if (g->t >= 0xD4 && g->t < 0xE1) {
+        return 6;
+    }
+    switch (g->t) {
+    case 0xCA:
+        return 1;
+    case 0xE1:
+        return 2;
+    }
+    return 0;
+}
+
+#pragma optimization_level reset

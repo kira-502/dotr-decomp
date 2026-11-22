@@ -1,6 +1,339 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/nonmatchings/mod/c030", func_01E00080_c030);
+/* shape c030:01E00080 (C030_W_S), 693 insns, 1 copy: C030_W_S, the scene step: tint 0x30, counts the frame (0x2E4);
+   at 1 colours twelve slots by the mode at 0x2E0 (white, red, green, blue, yellow, magenta, cyan, 0xFF/0x80/0xFF,
+   0x80/0/0xFF, 0xFF/0x80/0, else white), four random timers 120 apart, then one-pass loops (i = 4) spawn 0x1E00E30
+   through 0x1E01AE0 and nine 0x1E00B60 columns through 0x1E018C0 at angles i*15/35/45 (+120, +240), sides 0/1/2 */
+
+typedef struct {
+    u8 pad0[0x80];
+    f32 f80;
+    f32 f84;
+    f32 f88;
+    u8 pad8C[0xF4 - 0x8C];
+    u8 col[4];
+    u8 padF8[8];
+    s32 w100;
+    u8 pad104[4];
+    f32 f108;
+    f32 f10C;
+    f32 f110;
+    u8 pad114[0x2D0 - 0x114];
+    f32 f2D0;
+    s16 h2D4;
+    s16 h2D6;
+    u8 pad2D8[2];
+    s16 h2DA;
+    u8 pad2DC[2];
+    s16 h2DE;
+    s16 mode;
+    u8 pad2E2[2];
+    s16 frame;
+    u8 pad2E6[4];
+    s16 h2EA;
+    u8 pad2EC[4];
+    s16 h2F0;
+    s16 t[4];
+    u8 pad2FA[2];
+    u8 cols[12][4];
+} Scene_c030_01E00080;
+
+static void func_01E00080_c030(Scene_c030_01E00080 *g) {
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern s32 func_0019A5C8(void);
+    extern void c030_01E01AE0();
+    extern void c030_01E018C0();
+    extern s32 func_01E00E30_c030();
+    extern s32 func_01E00B60_c030();
+    s32 i;
+
+    g->col[0] = 0x30;
+    g->col[1] = 0x30;
+    g->col[2] = 0x30;
+    g->frame++;
+    if (g->frame == 1) {
+        for (i = 0; i < 12; i++) {
+            g->cols[i][3] = 0x80;
+            if (g->mode == 0) {
+                func_001076F0(g->cols[i], 0xFF, 0xFF, 0xFF);
+            } else if (g->mode == 1) {
+                func_001076F0(g->cols[i], 0xFF, 0, 0);
+            } else if (g->mode == 2) {
+                func_001076F0(g->cols[i], 0, 0xFF, 0);
+            } else if (g->mode == 3) {
+                func_001076F0(g->cols[i], 0, 0, 0xFF);
+            } else if (g->mode == 4) {
+                func_001076F0(g->cols[i], 0xFF, 0xFF, 0);
+            } else if (g->mode == 5) {
+                func_001076F0(g->cols[i], 0xFF, 0, 0xFF);
+            } else if (g->mode == 6) {
+                func_001076F0(g->cols[i], 0, 0xFF, 0xFF);
+            } else if (g->mode == 7) {
+                func_001076F0(g->cols[i], 0xFF, 0x80, 0xFF);
+            } else if (g->mode == 8) {
+                func_001076F0(g->cols[i], 0x80, 0, 0xFF);
+            } else if (g->mode == 9) {
+                func_001076F0(g->cols[i], 0xFF, 0x80, 0);
+            } else {
+                func_001076F0(g->cols[i], 0xFF, 0xFF, 0xFF);
+            }
+        }
+        g->f2D0 = 0.5f;
+        g->t[0] = func_0019A5C8() % 120;
+        g->t[1] = g->t[0] + func_0019A5C8() % 120 + 100;
+        g->t[2] = g->t[0] + func_0019A5C8() % 120 + 200;
+        g->t[3] = g->t[0] + func_0019A5C8() % 120 + 300;
+        g->f80 = 0.0f;
+        g->f84 = 1.0f;
+        g->f88 = 0.0f;
+        g->f108 = 10.0f;
+        func_001076F0(g->col, 0x80, 0x80, 0x80);
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = i * 10 + 1;
+            g->f10C = i * 11 + 1;
+            if (i != 4) {
+                g->h2DA = 0;
+            } else {
+                g->h2DA = 1;
+            }
+            g->f110 = i * 15;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->col[3] = 0;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->h2D6 = i * 15;
+            g->h2D4 = 3;
+            c030_01E01AE0(g, func_01E00E30_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 15;
+            g->h2EA = 7;
+            g->h2D4 = 0;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 15 + 120;
+            g->h2EA = 7;
+            g->h2D4 = 0;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 15 + 240;
+            g->h2EA = 7;
+            g->h2D4 = 0;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 35;
+            g->h2EA = 7;
+            g->h2D4 = 1;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 35 + 120;
+            g->h2EA = 7;
+            g->h2D4 = 1;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 35 + 240;
+            g->h2EA = 7;
+            g->h2D4 = 1;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 45;
+            g->h2EA = 7;
+            g->h2D4 = 2;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 45 + 120;
+            g->h2EA = 7;
+            g->h2D4 = 2;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+        g->w100 = 0;
+        for (i = 4; i < 5; i++) {
+            g->f108 = 30.0f;
+            g->f10C = 30.0f;
+            if (i == 4) {
+                g->h2DA = 1;
+            } else {
+                g->h2DA = 0;
+            }
+            g->f110 = i * 25;
+            g->h2DE = 1;
+            g->f84 = 0.0f;
+            g->f80 = 0.0f;
+            g->f88 = 0.0f;
+            g->col[3] = 0;
+            g->h2D6 = i * 45 + 240;
+            g->h2EA = 7;
+            g->h2D4 = 2;
+            if (g->h2F0 == 0) {
+                g->h2F0 = 1;
+            } else {
+                g->h2F0 = 0;
+            }
+            c030_01E018C0(g, func_01E00B60_c030);
+        }
+    }
+}
 
 /* shape c030:01E00B60, 179 insns: c560:01E02520 family falling column segment: its angle turns back by 18 (wrapped past
    -359), the bottom drops by 5 to the floor while the top follows within 13, then the top closes down and ends it
@@ -399,7 +732,154 @@ static s32 func_01E012A0_c030(Ctx_c030_01E012A0 *g, s32 unused, s32 id) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c030", func_01E01510_c030);
+/* shape c030:01E01510 (c030), 233 insns, 1 copy: the module's main: with arg >= 0 it clears the scene, sets the step
+   function, builds a 91-entry cosine table, sets the timer to 38 and loads texture 15; otherwise it runs the scene
+   step and, once started, every live slot's update, then lights (four scale settings by kind) and draws each toward
+   the camera target; keeps the 22 units stepping (timer >= 4) and, late, the non-player models' checks; counts the
+   timer down (8 when it ends) */
+
+typedef struct {
+    u8 pad0[0x20];
+    Vec4f pos;
+    u8 pad30[0x28];
+    void (*draw)(void *, void *, void *, s32);
+    void (*update)(void *, void *);
+    u8 pad60[8];
+    s16 live;
+    u8 pad6A[6];
+    s16 kind;
+    u8 pad72[0xA];
+} Slot_c030_01E01510;
+
+typedef struct {
+    u8 pad0[0x40];
+    u8 m40[0x50];
+    s32 tex[20];
+    u8 lightE0[0x10];
+    s32 timer;
+    u8 padF4[8];
+    s32 ot;
+    u8 pad100[4];
+    void *fn;
+    u8 pad108[0x50];
+    f32 sin[91];
+    u8 pad2C4[0x1C];
+    s16 mode;
+    u8 pad2E2[2];
+    s16 h2E4;
+    u8 pad2E6[0x4E];
+    Slot_c030_01E01510 slot[65];
+    u8 unit[22][0x70];
+    u8 pad2C50[0x4478 - 0x2C50];
+    s32 f4478;
+} Scene_c030_01E01510;
+
+static s32 func_01E01510_c030(s32 arg0, s32 arg) {
+    Scene_c030_01E01510 *g = (Scene_c030_01E01510 *)arg0;
+    extern void func_00195108(void *, s32);
+    extern void func_01E00080_c030();
+    extern void func_01E01110_c030(void *);
+    extern void func_01E012A0_c030(void *, void *, s32);
+    extern f32 func_001A6A88(f32);
+    extern s32 func_00202BF0(s32, s32);
+    extern s32 func_001F5380(void);
+    extern void func_001F5BD0(s32, void *);
+    extern void func_0020EB40(void *);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_001F5EC0(s32);
+    extern void func_001F5AF0(s32);
+    void (*draw)(void *, void *, void *, s32);
+    Vec4f at;
+    Vec4f v;
+    u8 buf[0x90];
+    s32 k;
+    s32 n;
+    s32 i;
+    s32 id;
+
+    n = 0;
+    g->ot = (s32)func_00207500();
+    if (arg >= 0) {
+        func_00195108(g, 0x2DA0);
+        g->fn = func_01E00080_c030;
+        for (k = 0; k < 91; k++) {
+            g->sin[k] = func_001A6A88(3.1415927f * k / 180.0f);
+        }
+        g->mode = arg;
+        g->timer = 0x26;
+        for (i = 15; i < 16; i++) {
+            g->tex[i] = func_00202BF0(4, i);
+        }
+        func_01E01110_c030(g);
+        return 0;
+    }
+    func_01E00080_c030(g, 0);
+    if (g->h2E4 > 0) {
+        for (i = 0; i < 65; i++) {
+            if (g->slot[i].live != 0) {
+                if (g->slot[i].update != NULL) {
+                    g->slot[i].update(g, &g->slot[i]);
+                }
+            }
+        }
+        func_001F5BD0(func_001F5380(), &v);
+        at.x = v.x;
+        at.y = v.y;
+        at.z = v.z;
+        for (i = 0; i < 65; i++) {
+            if (g->slot[i].live != 0) {
+                n++;
+                func_0020EB40(g->m40);
+                if (g->slot[i].kind == 0) {
+                    func_00106DD0(g->lightE0, 1.6f, 4.0f, 1.6f);
+                }
+                if (g->slot[i].kind == 1) {
+                    func_00106DD0(g->lightE0, 1.2f, 8.0f, 1.2f);
+                }
+                if (g->slot[i].kind == 2) {
+                    func_00106DD0(g->lightE0, 1.0f, 11.0f, 1.0f);
+                }
+                if (g->slot[i].kind == 3) {
+                    func_00106DD0(g->lightE0, 1.6f, 1.0f, 1.6f);
+                }
+                func_0020C940(g, g->lightE0, &g->slot[i].pos, &at);
+                func_0020BC00(g->m40, g);
+                draw = g->slot[i].draw;
+                if (draw != NULL) {
+                    draw(g, &g->slot[i], buf, 0);
+                    draw(g, &g->slot[i], buf, 1);
+                }
+            }
+        }
+    }
+    if (g->h2E4 >= 0) {
+        if (g->timer > 3) {
+            for (i = 0; i < 22; i++) {
+                func_01E012A0_c030(g, g->unit[i], i);
+            }
+        }
+        if (g->timer < 10) {
+            for (i = 0; i < 22; i++) {
+                id = i;
+                if (i > 10) {
+                    id = i + 245;
+                }
+                if (func_001F5380() != id && g->f4478 < 10) {
+                    func_001F5EC0(id);
+                    func_001F5AF0(id);
+                }
+            }
+        }
+    }
+    if (g->timer != 0) {
+        g->timer--;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}
 
 /* shape c030:01E018C0, 133 insns: c030 trail link spawner (c560:01E01C50 family, 65 slots of 0x7C at ctx+0x334): first free slot (marked slot+1), both colours and alpha from the context, its vector, sizes as shorts, height 18 above, both capped at 50, chained after the context's last piece and becomes it; draws with c030:01E02170 */
 

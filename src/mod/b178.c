@@ -736,7 +736,180 @@ static void func_01E01F60_b178(s32 arg0, u8 *obj, s32 mode, f32 level) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b178", func_01E02130_b178);
+/* shape b178:01E02130 (B178_W_S), 806 insns, 1 copy: B178_W_S, the scene step: counts the frame (0xDA6E); until 150
+   the centre (0xD930) follows joint 0xD9E8 with z nudged 4 by the side flag, at 151 aims at the camera and drifts
+   there in 32 steps until 181; 186..310 two 0x1E03940 a frame on a wrapping 80-count plus 0x1E03630 at the centre;
+   75..300 up to 36 ring pairs (0x1E02DD0, heights 10 apart, +180); 75..150 0x1E037A0 on joints; 70 0x1E040C0; 75
+   0x1E03530 and nine 0x1E03F60; 75..310 0x1E03090 glints and three orbiting 0x1E033F0 pairs at radii 4/8/13 */
+
+typedef struct {
+    u8 pad0[0x250];
+    Vec4f pos;
+    u8 pad260[0xD930 - 0x260];
+    Vec4f cam;
+    Vec4f p;
+    u8 padD950[0xD984 - 0xD950];
+    f32 vy;
+    f32 vz;
+    u8 padD98C[0xD9E8 - 0xD98C];
+    s16 j0;
+    s16 j1;
+    s16 j2;
+    s16 j3;
+    s16 j4;
+    u8 padD9F2[0xD9F8 - 0xD9F2];
+    s16 jc;
+    u8 padD9FA[0xDA52 - 0xD9FA];
+    s16 n;
+    s16 h;
+    u8 padDA56[2];
+    s16 cnt;
+    s16 a0;
+    s16 a1;
+    s16 a2;
+    s16 a3;
+    u8 padDA62[4];
+    s16 idx;
+    u8 padDA68[2];
+    s16 side;
+    u8 padDA6C[2];
+    s16 t;
+    u8 padDA70[0xDC70 - 0xDA70];
+    u8 tbl[4];
+} Scene_b178_01E02130;
+
+static void func_01E02130_b178(Scene_b178_01E02130 *g) {
+    extern void b178_01E02DD0(void);
+    extern void b178_01E03090(void);
+    extern void b178_01E033F0(void);
+    extern void b178_01E03530(void);
+    extern void b178_01E03630(void);
+    extern void b178_01E037A0(void);
+    extern void b178_01E03940(void);
+    extern void b178_01E03F60(void);
+    extern void b178_01E040C0(void);
+    extern s32 b178_01E04B80(Scene_b178_01E02130 *, s32, s32);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    Vec4f v[2]; /* the frame holds two vectors; only the first is used */
+    s16 i;
+
+    g->t++;
+    if (g->t < 151) {
+        func_001F5620(func_001F53A0(), g->j0, &g->cam);
+        if (g->side != 0) {
+            g->cam.z -= 4.0f;
+        } else {
+            g->cam.z += 4.0f;
+        }
+    } else {
+        if (g->t == 151) {
+            func_001F5620(func_001F5380(), g->jc, &v[0]);
+            func_001F5F90(func_001F5380(), &v[0]);
+            g->vz = (v[0].z - g->cam.z) / 32.0f;
+            g->vy = (v[0].y - g->cam.y) / 32.0f;
+        }
+        if (g->t < 182) {
+            g->cam.z += g->vz;
+            g->cam.y += g->vy;
+        }
+    }
+    if (g->t > 185 && g->t < 311) {
+        for (i = 0; i < 2; i++) {
+            g->idx = g->cnt;
+            b178_01E04B80(g, (s32)b178_01E03940, 0);
+            g->cnt++;
+            if (g->cnt >= 80) {
+                g->cnt = 0;
+            }
+        }
+    }
+    if (g->t > 185 && g->t < 311) {
+        g->pos = g->cam;
+        b178_01E04B80(g, (s32)b178_01E03630, 0);
+    }
+    if (g->t >= 75 && g->t < 301) {
+        if (g->n < 36) {
+            g->h = g->n * 10;
+            g->idx = g->n;
+            b178_01E04B80(g, (s32)b178_01E02DD0, 0);
+            g->h = g->n * 10 + 180;
+            g->idx = g->n + 36;
+            b178_01E04B80(g, (s32)b178_01E02DD0, 0);
+            g->n++;
+        }
+    }
+    if (g->t >= 75 && g->t < 151) {
+        func_001F5620(func_001F53A0(), g->j1, &g->pos);
+        b178_01E04B80(g, (s32)b178_01E037A0, 0);
+        func_001F5620(func_001F53A0(), g->j2, &g->pos);
+        func_001F5620(func_001F53A0(), g->j3, &g->pos);
+        b178_01E04B80(g, (s32)b178_01E037A0, 0);
+        func_001F5620(func_001F53A0(), g->j4, &g->pos);
+    }
+    if (g->t == 70) {
+        b178_01E04B80(g, (s32)b178_01E040C0, 0);
+    }
+    if (g->t == 75) {
+        b178_01E04B80(g, (s32)b178_01E03530, 0);
+        g->pos = g->cam;
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+        b178_01E04B80(g, (s32)b178_01E03F60, 0);
+    }
+    if (g->t >= 75 && g->t < 311) {
+        g->pos = g->cam;
+        b178_01E04B80(g, (s32)b178_01E03090, 0);
+        if (g->t >= 150 && g->t < 181) {
+            b178_01E04B80(g, (s32)b178_01E03090, 0);
+        }
+        g->idx = 0;
+        g->p.x = g->cam.x + 4.0f * func_00108030((s32)g->tbl, g->a0, 1);
+        g->p.y = g->cam.y + 4.0f * func_00108030((s32)g->tbl, g->a0, 0);
+        g->p.z = g->cam.z;
+        g->pos = g->p;
+        b178_01E04B80(g, (s32)b178_01E033F0, 0);
+        g->p.x = g->cam.x + 4.0f * func_00108030((s32)g->tbl, (s16)(g->a0 + 180), 1);
+        g->p.y = g->cam.y + 4.0f * func_00108030((s32)g->tbl, (s16)(g->a0 + 180), 0);
+        g->p.z = g->cam.z;
+        g->pos = g->p;
+        b178_01E04B80(g, (s32)b178_01E033F0, 0);
+        g->idx = 1;
+        g->p.x = g->cam.x + 8.0f * func_00108030((s32)g->tbl, g->a1, 1);
+        g->p.y = g->cam.y + 8.0f * func_00108030((s32)g->tbl, g->a1, 0);
+        g->p.z = g->cam.z;
+        g->pos = g->p;
+        b178_01E04B80(g, (s32)b178_01E033F0, 0);
+        g->p.x = g->cam.x + 8.0f * func_00108030((s32)g->tbl, (s16)(g->a1 + 180), 1);
+        g->p.y = g->cam.y + 8.0f * func_00108030((s32)g->tbl, (s16)(g->a1 + 180), 0);
+        g->p.z = g->cam.z;
+        g->pos = g->p;
+        b178_01E04B80(g, (s32)b178_01E033F0, 0);
+        g->idx = 2;
+        g->p.x = g->cam.x + 13.0f * func_00108030((s32)g->tbl, g->a2, 1);
+        g->p.y = g->cam.y + 13.0f * func_00108030((s32)g->tbl, g->a2, 0);
+        g->p.z = g->cam.z;
+        g->pos = g->p;
+        b178_01E04B80(g, (s32)b178_01E033F0, 0);
+        g->p.x = g->cam.x + 13.0f * func_00108030((s32)g->tbl, (s16)(g->a2 + 180), 1);
+        g->p.y = g->cam.y + 13.0f * func_00108030((s32)g->tbl, (s16)(g->a2 + 180), 0);
+        g->p.z = g->cam.z;
+        g->pos = g->p;
+        b178_01E04B80(g, (s32)b178_01E033F0, 0);
+        g->a0 += 8;
+        g->a1 -= 6;
+        g->a2 += 4;
+        g->a3 -= 8;
+    }
+}
 
 /* shape b178:01E02DD0, 175 insns: b733:01E02510's grey (0x80) ring by slot (0x50: under 36 kind 0, under 72 kind 2, under 108 kind 4), frame 4..6, both alphas up by 12 to 0xC0 for 30 ticks, then down by 11 once the scene count (ctx+0xDA6E) passes 310; cycles h6 0..5 every 10 ticks; while the scene runs kind 0 is 12 wide (f48 1.2) and kind 2 7 wide (0.8); from count 161 the first two slot bands turn +2 / -2; odd slots spin +3, even -3 */
 

@@ -727,7 +727,95 @@ static s32 func_01E012B0_b004(Ctx_b004_01E012B0 *ctx, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b004", func_01E013F0_b004);
+/* shape b004:01E013F0 (B004PAINT_RAIN), 282 insns, 1 copy: B004PAINT_RAIN: a tube along the scene's point trail
+   (ctx+0x3300, o->n points): per segment 18 quads around it, the near ring radius t and the far one t + w (w = 0.3, t
+   starts at 2.0 and grows by 0.3 a segment), alpha fading by col.a / n (b130:01E01E60's C) */
+
+typedef struct Rgba_b004_01E013F0 {
+    u8 r, g, b, a;
+} Rgba_b004_01E013F0;
+
+typedef struct Fx_b004_01E013F0 {
+    u8 pad0[0x28];
+    Rgba_b004_01E013F0 col;
+    u8 pad2C[6];
+    s16 n;
+} Fx_b004_01E013F0;
+
+typedef struct Game_b004_01E013F0 {
+    u8 pad0[0x3300];
+    Vec4f pts[30];
+    u8 sintab[1];
+} Game_b004_01E013F0;
+
+static void func_01E013F0_b004(Game_b004_01E013F0 *g, Fx_b004_01E013F0 *o) {
+    extern void func_001092E0();
+    extern void func_001094F0();
+    extern void func_00107990();
+    extern f32 func_00108030(void *, s16, s32);
+    extern s32 func_00205630();
+    extern void func_00109380();
+    extern void func_002075F0();
+    f32 depth[4];
+    Vec4f q[4];
+    u8 pk[0x90] __attribute__((aligned(8)));
+    Rgba_b004_01E013F0 col;
+    s16 n;
+    f32 t;
+    f32 w;
+    s32 k;
+    s32 j;
+    u8 *p;
+    s32 ot __attribute__((aligned(8)));
+    s16 a;
+
+    ot = (s32)func_00207500();
+    n = o->n;
+    t = 2.0f;
+    w = 0.3f;
+    p = pk;
+    func_001092E0(p, 0);
+    func_001094F0(p);
+    col = o->col;
+    for (k = 0; k < n - 1; k++) {
+        a = 0;
+        func_00107990(p, &col, 1);
+        col.a -= o->col.a / n;
+        func_00107990(p, &col, 2);
+        for (j = 0; j < 18; j++) {
+            q[0].x = g->pts[k].x;
+            q[0].y = g->pts[k].y;
+            q[0].z = g->pts[k].z;
+            q[1].x = g->pts[k].x;
+            q[1].y = g->pts[k].y;
+            q[1].z = g->pts[k].z;
+            q[0].y += t * func_00108030(g->sintab, a, 1);
+            q[0].x += t * func_00108030(g->sintab, a, 0);
+            q[0].z += t * func_00108030(g->sintab, a, 1);
+            q[1].y += t * func_00108030(g->sintab, a + 20, 1);
+            q[1].x += t * func_00108030(g->sintab, a + 20, 0);
+            q[1].z += t * func_00108030(g->sintab, a + 20, 1);
+            q[2].x = g->pts[k + 1].x;
+            q[2].y = g->pts[k + 1].y;
+            q[2].z = g->pts[k + 1].z;
+            q[3].x = g->pts[k + 1].x;
+            q[3].y = g->pts[k + 1].y;
+            q[3].z = g->pts[k + 1].z;
+            q[2].y += (t + w) * func_00108030(g->sintab, a, 1);
+            q[2].x += (t + w) * func_00108030(g->sintab, a, 0);
+            q[2].z += (t + w) * func_00108030(g->sintab, a, 1);
+            q[3].y += (t + w) * func_00108030(g->sintab, a + 20, 1);
+            q[3].x += (t + w) * func_00108030(g->sintab, a + 20, 0);
+            q[3].z += (t + w) * func_00108030(g->sintab, a + 20, 1);
+            if (func_00205630(q, 0x70000000, 0, p, depth)) {
+                func_00109380(p, 1);
+                func_002075F0(p, ot, 0);
+            }
+            a += 20;
+        }
+        t += 0.3f;
+    }
+}
 
 /* shape b004:01E01860, 103 insns: c035:01E013A0 family sprite draw in two passes: with lit 0 it sets the material (texture id 0x9B at frame +0x34, colour, scene texture) and returns; otherwise it places a size x size quad at position + speed/10 with the object's turn */
 

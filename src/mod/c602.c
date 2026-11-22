@@ -801,4 +801,339 @@ static s32 func_01E01620_c602(Obj_c602_01E01620 *o, Cam_c602_01E01620 *cam, Grid
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c602", func_01E01E20_c602);
+/* shape c602:01E01E20 (c602), 743 insns, 1 copy: the c602 module main: on start copies the unit's object, sets up a
+   23 x 16 tile grid (texture 3/2), a sprite, four rings and a 60-point spark cloud, timer 30; each tick draws and
+   grows the effects, fades them after tick 7; code 1 fades the unit colour, code 2 draws the grid and jitters and
+   fades each tile; 8 when the last tile fades or the timer ends */
+
+typedef struct {
+    f32 sx, sy, sz;
+    u8 pad0C[4];
+    s32 rx, ry, rz;
+    u8 pad1C[4];
+    f32 px, py, pz;
+    u8 pad2C[4];
+    f32 view[16];
+} Crd_c602_01E01E20;
+
+typedef struct {
+    f32 x __attribute__((aligned(16)));
+    f32 y, z;
+    u8 pad0C[0x75];
+    s8 b0 : 5;
+    s8 f5 : 1;
+    s8 f6 : 1;
+    s8 b7 : 1;
+    u8 pad82[0x1E];
+} Obj_c602_01E01E20;
+
+typedef struct {
+    u8 b, g, r, a;
+} Col_c602_01E01E20;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    Col_c602_01E01E20 color;
+    u8 pad0C[4];
+    s16 u, v, w, h;
+    u8 pad18[0x3E8];
+} Ring_c602_01E01E20;
+
+typedef struct {
+    f32 x, y, z;
+} Pt_c602_01E01E20;
+
+typedef struct {
+    s32 texture;
+    s32 flags;
+    Col_c602_01E01E20 color;
+    f32 size;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    Pt_c602_01E01E20 pts[60];
+} Spark_c602_01E01E20;
+
+typedef struct {
+    s32 kind;
+    s32 flags;
+    Col_c602_01E01E20 color;
+    f32 scale;
+    s16 u, v, w, h;
+    u8 pad18[8];
+    f32 w0, w1, h0, h1;
+    u8 pad30[0x440];
+} Spr_c602_01E01E20;
+
+typedef struct {
+    Crd_c602_01E01E20 cam;
+    Grid_c602_01E01620 grid;
+    u8 pad1A00[0x90];
+    Obj_c602_01E01E20 obj;
+    Crd_c602_01E01E20 c3;
+    Spr_c602_01E01E20 spr;
+    Crd_c602_01E01E20 c1;
+    Crd_c602_01E01E20 c2;
+    Crd_c602_01E01E20 c4;
+    Spark_c602_01E01E20 spark;
+    Ring_c602_01E01E20 ring0;
+    Ring_c602_01E01E20 ring1;
+    Ring_c602_01E01E20 ring2;
+    Ring_c602_01E01E20 ring3;
+    f32 sc[3];
+    u8 pad345C[4];
+    u8 col[4];
+    s32 ch;
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 w3474;
+    u8 pad3478[8];
+} Scene_c602_01E01E20;
+
+typedef struct {
+    u8 pad0[0x10];
+    s32 f10;
+    s32 f14;
+    s32 f18;
+    u8 pad1C[0x27];
+    s8 b43;
+} Ent_c602_01E01E20;
+
+static s32 func_01E01E20_c602(s32 arg0, s32 code) {
+    Scene_c602_01E01E20 *g = (Scene_c602_01E01E20 *)arg0;
+    extern s32 func_001F5380(void);
+    extern Ent_c602_01E01E20 *func_001F5B30(s32);
+    extern void func_00103260(void *, s32);
+    extern void func_00195108(void *, s32);
+    s32 tex __attribute__((aligned(16)));
+    s32 ot;
+    s32 ch;
+    Ent_c602_01E01E20 *e;
+    s32 i;
+    s32 j;
+    s32 fp;
+    s32 k;
+
+    ot = (s32)func_00207500();
+    ch = func_001F5380();
+    e = func_001F5B30(ch);
+    if (e == 0) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00195108(g, 0x3480);
+        func_00103890(g);
+        func_00103890(&g->c1);
+        func_00103890(&g->c2);
+        func_00103890(&g->c4);
+        func_00103890(&g->c3);
+        g->obj = *(Obj_c602_01E01E20 *)e;
+        func_001F59D0(ch, 1);
+        g->obj.f6 = 1;
+        g->obj.f5 = 1;
+        g->t = 1;
+        g->w3474 = 0;
+        g->timer = 30;
+        g->code = code;
+        g->sc[0] = 1.04f;
+        g->sc[1] = 1.04f;
+        g->sc[2] = 1.04f;
+        g->ch = ch;
+        if (g->code == 2) {
+            e->b43 = 0;
+        }
+        g->obj.x = g->obj.y = g->obj.z = 0;
+        tex = func_00202BF0(3, 2);
+        *(s32 *)g->grid.pad0 = tex;
+        g->grid.flags = 0x40000801;
+        g->grid.half = 0.8f;
+        g->grid.u = 0;
+        g->grid.v = 0;
+        g->grid.u0 = 0;
+        g->grid.v0 = 0;
+        g->grid.tw = 0x100;
+        g->grid.th = 0x170;
+        g->grid.col.b = g->grid.col.g = g->grid.col.r = 0x80;
+        for (i = 0; i < 23; i++) {
+            for (j = 0; j < 16; j++) {
+                g->grid.pos[i][j].x = -12.0f + 2.0f * g->grid.half * j;
+                g->grid.pos[i][j].z = 0.0f;
+                g->grid.pos[i][j].y = 17.6f + -2.0f * g->grid.half * i;
+                g->grid.alpha[i][j] = 0x80;
+            }
+        }
+        func_001F53B0(0, (s32)&g->cam.px);
+        g->cam.rx = e->f10;
+        g->cam.ry = e->f14;
+        g->cam.rz = e->f18;
+        func_00103260(&tex, 0xF);
+        g->spr.flags = 1;
+        g->spr.u = 0xD0;
+        g->spr.v = 0x20;
+        g->spr.w = 0x20;
+        g->spr.h = 0x20;
+        g->spr.color.r = 0xB0;
+        g->spr.color.g = 0xB0;
+        g->spr.color.b = 0x60;
+        g->spr.color.a = 0x20;
+        g->spr.w0 = 0.5f;
+        g->spr.w1 = 2.0f;
+        g->spr.h0 = 25.0f;
+        g->spr.h1 = 0.0f;
+        func_01E00EB0_c602((Obj_b087_01E03B30 *)&g->spr, tex, 3.0f);
+        g->ring1.flags = 0x8000;
+        g->ring1.u = 0x8E;
+        g->ring1.v = 0;
+        g->ring1.w = 0x20;
+        g->ring1.h = 0x40;
+        g->ring1.color.r = 0xB0;
+        g->ring1.color.g = 0xB0;
+        g->ring1.color.b = 0x60;
+        g->ring1.color.a = 0x60;
+        {
+            f32 h = 28.0f;
+            func_01E00700_c602((Ring_b001_01E035A0 *)&g->ring1, tex, 0.1f, 34.0f, 0.0f, h);
+        }
+        g->ring2.flags = 0x8000;
+        g->ring2.u = 0x8E;
+        g->ring2.v = 0;
+        g->ring2.w = 0x20;
+        g->ring2.h = 0x40;
+        g->ring2.color.r = 0xB0;
+        g->ring2.color.g = 0xB0;
+        g->ring2.color.b = 0x60;
+        g->ring2.color.a = 0x60;
+        func_01E00700_c602((Ring_b001_01E035A0 *)&g->ring2, tex, 0.1f, 37.0f, 0.0f, 21.0f);
+        g->ring3.flags = 0x8000;
+        g->ring3.u = 0x8E;
+        g->ring3.v = 0;
+        g->ring3.w = 0x20;
+        g->ring3.h = 0x40;
+        g->ring3.color.r = 0xB0;
+        g->ring3.color.g = 0xB0;
+        g->ring3.color.b = 0x60;
+        g->ring3.color.a = 0x60;
+        func_01E00700_c602((Ring_b001_01E035A0 *)&g->ring3, tex, 0.1f, 40.0f, 0.0f, 14.0f);
+        g->ring0.flags = 0x8000;
+        g->ring0.u = 0x8E;
+        g->ring0.v = 0;
+        g->ring0.w = 0x20;
+        g->ring0.h = 0x40;
+        g->ring0.color.r = 0x80;
+        g->ring0.color.g = 0x80;
+        g->ring0.color.b = 0x80;
+        g->ring0.color.a = 0xFF;
+        func_01E00700_c602((Ring_b001_01E035A0 *)&g->ring0, tex, 4.0f, 0.3f, 0.0f, 60.0f);
+        func_00103260(&tex, 8);
+        g->spark.texture = tex;
+        g->spark.size = 2.0f;
+        for (k = 0; k < 60; k++) {
+            if (func_00104520(g->spark.flags, 0x1D)) {
+                g->spark.pts[k].x = func_0019A5C8() % 100 - 50;
+                g->spark.pts[k].z = func_0019A5C8() % 50;
+                g->spark.pts[k].y = func_0019A5C8() % 100 - 50;
+            } else {
+                g->spark.pts[k].x = func_0019A5C8() % 50 - 25;
+                g->spark.pts[k].y = func_0019A5C8() % 25;
+                g->spark.pts[k].z = func_0019A5C8() % 50 - 25;
+            }
+        }
+        g->spark.flags = 1;
+        g->spark.u = 0;
+        g->spark.v = 0x5A;
+        g->spark.w = 0xA;
+        g->spark.h = 0xA;
+        g->spark.color.r = 0x80;
+        g->spark.color.g = 0x80;
+        g->spark.color.b = 0x80;
+        g->spark.color.a = 0x80;
+        g->c1.sy = 0.1f;
+        g->c2.sx = g->c2.sy = g->c2.sz = 0.1f;
+        g->c4.sx = g->c4.sy = g->c4.sz = 0.1f;
+        g->c3.sx = g->c3.sy = g->c3.sz = 0.1f;
+        func_001F53B0(0, (s32)&g->c1.px);
+        func_001F53B0(0, (s32)&g->c2.px);
+        func_001F53B0(0, (s32)&g->c4.px);
+        func_001F53B0(0, (s32)&g->c3.px);
+        return 0;
+    }
+    func_001038D0(g);
+    func_001038D0(&g->c1);
+    g->c2.py = 3.0f;
+    func_001039A0(&g->c2);
+    func_001038D0(&g->c4);
+    g->c1.ry += 0x400;
+    func_001038D0(&g->c3);
+    func_01E01010_c602(ot, (Spr_b087_01E03C90 *)&g->spr, (Cam_b087_01E03C90 *)&g->c3);
+    if (g->c2.sx < 1.0f) {
+        g->c2.sx = g->c2.sy = g->c2.sz += 0.3f;
+    }
+    func_01E00120_c602(ot, (Spark_b013_01E010C0 *)&g->spark, (Cam_b013_01E010C0 *)&g->c2, (s32)g->sc);
+    func_00103470(&g->ring0.color.a, 0, 18);
+    func_01E009C0_c602(ot, (Ring_b001_01E03860 *)&g->ring1, (Cam_b001_01E03860 *)&g->c4);
+    func_01E009C0_c602(ot, (Ring_b001_01E03860 *)&g->ring2, (Cam_b001_01E03860 *)&g->c4);
+    func_01E009C0_c602(ot, (Ring_b001_01E03860 *)&g->ring3, (Cam_b001_01E03860 *)&g->c4);
+    if (g->t >= 7) {
+        func_00103470(&g->spark.color.a, 0, 10);
+        func_00103470(&g->spr.color.a, 0, 2);
+        func_00103470(&g->ring1.color.a, 0, 6);
+        func_00103470(&g->ring2.color.a, 0, 6);
+        func_00103470(&g->ring3.color.a, 0, 6);
+    }
+    if (g->c4.sx < 1.0f) {
+        g->c4.sx = g->c4.sy = g->c4.sz += 0.3f;
+    } else {
+        g->c4.sx = g->c4.sy = g->c4.sz += 0.05f;
+    }
+    if (g->c1.sy < 1.0f) {
+        g->c1.sy += 0.3f;
+    } else {
+        g->c1.sy += 0.05f;
+    }
+    if (g->c3.sy < 1.0f) {
+        g->c3.sx += 0.3f;
+        g->c3.sy += 0.3f;
+        g->c3.sz += 0.3f;
+    } else {
+        g->c3.sx += 0.05f;
+        g->c3.sy += 0.05f;
+        g->c3.sz += 0.05f;
+    }
+    if (g->code == 1) {
+        if (func_001F5AF0(g->ch) != 0) {
+            func_001F5E40(g->ch, g->col);
+            func_00103470(&g->col[3], 0, 4);
+            func_001F5DE0(g->ch, (s32)g->col);
+        }
+    } else if (g->code == 2) {
+        fp = func_00207F60();
+        func_001D99F0();
+        func_00208490(1);
+        func_01E01620_c602((Obj_c602_01E01620 *)&g->obj, (Cam_c602_01E01620 *)g, &g->grid);
+        for (i = 0; i < 23; i++) {
+            for (j = 0; j < 16; j++) {
+                g->grid.pos[i][j].z += 0.2f * (func_0019A5C8() % (g->t * 2) - g->t);
+                g->grid.pos[i][j].x += 0.2f * (func_0019A5C8() % (g->t * 2) - g->t);
+                g->grid.pos[i][j].y += 0.2f * (func_0019A5C8() % (g->t * 2) - g->t);
+                if (i == 0 && j == 0) {
+                    g->cam.ry += g->t << 9;
+                }
+                if (func_00103470(&g->grid.alpha[i][j], 0, 4) == 0 && i == 22 && j == 15) {
+                    return 8;
+                }
+                if (g->grid.alpha[22][15] <= 0x60) {
+                    g->grid.flags = 0x40000001;
+                }
+            }
+        }
+        func_00208490(0);
+        func_001D9DD0();
+        func_00207FD0(fp, (s32)func_00207500(), 0xFFFFFF);
+    }
+    g->t++;
+    if (--g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}

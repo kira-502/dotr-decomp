@@ -126,7 +126,140 @@ static s32 func_01E00240_c056(Game_c056_01E00240 *g, P_c056_01E00240 *p, s32 k) 
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c056", func_01E00360_c056);
+/* shape c056:01E00360 (C056_CARD_MOVE_1_), 296 insns, 1 copy: steps one of the scene's cards (n, n + 245 from 11; not
+   0 or 11) while its bit (21 - n) of g+0x447C is set and the model is live: rises by its speed inside radius 40;
+   until 30 from the centre pulls its drift inside +-5 by 3, then marks it falling, climbing 1.6 x its speed and
+   pushing outward by 1.5; places and turns the model, fades by 4 above 75 or late in the scene, hides it at the end
+   */
+
+typedef struct {
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 padC[4];
+    f32 dx;
+    u8 pad14[4];
+    f32 dz;
+    u8 pad1C[4];
+    s32 rot[2];
+    s16 spin;
+    u8 pad2A[0xA];
+    s32 r34;
+    s32 r38;
+    u8 pad3C[0x18];
+    f32 speed;
+    u8 pad58[8];
+    u8 col[4];
+    s32 falling;
+} Card_c056_01E00360;
+
+typedef struct {
+    u8 pad0[0x4478];
+    s32 timer;
+    u32 bits;
+    u8 pad4480[0x50];
+    u8 b44D0[0x190];
+} Ctx_c056_01E00360;
+
+static s32 func_01E00360_c056(Ctx_c056_01E00360 *g, Card_c056_01E00360 *o, s32 n) {
+    extern s32 func_001F5EC0(s32);
+    extern s32 func_001F5AF0(s32);
+    extern void func_00107130(void *, void *, s32);
+    extern f32 func_001A6C60(f32);
+    extern void func_00108950(void *, void *, s32, void *);
+    extern void func_001F5B70(s32, void *);
+    extern void func_001F5CA0(s32, void *);
+    extern void func_001F5C40(s32, void *);
+    extern void func_001F5DE0(s32, void *);
+    s32 r[4];
+    f32 w[4];
+    f32 v[4];
+    s32 id;
+    f32 d;
+
+    id = n;
+    if (n > 10) {
+        id = n + 245;
+    }
+    func_001F5EC0(id);
+    if (n == 0 || n == 11) {
+        return 0;
+    }
+    if (((g->bits >> (21 - n)) & 1) == 0) {
+        return 0;
+    }
+    if (func_001F5AF0(id) != 0) {
+        func_00107130(o, v, 1);
+        d = func_001A6C60((o->x + o->dx) * (o->x + o->dx) + (o->z + o->dz) * (o->z + o->dz));
+        if (d < 40.0f) {
+            o->y += o->speed;
+        }
+        if (o->falling == 0) {
+            if (d > 30.0f) {
+                if (o->x + o->dx > 5.0f) {
+                    o->dx -= 3.0f;
+                }
+                if (o->x + o->dx < -5.0f) {
+                    o->dx += 3.0f;
+                }
+                if (o->z + o->dz > 5.0f) {
+                    o->dz -= 3.0f;
+                }
+                if (o->z + o->dz < -5.0f) {
+                    o->dz += 3.0f;
+                }
+            } else {
+                o->falling = 1;
+            }
+        } else if (o->falling != 0) {
+            o->y += (f32)(1.6 * o->speed);
+            if (o->x + o->dx > 0.0f) {
+                o->dx += 1.5f;
+            }
+            if (o->x + o->dx < 0.0f) {
+                o->dx -= 1.5f;
+            }
+            if (o->z + o->dz > 0.0f) {
+                o->dz += 1.5f;
+            }
+            if (o->z + o->dz < 0.0f) {
+                o->dz -= 1.5f;
+            }
+        }
+        v[0] += o->dx;
+        v[2] += o->dz;
+        v[1] = o->y;
+        o->rot[1] += o->spin;
+        func_00108950(v, o->rot, 0, g->b44D0);
+        func_00107130(w, v, 0);
+        func_001F5B70(id, w);
+        func_001F5CA0(id, r);
+        r[1] += o->r34;
+        if (o->falling != 0) {
+            r[2] += o->r38;
+        }
+        func_001F5C40(id, r);
+        if (o->y > 75.0f) {
+            if (o->col[3] > 5) {
+                o->col[3] -= 4;
+            } else {
+                o->col[3] = 0;
+            }
+        }
+        if (g->timer < 10) {
+            if (o->col[3] > 5) {
+                o->col[3] -= 4;
+            } else {
+                o->col[3] = 0;
+            }
+        }
+        if (g->timer < 2) {
+            o->col[3] = 0;
+        }
+        func_001F5DE0(id, o->col);
+    }
+    return 0;
+}
 
 /* shape c056:01E00800, 258 insns: scene manager. code >= 0 initialises (clear 0x4730 bytes, textures 14-15 and 2,
    the 12-step sin/cos tables at 0, 30 .. and 30, 60 .., code, timer 0x88, the step function, the pad state);
@@ -839,7 +972,226 @@ static void func_01E01490_c056(Ctx_c056_01E01490 *ctx, s32 arg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c056", func_01E015A0_c056);
+/* shape c056:01E015A0 (PAINT_PA13), 669 insns, 1 copy: two-pass 12-segment ring around a parent: mode 0 sets frame 2
+   and the colours (alpha blanked without a parent); otherwise halves the colours through double math, draws 12
+   segments between the parent's or own radius 0xA8 and 0xAA, then a second pass at 2.5x the radii with two materials
+   (0x8C, 0x96) through a turned copy of the scene matrix */
+
+typedef struct {
+    u8 c[4];
+} Col_c056_01E015A0;
+
+typedef struct {
+    f32 m[16];
+} Mtx_c056_01E015A0;
+
+typedef struct Fx_c056_01E015A0 {
+    Vec4f q[4];
+    Vec4f v40;
+    Vec4f v50;
+    u8 pad60[0x10];
+    f32 m70[8];
+    struct Fx_c056_01E015A0 *parent;
+    s32 f94;
+    u8 pad98[0x10];
+    s16 hA8;
+    s16 hAA;
+    Col_c056_01E015A0 col;
+    Col_c056_01E015A0 col2;
+    u8 padB4[4];
+    s16 hB8;
+} Fx_c056_01E015A0;
+
+typedef struct {
+    u8 pad0[0x40];
+    Mtx_c056_01E015A0 m40;
+    u8 pad80[0x48];
+    s32 texC8;
+    s32 texCC;
+    u8 padD0[0x43B8];
+    s32 ot;
+    u8 pad448C[0x1C];
+    f32 depth;
+    u8 pad44AC[0x1B4];
+    f32 t0[12];
+    f32 t1[12];
+    f32 t2[12];
+    f32 t3[12];
+} Scene_c056_01E015A0;
+
+static void func_01E015A0_c056(Scene_c056_01E015A0 *g, Fx_c056_01E015A0 *o, void *pk, s32 mode) {
+    extern void func_00105D00(void *, s32, s32);
+    extern void func_00106080(void *, s32, s32, s32);
+    extern void func_00109270(void *, s32, s32);
+    extern void func_00107790(void *, void *, s32);
+    extern void func_00108500(void *, void *, s32);
+    extern void func_00208700(void *, s32, s32);
+    extern void func_00106DD0(void *, f32, f32, f32);
+    extern void func_0020C940(void *, void *, void *, void *);
+    extern void func_0020BC00(void *, void *);
+    extern void func_00107DD0(void *, void *, void *, s32);
+    extern void func_00106FA0(void *, void *, s32);
+    extern s32 func_00205630(void *, s32, void *, void *, f32 *);
+    extern void func_002075F0(void *, s32, s32);
+    s16 i;
+    f32 r0;
+    f32 r1;
+    f32 r2;
+    Vec4f v[4];
+    f32 rm[4];
+    f32 rm2[4];
+    Mtx_c056_01E015A0 mtx;
+    Mtx_c056_01E015A0 tmp;
+    Vec4f sc;
+    Col_c056_01E015A0 c[4];
+    Fx_c056_01E015A0 *p;
+
+    p = o->parent;
+    if (mode == 0) {
+        if (o->hB8) {
+            func_00105D00(rm, 2, 0);
+        } else {
+            func_00105D00(rm, 2, 1);
+        }
+        func_00109270(pk, 0, 0);
+        if (p == NULL) {
+            o->col.c[3] = 0;
+            o->col2.c[3] = 0;
+            func_00107790(pk, &o->col, 1);
+        } else {
+            func_00107790(pk, &p->col, 1);
+        }
+        if (o->f94) {
+            func_00107790(pk, &o->col2, 2);
+        } else {
+            c[0] = o->col2;
+            c[0].c[3] = 0;
+            func_00107790(pk, &c[0], 2);
+        }
+        func_00108500(pk, rm, 0);
+        func_00208700(pk, g->texCC, 0);
+    } else {
+        v[0].y = v[1].y = o->q[0].y;
+        v[2].y = v[3].y = o->q[2].y;
+        if (o->hB8) {
+            func_00105D00(rm, 2, 0);
+        } else {
+            func_00105D00(rm, 2, 1);
+        }
+        func_00108500(pk, rm, 0);
+        mtx = g->m40;
+        { f32 r = -0.4f; func_00106DD0(&sc, 2.5f, r, 2.5f); }
+        v[0] = o->v40;
+        v[0].x *= 0.3f;
+        v[0].z *= 0.3f;
+        func_0020C940(&tmp, &sc, &o->v50, v);
+        func_0020BC00(&mtx, &tmp);
+        if (p == NULL) {
+            c[0] = o->col;
+            c[0].c[3] = 0;
+            c[0].c[0] *= 0.5;
+            c[0].c[1] *= 0.5;
+            c[0].c[2] *= 0.5;
+        } else {
+            c[1] = o->col;
+            c[1].c[3] *= 0.8;
+            c[1].c[0] *= 0.5;
+            c[1].c[1] *= 0.5;
+            c[1].c[2] *= 0.5;
+        }
+        if (o->f94) {
+            c[2] = o->col;
+            c[2].c[3] *= 0.8;
+            c[2].c[0] *= 0.5;
+            c[2].c[1] *= 0.5;
+            c[2].c[2] *= 0.5;
+        } else {
+            c[3] = o->col2;
+            c[3].c[3] = 0;
+            c[3].c[0] *= 0.5;
+            c[3].c[1] *= 0.5;
+            c[3].c[2] *= 0.5;
+        }
+        for (i = 0; i < 12; i++) {
+            if (p != NULL) {
+                o->q[0].x = g->t0[i] * p->hAA;
+                o->q[0].z = g->t1[i] * p->hAA;
+                o->q[1].x = g->t2[i] * p->hAA;
+                o->q[1].z = g->t3[i] * p->hAA;
+                o->q[1].y = o->q[0].y = p->q[2].y;
+            } else {
+                o->q[0].x = g->t0[i] * o->hA8;
+                o->q[0].z = g->t1[i] * o->hA8;
+                o->q[1].x = g->t2[i] * o->hA8;
+                o->q[1].z = g->t3[i] * o->hA8;
+            }
+            o->q[2].x = g->t0[i] * o->hAA;
+            o->q[2].z = g->t1[i] * o->hAA;
+            o->q[3].x = g->t2[i] * o->hAA;
+            o->q[3].z = g->t3[i] * o->hAA;
+            if (p != NULL) {
+                func_00107DD0(o, p->m70, o->m70, 0);
+            }
+            func_00106FA0(o, o->m70, 0);
+            func_00107DD0(&o->q[2], o->m70, &o->v40, 0);
+            if (func_00205630(o, 0x70000000, &g->m40, pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+        }
+        if (p == NULL) {
+            func_00107790(pk, &c[0], 1);
+        } else {
+            func_00107790(pk, &c[1], 1);
+        }
+        if (o->f94) {
+            func_00107790(pk, &c[2], 2);
+        } else {
+            func_00107790(pk, &c[3], 2);
+        }
+        if (p != NULL) {
+            r0 = 2.5 * p->hAA;
+        }
+        r1 = 2.5 * o->hA8;
+        r2 = 2.5 * o->hAA;
+        func_00106080(rm, 0x8C, 0, 0);
+        func_00106080(rm2, 0x96, 0, 0);
+        v[0] = *(Vec4f *)o->m70;
+        v[0].x *= 0.4f;
+        v[0].z *= 0.4f;
+        for (i = 0; i < 12; i++) {
+            func_00108500(pk, rm, 0);
+            func_00208700(pk, g->texC8, 0);
+            if (p != NULL) {
+                o->q[0].x = g->t0[i] * r0;
+                o->q[0].z = g->t1[i] * r0;
+                o->q[1].x = g->t2[i] * r0;
+                o->q[1].z = g->t3[i] * r0;
+            } else {
+                o->q[0].x = g->t0[i] * r1;
+                o->q[0].z = g->t1[i] * r1;
+                o->q[1].x = g->t2[i] * r1;
+                o->q[1].z = g->t3[i] * r1;
+            }
+            o->q[2].x = g->t0[i] * r2;
+            o->q[2].z = g->t1[i] * r2;
+            o->q[3].x = g->t2[i] * r2;
+            o->q[3].z = g->t3[i] * r2;
+            if (p != NULL) {
+                func_00107DD0(o, p->m70, o->m70, 0);
+            }
+            func_00106FA0(o, v, 0);
+            func_00107DD0(&o->q[2], o->m70, &o->v40, 0);
+            if (func_00205630(o, 0x70000000, &mtx, pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+            func_00108500(pk, rm2, 1);
+            func_00208700(pk, g->texCC, 0);
+            if (func_00205630(o, 0x70000000, &mtx, pk, &g->depth) != 0) {
+                func_002075F0(pk, g->ot, (u32)g->depth);
+            }
+        }
+    }
+}
 
 /* shape c056:01E02020, 178 insns: c056:01E02560 family flat diamond: mode 0 picks frame 1 from func_00105D00 when 0xA0 is set (scene texture g+0xCC) or texture 0x14 at its angle (g+0x98), colour 0xAC; other modes set the camera at the object (random-free turn g+0xD0, no roll) and lay its four corners at 135/45/225/315 degrees, x radius 0xAA + 5 and z radius 0xAA, depth-tested into g+0x4488 */
 
@@ -1413,7 +1765,260 @@ static void func_01E02E10_c056(Scene_c056_01E02E10 *g, Fx_c056_01E02E10 *o, Pkt_
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c056", func_01E03090_c056);
+/* shape c056:01E03090 (C056_W_S), 660 insns, 1 copy: C056_W_S, the scene step: counts the frame (0x44C2); at 1 sets
+   five path rings (radius 20 at 0/90/180/270/0 degrees, x/z from sin/cos of the old angle), three 0x1E04830 pieces,
+   two five-piece climber chains (0x1E04900, 0x1E04FE0), the path heights (30 apart) and ring heights, three random
+   turns, three lights (70/90/110) with 0x1E03DA0, the 0x1E04CF0 ring, three 0x1E044B0 sparks, a 17-piece 0x1E03FE0
+   chain, then 0x1E04830 and 0x1E04780; from step 21 on odd steps one more spark; 0xE4 drops by 0x100; the first piece
+   call goes through a no-prototype alias */
+
+typedef struct {
+    f32 x, y, z;
+    u8 padC[8];
+    s16 ang;
+    s16 rad;
+    u8 pad18[4];
+} Rp_c056_01E03090;
+
+typedef struct {
+    Vec4f p;
+    f32 a, b;
+} Pt_c056_01E03090;
+
+typedef struct {
+    Rp_c056_01E03090 r[8];
+    u8 padE0[0x118 - 0xE0];
+    Pt_c056_01E03090 pt[10];
+} Path_c056_01E03090;
+
+typedef struct {
+    u8 pad0[0x80];
+    Vec4f v;
+    u8 pad90[0xE4 - 0x90];
+    s32 wE4;
+    u8 padE8[0x100 - 0xE8];
+    s32 rot[3][4];
+    u8 pad130[0x4270 - 0x130];
+    Path_c056_01E03090 path;
+    s32 step;
+    u8 pad447C[4];
+    u8 rgba[4];
+    u8 pad4484[8];
+    void *owner;
+    u8 pad4490[0xC];
+    f32 f449C;
+    f32 f44A0;
+    f32 f44A4;
+    u8 pad44A8[0x10];
+    s16 h44B8;
+    s16 h44BA;
+    s16 h44BC;
+    u8 pad44BE[4];
+    s16 h44C2;
+    u8 pad44C4[4];
+    s16 h44C8;
+} Scene_c056_01E03090;
+
+static void func_01E03090_c056(Scene_c056_01E03090 *g) {
+    extern void c056_01E03AE0();
+    extern void c056_01E03DA0();
+    extern void c056_01E03FE0();
+    extern void c056_01E044B0();
+    extern void c056_01E04780();
+    extern void c056_01E04830();
+    extern void c056_01E04900();
+    extern void c056_01E04CF0();
+    extern void c056_01E04FE0();
+    extern void c056_01E011C0();
+    extern f32 func_001A6898(f32);
+    extern f32 func_001A6A88(f32);
+    extern void func_001076F0(void *, s32, s32, s32);
+    extern void func_00107EA0(void *, f32, f32, f32);
+    Path_c056_01E03090 *p;
+    s32 i;
+
+    g->h44C2++;
+    if (g->h44C2 == 1) {
+        func_01E00C10_c056((void *)g, (s32)c056_01E03AE0);
+        p = &g->path;
+        p->r[0].x = p->r[0].rad * func_001A6898(3.1415927f * p->r[0].ang / 180.0f);
+        p->r[0].z = p->r[0].rad * func_001A6A88(3.1415927f * p->r[0].ang / 180.0f);
+        p->r[0].ang = 0;
+        p->r[0].rad = 20;
+        p->r[1].x = p->r[1].rad * func_001A6898(3.1415927f * p->r[1].ang / 180.0f);
+        p->r[1].z = p->r[1].rad * func_001A6A88(3.1415927f * p->r[1].ang / 180.0f);
+        p->r[1].ang = 90;
+        p->r[1].rad = 20;
+        p->r[2].x = p->r[2].rad * func_001A6898(3.1415927f * p->r[2].ang / 180.0f);
+        p->r[2].z = p->r[2].rad * func_001A6A88(3.1415927f * p->r[2].ang / 180.0f);
+        p->r[2].ang = 180;
+        p->r[2].rad = 20;
+        p->r[3].x = p->r[3].rad * func_001A6898(3.1415927f * p->r[3].ang / 180.0f);
+        p->r[3].z = p->r[3].rad * func_001A6A88(3.1415927f * p->r[3].ang / 180.0f);
+        p->r[3].ang = 270;
+        p->r[3].rad = 20;
+        p->r[4].x = p->r[4].rad * func_001A6898(3.1415927f * p->r[4].ang / 180.0f);
+        p->r[4].z = p->r[4].rad * func_001A6A88(3.1415927f * p->r[4].ang / 180.0f);
+        p->r[4].ang = 0;
+        p->r[4].rad = 20;
+        g->h44C8 = 0;
+        g->h44BA = 0;
+        g->owner = NULL;
+        g->f44A4 = 50.0f;
+        c056_01E011C0(g, c056_01E04830);
+        g->h44C8 = 1;
+        g->h44BA = 120;
+        g->owner = NULL;
+        g->f44A4 = 40.0f;
+        func_01E011C0_c056((void *)g, (s32)c056_01E04830);
+        g->h44C8 = 2;
+        g->h44BA = 250;
+        g->owner = NULL;
+        func_01E011C0_c056((void *)g, (s32)c056_01E04830);
+        g->f449C = 30.0f;
+        g->owner = NULL;
+        for (i = 5; i > 0; i--) {
+            g->f449C = 3 * i + 3;
+            g->f44A0 = g->f449C - 3.0f;
+            if (i != 1) {
+                g->h44BC = 0;
+            } else {
+                g->h44BC = 1;
+            }
+            g->f44A4 = 25 * i;
+            g->h44C8 = 1;
+            g->v.y = 0.0f;
+            g->v.x = 0.0f;
+            g->v.z = 0.0f;
+            g->rgba[3] = 0;
+            g->h44BA = 15 * i;
+            func_01E012A0_c056((void *)g, (s32)c056_01E04900);
+        }
+        g->owner = NULL;
+        for (i = 5; i > 0; i--) {
+            g->f449C = 3 * i + 7;
+            g->f44A0 = g->f449C - 3.0f;
+            if (i != 1) {
+                g->h44BC = 0;
+            } else {
+                g->h44BC = 1;
+            }
+            g->f44A4 = 25 * i;
+            g->h44C8 = 1;
+            g->v.y = 0.0f;
+            g->v.x = 0.0f;
+            g->v.z = 0.0f;
+            g->rgba[3] = 0;
+            g->h44BA = 15 * i + 90;
+            func_01E012A0_c056((void *)g, (s32)c056_01E04FE0);
+        }
+        g->v.x = 100.0f;
+        g->v.y = 50.0f;
+        g->v.z = 0.0f;
+        g->owner = NULL;
+        g->h44C8 = 0;
+        g->h44B8 = 2;
+        g->v.x = 0.0f;
+        g->v.y = 10.0f;
+        g->v.z = 0.0f;
+        p->pt[0].p.y = 0.0f;
+        p->pt[1].p.y = 30.0f + p->pt[0].p.y;
+        p->pt[2].p.y = 30.0f + p->pt[1].p.y;
+        p->pt[3].p.y = 30.0f + p->pt[2].p.y;
+        p->pt[4].p.y = 30.0f + p->pt[3].p.y;
+        p->pt[5].p.y = 30.0f + p->pt[4].p.y;
+        p->pt[6].p.y = 30.0f + p->pt[5].p.y;
+        p->pt[7].p.y = 30.0f + p->pt[6].p.y;
+        p->pt[8].p.y = 30.0f + p->pt[7].p.y;
+        p->pt[9].p.y = 30.0f + p->pt[8].p.y;
+        p->r[0].y = 0.0f;
+        p->r[1].y = 20.0f;
+        p->r[2].y = 40.0f;
+        p->r[3].y = 60.0f;
+        p->r[4].y = 90.0f;
+        p->r[5].y = 110.0f;
+        p->r[6].y = 120.0f;
+        p->r[7].y = 140.0f;
+        g->rot[0][1] = func_0019A5C8() * 182 % 360;
+        g->rot[1][1] = func_0019A5C8() * 182 % 360;
+        g->rot[2][1] = func_0019A5C8() * 182 % 360;
+        func_001076F0(g->rgba, 0x10, 0x10, 0x10);
+        g->v.y = 40.0f;
+        g->h44B8 = 70;
+        g->h44BC = 0;
+        func_00107EA0(g, g->h44B8, g->h44B8, 5.0f);
+        func_01E00C50_c056((void *)g, (s32)c056_01E03DA0);
+        g->h44BC = 1;
+        g->v.y = 60.0f;
+        g->h44B8 = 90;
+        func_00107EA0(g, g->h44B8, g->h44B8, 5.0f);
+        func_01E00C50_c056((void *)g, (s32)c056_01E03DA0);
+        g->h44BC = 2;
+        g->v.y = 80.0f;
+        g->h44B8 = 110;
+        func_00107EA0(g, g->h44B8, g->h44B8, 5.0f);
+        func_01E00C50_c056((void *)g, (s32)c056_01E03DA0);
+        g->v.y = 70.0f;
+        g->h44B8 = 100;
+        g->owner = NULL;
+        g->h44C8 = 0;
+        g->rgba[3] = 0;
+        g->h44BA = 90;
+        g->f44A4 = 20.0f;
+        g->f44A0 = 90.0f;
+        func_00107EA0(g, 100.0f, 80.0f, 50.0f);
+        func_01E01490_c056((void *)g, (s32)c056_01E04CF0);
+        g->f44A4 = 5.0f;
+        for (i = 0; i < 3; i++) {
+            g->h44BA = func_0019A5C8() % 360;
+            g->f449C = 15.0f;
+            g->f44A0 = 15.0f;
+            g->rgba[3] = 0x20;
+            func_01E00F30_c056((void *)g, (s32)c056_01E044B0);
+        }
+        g->f449C = 10.0f;
+        g->owner = NULL;
+        func_001076F0(g->rgba, 0x30, 0x30, 0x30);
+        for (i = 17; i > 0; i--) {
+            g->f449C = 2 * i + 1;
+            g->f44A0 = i + 1;
+            if (i != 1) {
+                g->h44BC = 0;
+            } else {
+                g->h44BC = 1;
+            }
+            g->f44A4 = 13 * i;
+            g->h44C8 = 1;
+            g->v.y = 0.0f;
+            g->rgba[3] = 0;
+            if (g->h44B8 == 0) {
+                g->h44B8 = 1;
+            } else {
+                g->h44B8 = 0;
+            }
+            g->v.x = 0.0f;
+            g->v.z = 0.0f;
+            g->h44BA = 10 * i;
+            func_01E00D30_c056((void *)g, (s32)c056_01E03FE0);
+        }
+        g->f44A0 = 7.0f;
+        g->rgba[3] = 0;
+        func_01E011C0_c056((void *)g, (s32)c056_01E04830);
+        func_01E010E0_c056((void *)g, (s32)c056_01E04780);
+    }
+    if (g->step > 20 && g->step % 2 == 1) {
+        for (i = 0; i < 1; i++) {
+            g->h44BA = func_0019A5C8() % 360;
+            g->f449C = 5.0f;
+            g->f44A0 = 5.0f;
+            g->rgba[3] = 0x10;
+            if (g->step > 13) {
+                func_01E00F30_c056((void *)g, (s32)c056_01E044B0);
+            }
+        }
+    }
+    g->wE4 -= 0x100;
+}
 
 /* shape c056:01E03AE0, 175 insns: swings the six orbit arms of the scene object (ctx+0x4270, angles at +0x12C.. step 0x18) by +3/-8/+11/-12/+18/-9 a tick with radii 15 (doubled)/7/7/9/9/10, x by the sine and z by the cosine from the game table (ctx+0x44D0); clears the caller's 0xA4 while ctx+0x4478 is under 11 */
 

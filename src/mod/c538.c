@@ -183,4 +183,319 @@ static s32 func_01E003A0_c538(Obj_c536_01E00440 *o, s32 alpha, s32 n, Hist_c536_
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/c538", func_01E00630_c538);
+/* shape c538:01E00630 (c538), 678 insns, 1 copy: the c538 module main (c615:01E00420's two-unit form): on start
+   copies both unit models and places them at -125/125, -8 (code > 0 sends them in from the sides over 20 ticks); each
+   tick steps the units in, then B rides toward A with afterimages, flag 6 spins A away; returns 2 on tick 34, 8 when
+   done */
+
+typedef struct Src_c538_01E00630 {
+    Vec4f p0;
+    Vec4f p1;
+    u8 pad20[0x23];
+    u8 f43;
+    u8 pad44[0x5C];
+} __attribute__((aligned(16))) Src_c538_01E00630;
+
+typedef struct Unit_c538_01E00630 {
+    Vec4f pos;
+    s32 rot[4];
+    s32 v20[4];
+    Vec4f v30;
+    u8 pad40[0x41];
+    s8 lo : 5;
+    s8 b5 : 1;
+    s8 b6 : 1;
+    s8 b7 : 1;
+    u8 pad82[0x1E];
+} __attribute__((aligned(16))) Unit_c538_01E00630;
+
+typedef struct Ctl_c538_01E00630 {
+    Vec4f a;
+    s32 b[4];
+    s32 z[3];
+    u8 pad2C[4];
+    f32 s[2];
+    u8 pad38[8];
+    f32 x;
+    f32 y;
+    s32 on;
+    u8 pad4C[4];
+} Ctl_c538_01E00630;
+
+typedef struct Hist_c538_01E00630 {
+    Vec4f v00;
+    Vec4f v10;
+    Vec4f v20;
+    u8 pad30[0x40];
+} Hist_c538_01E00630;
+
+typedef struct Scene_c538_01E00630 {
+    Hist_c538_01E00630 hist[4];
+    Unit_c538_01E00630 a;
+    Unit_c538_01E00630 b;
+    Ctl_c538_01E00630 ctl[2];
+    Vec4f p3A0;
+    Vec4f p3B0;
+    s32 timer;
+    s32 timer2;
+    s32 life;
+    s32 code;
+    s32 flags;
+    s32 count;
+    s32 alpha;
+    u8 pad3DC[4];
+} Scene_c538_01E00630;
+
+static s32 func_01E00630_c538(s32 arg0, s32 code) {
+    Scene_c538_01E00630 *g = (Scene_c538_01E00630 *)arg0;
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5B30(s32);
+    extern s32 func_001F59D0(s32, s32);
+    extern void func_00195108(void *, s32);
+    extern void func_00205CB0(void *, f32, f32);
+    extern void func_00205C40();
+    extern void func_00104490(void *, void *, s32);
+    extern s32 func_00207F60(void);
+    extern void func_00207FD0(s32, s32, s32);
+    extern s32 c538_01E00080();
+    extern s32 c538_01E00290();
+    extern s32 c538_01E003A0();
+    s32 idA;
+    s32 idB;
+    Src_c538_01E00630 *a;
+    Src_c538_01E00630 *b;
+    s32 ot;
+    s32 i;
+
+    func_00207500();
+    idA = func_001F53A0();
+    idB = func_001F5380();
+    a = (Src_c538_01E00630 *)func_001F5B30(idA);
+    b = (Src_c538_01E00630 *)func_001F5B30(idB);
+    if (a == NULL) {
+        return 8;
+    }
+    if (a == NULL && b == NULL) {
+        return 8;
+    }
+    if (code >= 0) {
+        func_00195108(g, 0x3E0);
+        if (a) {
+            g->a = *(Unit_c538_01E00630 *)a;
+        }
+        if (b) {
+            g->b = *(Unit_c538_01E00630 *)b;
+        }
+        if (a) {
+            func_001F59D0(idA, 1);
+            g->a.b6 = 1;
+            g->a.b5 = 1;
+        }
+        if (b) {
+            func_001F59D0(idB, 1);
+            g->b.b6 = 1;
+            g->b.b5 = 1;
+        }
+        g->flags = 0;
+        g->life = 0x78;
+        g->code = code;
+        if (g->code == 0) {
+            g->count = 20;
+        } else {
+            g->count = 0;
+        }
+        g->timer = 14;
+        g->timer2 = 10;
+        if (a) {
+            a->f43 = 0;
+        }
+        if (b) {
+            b->f43 = 0;
+        }
+        g->alpha = 0x80;
+        {
+            f32 r = -350.0f;
+            func_00205CB0(&g->p3A0, r, r);
+        }
+        func_00205CB0(&g->p3B0, -125.0f, -8.0f);
+        g->ctl[0].x = -125.0f;
+        g->ctl[0].y = -8.0f;
+        g->ctl[1].x = 125.0f;
+        g->ctl[1].y = -8.0f;
+        if (g->code > 0) {
+            g->ctl[0].on = 20;
+            func_00205CB0(&g->ctl[0], g->ctl[0].x, g->ctl[0].y);
+            func_00205C40(g->ctl[0].z);
+            g->ctl[0].z[0] -= g->a.v20[0];
+            g->ctl[0].z[1] -= g->a.v20[1];
+            g->ctl[0].z[2] -= g->a.v20[2];
+            g->ctl[0].b[0] = 0;
+            g->ctl[0].b[1] = 0x10000;
+            g->ctl[0].b[2] = 0x10000;
+            g->ctl[0].s[0] = 0.46875f;
+            g->ctl[0].s[1] = 0.48913f;
+            if (b) {
+                g->ctl[1].on = 20;
+                func_00205CB0(&g->ctl[1], g->ctl[1].x, g->ctl[1].y);
+                func_00205C40(g->ctl[1].z);
+                g->ctl[1].z[0] -= g->b.v20[0];
+                g->ctl[1].z[1] -= g->b.v20[1];
+                g->ctl[1].z[2] -= g->b.v20[2];
+                g->ctl[1].b[0] = 0;
+                g->ctl[1].b[1] = 0x10000;
+                g->ctl[1].b[2] = 0x10000;
+                g->ctl[1].s[0] = 0.46875f;
+                g->ctl[1].s[1] = 0.48913f;
+            }
+        } else {
+            g->flags |= 1;
+            g->ctl[0].on = 1;
+            func_00205CB0(&g->a, g->ctl[0].x, g->ctl[0].y);
+            g->ctl[0].a = a->p0;
+            func_00205C40(g->a.v20);
+            g->ctl[0].z[0] = g->ctl[0].z[1] = g->ctl[0].z[2] = 0;
+            g->a.rot[0] = 0;
+            g->a.rot[1] = 0x10000;
+            g->a.rot[2] = 0x10000;
+            *(Vec4f *)g->ctl[0].b = a->p1;
+            g->ctl[0].s[0] = g->ctl[0].s[1] = 0.1f;
+            g->a.v30.x = 0.46875f;
+            g->a.v30.y = 0.48913f;
+            if (b) {
+                g->flags |= 2;
+                g->ctl[1].on = 1;
+                func_00205CB0(&g->b, g->ctl[1].x, g->ctl[1].y);
+                g->ctl[1].a = b->p0;
+                func_00205C40(g->b.v20);
+                g->ctl[1].z[0] = g->ctl[1].z[1] = g->ctl[1].z[2] = 0;
+                g->b.rot[0] = 0;
+                g->b.rot[1] = 0x10000;
+                g->b.rot[2] = 0x10000;
+                *(Vec4f *)g->ctl[1].b = b->p1;
+                g->ctl[1].s[0] = g->ctl[1].s[1] = 0.1f;
+                g->b.v30.x = 0.46875f;
+                g->b.v30.y = 0.48913f;
+                for (i = 0; i < 4; i++) {
+                    g->hist[i].v20 = g->b.pos;
+                    g->hist[i].v10 = *(Vec4f *)g->b.rot;
+                    g->hist[i].v00 = g->b.v30;
+                }
+            }
+        }
+        return 0;
+    }
+    ot = func_00207F60();
+    func_001D99F0();
+    if (!func_00104520(g->flags, 4)) {
+        if (func_00104520(g->flags, 0) && func_00104520(g->flags, 1)) {
+            c538_01E00290(&g->a, g->alpha, NULL);
+            c538_01E003A0(&g->b, g->alpha, 4, g->hist);
+            if (g->timer < 7) {
+                func_00104490(&g->b, &g->p3B0, g->timer);
+            }
+            if (g->timer < 3) {
+                g->flags |= 0x40;
+            }
+            if (g->timer) {
+                g->timer--;
+            } else {
+                g->flags |= 0x10;
+                g->timer = 12;
+            }
+        } else {
+            if (!func_00104520(g->flags, 0)) {
+                if (!c538_01E00080(&g->a, &g->ctl[0])) {
+                    g->flags |= 1;
+                    g->a.rot[0] = 0;
+                    g->a.rot[1] = 0;
+                    g->a.rot[2] = 0;
+                }
+                c538_01E00290(&g->a, g->alpha, NULL);
+            }
+            if (b && !func_00104520(g->flags, 1)) {
+                if (!c538_01E00080(&g->b, &g->ctl[1])) {
+                    g->flags |= 2;
+                    g->b.rot[0] = 0;
+                    g->b.rot[1] = 0;
+                    g->b.rot[2] = 0;
+                    for (i = 0; i < 4; i++) {
+                        g->hist[i].v20 = g->b.pos;
+                        g->hist[i].v10 = *(Vec4f *)g->b.rot;
+                        g->hist[i].v00 = g->b.v30;
+                    }
+                }
+                c538_01E00290(&g->b, g->alpha, NULL);
+            }
+        }
+    } else if (!func_00104520(g->flags, 5)) {
+        g->ctl[1].on = 20;
+        g->ctl[1].x = -125.0f;
+        g->ctl[1].y = -8.0f;
+        func_00205CB0(&g->b, g->ctl[1].x, g->ctl[1].y);
+        g->ctl[1].a = b->p0;
+        func_00205C40(g->b.v20);
+        g->ctl[1].z[0] = g->ctl[1].z[1] = g->ctl[1].z[2] = 0;
+        g->b.rot[0] = 0;
+        g->b.rot[1] = 0x10000;
+        g->b.rot[2] = 0x10000;
+        *(Vec4f *)g->ctl[1].b = b->p1;
+        g->ctl[1].s[0] = g->ctl[1].s[1] = 0.1f;
+        g->b.v30.x = 0.46875f;
+        g->b.v30.y = 0.48913f;
+        c538_01E00290(&g->a, g->alpha, NULL);
+        c538_01E003A0(&g->b, g->alpha, 4, g->hist);
+        if (g->timer == 0) {
+            if (g->code == 0) {
+                g->flags |= 8;
+            } else {
+                g->flags |= 0x20;
+            }
+        } else {
+            g->timer--;
+        }
+    } else if (!func_00104520(g->flags, 3)) {
+        if (!c538_01E00080(&g->b, &g->ctl[1])) {
+            g->flags |= 8;
+            g->b.rot[0] = ((Unit_c538_01E00630 *)b)->rot[0];
+            g->b.rot[1] = ((Unit_c538_01E00630 *)b)->rot[1];
+            g->b.rot[2] = ((Unit_c538_01E00630 *)b)->rot[2];
+        }
+        c538_01E00290(&g->b, g->alpha, NULL);
+    }
+    func_001D9DD0();
+    func_00207FD0(ot, (s32)func_00207500(), 0);
+    if (func_00104520(g->flags, 6)) {
+        g->a.rot[0] += 0x1000;
+        g->a.rot[2] += 0x1000;
+        func_00104490(&g->a, &g->p3A0, g->timer2);
+        g->timer2--;
+    }
+    for (i = 3; i >= 0; i--) {
+        if (i != 0) {
+            g->hist[i].v20 = g->hist[i - 1].v20;
+            g->hist[i].v10 = g->hist[i - 1].v10;
+            g->hist[i].v00 = g->hist[i - 1].v00;
+        } else {
+            g->hist[i].v20 = g->b.pos;
+            g->hist[i].v10 = *(Vec4f *)g->b.rot;
+            g->hist[i].v00 = g->b.v30;
+        }
+    }
+    g->count++;
+    g->life--;
+    if (func_00104520(g->flags, 2) || func_00104520(g->flags, 3)) {
+        func_001F59D0(idA, 0);
+        func_001F59D0(idB, 0);
+        return 8;
+    }
+    if (g->count == 0x22) {
+        return 2;
+    }
+    if (g->life <= 0) {
+        func_001F59D0(idA, 0);
+        func_001F59D0(idB, 0);
+        return 8;
+    }
+    return 0;
+}

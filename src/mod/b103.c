@@ -978,4 +978,385 @@ static s32 func_01E021A0_b103(s32 obj, Em_b025_01E01FD0 *o, Part_b025_01E01FD0 *
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b103", func_01E02B40_b103);
+/* shape b103:01E02B40 (b103), 616 insns, 1 copy: b103 scene manager: code >= 0 sets up the trail, the disc, the band
+   sprite and two 128-particle emitters; else follows joints (then drifts the camera), flashes from 90 to 157, fades
+   the screen from 310, draws disc/band from 146, the first emitter and trail in 292..325, the second from 292;
+   returns 2/1/6/8 by tick */
+
+typedef struct {
+    f32 x, y, z;
+    u8 padC[4];
+    Vec4f rot;
+    Vec4f pos;
+    u8 pad30[0x40];
+} Crd_b103_01E02B40;
+
+typedef struct {
+    s32 tex;
+    u8 c[4];
+    s32 flags;
+    f32 size;
+    s16 uv[8];
+    u8 pad20[0x10];
+    f32 rate;
+    s16 a;
+    s16 b;
+    s16 c34;
+    s16 count;
+    s16 e;
+    u8 pad3E[2];
+} Spot_b103_01E02B40;
+
+typedef struct {
+    f32 x, y, z;
+    u8 c;
+    u8 d;
+    s16 t;
+} Pt_b103_01E02B40;
+
+typedef struct {
+    s32 flags;
+    u8 c[4];
+    f32 radius;
+    s16 count;
+    s16 height;
+} Disc_b103_01E02B40;
+
+typedef struct {
+    s16 uv[8];
+    u8 pad10[0x20];
+    f32 scale;
+    u8 c[4];
+    s32 mode;
+    u8 pad3C[0xC];
+    s16 s[6];
+    u8 pad54[0xC];
+} Band_b103_01E02B40;
+
+typedef struct {
+    s32 tex;
+    u8 pad4[4];
+    f32 scale;
+    u8 c[4];
+    f32 x, y, z;
+    u8 pad1C[4];
+} Aux_b103_01E02B40;
+
+typedef struct {
+    s32 tex;
+    s32 flags;
+    u8 c[4];
+    Pt_b103_01E02B40 *parts;
+    s16 uv[8];
+    f32 f20;
+    f32 f24;
+    f32 radius;
+    s16 count;
+    u8 life;
+    u8 f2F;
+} Emit_b103_01E02B40;
+
+typedef struct {
+    Crd_b103_01E02B40 m0;
+    Spot_b103_01E02B40 trail;
+    Pt_b103_01E02B40 pts[24];
+    Crd_b103_01E02B40 cam1;
+    Disc_b103_01E02B40 disc;
+    Band_b103_01E02B40 band;
+    Aux_b103_01E02B40 aux;
+    Crd_b103_01E02B40 cam2;
+    Crd_b103_01E02B40 cam3;
+    Emit_b103_01E02B40 emit1;
+    Pt_b103_01E02B40 parts1[128];
+    Crd_b103_01E02B40 cam4;
+    Emit_b103_01E02B40 emit2;
+    Pt_b103_01E02B40 parts2[128];
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 cnt;
+    s32 ja;
+    s32 jb;
+    u8 c[4];
+    u8 pad14FC[4];
+} Scene_b103_01E02B40;
+
+static s32 func_01E02B40_b103(s32 arg0, s32 code) {
+    Scene_b103_01E02B40 *g = (Scene_b103_01E02B40 *)arg0;
+    extern s32 func_00207500(void);
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern void func_001039A0(void *);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_00103290(s32 *, s32);
+    extern void func_001036E0(void *, void *, void *);
+    extern void func_00103DB0(void *, void *, void *);
+    extern void func_00104490(void *, void *, s32);
+    extern void func_001043F0(void *, f32);
+    extern s32 func_001A22C0(f32);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern s32 func_001032C0(u8 *, u8, s32);
+    extern void func_001033D0(void *, f32, f32);
+    extern s32 func_0019A5C8();
+    Vec4f v[2];
+    Vec4f p;
+    s32 tx[4];
+    s32 ot;
+    s32 i;
+    s32 r;
+    s32 a;
+    f32 d;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x1500);
+        func_00103890(&g->m0);
+        func_00103890(&g->cam1);
+        g->cam1.x = g->cam1.y = g->cam1.z = 0.1f;
+        func_00103890(&g->cam2);
+        func_00103890(&g->cam3);
+        func_00103890(&g->cam4);
+        g->ja = func_001F5560(func_001F53A0(), 0xB, 1);
+        g->jb = func_001F5560(func_001F53A0(), 0x1A, 0);
+        g->timer = 0x154;
+        g->t = 1;
+        g->code = code;
+        g->cnt = 0x12;
+        g->c[2] = 0xC0;
+        g->c[1] = 0x80;
+        g->c[0] = 0xA0;
+        g->c[3] = 0;
+        g->disc.flags = 0;
+        g->disc.c[2] = 0xA0;
+        g->disc.c[1] = 0x60;
+        g->disc.c[0] = 0x80;
+        g->disc.c[3] = 0;
+        g->disc.radius = 4.0f;
+        g->disc.count = 0x24;
+        g->disc.height = 0;
+        func_00103290(tx, 2);
+        g->band.mode = 3;
+        g->band.uv[0] = 0;
+        g->band.uv[1] = 0;
+        g->band.uv[2] = 0x40;
+        g->band.uv[3] = 0x40;
+        g->band.uv[4] = 0;
+        g->band.uv[5] = 0;
+        g->band.uv[6] = 0x80;
+        g->band.uv[7] = 0x80;
+        g->band.scale = 1.0f;
+        g->band.c[2] = 0x80;
+        g->band.c[1] = 0x80;
+        g->band.c[0] = 0x80;
+        g->band.c[3] = 0;
+        g->band.s[0] = 0;
+        g->band.s[1] = 2;
+        g->band.s[2] = 3;
+        g->band.s[3] = 4;
+        g->band.s[4] = 0;
+        g->band.s[5] = 999;
+        r = tx[0];
+        g->aux.z = 0.0f;
+        g->aux.y = 0.0f;
+        g->aux.x = 0.0f;
+        g->aux.scale = 3.0f;
+        g->aux.tex = r;
+        g->aux.c[2] = 0x80;
+        g->aux.c[1] = 0x80;
+        g->aux.c[0] = 0x80;
+        g->aux.c[3] = 0x80;
+        func_00103290(tx, 0);
+        g->trail.tex = tx[0];
+        g->trail.c[2] = 0x80;
+        g->trail.c[1] = 0x80;
+        g->trail.c[0] = 0x80;
+        g->trail.c[3] = 0x50;
+        g->trail.flags = 0x8003;
+        g->trail.size = 20.0f;
+        g->trail.uv[0] = 0x9C;
+        g->trail.uv[1] = 0;
+        g->trail.uv[2] = 0x40;
+        g->trail.uv[3] = 0x40;
+        g->trail.uv[4] = 0x9C;
+        g->trail.uv[5] = 0;
+        g->trail.uv[6] = 0x100;
+        g->trail.uv[7] = 0x80;
+        g->trail.rate = 0.1f;
+        g->trail.a = 0;
+        g->trail.b = 0x10;
+        g->trail.c34 = 0x18;
+        g->trail.count = 0;
+        g->trail.e = 1;
+        func_00103290(tx, 1);
+        g->emit1.tex = tx[0];
+        g->emit1.flags = 0x20000003;
+        g->emit1.c[2] = 0x80;
+        g->emit1.c[1] = 0x80;
+        g->emit1.c[0] = 0x80;
+        g->emit1.c[3] = 0x80;
+        g->emit1.f20 = 0.5f;
+        g->emit1.f24 = 5.0f;
+        g->emit1.uv[0] = 0;
+        g->emit1.uv[1] = 0;
+        g->emit1.uv[2] = 0x20;
+        g->emit1.uv[3] = 0x20;
+        g->emit1.uv[4] = 0;
+        g->emit1.uv[5] = 0;
+        g->emit1.uv[6] = 0x80;
+        g->emit1.uv[7] = 0x40;
+        g->emit1.parts = g->parts1;
+        g->emit1.radius = 5.0f;
+        g->emit1.count = 0x80;
+        g->emit1.life = 8;
+        g->emit1.f2F = 0;
+        func_01E011A0_b103((Obj_b015_01E01620 *)&g->emit1, 0xC, 4.0f);
+        g->emit2.tex = tx[0];
+        g->emit2.flags = 3;
+        g->emit2.c[2] = 0x80;
+        g->emit2.c[1] = 0x80;
+        g->emit2.c[0] = 0x80;
+        g->emit2.c[3] = 0;
+        g->emit2.f20 = 0.5f;
+        g->emit2.f24 = 5.0f;
+        g->emit2.uv[0] = 0;
+        g->emit2.uv[1] = 0;
+        g->emit2.uv[2] = 0x20;
+        g->emit2.uv[3] = 0x20;
+        g->emit2.uv[4] = 0;
+        g->emit2.uv[5] = 0;
+        g->emit2.uv[6] = 0x80;
+        g->emit2.uv[7] = 0x40;
+        g->emit2.parts = g->parts2;
+        g->emit2.radius = 5.0f;
+        g->emit2.count = 0x80;
+        g->emit2.life = 8;
+        g->emit2.f2F = 0;
+        func_01E011A0_b103((Obj_b015_01E01620 *)&g->emit2, 0xC, 4.0f);
+        return 0;
+    }
+    func_001F5F90(func_001F5380(), &g->cam2.pos);
+    if (g->t < 0x124) {
+        func_001F5620(func_001F53A0(), g->ja, &v[0]);
+        func_001F5620(func_001F53A0(), g->jb, &v[1]);
+        func_001036E0(&v[0], &v[1], &g->cam1.pos);
+    } else {
+        func_00104490(&g->cam1.pos, &g->cam2.pos, g->cnt);
+        if (g->cnt != 0) {
+            g->cnt--;
+        }
+        func_01E020C0_b103((Trail_b025_01E01EF0 *)&g->trail, (Pt_b025_01E01EF0 *)g->pts,
+                           (Vec_b025_01E01EF0 *)&g->cam1.pos);
+    }
+    func_001F5F90(func_001F53A0(), &v[0]);
+    g->cam4.pos = g->cam1.pos;
+    g->cam3.pos = g->cam4.pos;
+    func_00103DB0(&v[0], &g->cam2.pos, &g->cam3.rot);
+    func_001038D0(&g->m0);
+    func_001039A0(&g->cam1);
+    func_001039A0(&g->cam2);
+    func_001038D0(&g->cam3);
+    func_001038D0(&g->cam4);
+    if (g->t >= 0x5A && g->t < 0x9E) {
+        func_01E00120_b103();
+    }
+    if (g->t >= 0x136) {
+        func_01E00250_b103(ot, (Src_b000_01E00400 *)g->c);
+        if (g->t < 0x146) {
+            func_001032C0(&g->c[3], 0xFF, 0x10);
+        } else {
+            func_00103470(&g->c[3], 0, 0x20);
+        }
+    }
+    if (g->t > 0x91) {
+        func_01E003B0_b103(ot, (Disc_b540_01E00250 *)&g->disc, (Cam_b540_01E00250 *)&g->cam1);
+        func_01E00910_b103(ot, (Spr_b000_01E02A30 *)&g->band, (Part_b000_01E02A30 *)&g->aux,
+                           (Cam_b000_01E02A30 *)&g->cam1);
+        if (g->t < 0x124) {
+            { f32 x = 1.0f; f32 h = 0.05f; func_001033D0(&g->cam1, x, h); }
+            func_001032C0(&g->disc.c[3], 0xFF, 0x20);
+            func_001032C0(&g->band.c[3], 0x80, 0x10);
+        }
+    }
+    if (g->t >= 0x124 && g->t < 0x146) {
+        func_01E01360_b103(ot, (Emit_b489_01E00240 *)&g->emit1, (Cam_b489_01E00240 *)&g->cam3);
+        if (g->t > 0x146) {
+            func_00103470(&g->emit1.c[3], 0, 8);
+        }
+        for (i = 0; i < g->emit1.count; i++) {
+            if (g->parts1[i].t >= 0) {
+                g->parts1[i].x *= 1.2f;
+                g->parts1[i].y *= 1.2f;
+                g->parts1[i].z *= 1.2f;
+                if (g->parts1[i].y > 30.0f) {
+                    r = func_001A22C0(10.0f * g->emit1.radius);
+                    a = func_0019A5C8() % 0x10000;
+                    d = 0.1f * (f32)(func_0019A5C8() % r);
+                    g->parts1[i].y = 4.0f;
+                    g->parts1[i].z = d * func_0020B480(a);
+                    g->parts1[i].x = d * func_0020B550(a);
+                    g->parts1[i].t = -(func_0019A5C8() % 12);
+                }
+            }
+        }
+        func_01E021A0_b103(ot, (Em_b025_01E01FD0 *)&g->trail, (Part_b025_01E01FD0 *)g->pts,
+                           (Cam_b025_01E01FD0 *)&g->m0);
+        for (i = 0; i < g->trail.count; i++) {
+            func_00103470(&g->pts[i].c, 0, 5);
+        }
+    }
+    if (g->t == 0x146) {
+        g->emit2.c[3] = 0x80;
+        for (i = 0; i < g->emit2.count; i++) {
+            g->parts2[i].c = 0x80;
+        }
+    }
+    if (g->t >= 0x124) {
+        func_01E01360_b103(ot, (Emit_b489_01E00240 *)&g->emit2, (Cam_b489_01E00240 *)&g->cam4);
+        if (g->t > 0x146) {
+            func_00103470(&g->emit2.c[3], 0, 8);
+        }
+        for (i = 0; i < g->emit2.count; i++) {
+            if (g->parts2[i].t >= 0) {
+                g->parts2[i].x *= 1.4f;
+                g->parts2[i].y *= 1.4f;
+                g->parts2[i].z *= 1.4f;
+                if (g->parts2[i].t > 8) {
+                    func_001043F0(&p, 1.0f);
+                    g->parts2[i].y = p.y;
+                    g->parts2[i].z = p.z;
+                    g->parts2[i].x = p.x;
+                    g->parts2[i].t = -(func_0019A5C8() % 12);
+                    g->parts2[i].c = g->emit2.c[3];
+                }
+            }
+        }
+    }
+    if (g->cnt == 0) {
+        func_001033D0(&g->cam1, 10.0f, 1.0f);
+        func_00103470(&g->disc.c[3], 0, 0x10);
+        func_00103470(&g->band.c[3], 0, 8);
+        func_00103470(&g->trail.c[3], 0, 5);
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 0x146) {
+        return 2;
+    }
+    if (g->t == 0x12C) {
+        return 1;
+    }
+    if (g->t >= 0x136 && g->t < 0x146) {
+        return 6;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}

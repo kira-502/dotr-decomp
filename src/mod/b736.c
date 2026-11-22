@@ -756,4 +756,278 @@ static s32 func_01E01DA0_b736(Wave_b015_01E00280 *o, Vec_b015_01E00280 *pos) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/mod/b736", func_01E02410_b736);
+/* shape b736:01E02410 (b736), 574 insns, 1 copy: b736 scene manager in b514:01E01A10 form: setup (three joints, a
+   32-sparkle emitter, a 128-point rising ring, a b015 wave sprite and a glow colour), the flash over frames
+   0x1C-0x3C, the wave from 0x3D on with its tint, then the sparkles and ring as in b514 with other timings and
+   colours */
+
+typedef struct {
+    u8 pad[0x10];
+    Vec4f rot;
+    Vec4f pos;
+    u8 pad30[0x40];
+} Crd_b736_01E02410;
+
+typedef struct {
+    s32 flags;
+    u8 col[4];
+    s16 h8;
+    s16 model;
+    s32 step;
+    s32 phase;
+    f32 amp;
+} Wave_b736_01E02410;
+
+typedef struct {
+    u8 crd[0x70];
+    Crd_b736_01E02410 m;
+    Emit_b000_01E01140 ring;
+    Pt_b000_01E01140 rpts[0x80];
+    Vec4f rrots[0x80];
+    Crd_b736_01E02410 cam;
+    Emit_b000_01E01140 emit;
+    Pt_b000_01E01140 pts[32];
+    u8 pad1410[0x20];
+    Vec4f wpos;
+    u8 pad1440[0x40];
+    Wave_b736_01E02410 wave;
+    u8 col[4];
+    u8 glow[4];
+    s32 timer;
+    s32 t;
+    s32 code;
+    s32 j[3];
+    u8 pad14B8[8];
+} Scene_b736_01E02410;
+
+static s32 func_01E02410_b736(s32 arg0, s32 code) {
+    extern void func_00195108(void *, s32);
+    extern void func_00103890(void *);
+    extern void func_001038D0(void *);
+    extern s32 func_00207500(void);
+    extern s32 func_001F53A0(void);
+    extern s32 func_001F5380(void);
+    extern s32 func_001F5560(s32, s32, s32);
+    extern void func_001F5620(s32, s32, void *);
+    extern void func_001F53C0(s32, s32, void *);
+    extern void func_001F5F90(s32, void *);
+    extern void func_001F63E0(s32, void *);
+    extern void func_00103290(void *, s32);
+    extern void func_00103DB0(void *, void *, void *);
+    extern s32 func_001043F0(void *, f32);
+    extern s32 func_00103470(u8 *, u8, s32);
+    extern s32 func_001032C0(u8 *, u8, s32);
+    extern f32 func_0020B480(s32);
+    extern f32 func_0020B550(s32);
+    extern s32 func_0019A5C8();
+    Scene_b736_01E02410 *g = (Scene_b736_01E02410 *)arg0;
+    s32 ot;
+    Vec4f p;
+    Vec4f v[2];
+    s32 tex[4];
+    s32 i;
+    s32 a;
+
+    ot = func_00207500();
+    if (code >= 0) {
+        func_00195108(g, 0x14C0);
+        func_00103890(g);
+        func_00103890(&g->m);
+        func_00103890(&g->cam);
+        g->j[0] = func_001F5560(func_001F53A0(), 0x49, 1);
+        g->j[1] = func_001F5560(func_001F53A0(), 0x25, 0);
+        g->j[2] = func_001F5560(func_001F53A0(), 3, 0);
+        g->timer = 0xDC;
+        g->t = 1;
+        g->code = code;
+        g->glow[2] = 0x80;
+        g->glow[1] = 0x30;
+        g->glow[0] = 0x30;
+        g->glow[3] = 0;
+        g->wave.flags = 0x41000;
+        g->wave.col[2] = 0x80;
+        g->wave.col[1] = 0x80;
+        g->wave.col[0] = 0x80;
+        g->wave.col[3] = 0x80;
+        g->wave.phase = 0;
+        g->wave.step = 0x4000;
+        g->wave.h8 = 0;
+        g->wave.amp = 3.0f;
+        g->wave.model = func_001F53A0();
+        g->col[2] = 0x80;
+        g->col[1] = 0x80;
+        g->col[0] = 0x80;
+        g->col[3] = 0x80;
+        func_00103290(tex, 0);
+        g->emit.texture = (void *)tex[0];
+        g->emit.flags = 0x48080003;
+        g->emit.color.r = 0x80;
+        g->emit.color.g = 0x80;
+        g->emit.color.b = 0x80;
+        g->emit.color.a = 0x80;
+        g->emit.size = 20.0f;
+        g->emit.rot.x = 0.0f;
+        g->emit.rot.y = 0.0f;
+        g->emit.rot.z = 0.0f;
+        g->emit.r.i.u = 0;
+        g->emit.r.i.v = 0;
+        g->emit.r.i.w = 0x20;
+        g->emit.r.i.h = 0x20;
+        g->emit.r.i.u0 = 0;
+        g->emit.r.i.v0 = 0;
+        g->emit.r.i.tw = 0x80;
+        g->emit.r.i.th = 0x40;
+        g->emit.pts = g->pts;
+        g->emit.rots = NULL;
+        *(s32 *)g->emit.pad48 = 0;
+        g->emit.radius = 15.0f;
+        g->emit.grow = 10.0f;
+        g->emit.count = 0x20;
+        g->emit.nframes = 8;
+        g->emit.rate = 0x10;
+        for (i = 0; i < g->emit.count; i++) {
+            func_001043F0(&p, 10.0f);
+            g->pts[i].x = p.x;
+            g->pts[i].y = p.y;
+            g->pts[i].z = p.z;
+            g->pts[i].t = -(func_0019A5C8() % 12);
+            g->pts[i].a = 0x80;
+            g->pts[i].frame = func_0019A5C8() % 8;
+        }
+        func_00103290(tex, 1);
+        g->ring.texture = (void *)tex[0];
+        g->ring.flags = 0xF8000003;
+        g->ring.color.r = 0x80;
+        g->ring.color.g = 0x30;
+        g->ring.color.b = 0x30;
+        g->ring.color.a = 0;
+        g->ring.size = 5.0f;
+        g->ring.rot.x = 0.0f;
+        g->ring.rot.y = 0.0f;
+        g->ring.rot.z = 0.0f;
+        g->ring.r.i.u = 0;
+        g->ring.r.i.v = 0;
+        g->ring.r.i.w = 0x40;
+        g->ring.r.i.h = 0x40;
+        g->ring.r.i.u0 = 0;
+        g->ring.r.i.v0 = 0;
+        g->ring.r.i.tw = 0x100;
+        g->ring.r.i.th = 0x40;
+        g->ring.pts = g->rpts;
+        g->ring.rots = g->rrots;
+        *(s32 *)g->ring.pad48 = 0;
+        g->ring.radius = 3.0f;
+        g->ring.grow = 0.5f;
+        g->ring.count = 0x80;
+        g->ring.nframes = 4;
+        g->ring.rate = 0;
+        for (i = 0; i < g->ring.count; i++) {
+            a = func_0019A5C8() % 0x10000;
+            g->rpts[i].y = func_0019A5C8() % 20;
+            g->rpts[i].z = g->ring.radius * func_0020B480(a);
+            g->rpts[i].x = g->ring.radius * func_0020B550(a);
+            g->rpts[i].t = -(func_0019A5C8() % 20);
+            g->rpts[i].a = 0;
+            g->rpts[i].frame = 0;
+        }
+        return 0;
+    }
+    func_001F5F90(func_001F5380(), &v[0]);
+    func_001F5620(func_001F53A0(), g->j[1], &v[1]);
+    func_001F5620(func_001F53A0(), g->j[1], &g->m.pos);
+    func_00103DB0(&v[0], &v[1], &g->m.rot);
+    func_001F53C0(1, func_001F5380(), &g->cam.pos);
+    func_001F53C0(1, func_001F53A0(), &g->wpos);
+    func_001038D0(g);
+    func_001038D0(&g->m);
+    func_001038D0(&g->cam);
+    if (g->t >= 0x1C && g->t < 0x3D) {
+        func_01E00120_b736();
+    }
+    if (g->t >= 0x3D) {
+        g->col[3] = 0x80 - g->wave.col[3];
+        func_01E01DA0_b736((Wave_b015_01E00280 *)&g->wave, (Vec_b015_01E00280 *)&g->wpos);
+        func_001F63E0(g->wave.model, g->col);
+        if (g->t > 0xC8) {
+            func_00103470(&g->wave.col[3], 0, 8);
+        }
+    }
+    if (g->t >= 0xC8) {
+        func_00103470(&g->glow[3], 0, 8);
+    } else {
+        func_001032C0(&g->glow[3], 0x80, 8);
+    }
+    func_01E00250_b736(g->glow);
+    func_01E004B0_b736(ot, (Emit_b000_01E01140 *)&g->emit, (Cam_b000_01E01140 *)&g->cam);
+    if (g->t >= 0x35 && g->t < 0x3D) {
+        func_00103470(&g->emit.color.a, 0, 4);
+    } else if (g->t > 0xC8) {
+        func_00103470(&g->emit.color.a, 0, 8);
+    } else {
+        func_001032C0(&g->emit.color.a, 0x80, 4);
+    }
+    for (i = 0; i < g->emit.count; i++) {
+        if (g->pts[i].t >= 0) {
+            g->pts[i].x *= 1.03f;
+            g->pts[i].y *= 1.03f;
+            g->pts[i].z *= 1.03f;
+            func_00103470(&g->pts[i].a, 0, 8);
+        }
+        if (g->pts[i].t >= 0x10) {
+            func_001043F0(&p, 10.0f);
+            g->pts[i].x = p.x;
+            g->pts[i].y = p.y;
+            g->pts[i].z = p.z;
+            g->pts[i].t = 0;
+            g->pts[i].a = 0x80;
+        }
+    }
+    func_01E004B0_b736(ot, (Emit_b000_01E01140 *)&g->ring, (Cam_b000_01E01140 *)&g->m);
+    if (g->t >= 0xC8) {
+        func_00103470(&g->ring.color.a, 0, 8);
+    } else {
+        func_001032C0(&g->ring.color.a, 0x80, 8);
+    }
+    for (i = 0; i < g->ring.count; i++) {
+        if (g->rpts[i].t >= 0) {
+            if (g->rpts[i].y < 180.0f) {
+                g->rpts[i].t = 0;
+                if (i % 3 == 0) {
+                    g->rpts[i].y += 8.0f;
+                } else if (i % 3 == 1) {
+                    g->rpts[i].y += 9.0f;
+                } else {
+                    g->rpts[i].y += 10.0f;
+                }
+                g->rpts[i].z *= 1.12f;
+                g->rpts[i].x *= 1.12f;
+            }
+            if (g->t >= 0x35) {
+                func_001032C0(&g->rpts[i].a, 0x80, 0x20);
+            }
+            if (g->rpts[i].y >= 180.0f && g->rpts[i].t > 4) {
+                a = func_0019A5C8() % 0x10000;
+                g->rpts[i].t = -(func_0019A5C8() % 20);
+                g->rpts[i].z = g->ring.radius * func_0020B480(a);
+                g->rpts[i].x = g->ring.radius * func_0020B550(a);
+                g->rpts[i].y = func_0019A5C8() % 20;
+                g->rpts[i].a = 0;
+            }
+        }
+    }
+    g->t++;
+    g->timer--;
+    if (g->t == 0xC8) {
+        return 2;
+    }
+    if (g->t == 0x36) {
+        return 1;
+    }
+    if (g->t >= 0x40 && g->t < 0xC8) {
+        return 6;
+    }
+    if (g->timer <= 0) {
+        return 8;
+    }
+    return 0;
+}

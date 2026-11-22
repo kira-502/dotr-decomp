@@ -596,9 +596,715 @@ there is a source form that gives the original.
   b152:01E03730)
 - **`f(p, A, 0.0f)` loads `mtc1 $zero, $f13` before `$f12`:** both constants in block locals,
   `{ f32 x = A; f32 h = 0.0f; f(p, x, h); }` (one alone is worse). (c610:01E01180)
-- **Known wall, scene managers with a random-joint setup loop (b594:01E02EC0, b494:01E013C0, b281:01E02440): the
-  step loop's s16 counter and slot pointer swapped:** live ranges are split per loop, so counter names and
-  declaration orders give only two outcomes: a counter used only after the setup gets its register before the
-  pointer; one also used in a setup loop gets it after the draw counter `m`. The originals sit in between and no
-  form reaches it yet (pragmas, loop forms, all decl orders, the permuter ruled out; repro in work/regswap/synbase.c
-  on the original machine). Don't spend tries on counter names here.
+- **Scene-manager step loop with its s16 counter and slot pointer swapped (the pointer should get the lower register)
+  while the draw loop matches:** a counter used in only one loop gets its register before the strength-reduced
+  pointer; one also used by the setup loops gets it after. Run the setup, step and draw loops on one s16 counter. If the
+  slot count then swaps with that counter, zero the counter at the top before the count (`k = 0; m = 0;`): among
+  multi-loop variables the one mentioned first gets the lower register. Declaration order did nothing there
+  (it did matter in b060:01E013C0, whose step counter had to be declared first) (b594:01E02EC0, b494:01E013C0, b281:01E02440). When the count is itself a setup counter, put the step and draw loops
+  on the setup's other counter and zero that first (`a = 0; m = 0; k = 0;`) (b215:01E02E50). Repro in work/wall2/.
+  The reverse case: the slot count in the lowest saved register with the step/draw counter higher means the setup
+  loops run on the step/draw counter and `n` is only `n = 0; ... n++` (b073:01E02D30, 649 → 708).
+- **An -O4 range test gives `slti $v0` + `bnez $v0` where the original has `slti $at`, and `> K-1` alone does not
+  fix it:** nest the two bounds, `if (x > K-1) { if (x < L) ... }`, instead of `&&`. (b378:01E00970)
+- **A range test's first compare at -O3 gives `slti $v1, t, K` + `bnez` where yours has `slti $at`:** write the low
+  bound `t >= K` (the reverse of the `> K-1` tip); keep `>` where the original uses `$at` for both. (b363:01E02070)
+- **A module global sits at an address splat labelled as a function (a `piece` after the code, or a stale epilogue
+  slot):** declare it under that label, `extern T *func_01E02900_b296;`; no `D_` label exists there.
+  (b296:01E01FD0, b723:01E053E0)
+
+- **Porting a scene manager with work/port.py.** `port.py try` reports -1/0 at every level when the donor calls its own
+  module's statics by name (`func_01E02170_b516`): they don't exist in the target, so nothing compiles. Rename those
+  calls to the target's statics by matching the `fn ==` handler addresses, and keep `#include "mod/<mod>.c"` so the
+  file's own types are used.
+
+- **Constant-count fill loops with the counter/pointer swapped.** When a function has many identical fill loops
+  (`lwc1`/`swc1` from a stack vector, `paddub v1, zero, zero`, `a0 += 0x10`) and every loop after the first has the
+  counter and pointer registers swapped, write one `static inline` helper that walks the pointer
+  (`for (i = 0; i < 9; i++, q++)`, s32 `i`) and pass the source as a `Vec4f` local by `&p` (not `f32 p[4]` with a cast).
+  That also fixed the `li a1` / `addiu a3` order before the next call (b495:01E02140).
+- **Plain `dk try` stays near 99% when the function calls a static defined above it** in the module file (the original
+  skips reloading argument registers the static leaves alone). Check with `tools/mod_infile.sh` and `work/fulltry.sh`,
+  then `dk accept` (b495, b544).
+
+- **`p[k % 4]` in a loop:** when the original computes `g + (k%4)*16` once and reads at fixed offsets from it, index
+  the array with an s32 temp (`k = i % 4; g->p[k].x ...`). A `Vec4f *s = &g->p[i % 4]` pointer adds an `addiu` and
+  swaps the `addu` operands (b258:01E01A70).
+
+- **Two float constants loaded in the wrong order (`$f13` before `$f12`):** put only the first argument in a local in
+  its own nested block, `{ f32 r = 1.0f; f(p, r, 0.05f); }`. Declaring `r` in the enclosing block moves a later call's
+  constants instead. It only shows in the file, so check with `tools/mod_infile.sh` (b113:01E03F50).
+- **Calling an in-file static that takes a float from a standalone work file:** give its link alias a prototype
+  (`extern s32 b113_01E00280(void *, void *, s32, f32);`); a no-prototype extern promotes the float to double.
+
+- **`(u32)(p + t * (f32)(q - p) / n)` at -O2 with the `mul.s` too early:** the original converts the quotient, then
+  `p`, then multiplies. Put the quotient in a float local first: `d = (s32)(q - p) / n; x = (u32)(p + t * d);`
+  (b299:01E03B30).
+
+- **-O2 scene manager with every saved register rotated (the parameter `g` coloured last, `$s3` not `$s0`):** no
+  declaration order fixes it. Copy the parameters into locals and keep the copies with `#pragma opt_propagation off`
+  (reset after): `static s32 f(Scene *arg0, s32 arg1) { Scene *g = arg0; s32 code = arg1; ...`. Either half alone does
+  nothing; copying only `g` leaves the two parameter moves swapped (b035:01E02070).
+
+- **A call-free `if (..) n = 2; else n = 2;` loop limit with a sign-extend in each arm and in the limit register:**
+  assign the arms to the previous loop's counter and copy it: `if (..) i = 2; else i = 2; cnt = i; for (i = 0; i < cnt; i++)`.
+  Arms on the limit merge the sign-extends; arms on `i` with another loop counter swap counter and limit (b433:01E01850).
+
+- **A clamped count and a strength-reduced array pointer swapped (`$s2`/`$s3`), unmoved by declaration order or
+  counter names:** read the field twice in the `?:`, `n = e->seg > 36 ? 36 : e->seg;` (still one load), not
+  `n = e->seg; n = n > 36 ? 36 : n;` (b040:01E05BD0).
+- **Byte loads before an alpha fade landing in permuted `$a0`..`$a3`:** compute the difference into a fresh block local,
+  `{ s32 d = e->max - e->life; ... d * (e->c.a >> 4) ... }`; reusing a local doesn't work (b040:01E05BD0).
+- **`t == 0x75 || t == 0x76 || t == 0x77` folded into `addiu` + `sltiu` at -O4 where the original has `bne` chains:**
+  a `switch` gives `beq` + `b`; build the function at -O3 instead (b060:01E00080).
+
+- **-O2 loads in a different order from the expression's operands** (`len`, then `rad`, then `h` for
+  `rad*rad*(1 - h*h/(len*len))`): put the fields in block locals in load order,
+  `{ f32 l = e->len; f32 q = e->rad; f32 hh = e->h; r = q*q*(1.0f - hh*hh/(l*l)); }` (b176:01E02820).
+- **A masked byte difference with an `andi 0xFF` into a temp before the `and`:** use a block-local u8,
+  `{ u8 t = e->max - e->life; age = t & e->mask; }`; casts in one expression never give the first `andi` (b176:01E02820).
+- **`#include "mod/<mod>.c"` in a work file can hide a real-file clash:** statics defined below the function become
+  visible, so the standalone try matches but the in-file build reports CLASH / "redeclared". Call those through
+  `<mod>_<VADDR>` aliases (b770, b089).
+
+- **An int → float conversion the original delays (`mtc1` early, `cvt.s.w` + `div.s` late) with permuted float
+  registers:** declare the values `f32` and divide each in its own statement (`x /= 20.0f; y /= 20.0f;`) before use;
+  `(f32)y / 20.0f` in the expression stays off (b493:01E02200).
+
+- **Down-counting loop with `slti $at, i, 0` where yours has `bltz`/`bgez`:** write `i > -1`, not `i >= 0`
+  (c516:01E018D0).
+- **Three float loads then three stores, where yours alternates:** copy the three fields as one struct
+  (`s->t[i + 1].p = s->t[i].p` with a Vec3 member); float locals schedule it wrongly (c516:01E018D0).
+- **-O1 setup-loop counter wanting `ot`'s register:** give the setup loop its own counter; `ot` is dead in that
+  branch, but a counter shared with a later loop can't take its register (b011:01E050B0).
+
+- **Hoisted packet-vertex addresses in `s0..s3` after the loop test, the loop pointer and counter pushed to `s4/s5`:**
+  set the vertex pointers between an explicit guard and a do-while: `i = 0; if (i < n) { q3 = &pk.v[3]; ...;
+  do { ... } while (++i < n); }`. Set before a `for`, they land before its test; inside the loop they become compiler
+  temporaries. Use `i < n` (`n > 0` gives `blez`) (b131:01E053B0, ShFx_Rcore).
+
+- **Two equal float constants in the last two arguments of a module static, the original loading the last first
+  (`mtc1 $zero, $f15; mov.s $f14, $f15`):** call it through a prototyped alias
+  (`extern s32 b719_01E01ED0(void *, s32, f32, f32, f32, f32);`) instead of its static name (b719:01E02DF0).
+
+- **`f(p, 2.0f, 0.1f)` with `$f13` loaded first, where a local for the first argument doesn't help:** put the last
+  argument in a nested block local, `{ f32 q = 0.1f; f(p, 2.0f, q); }` (b015:01E03460).
+- **An int field plus a float with `add.s` operands swapped:** write the compound assignment `o->ang += 8.0f;`
+  (b089:01E00A30).
+- **An s32 field reloaded narrow (`lwc1` to convert, `lh` for `% 360`) where yours CSEs into one `lw`:** read the
+  narrow use through an s16 union member, `o->a.i = (f32)(s16)(o->a.h % 360);` (b089:01E00A30).
+
+- **Packet 8 bytes above where yours lands, the 8-byte gap after it instead of before:** large locals sit on 16-byte
+  boundaries, so the packet must be 8 bytes into a bigger object: `struct { u64 dma; Pkt gif; } pkt; p = &pkt.gif;`
+  (b494:01E01A90).
+- **The parameter-copy trick (b035) works at -O4 too:** copy the parameters into locals under
+  `#pragma opt_propagation off`, then re-run a declaration-order search (b494:01E01A90 went 458 → 603/603).
+  Under that pragma every constant-bound `for` gets an entry guard (`slti`/`beqz`), so the trick doesn't suit
+  functions with setup loops whose original has no guard (b594:01E02EC0).
+
+- **Temps in `$a0`/`$a1` around `jal func_001A23B0` where yours uses `$a2`/`$a3`:** call `func_001A23B0(x)` by name
+  instead of `(u32)x`. With the cast the compiler keeps the next call's arguments in `$a0`/`$a1` across the helper; a
+  real call frees them (b000:01E04540; b000's other functions call it the same way).
+
+- **u8 → float through the unsigned path with the constant loaded before the conversion:** put the byte in a `u32`
+  local, convert into a float local, then use it (`a = u; a = rad(360.0f * a / 255.0f);`). A product with reversed
+  operands gets its partial product in its own statement (b172:01E03670).
+- **A u8 table counter stepping by 3 with an `andi` on each index:** write three `k++` (two in the table reads, one
+  bare), not `tbl[(u8)(k + 1)]` and `k += 3` (b172:01E03670).
+
+- **-O4 setup loops with counter and strength-reduced pointer swapped (s2/s3) in all but the first:** give every setup
+  loop its own counter (`i`, `j`, `k`, `m`); sharing one, or splitting only the first, stays off (c548:01E02720).
+- **`f(p, 0.0f, 0.0f)` with `mov.s $f13, $f12`:** `{ f32 r = 0.0f; f(p, r, r); }` (c548:01E02720).
+- **`rand() % 0x10000` as `andi` plus a dead `addiu x, x, 0`:** the signed modulo; keep the variable `s32` (a `u16`
+  adds an `andi`) (b103, b540).
+
+- **A value loaded before a struct-copy loop (`lw $a3` + `nop` ahead of `lq`/`sq`) and stored after it:** copy it to
+  its own local first (`t = tex; ... g->pts.tex = t;`); reusing a loop counter disturbs the loop (c512:01E015C0).
+- **A setup loop's counter coloured last (after the strength-reduced pointers):** share the first loop's counter `i`
+  (the reverse of the c548 tip; try both) (c512:01E015C0).
+- **Two stack vectors with `.y`/`.z` addresses in saved registers and a frame 0x20 bigger than yours:** `f32 v[3][4]`,
+  extending the `v[2][4]` tip (b732:01E02610).
+- **Float argument load order can depend on the whole function:** in c531:01E01040 deleting a dead `one = 1.0f;` moved
+  which of three identical calls loads `$f13` first.
+
+- **A module whose float-cast temps sit in different argument registers from its matched copies elsewhere**
+  (`$a0` or `$a1` where every other copy has `$a2`, around `jal fptoui`/`fptosi`): the module was compiled in a
+  different warm state. Try its whole module cold or after a one-argument helper by adding it to
+  `config/mod_warm.txt` (`0` or `1`); keep it only if the whole module still matches. b000 is cold, b005 and b007
+  are level 1 (LkEFF_SortLaser b000:01E03B80 / b007:01E02FC0, b005:01E003A0 / 01E027F0).
+
+- **Float argument order can differ between `tools/mod_infile.sh` and the real build** (b467's `func_001033D0`
+  calls); search block-local forms with `work/fulltry.sh` directly (about a second per try).
+- **A struct temp that belongs after the inline-return temps in the frame:** write the copy twice
+  (`ca[0] = a[0]; ca[1] = a[0];`) so the CSE temp goes last; a named temp sits in declaration order. Locals with an
+  explicit `aligned(N)` go after all temps (b847:01E02370).
+- **Temps after a call in `a3`/`a2` where yours get `a1`/`a0`, with a `jal func_001A22C0` (fptosi) later in the
+  function:** write that conversion as a plain cast, `(s32)(10.0f * e->radius)`, not an explicit `func_001A22C0(...)`
+  call. In the warm build the compiler's own fptosi call counts as reading a0/a1, so they stay live back to the last
+  call's arguments and every temp in between skips them. Dropping the then-unused extern can move float loads, so
+  try with and without it (b486:01E02E80, b540:01E03160, b157, b168, b263; small repro in work/wall/).
+- **A module static's argument order or delay slot off (`$f13` before `$f12`, `a3` before `a2`) and block locals don't
+  help:** call that one site through an alias even when the static is defined above: a block-scope prototyped
+  `extern s32 <mod>_<VADDR>(void *, ...);` for float arguments, a no-prototype one otherwise. Fixing one call can move
+  a sibling call, so search combinations with `work/fulltry.sh` (b028:01E03CE0, b144:01E03740).
+
+- **A struct-returning static whose result the original builds straight into a stack local** (`addiu a0, sp, X`, no
+  copy after the call): declare the local with the static's return type and assign `c = f(...);`; pass array rows as
+  `&g->tr[3][0]`, not a casted `g->tr[3]` (b080:01E03090).
+- **A draw-loop index recomputed every iteration (`sll v0, i, 6; addu s2, g, v0`) with the counter reset in one
+  branch:** the original reuses the outer counter for an inner loop (`for (i = 0; i < 10; i++)` inside the slot loop)
+  (b080:01E03090).
+- **`0.1f * i` with the conversion in `$f1` and `mul.s $f0, $f0, $f1`:** `{ f32 t = i; g->f = 0.1f * t; }`
+  (b080:01E03090).
+
+- **A local table copied from module data right after the first call (`jal func_00207500` before the `lq`/`sq` copy)
+  where yours copies it in the prologue:** assign it as a statement after the call (`ot = func_00207500(); tbl = D_...;`),
+  not in its declaration, and declare it first among the stack locals (b455:01E05AA0).
+
+- **Where a prototyped alias's `extern` sits can change float argument order:** in c525:01E033D0 it matched only
+  declared inside each call's own block; one shared declaration at the top swapped the `$f12`/`$f13` loads again.
+
+- **A `?:` clamp's variable spilled after every declared local, whatever the declaration order:** the `?:` makes it a
+  compiler temp. Write `if (n > 36) { n = 36; } else { (void)n; }` (the else arm keeps the original's `b`); its slot then
+  follows declaration order (b761:01E05F70).
+  Contrast: an -O2 clamp `li n, K; b L; nop; L:` (a branch straight to the next instruction) is the plain
+  `n = n > K ? K : n;`; the if/else form gives an extra `nop` there (b462:01E04230).
+
+- **A difference kept in a saved register across a call (`m - k` for an alpha ramp):** write it inline in both
+  statements, `(f32)(m - k)` and `(f32)(m - k - 1)`; a local `d = m - k` swaps its register with a strength-reduced
+  pointer (b405:01E03430).
+
+- **`jal func_0017B380` / `func_001A2918` / `func_001A3090` triples with `lui 0x3FE0; dsll32`:** double maths on a u8,
+  `c[k] *= 0.5;` (MWCC calls `_d_utod` by name; it is in config/linker_syms.txt). `c = c * 0.5` keeps the constant in
+  a saved register instead (c056:01E015A0).
+
+- **A setup loop that writes past an array into the fields after it** (`for (k = 0; k < 30; k++) size[k] = 40.0f;`
+  over a 20-entry array and the joint ids behind it): model the overlap with a union in the struct,
+  `union { f32 size[30]; struct { u8 pad[0x60]; s16 jA, ...; } j; }`, so no index is out of bounds (b425:01E020C0).
+
+- **A value used both in an argument and as a `switch` selector, its register swapped with a strength-reduced temp:**
+  write the expression in both places (`(u8)(k % 3 * 2 + (k >> 2) * 4)` and `switch (k >> 2)`) and let the compiler
+  share it; a named local keeps the swap (b078:01E05C90).
+
+- **An int stepping alongside a loop counter (an angle `+= 0x1000`) with counter, value and pointer in rotated saved
+  registers:** give the loop its own counter, declare the stepped value last, and set it in the `for` header:
+  `for (k = 0, ang = 0; k < 4; k++)` (b273:01E02BB0).
+  A second copy of such a loop in the same function wants its own block-scoped variables,
+  `{ s32 n, ang2; for (n = 0, ang2 = 0; n < 4; n++) { ...; ang2 += 0x1000; } }` (b576:01E02BC0, b621, b105).
+
+- **`daddiu $v0, $zero, K; subu $v0, $v0, $sN` stepping by a constant in a loop from a constant start:** the
+  compiler's start value for a strength-reduced `i * M`, not `K - i`; write the plain product (`g->a = i * 15;`)
+  (c030:01E00080).
+- **-O2: a slot address the original rebuilds after every call where yours keeps it in a saved register:** write the
+  call's argument as raw bytes, `(u8 *)g + idx * 0x58 + 0x4D8`, so it shares no subexpression with the field stores
+  (b649:01E043A0).
+
+- **`beqz $s0` on an s16 counter where yours sign-extends first:** write `if (m)`, not `if (m != 0)` (b746:01E045A0).
+- **A scene manager's slot count in the last saved register, below the loop counter and the id parameter:** it is the
+  setup loops' counter reused (`k = 0;` at the top, `k++` in the draw loop); give the step and draw loops their own
+  counters (b215:01E02E50, 650 → 685).
+
+- **Screen-UV clamp block (`(0x6BF8 - x) / -16.0f - 0`, clamped to 0..640 / 0..480) with the zero and -16.0f
+  registers rotated:** the zero is a named variable kept by `#pragma opt_propagation off`. Write `z = 0.0f;` at the
+  start of each corner's block, then `s = 0x6BF8 - v.x; s /= -16.0f; s -= z;` and clamp with `if (s < z) s = z;`;
+  declare `z` before `s`/`t` and give the bottom corners their own pair. A literal `- 0.0f` folds away
+  (b490:01E01260, b504:01E01980, b361:01E01140).
+
+- **-O1 `lhu $a1, t` before `addiu $a0, g, K` in `func_001031C0(&g->x, g->t)`:** declare the callee
+  `(void *, u16)`, not `(void *, s32)` (b059:01E05540).
+- **Two stores to one field with the second in a call's delay slot:** the source writes both before the call,
+  `g->hB8 = 4; g->hB8 = 0; f(...);` (b207:01E03C40).
+
+- **A stack vector's base address kept in a saved register** (`addiu sN, sp, X` used for the `.x` store and as a call
+  argument): it is element [1] or later of a `Vec4f` array (`Vec4f p[2]`, pass `&p[1]`). Element [0] and plain
+  `Vec4f` locals only get their `.y`/`.z` addresses kept; `f32 v[4]` arrays get neither (b104:01E03E30, b129:01E04B90).
+- **Two float variables in swapped registers in the second of two similar blocks:** swap which name holds which value
+  in that block (b104:01E03E30).
+
+- **No `jal` for a small static handler in a scene manager's step loop:** the compiler doesn't inline on its own; the
+  original wrote the handler's body in the `fn ==` branch (a float-pair handler in a block with its own `f32` locals)
+  (b570:01E03020, b297:01E02650).
+
+- **Frame layout with `aligned(N)` locals** (c606:01E00080, c603:01E00920): plain locals whose size is a multiple of 16
+  go first, in declaration order; locals with an explicit `aligned(N)` form a group at the top, each rounded up to 16,
+  filled top down (the last declared highest). So a packet 8 bytes above yours can be just
+  `Pkt pkt __attribute__((aligned(8)))` when its size isn't a multiple of 16; a 12-byte array at an 8-mod-16 address
+  just below it means both are `aligned(8)` and the packet has a trailing `u64`. The b494 tag-plus-packet struct can
+  make the compiler keep `&pkt.gif` in a saved register; try plain `aligned(8)` first.
+- **After the parameter-copy trick, assign the copies as statements in the right order** (`mode = arg1; o = arg0;`
+  put the `o` move in the `jal` delay slot; an initializer didn't) (c606:01E00080).
+- **Screen-UV blocks with `cvt, cvt, div, div` and no `sub.s`:** the plain split form,
+  `u = 0x6BF8 - x; v = K - y; u /= -16.0f; v /= -16.0f;`; the named-zero form is only for originals that subtract a
+  zero (b215:01E02660).
+- **Spill area 0x10 too big, unused float slots before the first float spill and an unused int slot between two
+  spilled ints:** put `__attribute__((aligned(8)))` on the first spilled s32 local (the `func_00207500()` result); it
+  pushes the float spills up (b847:01E02370, b073:01E03E70). Spilled parameters 4 bytes too high: `aligned(8)` on the
+  later one (b706:01E050E0).
+- **Packed xyz u64s copied with `addiu reg, sp, X; ld; addiu; sd`:** a bitfield struct type for both the local array
+  and the vertex member, copied whole (b706:01E050E0).
+- **`add.s fd, K, prod` where the original has `add.s fd, prod, K`:** put the literal in a local (`rr = 25.0f;`)
+  (b378:01E02440).
+- **An extra `nop` before the epilogue after the last loop:** the setup path is the `if` arm of an if/else, not an
+  early `return` (b378:01E02440).
+- **A float loop invariant the original recomputes at every use** (`lui/ori/mtc1` + `add.s` before each call where
+  yours hoists it): put the constant in a named local, `w = 0.3f; ... (t + w) * f()` (b130:01E01E60, b499:01E038F0).
+- **The aligned group is packed top-down at each object's own alignment**, not in 16-byte slots: a 4-byte colour at
+  top-4, then `pk[0x90] aligned(8)` 8 bytes lower (b018:01E01760, b130).
+- **A pointer walker assigned before a NULL test in the wrong saved register:** test the field itself and assign the
+  walker in the `for` header, `for (list = obj->frames[i]; *list > 0; list++)` (b029:01E00EF0).
+- **A family member whose "structure is wrong" may only be built at another -O level:** try all four before reworking
+  (b099:01E04C30 is b029:01E05AA0's C at -O2).
+- **A u8 local spilled with `sb`/`lbu` (no `andi`) while a sibling stays in a saved register with `andi`:** give the
+  callee's parameters u8 types in its prototype (`(u8 *, u8, u8)`) (b262:01E00F50).
+- **Copy only the parameter that needs it** under `opt_propagation off`: copying a u16 parameter too adds an `andi`
+  into a saved register (b179:01E03940 copies only `obj`).
+- **Before the parameter-copy pragma, try `s32 arg0` with a cast local and no pragma** when `g` must take s0
+  (`static s32 f(s32 arg0, s32 id) { T *g = (T *)arg0;`) (c501:01E00910, b521:01E01BD0).
+- **-O3 bitfield loads (`q.x`, `q.y`) in each other's temp registers:** read one into a u16 local first (`py = q.y;`)
+  (b015:01E008F0).
+- **A struct copied as four words where yours copies halfwords:** its padding is `s32 pad[2]`, not `u8 pad[8]`
+  (b521:01E01BD0).
+- **Arc-band draw (`IWMagicCircleGT4_*`) with the flags `andi` between the span's `dsll32`/`dsra32`:** test
+  `(flags & 0xF)` inline in the loop, not through a mode local; write `t = span + a` (c061:01E01100, b390:01E015E0).
+- **A missing `nop` after an `mtc1` in an if/else that sets a float, with a stray `addiu; sw` at the join:** reuse an
+  existing float temp for the value instead of a new local (b115:01E02A10).
+- **Delay slots filled from the fall-through all over a function where the original leaves `nop`s:** look for a `?:`
+  that compiles to `movn`; written as an `if`, all the nops come back (c030:01E01510).
+- **Float argument registers swapped only in the full build:** drop a block-scope `extern` that repeats a
+  `functions.h` prototype (c030:01E01510, `func_00106DD0`).
+- **Float saved registers or divisions in the wrong order:** put a shared int subexpression (`40 - g->left`) in its own
+  s32 local (b351:01E068F0).
+- **Loop angles copied with a fresh sign-extend into new saved registers:** there is no stepped variable in the
+  source; pass `ra + i * 18` directly and let strength reduction make the copies (b357:01E03420).
+- **The named-local constant also fixes `mul.s` operand order** (`nx = 20.0f; ... 2.0f * o->f48 * nx`) (b215:01E01A70).
+- **Before reworking a hard draft, look for twins by its real name** (b004's B004PAINT_RAIN was b130:01E01E60's C).
+- **One angle passed to several calls in a row, kept in a saved register and sign-extended before each call:** an s32
+  local with an s16 prototype parameter (`n = o->ang + j;`); a copy sign-extended again before a divide is an s32
+  local cast at the use, `(s16)b / 160` (b443:01E01EA0).
+- **A field converted before a call into a saved float register (`cvt.s.w $f21` in the jal delay slot) where yours
+  converts after:** copy a parameter (`mode`) into a local under `opt_propagation off` (c059:01E03610).
+- **`b test` where yours has an entry guard, plus loop-invariant ints spilled after the declared locals:** write the
+  bound and divisor inline (`k < n - 1`, `/ (n * 3)`), not as named locals (b134:01E011E0).
+- **Look for twins by shape comment too** (`grep -rn "shape .*burst" src/mod`): b108:01E03130 was b034:01E05A90's form.
+- **A strength-reduced counter and a pointer local swapping saved registers:** drop the pointer locals and write the
+  address inline at each call (`pa + (k - 1)`) (b500:01E047C0).
+- **A "dead" struct copy into the stack before a draw call (never read back):** it is the tail of the packet the call
+  receives; take the packet type from a matched sibling (c605:01E028C0 from c602:01E01620).
+- **A stack-buffer address hoisted into a saved register for a call in a loop:** the argument is a member at a non-zero
+  offset of a larger stack struct, often merged with a neighbouring buffer (`&pk` and `pk.xyz`) (b506:01E01BA0).
+- **A `?:` clamp's spill slot after a later loop counter's:** drop the later loop's variable and reuse an earlier
+  loop's counter (b379:01E046B0).
+- **A float constant stored as an int `sw` and also kept in a saved float register:** a chained assignment,
+  `f = o->f34 = 50.0f;` (b756:01E02360).
+- **Check twins for each block of a hard function, not just the whole function** (c534's UV block was c560's uv
+  inline); a spilled s32 parameter 4 bytes too high takes `aligned(8)` itself (c534:01E027F0).
+- **A stepped value with an `sll` inside the loop** (`addiu s3, zero, 0x3C ... sll v0, s3, 4 ... addiu s3, 0x3C`):
+  write `(i * 60 + 60) * 16`; `(i + 1) * 60 * 16` folds into `* 960` (b617:01E06210).
+- **`beqz i, A; b B` with arm A first and an extra `b`** where an if/else gives `bnez` → else: a single-case
+  `switch (i) { case 0: ...; break; default: ...; break; }` (b617:01E06210).
+- **A field-by-field copy of a stack vector onto itself** (`swc1` then `lwc1`/`swc1` of the same addresses before a
+  by-value call): the source has `c.x = c.x; c.y = c.y; c.z = c.z;` (b443:01E04160).
+- **Argument registers set in the wrong order around a static call:** cast the second argument too
+  (`(Emit_b000_01E01140 *)&g->emit`) (c625:01E02DA0, b634:01E03110).
+- **An unused local can change scheduling** (b634:01E03110 keeps an unused `s32 k;`); try removing leftovers last.
+- **A beam with no `jal func_00109A70`, only `lwc1`/`swc1` x/y/z copies:** write the vector copies field by field
+  instead of calling the copy helper (b108:01E03430).
+- **Temps after a call skip a0/a1 before a `jal func_001A23B0`:** the conversion is a plain `(u32)` cast (the b486
+  effect for fptoui); the reverse of the b000 tip, so try both (c401:01E00080).
+- **`li v1, 1` should come before an index load into a0:** assign the index inside the first subscript,
+  `g->slot[a = g->next].used = 1;` (c401:01E00080).
+- **-O4 manager keeping `&q` in a saved register across `func_001F5F90(u, &q)` / `func_00103DB0(&q, ...)`:** assign the
+  pointer inside the first call (`func_00103DB0(pq = &q, ...)`); declare a second held pointer (`f32 *pz`) before it
+  (b753:01E020A0).
+- **A ring set-up with `addiu a0` before the last `mtc1` for two equal radii:** `r = 18.0f;` right before the call,
+  passing `r, r` (b001:01E044C0).
+- **`lbu a1` before `paddub a0` for a static's arguments:** give the byte parameter a u8 type in a block prototype
+  (`(void *, u8, u8)`) (b099:01E02A90).
+- **`(r = &pool[i])->life = x;` loads the field before building the pointer:** split it, `r = &pool[i]; r->life = x;`
+  (b099:01E02A90).
+- **`slti v0, t, K; bnez v0` with `n = 2` in the delay slot, then `b join; n = 1`:** flip the test,
+  `if (t >= K) n = 1; else n = 2;` (b132:01E06AC0).
+- **Whether a static's float arguments load in order can depend on how neighbouring static calls are written:** search
+  name/alias combinations across nearby calls with `work/fulltry.sh` (b401:01E02FD0). Float arguments loaded
+  `$f13, $f14, a1, $f15, $f12`: declare the locals bare and assign them in reverse order before the aliased call
+  (`f32 p; f32 s; s = 18.0f; p = 0.1f;`) (b013:01E04510).
+- **`f(p, 0.0f, 0.0f)` with `mtc1 $zero, $f13; mov.s $f12, $f13`:** `{ f32 x = 0.0f; f(p, x, 0.0f); }`, the opposite of
+  the c548 `(p, r, r)` case (c508:01E04B50).
+- **A stack slot used directly in the setup and through a saved register in the main path, in a frame 0x10 smaller
+  than an honest layout:** the original may index one past an array onto the next local (`Vec4f w[2]; s32 tx[4];`
+  and `w[2]`). MWCC never shares slots between block-scoped locals, so no honest form gives both. Look for a sibling
+  with its own slot first (b613:01E04010); the LkEff_SetCocoon managers (b220/b366/b409/b277/b055:01E03400) keep the
+  original's `w[2]` with a comment.
+- **Kept addresses:** a constant non-zero offset into a local (array element or struct member) used twice goes
+  through a saved register from its first use; a plain local at offset 0 never does.
+- **-O1 saved registers follow declaration order** (variables sharing a register take one slot); reorder declarations
+  first (b200:01E05B40, 701 → 763). An -O1 u8 argument goes inline as `(u8)(expr)`, not through a u8 local
+  (b002:01E05FE0).
+- **A `dk try` that never returns:** look for a negated float compare (`if (!(f(x) <= 3.0f))` hung mwccps2 at -O4;
+  `> 3.0f` compiled and matched) (c059:01E00FB0).
+- **`daddiu $sN, $zero, K` where yours has `addiu`, for if/else-picked constants kept across calls:** the locals are
+  `u8` (c547:01E02700).
+- **A main-program call with its last argument loaded first:** the argument had a cast against an int parameter in
+  functions.h; a block-scope prototype taking `void *` with no cast restores the order (c031:01E00D00).
+- **Float arguments loaded `$f13` first right after an if-block join** (the bc1t delay slot holding the second
+  constant's `lui`): declare the second constant as a block local before the `if` (b140:01E037A0).
+- **An `||` of two ranges where the original uses `$at` for every compare:** write the upper bounds with `<=`
+  (`t <= 77`, not `t < 78`) (b140:01E037A0).
+- **Float-argument order flipping across a whole function:** search the forms of every two-float call together (a
+  random search over block-local/alias choices scored by fulltry found b419:01E02B40 in 300 tries; one call at a time
+  does not converge).
+- **14-bit UV bitfields scheduling wrong:** name the scaled coordinate (`x = kind % 4 * 32; ->u = x << 4;`), not the
+  cell index (c402:01E00080).
+- **A constant set once in an unexpected argument register and used for one store** (`li a1, 1` then `sh`): it is
+  really a later call's argument; read which argument registers each `jal` expects first (b079:01E04240).
+- **The second of two zero-float-pair calls copying `$f15`→`$f14` when no argument form fixes it:** move the zero
+  assignments (`h = 0.0f; y = 0.0f;`) to the top, right after `rv = 0;` and before the NULL checks (c604:01E037D0).
+- **No block-local form moves a zero-pair float argument order at all:** the locals are propagated away; put
+  `#pragma opt_propagation off` around the function so the c508 form takes effect, then rewrite any loop that gains an
+  entry guard as a do-while (c027:01E00C50).
+- **`and v0, v0(field), sN(local)` with the operands swapped:** re-read the field (`n - (o->step & o->mask)` with
+  `n = o->mask` already loaded) (b132:01E02690).
+- **dk try's "built without optimisation" hint can be wrong** when every delay slot is a nop; sweep the levels
+  (b125:01E01EE0 was -O2).
+- **Look up a libgcc double helper's real name before choosing the operator:** `func_001A2858` is `dpadd`, `0x1A2918`
+  is `dpmul` (config/linker_syms.txt); b573:01E03C70's `v.y = v.y + 2.5;`.
+- **A static's float argument loaded from a field before an int stack argument:** a no-op cast,
+  `f(&o, tex, (f32)g->r)` (b118:01E03A20).
+- **Prefer named fields in local types over writes through pad arrays or pointer casts** (`*(f32 *)emit.pad28`,
+  `*(Vec *)&v`, `*(u8 *)&e->start`); `(u8)e->start` gives the same `lbu`. Changing types can flip float argument
+  orders elsewhere, so rerun floatsearch after (b395:01E03D10, b166:01E05400, b213:01E04C90).
+- **A stack-array load and a constant hoisted above a run of field stores, the store at the end of the run:** copy the
+  value into a block local first, `{ s32 t = tx[0]; o->x = o->y = o->z = 0.0f; o->scale = 10.0f; o->texture = t; }`
+  (b127:01E04750).
+- **After floatsearch, revert its changes one at a time and keep only those whose revert breaks the match** (its random
+  phase leaves noise forms; c534:01E03D50 went from 12 changed calls to 9).
+- **Big register rotation in a scene manager:** a greedy search renaming each loop's counter in turn (i, k, j, m, n),
+  scored in-file, found b154:01E026A0's fix in about 50 tries (example script work/greedy_counters_example.py).
+- **A whole-vector copy computing the source address before the destination:** declare the local with the
+  destination's struct type so the copy is a plain assignment; cast the other users instead (b106:01E05580).
+- **An `sh` store before the argument moves where it belongs in the `jal` delay slot:** pass the shared
+  `u8 buf[0x90]` uncast, not `(void *)buf` (b357:01E05340).
+- **Two zero float arguments loaded `mtc1 $zero, $f15; mov.s $f14, $f15`:** `(..., 0.0f, z)` with `f32 z = 0.0f;`
+  (floatsearch missed it) (b138:01E03C60).
+- **A stack address at or above the frame size passed as an output buffer** (sp+0xD0 in a 0xD0 frame): the original
+  indexes past an array at the top of the frame; no honest layout reproduces it (b644:01E04740 keeps `v[3]` past
+  `Vec4f v[2]` with a comment, like the LkEff_SetCocoon managers).
+- **A hoisted loop-invariant with `andi aN, sN, 0xFF` at each call:** a u8 parameter in a block prototype and the
+  value passed uncast (`j & 1`); a `(u8)` cast folds the `andi` (b526:01E05E90).
+- **`jal fptosi` then `andi 0xFF` for a float byte argument:** `(u8)(s32)s`; `(u8)s` calls fptoui (b096:01E00AA0).
+- **A ring's closing-element copies computing the source address first, with CSE'd `(sp+K)+k*48` addresses:** declare
+  the ring as a 2D array of a small struct (`V3 ring[37][4]`, copies `ring[36][j] = ring[0][j]`) (b033:01E04020).
+- **Texture-setup outputs 8 bytes past the packet:** put the packet and the `func_00208800` out-arguments in one
+  `aligned(8)` local struct (b033:01E04020, as b010's Afx04).
+- **Many float-constant calls in a row:** search them in order, scoring each choice only by the differing words up to
+  that call's `jal` (a call's load order depends on earlier calls, not later ones); this converged where floatsearch's
+  whole-function greedy stalled (b037:01E04FB0 39 → 8 words; work/floatseq_example.py).
+- **A whole-function search rejects a float-order fix that flips later calls:** `floatsearch.py --seq` keeps it and
+  repairs the later calls one at a time (closed b364:01E041E0 and b274:01E02B40 after 2,000 stalled tries).
+- **An if/else in a setup loop with an extra `nop` after the else arm's store:** end the first arm with `continue`
+  instead (`if (i == 0) { a[0] = 0.0f; continue; } a[i] = ...;`) (c059:01E04420, 983 → 995).
+- **A saved-register rotation no order of plain locals fixes:** include the cast-initialised scene pointer
+  (`Scene *g = (Scene *)arg0;`) in the declaration-order search (c537:01E02EB0).
+- **A slot index read from a field reloaded and re-multiplied before every store:** read it into a local first,
+  `k = g->count;`, then index `g->shell[k]` (b608:01E05920).
+- **-O2 `x += 0.0f` / `x -= 0.0f` kept as `mtc1 $zero; add.s`:** a float local set to 0.0f (a literal folds away)
+  (b398:01E05E50).
+- **An -O2 Lk manager with the `ot` copy (`paddub a0, s1`) after the address arguments:** call the draw statics
+  through no-prototype aliases (b523:01E046E0, b025:01E045A0).
+- **One saved register short in an -O4 manager with zero-inits at entry missing:** the original's last arm re-tests a
+  range the outer test already covers (`else if (t >= 0x12)` where `else` would do), so the compiler keeps `m = 0;`
+  at entry (c062:01E04470).
+- **-O2 range tests:** `slti $at, t, K; beqz` came from `t < K` (try `<` first at -O2) (b843:01E06910, b561:01E03280).
+- **-O1 element index built from `$zero` for its first use** (`paddub sN, zero, zero; sll v0, zero, 3`): the source
+  assigns the index just before use, `i = 0; f(&g->flear[i]);` (b200:01E06740).
+- **-O1 negation through one element address:** `g->quad[k].rot[2] *= -1;`, not `x = -x` (b200:01E06740).
+- **A switch compare `beq` that jumps straight past the switch** is an empty `case K: break;` (b497:01E05190).
+- **A zero float pair loaded last-first that no block form fixes:** both zeros as function-scope locals assigned before
+  the function's first statement (`y = 0.0f; h = 0.0f;` ahead of `ot = func_00207500()`) (c541:01E03B60).
+- **-O1 int temp in `$a1` where the original has `$a0`:** the reused variable is a later call's second argument and
+  gets coalesced; give the expression its own block local (b177:01E01E90).
+- **One float local reused in several switch cases, landing in `$f1` in one of them:** give that case its own local
+  (b033:01E05470).
+- **Vector fields stored to the stack and reloaded at once, where yours keeps them in registers:** the vector is an
+  element of a local array whose address is taken (`Vec4f w[2]` with the step in w[0], the by-value point in w[1])
+  (b112:01E026C0, 474 → 1151). A call's output vector with its address in a saved register is w[1] of such an array
+  (b758:01E04D00).
+- **Rotated registers in one of several identical copy loops:** give that loop its own pointer local as well as its
+  own counter (b531:01E02830).
+- **`x = (s32)(x * -1.0f)` with the `mul.s` operands swapped:** `x *= -1.0f` (b173:01E04BF0).
+- **Search scripts for large managers:** `work/greedy_ctr_ft.py <mod> <func> <file>` (greedy loop-counter rename) and
+  `work/declperm_ft.py <mod> <func> <file> "<decl>"...` (every order of the given declarations), both scored by
+  fulltry (b716:01E06320, b370:01E062B0).
+- **Two stack vectors at sp+X and X+0x10 with a 4-word `lwc1`/`swc1` copy between them (yours `lq`/`sq`):** one
+  `Vec4f w[2]` and `w[1] = w[0];`, even when w[1] is not read later (b370:01E062B0).
+- **A `sw` of a float constant then `mtc1` of the same GPR into a `sub.s`:** read the just-stored field back,
+  `f[0] = K1; f[1] = f[0] - K2;` (b579:01E04C80).
+- **An s32 masked into `$v0` then moved to `$a0`, where yours masks straight into `$a0`:** two statements,
+  `ang = (s32)(...); ang &= 0xFFFF;` (b483:01E00080).
+- **A loop-head `nop` that comes and goes:** loop labels are 8-aligned, so it follows the instruction count earlier
+  in the function; fix earlier differences first (b635:01E044B0).
+- **A loop's counter and pointer swapped with no fix inside that loop:** rename the counter of a different, earlier
+  loop in the same branch (each counter name is one web per function) (b369:01E04A00).
+- **Constant stores scheduled above a cast-conversion call** (colour bytes before `jal fptoui` where the original stores
+  them after): `(void)alpha;` right after `alpha = (u32)(...);` keeps the cast's register effect (b150:01E00080).
+- **Indexing with `k + 5` in a loop strength-reduces where the original recomputes each time:** `n = k + 5;` right
+  before the first use, index with `n` (b583:01E05670).
+- **Two locals from different points in the function at one stack slot:** one variable reused (block-scope locals get
+  separate slots), e.g. a texture-id buffer later used as a position output (b773:01E049E0).
+- **A copy chain through `addiu sN, sp` pointers:** the copied vectors are one array (`Vec4f p[3]`); a vector using
+  direct sp offsets stays separate (b598:01E05E60).
+- **The ot copy lands last in an -O2 manager even through no-prototype aliases:** drop every cast in the alias calls
+  (c621:01E03FA0, 36 → 5 words); `u32 ot` did better than `s32 ot`.
+- **A bolt loop's counter and walking pointer rotated:** index `pts[i]` / `pts[i + 1]` directly and drop the pointer
+  (b853:01E05820). Loop-name search: work/loopnames.py.
+- **Parameter g spilled to a low stack slot and reloaded before every use (the "spill wall", about 71 single-function
+  modules at 01E00080):** MWCC's normal spill choice when g has few uses inside loops. Read loop-invariant indices into
+  locals before loops that make calls (`n = g->nring; g->ring[n].c[j] = ...`, not `g->ring[g->nring].c[j]`), and use
+  `s32 arg0` with a cast local, which puts the slot low (a `Scene *g` parameter spills high, after the locals)
+  (b475:01E00080, 66% → 99.9%).
+- **An index `(x % 2 << 1) + i`** fixed `addu` operand order where `x % 2 * 2 + i` did not (b475:01E00080).
+- **A constant multiply belongs at the use inside the loop** (`k = t / 12.0f; ... + 5.0f * k`), not
+  `k = 5.0f * (t / 12.0f)` (b483:01E00080).
+- **A second call argument kept in a saved register (grid ripple):** reuse one local for that argument and a later
+  value, assigned twice, so it is not folded into its use past the first call (b474:01E00080, 135 → 29 words).
+- **Two calls in one expression with local arguments:** MWCC calls first the one whose argument local was computed last.
+- **A loop test `j + 1 < 2` right after an inner loop:** the inner loop reuses the outer counter (b767:01E05B60).
+- **f20/f21 float locals swapped across sections:** each float name is one web; rename floats per use-site group
+  (greedy search) (b261:01E00080).
+- **A division issued first that feeds a later statement:** compute it into an earlier, otherwise dead float local
+  first (`r = t / 16.0f; s = ...; f = -25.0f + 80.0f * r;`) (b261:01E00080).
+- **Spawn header `on = 1; t = 0;` with the 1 and the slot index in swapped registers (writing `t = 0` first fixes the
+  registers but swaps the stores):** compute the address before the constant through a two-use pointer from a
+  constant-offset base: `base = g->wave; w = &base[n]; w->on = 1; w->t = 0;` (plain `w = &g->wave[n]` emits
+  `addu g, off`). Doesn't work when the array's offset is 0x8000 or more (b475:01E00080; b261 open).
+- **A wave sprite loop with float constants loaded early and the loop init late:** set the counter before the
+  per-wave float, `q = 0; h = 50.0f * (t / 64.0f); for (; q < 64; q++)` (b639; b474 29 → 21 words).
+- **A degrees-to-radians value scheduled among the stores before sin/cos:** write it inside each call argument and let
+  CSE share it (b558:01E04830).
+- **A 16-byte stack vector overlapping two u8[4] locals stored at direct sp offsets:** the past-the-end form
+  (`Vec4f p[2]; u8 c0[4]; u8 c1[4];` using `p[2]`) matches where a union leaves 13 words (b629:01E04E70).
+- **In-file side-by-side diff of one function:** `work/sd1.sh <func>` after `tools/mod_infile.sh`.
+- **A float constant in the wrong FPR on a value computed once before a loop:** put the multiply in the loop's own
+  expression (`... - 30.0f * (f32)j` with `j = max - life;` before the loop) and let it be hoisted (b762:01E05260).
+- **A field read early into a saved FPR across a sin/cos call when the angle is a named local:** write the angle inline
+  in each call argument (b021:01E04320).
+- **The wrong stack-vector field kept in a saved register:** write the value into the stack field and the scene field
+  as one chain, `g->pos[j].x = p[3].x = expr;` (b458:01E05250).
+- **-O1 parameter-copy moves in the wrong order at entry:** copy the second parameter into a declared local too
+  (`s32 code = arg1;` after the cast `g`) (b605:01E059B0).
+- **A spilled int local 4 bytes low:** `__attribute__((aligned(8)))` on the local (b706:01E055E0).
+- **A sub-expression computed before an `if` with its sum after it:** a local used at least twice (once-used locals
+  fold back) (b617:01E003A0).
+- **Loop-invariant hoisting stops one level early:** assign the invariant inside the loop (`ang = 270.0f + 3.5f * age;`
+  then `sin(PI * ang / 180)`) so the next product is not hoisted (b617:01E003A0).
+- **Inner-loop index rebuilt from `i` every outer pass:** index `a[j * 10 + i]` directly (b706:01E055E0).
+  Declaration-move search: work/declmove_ft.py.
+- **A two-level setup loop with the counter and the reused index swapped:** sweep every permutation of the names
+  (outer, inner, index) over just that block with fulltry; greedy one-loop renaming missed it (b062:01E05BB0).
+- **Grid-quad loop with the `k+1` index and colour-copy pointers swapped (`$a0`/`$a1`):** add the scroll offset into one
+  texture coordinate where it is assigned (`u0 = (f32)(k % 16) / 16.0f + w;`), keep it at the other's uses (`u1 + w`),
+  write `u1` as one expression, and `(void)alpha;` after the first alpha byte (b253:01E00080, 23 → 0).
+- **Spawn header with `slot = g->t % K`, K a power of two:** `n = g->t; n %= K;` fixes the swapped registers and the
+  early constant 1; for K = 24 (a divide) it does not (the b261/b643 wall).
+- **A float-constant load one slot early before `func_00187B48(&v, &v, K)`:** cast the first argument,
+  `func_00187B48((void *)&v, &v, 1.4f);` (b643:01E00080).
+- **Burst sprite loop with colour bytes stored before the fptoui and hoisted floats rotated:** the multiply inside each
+  branch, `alpha = (u32)(128.0f * a); (void)alpha;`, `spr.c.q = 1.0f;` in both arms; own float names for that section
+  (b175:01E00080).
+- **An integer alpha scheduled after the colour stores:** assign it to a local before the first colour byte (b175).
+- **The line-strip packet (regs 0x414141) has an 8-byte tail** (b175:01E00080).
+- **Spawn header `g->arr[n].on = 1; g->arr[n].t = 0;` with the constant 1 and the slot index swapped (and the b475
+  pointer form unusable because the array is past 0x8000):** `n = <index>; (void)n;` then the plain indexed stores in
+  on-then-t order. Works for `n = g->nburst` and `n = g->t % 24` (b204, b048, b261, b643:01E00080); this closes the
+  b261/b643 "wall" noted above.
+- **Loop-counter spill slots:** counters spilled per loop get high slots grouped by name, in reverse loop order within
+  a name; a variable whose first loop is spilled gets a low slot below `g`. Rename whole loops so each name's first use
+  matches the original (b290, b507, b175:01E00080).
+- **A seven-value equality chain on t (`beq ...; b`):** a `switch` with ascending cases (the chain runs descending)
+  (b599:01E00080).
+- **A shared named angle temp in a grid/ring loop can flip registers far away** (g and `code` swapped at entry): write
+  the angle inline or give it a name used nowhere else (b371:01E00080, b571).
+- **When single-loop renames stall because fixing one loop breaks another:** a random search renaming 1–4 loops at a
+  time, accepting equal scores (work/srch_rnd.py), then revert renames one by one to keep only the needed ones
+  (work/srch_minim.py) (b371:01E00080).
+- **Grid-quad ST values:** `s0 = (f32)(k % 2) / 2.0f; s1 = (f32)(k % 2 + 1) / 2.0f + h;` with s0's add at its uses
+  (b246, b371:01E00080).
+- **A scale computed early into a saved FPR before a call:** `s = ...; (void)s;` (b768:01E00080).
+- Per-range rename search: work/srch_fgrp.py / srch_grnd.py (check that a picked name isn't live across the range).
+- **Init clear loops:** the first loop using a counter name gets counter v1 / pointer a0, later loops with that name
+  a0/v1; when only the first clear loop is v1/a0, every init loop uses the same name (then re-search the main path)
+  (b141:01E00080).
+- **An `addu` with operands in the wrong registers in a call argument:** try `(i << 16) / 8` for `(i << 16 >> 3)`
+  (b562:01E00080). Scripts: work/srch_rnd_ft.py, srch_minim_ft.py, srch_angform.py, sdops.py.
+- **Which saved FPR a float gets:** names also used in the setup branch get the higher saved FPRs; reuse the setup's
+  names for values in f24/f25 (b399:01E00080). Grid-quad offsets `t0 + w` at the uses put the hoisted sums low.
+- **Pinning computation order:** give the part its own local followed by `(void)x;` (`h = 600.0f * j / 32.0f; (void)h;`)
+  (b399:01E00080).
+- **Float STs in a sprite packet with `.s` through the kept `&spr.uv0` register but `.t` direct:** uv0/uv1 as a union
+  of the bitfields and `{f32 s, t}` (b399:01E00080).
+- **Keep `jp[i * 2 + 1]` an index with an `sll` at each use:** `n = i * 2;` inside the loop, index `jp[n + 1]`
+  (b296:01E00080). Fast parallel scorers: work/fastscore.py, vfast.py, declperm_fast.py, srch_*_fast.py.
+- **Frame 8–0x18 bytes too small with an unexplained gap between packets:** the gap is a packet's tail (`Spr.tail` as
+  `u8[0x20]`, or a `u64 tail` on a Quad) (b454, b295:01E00080).
+- **A call argument moved into `$a1` too early:** cast a different argument of that call (`(void *)&g->scr`) to set the
+  evaluation order (b022:01E00080).
+- **`x += 0.0f` with no other load:** `x += 0.0f * g->obj` (MWCC drops `0.0f * y` but keeps the add); a bare `+= 0.0f`
+  disappears (b022:01E00080). Donor pickers: work/adiff.py, work/calldiff.py.
+- **A kept ST address in a spill slot (frame 0x20 too big):** uv0/uv1 as a union of Uv and St, written
+  `spr.uv0.st.s/t` directly (b563:01E00080).
+- **`r = K * (sum)` with the product in the constant's register:** `r = sum; r = K * r;` (b014, b209:01E00080).
+- **Donor picker by callee or constant:** `python3 work/famfeat.py <callee or constant>...`; cast search: work/castsrch.py.
+- **Spill-slot groups by loop name:** the name used first in the function gets the lower block; read the original's
+  slot map and choose names so the right group comes first (b271, b587:01E00080). Exhaustive name assignment over the
+  clear loops plus the first main-path loops: work/loopcombo_ft.py (`--groups=` for nested loops).
+- **A constant-zero offset hoisted into a saved FPR:** write it in the family's `K + K2 * t / N` form with both
+  constants 0.0f; a bare `h = 0.0f` is propagated (b271:01E00080).
+- **Saved registers rotated by one across many later sections:** usually one loop-counter rename somewhere; the random
+  search (srch_rnd_ft) finds it where greedy and loopcombo miss (b392, b724:01E00080).
+- **A once-used angle temp spilled high:** assign it to a name already used earlier in a register (b392:01E00080).
+- **An invariant `i % 2` kept unscaled in a spill slot:** `q = i % 2;` inside the innermost loop (b214:01E00080).
+- **A one-slot spawn array keeping the field address in a saved register:** `n = g->t; n %= 1;` with `g->beam[n]`
+  (b392:01E00080). A `func_00208D00` argument loaded by nothing visible is the 1 left in `$a0` by a `== 1` test (b724).
+- **A constant ring radius the original hoists into a saved FPR before a sin/cos loop:** `r = 45.0f + 0.0f * g->t2;`
+  before the loop (the zero product folds late, so the constant stays hoisted); `r = 0.0f;` inside a loop keeps an
+  `mtc1 $zero; mul.s` (b212:01E00080). `(a * 0x10000) / 20` fixed an `addu` order `(a << 16) / 20` did not.
+- **Alpha multiply operands swapped in a product of two calls:** write it inline,
+  `alpha = (u32)(128.0f * f(t, 3.0f) * (1.0f - f(t, life)))` (b188:01E00080).
+- **Constant ± corner pairs with long loads:** `r = 1.4f; s = 0.7f;` with `-r`/`-s` (b188:01E00080). Relative ranker:
+  work/callrank.py.
+- **A variable spilled low where the original's sits in the high name-grouped block:** the original first uses that
+  name as a setup clear-loop counter (b592:01E00080). Slot map tool: work/slotmap.py.
+- **Three colour bytes stored together after three fptoui calls:** u8 locals each followed by `(void)c;` (b151).
+- **An `x * 1.0f` the original keeps:** load the 1.0 into a float local first (b151:01E00080).
+- **Constant GPRs taken in the wrong order before a loop:** write the constant multiply inside the loop
+  (`h = t / 64.0f;` before, `50.0f * h` at the use) and let it be hoisted (b022, b470, b519:01E00080).
+- **A setup clear-loop counter coloured first that loop renames can't fix:** merge the main-path variable sharing that
+  name into another int local with a disjoint live range, then rename the clear loop (b592:01E00080).
+- **The second of two u8 alphas spilled high where yours spills low:** both are one variable reused (b291:01E00080).
+- **A zero kept in a saved register and stored as a colour byte:** an `s32` local assigned 0 (b766:01E00080).
+- **After a single-function module matches, check fulltry for words in a later function of the module** (b766's new
+  24.0f moved func_01E02B40's constant order; fixed with a block local in the same commit).
+- **A loop's counter, buffer and kept addresses rotated with no counter rename fixing it:** rename the plain int temps
+  of that section (work/fswap_fast.py) (b182:01E00080).
+- **A screen-space frame 0x20 bigger than the locals with no references in the gap:** `Vec4f out[4]` with only out[0]
+  and out[1] used (b182:01E00080).
+- **Every saved register shifted by one:** score structure first with work/opsscore.sh (opcode-only differences),
+  then the random loop-rename search fixes the shift (b754:01E00080, 250 → 0 words).
+- **One int field loaded as `lwc1`+`cvt` and as `lw`:** compute the int part into a local first, then the float part
+  inline (b754:01E00080).
+- **The context pointer in `$fp` where a first `Scene *g = (Scene *)arg0;` puts it in `$s0`:** declare the cast local
+  last (b249:01E00080).
+- **A `[n + 1]` / `[n + 2]` group recomputed as `base + 3l*16` where yours strength-reduces:** `n = l * 3;` inside the
+  loop and index with `n` (b249, 70% → 94%). Opcode-only scoring: work/vfastops.py, work/opsdiff.py.
+- **Frame 0x10 too small with spilled int temps above the counter group:** spill groups follow each name's first use
+  in the whole function; rename the temps to a name the setup already uses (b217:01E00080).
+- **Two loop counters in each other's spill slots:** a name used in only one loop keeps its own low slot in declaration
+  order; a name used elsewhere spills to the shared high block. Give one loop a unique, correctly placed name and
+  rename the other to a name whose first loop isn't spilled (b739:01E00080).
+- **Pillar quad with the `k % 4` temp in the wrong GPR and the half-width scheduled early:** `a = 30.0f * f;` right
+  before the corner block and `x = k % 4; e = (32.0f * x) / 128.0f;` right before the ST stores (b705:01E00080).
+- **For modules whose function is first in the file, the standalone fastscore equals the in-file score**, so the
+  parallel `*_fast` searches are reliable on the 01E00080 family.
+- **A switch whose default sets the result, laid out as a beq chain with the default in the first delay slot:**
+  `n = -1;` before the switch, no default (b612:01E00080).
+- **Spawn loops copying the joint vector straight from g even inside `for (i < 1)`:** the source copies a fixed
+  element (`p[i] = g->jp[0]`) (b030, b441:01E00080). Segment compare at each jal: work/jalseg.py.
+- **A setup clear loop stuck at counter v1 / pointer a0 when every rename disturbs other loops:** give its counter name
+  an earlier web from a plain statement before the loop, e.g. `i = func_001F5560(...); g->jn = i;` or
+  `j = 0; g->on3 = j;`; later loops with that name then get a0/v1. Keep the statement after the name's original first
+  use so the spill groups stay (b054, b624, b623:01E00080).
+- **An address kept in a saved register in the original, recomputed in yours, with your register holding a hoisted
+  `&x[k]`:** the inner loop indexes that array too: `Vec4f pos[6][1]`, `pos[k][l]` (b066:01E00080).
+- **`x / 2.0f` ST pairs with numerator and constant FPRs swapped:** divide into two locals, then add in separate
+  statements (`p = n / 2.0f; q = (n + 1) / 2.0f; s0 = p + f; s1 = q + f;`) (b222:01E00080).
+- **Warm level can matter in this family too:** b009:01E00080 is level 1 (config/mod_warm.txt).
+- **`jp[n + 1]`'s address computed before `jp[n]` in a call:** the index in its own local, `j = n + 1;` (b466:01E00080).
+- **callrank can miss the best donor:** compare candidates with work/opadiff.py (register-masked asm diff) (b744).
+- **Constants in swapped `$v0`/`$v1`, one `lui` too early, the constant used by stores and a later float argument:**
+  compute the product using the other constant into a local before the stores (`b = 15.0f * r;`) (b358:01E00080).
+- **High spill block order is by each name's first use, latest first:** give a temp a name first used after the variable
+  below it and also used elsewhere; lower a counter with `j = 0; g->on = j;` in setup (b358:01E00080). Twin comparison:
+  work/twindiff.py.
+- **Grid-quad ST registers swapped (`u1`/`w1` in `$f3`/`$f5`):** declare the floats `u0, w1, w0, u1`; a second quad block
+  gets its own four locals (b511:01E00080).
+- **An outer loop's branch target on `func_0020EB40`:** the matrix setup is inside the loop (b372:01E00080).
+- **A loop-counter name used only once in the main path takes a low spill slot and shifts the frame by 0x10:** rename it
+  to a name used elsewhere (b554:01E00080).
+- **A late loop counter spilled below the alpha slots where the original has it above:** reuse `buf` as that counter
+  (b442:01E00080). Which matched function covers each stretch of a target: work/covermap.py.
+- **A colour-address temp one register low (`$a1` for your `$a2`) with no fptoui nearby:** test warm level 1 before
+  searching C variants (b006:01E00080).
+- **`mul.s $f22, $f22, $f0` coming out constant-first:** `s *= 0.8f;` (b012:01E00080).
+- **Consecutive high spill slots following loop order in reverse are one counter name** (b420:01E00080).
+- **`lq`/`sq` matrix copy from a stack `f32[4][4]`:** copy through a struct declared `aligned(16)`, `m4 = *(Mq *)m3;`
+  (b420:01E00080).
+- **Preheader order counter, pointer, second induction variable:** an explicit `i = 0` lands before the hoisted pointer;
+  write the second value from the counter (`K + i * M`) or walk an explicit pointer set between them (b131, c516).
+- **A walking pointer starting one element before an array:** the preceding same-type field and the array are one table
+  (c516:01E03130).
+- **A draw-loop preheader scheduled wrong:** set the counter right after the per-slot value,
+  `f = ...; j = 0; p = ...; for (; j < N; j++)` (c401:01E00080).
+- **Keeping `(i + 1) * 64` as its own induction variable:** `y = i * 64 + 64` (b456:01E00080). `t * 0x8000 / life` fixed
+  registers `t << 15` left swapped. Masked diff of a draft: work/mdiff.py.
+- **A discarded `func_0020B480` call followed by `add.s` with a zero register:** `r = 0.0f * func_0020B480(x) + A;`; the
+  product folds but the call and add stay (b216:01E00080).
+- **A `bne` whose delay slot copies the first instruction after the `if`:** that code is outside the `if` (b216).
+- **The low spill block is ordered by each name's first use, latest first** (frame 0x10 short with int temps between
+  `n` and the byte alpha: move the alpha's first use after the temp's) (b738:01E00080). Statement-order hill climb under
+  def/use constraints: work/stmtperm.py.
+- **A setup block that looks like a preheader may be inside the loop:** check the back-branch target before hoisting it
+  (b156:01E00080).
+- **Saved FPRs rotated across a big function:** srch_frnd_fast.py with one group per section and variable plus spare
+  float names (b625, b156:01E00080).
+- **A setup-grid counter coloured before the strength-reduced temps:** reuse a variable dead in the setup branch (`ot`)
+  as the outer counter; if spill slots shift, give the old counter name an early use inside the loop (b575, b249:01E00080).
+- **A step count spilled above the temps where the original has it below:** it is no variable; write `32 - y` inline at
+  each use (b249:01E00080).
+- **Unexplained scheduling around packet fields:** read fields directly, not through `*(u16 *)(s32)&` casts (b575).
+- **A whole-function register swap (`ot`/`code`):** delete each statement in turn and watch which registers the two get;
+  it pointed at one `if` whose call arguments belonged in int locals (b471:01E00080, 86 → 20).
+- **A constant loaded in the wrong order with the multiply already in place:** `r = K * s; (void)r;` at the top of the
+  loop (b212:01E00080). `e = A; e = e * B / K;` for a result in the wrong saved FPR (b100:01E00080).
+- **An ST pair with `q = l % N` and the `q + 1` conversion scheduled early:** drop `q`:
+  `z0 = 0.5f * (l % N) / N.0f; z1 = 0.5f * (l % N + 1) / N.0f;` before the stores (b722, b738:01E00080).
+- **`1.0f + 1.5f * (1.0f - f)` computed among the colour copies:** assign it in the innermost loop before its first use
+  so it hoists (b722, b738, b647:01E00080).
+- **Saved registers rotated around a loop bound or counter:** a fresh local used nowhere else (b647, 58 → 11).
+- **An int field wanted as `lw` + `mtc1` where you get `lwc1`:** read it into an int local first (b846:01E00080).
+- **`lw` / `dsll32` / `dsra32` around `func_001A0660`:** a real s64 divide (`__divdi3`): `q = x; *p = q /= K; *p = -q;`
+  with `s64 q` (b112:01E04480).
+- **A `% 2^n` index with the field load first after the join:** `n = i % 32; (void)n;` and index with `n` throughout; an
+  index kept across a call likewise (b541:01E00080, 166 → 28).
+- **A field read reusing an earlier value where the original reloads it:** a one-element array read through a zero index
+  local (`n4 = 0; g->beam[n4].t`) (b846:01E00080).
+- **A register fixed only by renaming a distant setup loop:** the name needs an earlier web; replace the rename with
+  `g->x = n = 0;` (b456:01E00080).
+- **An extra saved FPR with the frame 0x10 short and many later hunks:** a value hoisted out of an inner loop; put it in
+  a local before the loop (b723:01E00080, one statement, about 1000 instructions).
+- **Spilled "counters" in the low walker block that step by a constant:** strength-reduced `j * K`, not variables (b373).
+- **High or low spill slot depends on the name's first web:** first web spilled = low slot; an earlier unspilled web sends
+  it to the high block. Move it with `g->x = j = 0;` placed by the first-use order you need (b543:01E00C30).
+- **`sb $zero` to a spill slot, then `lbu` and a store of that byte:** a fade with strength 0, `(0x30 - t) * 0 / 48`; a
+  plain `alpha = 0` is propagated (b543:01E00C30).
+- **A kept address lost to another kept address:** delete each top-level section and watch the frame and kept
+  `addiu sN, sp`; a one-iteration loop the original lacks can add the extra webs (b373:01E00080).
+- **Check immediates before chasing registers:** compare non-stack immediates on the opcode-aligned diff (b373).
+- **One `addiu a0` out of place next to float arguments:** `floatsearch.py --calls <callee>`; a prototyped alias plus
+  float locals on both calls (b001:01E044C0).
+- **A delay slot swapped with a store before a `jal`:** `(void *)` casts on the address arguments, in combinations; in
+  b474:01E00080 only the 2nd and 3rd together worked.
+- **A byte temp and a counter in each other's spill slots:** give the byte its own u8 name covering one earlier unspilled
+  web and reuse a counter name with earlier webs (b717:01E00080).
+- **Re-tune float calls in order after fixing one**, scoring only the words up to each call's `jal`, with backtracking
+  (b037:01E04FB0, 273 tries).
+
+## Stale words after a function's padding (config/mod_pieces.txt)
+
+The tell: the C matches every instruction up to the function's `jr $ra`, but the asm file goes on past the zero
+padding with a loop tail and an epilogue for another frame size, which branches back into the function (an older,
+longer build's leftovers). The splitter files it with the function because of that backward branch. The fix is
+not C: add `<module> <VADDR of the first stale word>` to `config/mod_pieces.txt`, add
+`INCLUDE_ASM(..., func_<VADDR>_<module>)` after the function in the module's C file, and run `make` (it re-splits
+the module; the linker script PROVIDEs the labels the piece branches to). Closed b153:01E00080, b506:01E02460,
+c022:01E01850 and b058:01E023F0 (b058 also wanted mode 0 as `if/else` instead of an early `return`: the early
+return dropped the `nop` between the loop's `bnel` and the epilogue).
