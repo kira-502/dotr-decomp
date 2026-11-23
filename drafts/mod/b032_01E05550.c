@@ -1,4 +1,5 @@
 #include "common.h"
+#include "mod/b032.c"
 
 /* shape b032:01E05550 (b032), 614 insns, 1 copy (-O2,p): b032 scene manager (b085:01E04410 form at -O2): setup,
    then at t 0x72 two arcs, at 0x77 two rays with six rings, two flares, eight smokes and the emitter; updates and
