@@ -222,8 +222,6 @@ there is a source form that gives the original.
 - **A value read twice is loaded into a saved register in a `jal`'s delay slot and reused after the call
   (`rand() % (2t) - t`):** write the field read straight into the expression, `func_0019A5C8() % (g->t * 2) - g->t`;
   a named local or an inline helper moves the loop counters to other saved registers. (c603:01E00E10)
-- **`dk perm` says "no better version found" at once:** `base.c` has the `__builtin_offsetof` layout checks; delete
-  them from `nonmatchings/<func>/base.c` and run `permuter.py` yourself. (c603:01E00E10)
 - **A stack vector's address taken once before a loop (`addiu sN, sp, &p`), `.x` read through `sN`, `.y` straight from
   `sp`:** make it the second element of an array with the stack vector below it, `Vec4f t[2]`, and use `t[1]`.
   (b740:01E01F30, as b353:01E02660)
@@ -422,8 +420,6 @@ there is a source form that gives the original.
   zero (`s32 base = 0; ... % 144 + base;`); a literal `+ 0` is folded away. (b731:01E01F40, b550:01E02130)
 - **An extra saved register holding `g + k*size` across calls where the original keeps only the offset:** copy into the
   slot through a pointer local (`r = g->rib; *(Vec4f *)r[k].pos = v;`), not straight into `g->rib[k]`. (b024:01E04CC0)
-- **`dk perm` gives up at once on a draft with `#include "mod/<mod>.c"`:** `base.c` carries the layout checks; run
-  `sed -i "/__builtin_offsetof/d" nonmatchings/<func>/base.c` and `permuter.py` yourself. (b024:01E04CC0, as c603)
 - **A big manager where each fix to one argument-order or `mtc1` difference flips another call:** change how a member is
   spelled or typed, not only the cast (`g->mdl.r` for `&g->mdl`, `g->line + 1` for `&g->line[1]`, `s32 v[4]` for a
   `Vec4f` read as ints); script the combinations. (c560:01E02720)
@@ -1308,3 +1304,24 @@ not C: add `<module> <VADDR of the first stale word>` to `config/mod_pieces.txt`
 the module; the linker script PROVIDEs the labels the piece branches to). Closed b153:01E00080, b506:01E02460,
 c022:01E01850 and b058:01E023F0 (b058 also wanted mode 0 as `if/else` instead of an early `return`: the early
 return dropped the `nop` between the loop's `bnel` and the epilogue).
+
+## The permuter on module drafts (tools/perm, 24 November 2026)
+
+`tools/perm/perm.sh FUNC DRAFT MINUTES JOBS` runs decomp-permuter on a module draft and re-checks every output it
+writes. Plain `dk perm` gets three things wrong there, so its "best" versions were mostly worse, and older "permuter
+tried" notes may never have searched the real code:
+
+- **Other bodies.** The permuter turns every other function into a prototype, but MWCC uses the body of a static
+  callee defined earlier, even one it calls with `jal`. Without it, c560's base came out about 300 instructions off.
+  `strip.py` keeps FUNC's callees (transitively) and makes the rest prototypes; `run.py` is the toolchain permuter
+  with `extract_fn` patched to keep those bodies. (Marking them `inline` instead inlines them all: 1410 instructions.)
+- **Pragmas.** The permuter's C printer moves `#pragma` lines onto the wrong declarations. `strip.py` puts the
+  pragmas in force at FUNC at the top of the file and drops the rest.
+- **Score.** The permuter's score is not the instruction count (a register difference costs less than a moved
+  load), and a lower score can be a worse count. `perm.sh` keeps every output better than the base, not just the
+  best score, and `check.py` counts each one exactly.
+
+It also needs a GNU `cpp` on PATH (or at `work/cppbin/cpp`), and sets TMPDIR so the dependency files of each
+compile stay off `/tmp`. What it found: c560 (a temp for the shifted byte and one for the colour word, match after
+2 hours), b150 (a vertex pointer, one instruction). A tempting output can add code the original lacks (b046's
+`cvt.s.w`, b193's second store): read `tools/perm/diff.py` before applying one.

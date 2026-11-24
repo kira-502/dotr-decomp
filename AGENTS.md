@@ -173,8 +173,10 @@ The functions left average about 1,090 instructions. A long run on one of them:
   line as you go. A long run that stops halfway then loses nothing.
 - Change one thing at a time and try it; keep the change only if the count goes up.
 - Close to done (95% and up), let decomp-permuter search for the last few differences:
-  `dk perm <func> drafts/mod/<module>_<VADDR>.c --minutes 5 --jobs 2`. It prints the best version it finds, or
-  "no better version found".
+  `tools/perm/perm.sh <func> drafts/mod/<module>_<VADDR>.c <minutes> <jobs>`. It prints the base's and the best
+  outputs' differing-instruction counts (0 = match) and leaves them in `nonmatchings/<func>/output-*`;
+  `python3 tools/perm/diff.py nonmatchings/<func> <func> <output dir>` shows what one changed. Plain `dk perm` scores
+  the wrong code on module drafts (docs/MATCHING-TIPS.md, "The permuter on module drafts").
 
 ## Sending work back
 
