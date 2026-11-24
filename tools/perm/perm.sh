@@ -15,6 +15,8 @@ D=nonmatchings/$F
 dk perm "$F" "$SRC" --minutes 1 --jobs 1 >/dev/null 2>&1   # sets up $D: base.c, target.o, compile.sh
 rm -rf "$D"/output-* "$D"/base.full.c
 python3 tools/perm/strip.py "$D" "$F"
+# score FUNC alone: base.c also holds the callee bodies strip.py keeps, and the permuter disassembles the whole object
+sed -i "s|^objdump_command = \"\(.*\)\"|objdump_command = \"\\1 --disassemble=$F\"|" "$D/settings.toml"
 echo "base: $(python3 tools/perm/check.py "$D" "$F")"
 timeout --signal=INT $((MIN * 60)) python3 tools/perm/run.py "$D" -j "$J" --quiet >/dev/null 2>&1
 find /tmp -maxdepth 1 -name 'permuter*' -delete

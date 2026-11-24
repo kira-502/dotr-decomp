@@ -1315,6 +1315,7 @@ tried" notes may never have searched the real code:
   callee defined earlier, even one it calls with `jal`. Without it, c560's base came out about 300 instructions off.
   `strip.py` keeps FUNC's callees (transitively) and makes the rest prototypes; `run.py` is the toolchain permuter
   with `extract_fn` patched to keep those bodies. (Marking them `inline` instead inlines them all: 1410 instructions.)
+  `perm.sh` also adds `--disassemble=FUNC` to the permuter's objdump command, or those bodies swamp its score.
 - **Pragmas.** The permuter's C printer moves `#pragma` lines onto the wrong declarations. `strip.py` puts the
   pragmas in force at FUNC at the top of the file and drops the rest.
 - **Score.** The permuter's score is not the instruction count (a register difference costs less than a moved
