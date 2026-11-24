@@ -172,6 +172,7 @@ static s32 func_01E00080_b150(s32 arg0, s32 code) {
     Vec4f p0;
     Vec4f p1;
     Vec4f v;
+    Vec4f *pv;
     Spr_b150_01E00080 spr __attribute__((aligned(8)));
     Rect_b150_01E00080 rc __attribute__((aligned(8)));
     s32 ot;
@@ -266,13 +267,14 @@ static s32 func_01E00080_b150(s32 arg0, s32 code) {
         h = 0.9f + 0.1f * g->b[i].t / 16.0f;
         for (j = 0; j < 8; j++) {
             for (k = 0; k < 4; k++) {
+                pv = &g->b[i].v[j][k];
                 ((Uv_b150_01E00080 *)(s32)&spr.uv0)->u = D_28BBF0[g->b[i].c[j][k]].u0;
                 ((Uv_b150_01E00080 *)(s32)&spr.uv0)->v = D_28BBF0[g->b[i].c[j][k]].v0;
                 ((Uv_b150_01E00080 *)(s32)&spr.uv1)->u = D_28BBF0[g->b[i].c[j][k]].u1;
                 ((Uv_b150_01E00080 *)(s32)&spr.uv1)->v = D_28BBF0[g->b[i].c[j][k]].v1;
-                v.x = g->b[i].v[j][k].x * h;
-                v.y = -1.0f + 15.0f * dy + g->b[i].v[j][k].y;
-                v.z = g->b[i].v[j][k].z * h;
+                v.x = pv->x * h;
+                v.y = -1.0f + 15.0f * dy + pv->y;
+                v.z = pv->z * h;
                 func_00187B00(&v, &v, &g->b[i].p[j]);
                 func_00187B00(&p0, &cn[0], &v);
                 func_00187B00(&p1, &cn[1], (void *)&v);
