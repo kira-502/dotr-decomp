@@ -1326,3 +1326,20 @@ It also needs a GNU `cpp` on PATH (or at `work/cppbin/cpp`), and sets TMPDIR so 
 compile stay off `/tmp`. What it found: c560 (a temp for the shifted byte and one for the colour word, match after
 2 hours), b150 (a vertex pointer, one instruction). A tempting output can add code the original lacks (b046's
 `cvt.s.w`, b193's second store): read `tools/perm/diff.py` before applying one.
+
+## Saved registers follow first-use webs and declaration order (25 November 2026)
+
+Measured with small test files (`tools/cc.sh` on a scratch .c): when several values live across calls, MWCC hands
+out saved registers (`$f20` up, and `$s0` up) in the order of a number each value gets:
+
+- A variable's **first web** (its first stretch of definitions and uses) gets the variable's declaration index. With
+  only first webs, the first-declared variable gets `$f20`, the next `$f21`, whatever order the code assigns them in.
+- A **later web** of the same variable (the variable reused in a later section) is numbered after every declared
+  variable, in code order.
+
+So one variable reused in an early section moves its later sections to the back of the queue. The fix for a
+register swap is often not in the loop that shows it, but in which names earlier sections use, plus the declaration
+order. b647:01E00080 (h and x0 swapped in the arc loop, 7 words, unfixed by every rename or order inside that loop)
+matched when the start-up colour table used `s`/`r` instead of `h`/`s` and the rim scale used `s` (both earlier than
+the loops), with `x1` declared before `x0` and `w` before `h`. Search this with `tools/perm/renames.py`:
+renames of earlier sections combined with declaration orders; neither alone found it.
