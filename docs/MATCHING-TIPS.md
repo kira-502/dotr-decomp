@@ -1337,7 +1337,8 @@ out saved registers (`$f20` up, and `$s0` up) in the order of a number each valu
 - A **later web** of the same variable (the variable reused in a later section) is numbered after every declared
   variable, in code order.
 - In between come the compiler's own temps: values hoisted out of loops and strength-reduced loop pointers
-  (numbered in the order the loop body first uses them). Parameters come after all locals.
+  (numbered in the order the loop body first uses them). Parameters come after everything, in reverse order (the
+  first parameter is coloured last).
 
 So one variable reused in an early section moves its later sections to the back of the queue. The fix for a
 register swap is often not in the loop that shows it, but in which names earlier sections use, plus the declaration
@@ -1353,3 +1354,9 @@ use: the colour index before the vertex.
 b705:01E00080 (two float pairs swapped in the fan draw) matched the same way: the start-up colour table took
 `w`/`s1`/`x1` as its temps, the glow sprite's 8.0 went in the unused `x0`, `x1` was declared before `s1`, and the
 pillar loop's scale used `a` instead of `f` (found by `tools/perm/renames.py` once the rest matched).
+
+b032:01E05550 (ot in $s4 after g in $s3, unreachable by any declaration order or rename: 90,000 tried) matched once
+the parameters were copied into locals, `Scene *g = arg0; s32 code = arg1;` as b035 does, with
+`#pragma opt_propagation off` so the copies survive: g is then numbered as a local, by its declaration. Then
+`&q[1]` named by a pointer `t` (declared second) put that address in the register after `s`. So when a parameter's
+register is out of reach, try copying it into a local under opt_propagation off.
