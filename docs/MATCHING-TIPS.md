@@ -1349,3 +1349,7 @@ renames of earlier sections combined with declaration orders; neither alone foun
 b150:01E00080 (a loop counter after its loop's pointer temps) matched by giving that loop a fresh counter `l`:
 the reused `k` was a later web, so it queued behind the temps. Its pointer temps then followed the body's first
 use: the colour index before the vertex.
+
+b705:01E00080 (two float pairs swapped in the fan draw) matched the same way: the start-up colour table took
+`w`/`s1`/`x1` as its temps, the glow sprite's 8.0 went in the unused `x0`, `x1` was declared before `s1`, and the
+pillar loop's scale used `a` instead of `f` (found by `tools/perm/renames.py` once the rest matched).
