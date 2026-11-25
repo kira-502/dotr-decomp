@@ -1336,6 +1336,8 @@ out saved registers (`$f20` up, and `$s0` up) in the order of a number each valu
   only first webs, the first-declared variable gets `$f20`, the next `$f21`, whatever order the code assigns them in.
 - A **later web** of the same variable (the variable reused in a later section) is numbered after every declared
   variable, in code order.
+- In between come the compiler's own temps: values hoisted out of loops and strength-reduced loop pointers
+  (numbered in the order the loop body first uses them). Parameters come after all locals.
 
 So one variable reused in an early section moves its later sections to the back of the queue. The fix for a
 register swap is often not in the loop that shows it, but in which names earlier sections use, plus the declaration
@@ -1343,3 +1345,7 @@ order. b647:01E00080 (h and x0 swapped in the arc loop, 7 words, unfixed by ever
 matched when the start-up colour table used `s`/`r` instead of `h`/`s` and the rim scale used `s` (both earlier than
 the loops), with `x1` declared before `x0` and `w` before `h`. Search this with `tools/perm/renames.py`:
 renames of earlier sections combined with declaration orders; neither alone found it.
+
+b150:01E00080 (a loop counter after its loop's pointer temps) matched by giving that loop a fresh counter `l`:
+the reused `k` was a later web, so it queued behind the temps. Its pointer temps then followed the body's first
+use: the colour index before the vertex.
