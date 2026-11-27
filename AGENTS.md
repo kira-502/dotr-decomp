@@ -146,6 +146,12 @@ Give one function a serious try (start small, change one thing at a time, keep t
 A function that will not match: add a line to `config/module_notes.tsv` (`shape<TAB>best %<TAB>hard: why`), keep
 the draft in `drafts/mod/`, take the next one.
 
+Equivalent C next to the asm (`#ifdef NON_MATCHING` … `#else` the `INCLUDE_ASM` line `#endif`) is only for
+functions the project owner has agreed cannot be written in honest C. Today those are the b046:01E01520 and
+b193:01E01D70 shapes: one block in each was compiled as if CSE were off, while the rest of the function was
+compiled with it on (see their notes). The matching build never defines `NON_MATCHING`, and the function still
+counts as asm. Don't use this for a function that is merely hard.
+
 ## Things that bite (details and more in docs/MATCHING-TIPS.md)
 
 - **`static`.** Module functions are static. Without it `dk accept` adds a prototype to `include/functions.h` and the
